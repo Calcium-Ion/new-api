@@ -254,7 +254,7 @@ const HeaderBar = () => {
                             setSelectedKeys([key.itemKey]);
                         }}
                         header={{
-                            logo: <IconSemiLogo style={{height: '36px', fontSize: 36}}/>,
+                            logo: <img src={logo} alt='logo' style={{marginRight: '0.75em'}}/>,
                             text: 'NekoAPI'
                         }}
                         // footer={{

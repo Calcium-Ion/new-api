@@ -25,6 +25,7 @@ import TopUp from './pages/TopUp';
 import Log from './pages/Log';
 import Chat from './pages/Chat';
 import {Layout} from "@douyinfe/semi-ui";
+import Midjourney from "./pages/Midjourney";
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -266,6 +267,14 @@ function App() {
                 element={
                     <PrivateRoute>
                         <Log />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path='/midjourney'
+                element={
+                    <PrivateRoute>
+                        <Midjourney />
                     </PrivateRoute>
                 }
             />

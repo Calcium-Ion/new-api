@@ -201,7 +201,7 @@ const HeaderBar = () => {
                                             position="bottomRight"
                                             render={
                                                 <Dropdown.Menu>
-                                                    <Dropdown.Item>退出</Dropdown.Item>
+                                                    <Dropdown.Item onClick={logout}>退出</Dropdown.Item>
                                                 </Dropdown.Menu>
                                             }
                                         >
