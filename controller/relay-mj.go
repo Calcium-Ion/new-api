@@ -54,7 +54,7 @@ func RelayMidjourneyImage(c *gin.Context) {
 		return
 	}
 	c.Header("Content-Type", "image/jpeg")
-	//c.Header("Content-Length", string(rune(len(data))))
+	//c.HeaderBar("Content-Length", string(rune(len(data))))
 	c.Data(http.StatusOK, "image/jpeg", data)
 }
 
@@ -275,13 +275,13 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 			Description: "create_request_failed",
 		}
 	}
-	//req.Header.Set("Authorization", c.Request.Header.Get("Authorization"))
+	//req.HeaderBar.Set("Authorization", c.Request.HeaderBar.Get("Authorization"))
 
 	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
 	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
 	//mjToken := ""
-	//if c.Request.Header.Get("Authorization") != "" {
-	//	mjToken = strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
+	//if c.Request.HeaderBar.Get("Authorization") != "" {
+	//	mjToken = strings.Split(c.Request.HeaderBar.Get("Authorization"), " ")[1]
 	//}
 	req.Header.Set("mj-api-secret", strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
 	// print request header

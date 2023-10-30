@@ -1,31 +1,49 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { Container } from 'semantic-ui-react';
+import {BrowserRouter} from 'react-router-dom';
+import {Container} from 'semantic-ui-react';
 import App from './App';
-import Header from './components/Header';
+import HeaderBar from './components/HeaderBar';
 import Footer from './components/Footer';
 import 'semantic-ui-css/semantic.min.css';
 import './index.css';
-import { UserProvider } from './context/User';
-import { ToastContainer } from 'react-toastify';
+import {UserProvider} from './context/User';
+import {ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { StatusProvider } from './context/Status';
+import {StatusProvider} from './context/Status';
+import {Layout} from "@douyinfe/semi-ui";
+import SiderBar from "./components/SiderBar";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const {Sider, Content, Header} = Layout;
 root.render(
-  <React.StrictMode>
-    <StatusProvider>
-      <UserProvider>
-        <BrowserRouter>
-          <Header />
-          <Container className={'main-content'}>
-            <App />
-          </Container>
-          <ToastContainer />
-          <Footer />
-        </BrowserRouter>
-      </UserProvider>
-    </StatusProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <StatusProvider>
+            <UserProvider>
+                <BrowserRouter>
+                    <Layout>
+
+                        <Sider>
+                            <SiderBar/>
+                        </Sider>
+                        <Layout>
+                            <Header>
+                                <HeaderBar/>
+                            </Header>
+                            <Content
+                                style={{
+                                    padding: '24px',
+                                }}
+                            >
+                                <App/>
+                            </Content>
+                            <Footer></Footer>
+                        </Layout>
+                    </Layout>
+                    <ToastContainer/>
+                    {/*<Footer />*/}
+                </BrowserRouter>
+            </UserProvider>
+        </StatusProvider>
+    </React.StrictMode>
 );

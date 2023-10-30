@@ -381,7 +381,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		if isStream && c.Request.Header.Get("Accept") == "" {
 			req.Header.Set("Accept", "text/event-stream")
 		}
-		//req.Header.Set("Connection", c.Request.Header.Get("Connection"))
+		//req.HeaderBar.Set("Connection", c.Request.HeaderBar.Get("Connection"))
 		resp, err = httpClient.Do(req)
 		if err != nil {
 			return errorWrapper(err, "do_request_failed", http.StatusInternalServerError)

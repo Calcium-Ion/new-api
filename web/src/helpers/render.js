@@ -56,3 +56,20 @@ export function renderQuotaWithPrompt(quota, digits) {
   }
   return '';
 }
+
+const colors = ['amber', 'blue', 'cyan', 'green', 'grey', 'indigo',
+  'light-blue', 'lime', 'orange', 'pink',
+  'purple', 'red', 'teal', 'violet', 'yellow'
+]
+
+export function stringToColor(str) {
+  let sum = 0;
+  // 对字符串中的每个字符进行操作
+  for (let i = 0; i < str.length; i++) {
+    // 将字符的ASCII值加到sum中
+    sum += str.charCodeAt(i);
+  }
+  // 使用模运算得到个位数
+  let i = sum % colors.length;
+  return colors[i];
+}

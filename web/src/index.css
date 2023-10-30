@@ -6,6 +6,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scrollbar-width: none;
+    color: var(--semi-color-text-0) !important;
+    background-color: var( --semi-color-bg-0) !important;
 }
 
 body::-webkit-scrollbar {
@@ -16,8 +18,27 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+.semi-navigation-vertical {
+    /*display: flex;*/
+    /*flex-direction: column;*/
+}
+
+.semi-navigation-item {
+    margin-bottom: 0;
+}
+
+.semi-navigation-vertical {
+    /*flex: 0 0 auto;*/
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*width: 100%;*/
+    height: 100vh;
+    overflow: hidden;
+}
+
 .main-content {
     padding: 4px;
+    height: 100%;
 }
 
 .small-icon .icon {
