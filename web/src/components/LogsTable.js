@@ -20,7 +20,7 @@ import {
 } from '@douyinfe/semi-icons';
 
 const {Sider, Content, Header} = Layout;
-const { Column } = Table;
+const {Column} = Table;
 
 
 function renderTimestamp(timestamp) {
@@ -65,13 +65,13 @@ const LogsTable = () => {
         {
             title: '渠道',
             dataIndex: 'channel',
-            className: isAdmin()?'tableShow':'tableHiddle',
+            className: isAdmin() ? 'tableShow' : 'tableHiddle',
             render: (text, record, index) => {
                 return (
                     isAdminUser ?
                         record.type === 0 || record.type === 2 ?
                             <div>
-                                {<Tag color={colors[parseInt(text) % 10]} size='large'> {text} </Tag>}
+                                {<Tag color={stringToColor(text)} size='large'> {text} </Tag>}
                             </div>
                             :
                             <></>
@@ -83,7 +83,7 @@ const LogsTable = () => {
         {
             title: '用户',
             dataIndex: 'username',
-            className: isAdmin()?'tableShow':'tableHiddle',
+            className: isAdmin() ? 'tableShow' : 'tableHiddle',
             render: (text, record, index) => {
                 return (
                     isAdminUser ?
@@ -291,15 +291,6 @@ const LogsTable = () => {
 
     const pageData = logs.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
 
-    // const onPaginationChange = (e, { activePage }) => {
-    //   (async () => {
-    //     if (activePage === Math.ceil(logs.length / ITEMS_PER_PAGE) + 1) {
-    //       // In this case we have to load more data and then append them.
-    //       await loadLogs(activePage - 1);
-    //     }
-    //     setActivePage(activePage);
-    //   })();
-    // };
     const handlePageChange = page => {
         setActivePage(page);
         if (page === Math.ceil(logs.length / ITEMS_PER_PAGE) + 1) {
@@ -307,7 +298,6 @@ const LogsTable = () => {
             loadLogs(page - 1).then(r => {
             });
         }
-        // setLoading(false);
     };
 
     const refresh = async () => {
@@ -405,7 +395,7 @@ const LogsTable = () => {
                             </>
                         }
                         <Form.Section>
-                            <Button label='操作' type="primary" htmlType="submit" className="btn-margin-right"
+                            <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
                                     onClick={refresh}>查询</Button>
                         </Form.Section>
                     </>

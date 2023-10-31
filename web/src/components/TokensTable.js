@@ -1,464 +1,460 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Dropdown, Form, Label, Pagination, Popup, Table } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
-import { API, copy, showError, showSuccess, showWarning, timestamp2string } from '../helpers';
+import React, {useEffect, useState} from 'react';
+import {Link} from 'react-router-dom';
+import {API, copy, isAdmin, showError, showSuccess, showWarning, timestamp2string} from '../helpers';
 
-import { ITEMS_PER_PAGE } from '../constants';
-import { renderQuota } from '../helpers/render';
+import {ITEMS_PER_PAGE} from '../constants';
+import {renderQuota, stringToColor} from '../helpers/render';
+import {Avatar, Tag, Table, Button, Popover, Form, Modal, Popconfirm} from "@douyinfe/semi-ui";
+
+const {Column} = Table;
 
 const COPY_OPTIONS = [
-  { key: 'next', text: 'ChatGPT Next Web', value: 'next' },
-  { key: 'ama', text: 'AMA 问天', value: 'ama' },
-  { key: 'opencat', text: 'OpenCat', value: 'opencat' },
+    {key: 'next', text: 'ChatGPT Next Web', value: 'next'},
+    {key: 'ama', text: 'AMA 问天', value: 'ama'},
+    {key: 'opencat', text: 'OpenCat', value: 'opencat'},
 ];
 
 const OPEN_LINK_OPTIONS = [
-  { key: 'ama', text: 'AMA 问天', value: 'ama' },
-  { key: 'opencat', text: 'OpenCat', value: 'opencat' },
+    {key: 'ama', text: 'AMA 问天', value: 'ama'},
+    {key: 'opencat', text: 'OpenCat', value: 'opencat'},
 ];
 
 function renderTimestamp(timestamp) {
-  return (
-    <>
-      {timestamp2string(timestamp)}
-    </>
-  );
+    return (
+        <>
+            {timestamp2string(timestamp)}
+        </>
+    );
 }
 
 function renderStatus(status) {
-  switch (status) {
-    case 1:
-      return <Label basic color='green'>已启用</Label>;
-    case 2:
-      return <Label basic color='red'> 已禁用 </Label>;
-    case 3:
-      return <Label basic color='yellow'> 已过期 </Label>;
-    case 4:
-      return <Label basic color='grey'> 已耗尽 </Label>;
-    default:
-      return <Label basic color='black'> 未知状态 </Label>;
-  }
+    switch (status) {
+        case 1:
+            return <Tag color='green' size='large'>已启用</Tag>;
+        case 2:
+            return <Tag color='red' size='large'> 已禁用 </Tag>;
+        case 3:
+            return <Tag color='yellow' size='large'> 已过期 </Tag>;
+        case 4:
+            return <Tag color='grey' size='large'> 已耗尽 </Tag>;
+        default:
+            return <Tag color='black' size='large'> 未知状态 </Tag>;
+    }
 }
 
 const TokensTable = () => {
-  const [tokens, setTokens] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activePage, setActivePage] = useState(1);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [showTopUpModal, setShowTopUpModal] = useState(false);
-  const [targetTokenIdx, setTargetTokenIdx] = useState(0);
-
-  const loadTokens = async (startIdx) => {
-    const res = await API.get(`/api/token/?p=${startIdx}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      if (startIdx === 0) {
-        setTokens(data);
-      } else {
-        let newTokens = [...tokens];
-        newTokens.splice(startIdx * ITEMS_PER_PAGE, data.length, ...data);
-        setTokens(newTokens);
-      }
-    } else {
-      showError(message);
-    }
-    setLoading(false);
-  };
-
-  const onPaginationChange = (e, { activePage }) => {
-    (async () => {
-      if (activePage === Math.ceil(tokens.length / ITEMS_PER_PAGE) + 1) {
-        // In this case we have to load more data and then append them.
-        await loadTokens(activePage - 1);
-      }
-      setActivePage(activePage);
-    })();
-  };
-
-  const refresh = async () => {
-    setLoading(true);
-    await loadTokens(activePage - 1);
-  };
-
-  const onCopy = async (type, key) => {
-    let status = localStorage.getItem('status');
-    let serverAddress = '';
-    if (status) {
-      status = JSON.parse(status);
-      serverAddress = status.server_address;
-    }
-    if (serverAddress === '') {
-      serverAddress = window.location.origin;
-    }
-    let encodedServerAddress = encodeURIComponent(serverAddress);
-    const nextLink = localStorage.getItem('chat_link');
-    let nextUrl;
-
-    if (nextLink) {
-      nextUrl = nextLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    } else {
-      nextUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    }
-
-    let url;
-    switch (type) {
-      case 'ama':
-        url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
-        break;
-      case 'opencat':
-        url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
-        break;
-      case 'next':
-        url = nextUrl;
-        break;
-      default:
-        url = `sk-${key}`;
-    }
-    if (await copy(url)) {
-      showSuccess('已复制到剪贴板！');
-    } else {
-      showWarning('无法复制到剪贴板，请手动复制，已将令牌填入搜索框。');
-      setSearchKeyword(url);
-    }
-  };
-
-  const onOpenLink = async (type, key) => {
-    let status = localStorage.getItem('status');
-    let serverAddress = '';
-    if (status) {
-      status = JSON.parse(status);
-      serverAddress = status.server_address;
-    }
-    if (serverAddress === '') {
-      serverAddress = window.location.origin;
-    }
-    let encodedServerAddress = encodeURIComponent(serverAddress);
-    const chatLink = localStorage.getItem('chat_link');
-    let defaultUrl;
-
-    if (chatLink) {
-      defaultUrl = chatLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    } else {
-      defaultUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    }
-    let url;
-    switch (type) {
-      case 'ama':
-        url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
-        break;
-
-      case 'opencat':
-        url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
-        break;
-
-      default:
-        url = defaultUrl;
-    }
-
-    window.open(url, '_blank');
-  }
-
-  useEffect(() => {
-    loadTokens(0)
-      .then()
-      .catch((reason) => {
-        showError(reason);
-      });
-  }, []);
-
-  const manageToken = async (id, action, idx) => {
-    let data = { id };
-    let res;
-    switch (action) {
-      case 'delete':
-        res = await API.delete(`/api/token/${id}/`);
-        break;
-      case 'enable':
-        data.status = 1;
-        res = await API.put('/api/token/?status_only=true', data);
-        break;
-      case 'disable':
-        data.status = 2;
-        res = await API.put('/api/token/?status_only=true', data);
-        break;
-    }
-    const { success, message } = res.data;
-    if (success) {
-      showSuccess('操作成功完成！');
-      let token = res.data.data;
-      let newTokens = [...tokens];
-      let realIdx = (activePage - 1) * ITEMS_PER_PAGE + idx;
-      if (action === 'delete') {
-        newTokens[realIdx].deleted = true;
-      } else {
-        newTokens[realIdx].status = token.status;
-      }
-      setTokens(newTokens);
-    } else {
-      showError(message);
-    }
-  };
-
-  const searchTokens = async () => {
-    if (searchKeyword === '') {
-      // if keyword is blank, load files instead.
-      await loadTokens(0);
-      setActivePage(1);
-      return;
-    }
-    setSearching(true);
-    const res = await API.get(`/api/token/search?keyword=${searchKeyword}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      setTokens(data);
-      setActivePage(1);
-    } else {
-      showError(message);
-    }
-    setSearching(false);
-  };
-
-  const handleKeywordChange = async (e, { value }) => {
-    setSearchKeyword(value.trim());
-  };
-
-  const sortToken = (key) => {
-    if (tokens.length === 0) return;
-    setLoading(true);
-    let sortedTokens = [...tokens];
-    sortedTokens.sort((a, b) => {
-      return ('' + a[key]).localeCompare(b[key]);
-    });
-    if (sortedTokens[0].id === tokens[0].id) {
-      sortedTokens.reverse();
-    }
-    setTokens(sortedTokens);
-    setLoading(false);
-  };
-
-  return (
-    <>
-      <Form onSubmit={searchTokens}>
-        <Form.Input
-          icon='search'
-          fluid
-          iconPosition='left'
-          placeholder='搜索令牌的名称 ...'
-          value={searchKeyword}
-          loading={searching}
-          onChange={handleKeywordChange}
-        />
-      </Form>
-
-      <Table basic compact size='small'>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortToken('name');
-              }}
-            >
-              名称
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortToken('status');
-              }}
-            >
-              状态
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortToken('used_quota');
-              }}
-            >
-              已用额度
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortToken('remain_quota');
-              }}
-            >
-              剩余额度
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortToken('created_time');
-              }}
-            >
-              创建时间
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortToken('expired_time');
-              }}
-            >
-              过期时间
-            </Table.HeaderCell>
-            <Table.HeaderCell>操作</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-
-        <Table.Body>
-          {tokens
-            .slice(
-              (activePage - 1) * ITEMS_PER_PAGE,
-              activePage * ITEMS_PER_PAGE
-            )
-            .map((token, idx) => {
-              if (token.deleted) return <></>;
-              return (
-                <Table.Row key={token.id}>
-                  <Table.Cell>{token.name ? token.name : '无'}</Table.Cell>
-                  <Table.Cell>{renderStatus(token.status)}</Table.Cell>
-                  <Table.Cell>{renderQuota(token.used_quota)}</Table.Cell>
-                  <Table.Cell>{token.unlimited_quota ? '无限制' : renderQuota(token.remain_quota, 2)}</Table.Cell>
-                  <Table.Cell>{renderTimestamp(token.created_time)}</Table.Cell>
-                  <Table.Cell>{token.expired_time === -1 ? '永不过期' : renderTimestamp(token.expired_time)}</Table.Cell>
-                  <Table.Cell>
+    const columns = [
+        {
+            title: '名称',
+            dataIndex: 'name',
+        },
+        {
+            title: '状态',
+            dataIndex: 'status',
+            key: 'status',
+            render: (text, record, index) => {
+                return (
                     <div>
-                    <Button.Group color='green' size={'small'}>
-                        <Button
-                          size={'small'}
-                          positive
-                          onClick={async () => {
-                            await onCopy('', token.key);
-                          }}
-                        >
-                          复制
-                        </Button>
-                        <Dropdown
-                          className='button icon'
-                          floating
-                          options={COPY_OPTIONS.map(option => ({
-                            ...option,
-                            onClick: async () => {
-                              await onCopy(option.value, token.key);
-                            }
-                          }))}
-                          trigger={<></>}
-                        />
-                      </Button.Group>
-                      {' '}
-                      <Button.Group color='blue' size={'small'}>
-                        <Button
-                            size={'small'}
-                            positive
-                            onClick={() => {
-                              onOpenLink('', token.key);
-                            }}>
-                            聊天
-                          </Button>
-                          <Dropdown
-                            className="button icon"
-                            floating
-                            options={OPEN_LINK_OPTIONS.map(option => ({
-                              ...option,
-                              onClick: async () => {
-                                await onOpenLink(option.value, token.key);
-                              }
-                            }))}
-                            trigger={<></>}
-                          />
-                      </Button.Group>
-                      {' '}
-                      <Popup
-                        trigger={
-                          <Button
-                              size={'small'}
-                              positive
-                              onClick={async () => {
-                                let key = "sk-" + token.key;
-                                if (await copy(key)) {
-                                  showSuccess('已复制到剪贴板！');
-                                } else {
-                                  showWarning('无法复制到剪贴板，请手动复制，已将令牌填入搜索框。');
-                                  setSearchKeyword(key);
-                                }
-                              }}
-                          >
-                            复制
-                          </Button>
-                        }
-                        on={'hover'}
-                        content={"sk-" + token.key}
-                        />
-                      <Popup
-                        trigger={
-                          <Button size='small' negative>
-                            删除
-                          </Button>
-                        }
-                        on='click'
-                        flowing
-                        hoverable
-                      >
-                        <Button
-                          negative
-                          onClick={() => {
-                            manageToken(token.id, 'delete', idx);
-                          }}
-                        >
-                          删除令牌 {token.name}
-                        </Button>
-                      </Popup>
-                      <Button
-                        size={'small'}
-                        onClick={() => {
-                          manageToken(
-                            token.id,
-                            token.status === 1 ? 'disable' : 'enable',
-                            idx
-                          );
-                        }}
-                      >
-                        {token.status === 1 ? '禁用' : '启用'}
-                      </Button>
-                      <Button
-                        size={'small'}
-                        as={Link}
-                        to={'/token/edit/' + token.id}
-                      >
-                        编辑
-                      </Button>
+                        {renderStatus(text)}
                     </div>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
-        </Table.Body>
+                );
+            },
+        },
+        {
+            title: '已用额度',
+            dataIndex: 'used_quota',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        {renderQuota(parseInt(text))}
+                    </div>
+                );
+            },
+        },
+        {
+            title: '剩余额度',
+            dataIndex: 'remain_quota',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        {renderQuota(parseInt(text))}
+                    </div>
+                );
+            },
+        },
+        {
+            title: '创建时间',
+            dataIndex: 'created_time',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        {renderTimestamp(text)}
+                    </div>
+                );
+            },
+        },
+        {
+            title: '过期时间',
+            dataIndex: 'accessed_time',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        {renderTimestamp(text)}
+                    </div>
+                );
+            },
+        },
+        {
+            title: '',
+            dataIndex: 'operate',
+            render: (text, record, index) => (
+                <div>
+                    <Popover
+                        content={
+                            'sk-' + record.key
+                        }
+                        style={{padding: 20}}
+                        position="top"
+                    >
+                        <Button theme='light' type='tertiary' style={{marginRight: 1}}>查看</Button>
+                    </Popover>
+                    <Button theme='light' type='secondary' style={{marginRight: 1}}
+                            onClick={async (text) => {
+                                await copyText('sk-' + record.key)
+                            }}
+                    >复制</Button>
+                    <Popconfirm
+                        title="确定是否要删除此令牌？"
+                        content="此修改将不可逆"
+                        okType={'danger'}
+                        position={'left'}
+                        onConfirm={() => {
+                            manageToken(record.id, 'delete', record).then(
+                                () => {
+                                    removeRecord(record.key);
+                                }
+                            )
+                        }}
+                    >
+                        <Button theme='light' type='danger' style={{marginRight: 1}}>删除</Button>
+                    </Popconfirm>
+                    {
+                        record.status === 1 ?
+                            <Button theme='light' type='warning' style={{marginRight: 1}} onClick={
+                                async () => {
+                                    manageToken(
+                                        record.id,
+                                        'disable',
+                                        record
+                                    )
+                                }
+                            }>禁用</Button> :
+                            <Button theme='light' type='secondary' style={{marginRight: 1}} onClick={
+                                async () => {
+                                    manageToken(
+                                        record.id,
+                                        'enable',
+                                        record
+                                    );
+                                }
+                            }>启用</Button>
+                    }
+                    <Button theme='light' type='tertiary' style={{marginRight: 1}}>编辑</Button>
+                </div>
+            ),
+        },
+    ];
 
-        <Table.Footer>
-          <Table.Row>
-            <Table.HeaderCell colSpan='7'>
-              <Button size='small' as={Link} to='/token/add' loading={loading}>
-                添加新的令牌
-              </Button>
-              <Button size='small' onClick={refresh} loading={loading}>刷新</Button>
-              <Pagination
-                floated='right'
-                activePage={activePage}
-                onPageChange={onPaginationChange}
-                size='small'
-                siblingRange={1}
-                totalPages={
-                  Math.ceil(tokens.length / ITEMS_PER_PAGE) +
-                  (tokens.length % ITEMS_PER_PAGE === 0 ? 1 : 0)
+    const [tokens, setTokens] = useState([]);
+    const [selectedKeys, setSelectedKeys] = useState([]);
+    const [tokenCount, setTokenCount] = useState(ITEMS_PER_PAGE);
+    const [loading, setLoading] = useState(true);
+    const [activePage, setActivePage] = useState(1);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [searching, setSearching] = useState(false);
+    const [showTopUpModal, setShowTopUpModal] = useState(false);
+    const [targetTokenIdx, setTargetTokenIdx] = useState(0);
+
+    const setTokensFormat = (tokens) => {
+        setTokens(tokens);
+        if (tokens.length === ITEMS_PER_PAGE) {
+            setTokenCount(tokens.length + ITEMS_PER_PAGE);
+        } else {
+            setTokenCount(tokens.length);
+        }
+    }
+
+    // let pageData = tokens.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+    const loadTokens = async (startIdx) => {
+        setLoading(true);
+        const res = await API.get(`/api/token/?p=${startIdx}`);
+        const {success, message, data} = res.data;
+        if (success) {
+            if (startIdx === 0) {
+                setTokensFormat(data);
+            } else {
+                let newTokens = [...tokens];
+                newTokens.splice(startIdx * ITEMS_PER_PAGE, data.length, ...data);
+                setTokensFormat(newTokens);
+            }
+        } else {
+            showError(message);
+        }
+        setLoading(false);
+    };
+
+    const onPaginationChange = (e, {activePage}) => {
+        (async () => {
+            if (activePage === Math.ceil(tokens.length / ITEMS_PER_PAGE) + 1) {
+                // In this case we have to load more data and then append them.
+                await loadTokens(activePage - 1);
+            }
+            setActivePage(activePage);
+        })();
+    };
+
+    const refresh = async () => {
+        await loadTokens(activePage - 1);
+    };
+
+    const onCopy = async (type, key) => {
+        let status = localStorage.getItem('status');
+        let serverAddress = '';
+        if (status) {
+            status = JSON.parse(status);
+            serverAddress = status.server_address;
+        }
+        if (serverAddress === '') {
+            serverAddress = window.location.origin;
+        }
+        let encodedServerAddress = encodeURIComponent(serverAddress);
+        const nextLink = localStorage.getItem('chat_link');
+        let nextUrl;
+
+        if (nextLink) {
+            nextUrl = nextLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
+        } else {
+            nextUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
+        }
+
+        let url;
+        switch (type) {
+            case 'ama':
+                url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
+                break;
+            case 'opencat':
+                url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
+                break;
+            case 'next':
+                url = nextUrl;
+                break;
+            default:
+                url = `sk-${key}`;
+        }
+        // if (await copy(url)) {
+        //     showSuccess('已复制到剪贴板！');
+        // } else {
+        //     showWarning('无法复制到剪贴板，请手动复制，已将令牌填入搜索框。');
+        //     setSearchKeyword(url);
+        // }
+    };
+
+    const copyText = async (text) => {
+        if (await copy(text)) {
+            showSuccess('已复制到剪贴板！');
+        } else {
+            // setSearchKeyword(text);
+            Modal.error({ title: '无法复制到剪贴板，请手动复制', content: text });
+        }
+    }
+
+    const onOpenLink = async (type, key) => {
+        let status = localStorage.getItem('status');
+        let serverAddress = '';
+        if (status) {
+            status = JSON.parse(status);
+            serverAddress = status.server_address;
+        }
+        if (serverAddress === '') {
+            serverAddress = window.location.origin;
+        }
+        let encodedServerAddress = encodeURIComponent(serverAddress);
+        const chatLink = localStorage.getItem('chat_link');
+        let defaultUrl;
+
+        if (chatLink) {
+            defaultUrl = chatLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
+        } else {
+            defaultUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
+        }
+        let url;
+        switch (type) {
+            case 'ama':
+                url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
+                break;
+
+            case 'opencat':
+                url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
+                break;
+
+            default:
+                url = defaultUrl;
+        }
+
+        window.open(url, '_blank');
+    }
+
+    useEffect(() => {
+        loadTokens(0)
+            .then()
+            .catch((reason) => {
+                showError(reason);
+            });
+    }, []);
+
+    const removeRecord = key => {
+        let newDataSource = [...tokens];
+        if (key != null) {
+            let idx = newDataSource.findIndex(data => data.key === key);
+
+            if (idx > -1) {
+                newDataSource.splice(idx, 1);
+                setTokensFormat(newDataSource);
+            }
+        }
+    };
+
+    const manageToken = async (id, action, record) => {
+        setLoading(true);
+        let data = {id};
+        let res;
+        switch (action) {
+            case 'delete':
+                res = await API.delete(`/api/token/${id}/`);
+                break;
+            case 'enable':
+                data.status = 1;
+                res = await API.put('/api/token/?status_only=true', data);
+                break;
+            case 'disable':
+                data.status = 2;
+                res = await API.put('/api/token/?status_only=true', data);
+                break;
+        }
+        const {success, message} = res.data;
+        if (success) {
+            showSuccess('操作成功完成！');
+            let token = res.data.data;
+            let newTokens = [...tokens];
+            // let realIdx = (activePage - 1) * ITEMS_PER_PAGE + idx;
+            if (action === 'delete') {
+
+            } else {
+                record.status = token.status;
+                // newTokens[realIdx].status = token.status;
+            }
+            setTokensFormat(newTokens);
+        } else {
+            showError(message);
+        }
+        setLoading(false);
+    };
+
+    const searchTokens = async () => {
+        if (searchKeyword === '') {
+            // if keyword is blank, load files instead.
+            await loadTokens(0);
+            setActivePage(1);
+            return;
+        }
+        setSearching(true);
+        const res = await API.get(`/api/token/search?keyword=${searchKeyword}`);
+        const {success, message, data} = res.data;
+        if (success) {
+            setTokensFormat(data);
+            setActivePage(1);
+        } else {
+            showError(message);
+        }
+        setSearching(false);
+    };
+
+    const handleKeywordChange = async (value) => {
+        setSearchKeyword(value.trim());
+    };
+
+    const sortToken = (key) => {
+        if (tokens.length === 0) return;
+        setLoading(true);
+        let sortedTokens = [...tokens];
+        sortedTokens.sort((a, b) => {
+            return ('' + a[key]).localeCompare(b[key]);
+        });
+        if (sortedTokens[0].id === tokens[0].id) {
+            sortedTokens.reverse();
+        }
+        setTokens(sortedTokens);
+        setLoading(false);
+    };
+
+
+    const handlePageChange = page => {
+        setActivePage(page);
+        if (page === Math.ceil(tokens.length / ITEMS_PER_PAGE) + 1) {
+            // In this case we have to load more data and then append them.
+            loadTokens(page - 1).then(r => {
+            });
+        }
+    };
+
+    const rowSelection = {
+        onSelect: (record, selected) => {
+            // console.log(`select row: ${selected}`, record);
+        },
+        onSelectAll: (selected, selectedRows) => {
+            // console.log(`select all rows: ${selected}`, selectedRows);
+        },
+        onChange: (selectedRowKeys, selectedRows) => {
+            // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+            setSelectedKeys(selectedRows);
+        },
+    };
+
+    return (
+        <>
+            <Form layout='horizontal' style={{marginTop: 10}} labelPosition={'left'}>
+                <Form.Input
+                    field="keyword"
+                    label='搜索关键字'
+                    placeholder='令牌名称'
+                    value={searchKeyword}
+                    loading={searching}
+                    onChange={handleKeywordChange}
+                />
+                <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
+                        onClick={searchTokens} style={{marginRight: 8}}>查询</Button>
+            </Form>
+
+            <Table style={{marginTop: 20}} columns={columns} dataSource={tokens} pagination={{
+                currentPage: activePage,
+                pageSize: ITEMS_PER_PAGE,
+                total: tokenCount,
+                pageSizeOpts: [10, 20, 50, 100],
+                onPageChange: handlePageChange,
+            }} loading={loading} rowSelection={rowSelection}>
+            </Table>
+            <Button theme='light' type='primary' style={{marginRight: 8}}>添加令牌</Button>
+            <Button label='复制所选令牌' type="warning" onClick={
+                async () => {
+                    let keys = "";
+                    for (let i = 0; i < selectedKeys.length; i++) {
+                        keys += selectedKeys[i].name + "    sk-" + selectedKeys[i].key + "\n";
+                    }
+                    await copyText(keys);
                 }
-              />
-            </Table.HeaderCell>
-          </Table.Row>
-        </Table.Footer>
-      </Table>
-    </>
-  );
+            }>复制所选令牌到剪贴板</Button>
+        </>
+    );
 };
 
 export default TokensTable;

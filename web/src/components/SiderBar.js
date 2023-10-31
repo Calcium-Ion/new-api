@@ -34,7 +34,7 @@ let headerButtons = [
         itemKey: 'channel',
         to: '/channel',
         icon: <IconLayers/>,
-        admin: true
+        className: isAdmin()?'semi-navigation-item-normal':'tableHiddle',
     },
 
     {
@@ -48,7 +48,7 @@ let headerButtons = [
         itemKey: 'redemption',
         to: '/redemption',
         icon: <IconGift/>,
-        admin: true
+        className: isAdmin()?'semi-navigation-item-normal':'tableHiddle',
     },
     {
         text: '钱包',
@@ -61,7 +61,7 @@ let headerButtons = [
         itemKey: 'user',
         to: '/user',
         icon: <IconUser/>,
-        admin: true
+        className: isAdmin()?'semi-navigation-item-normal':'tableHiddle',
     },
     {
         text: '日志',

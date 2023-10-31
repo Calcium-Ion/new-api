@@ -1,6 +1,7 @@
-import { toast } from 'react-toastify';
+import { Toast } from '@douyinfe/semi-ui';
 import { toastConstants } from '../constants';
 import React from 'react';
+import {toast} from "react-toastify";
 
 const HTMLToastContent = ({ htmlContent }) => {
   return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
@@ -81,42 +82,42 @@ export function showError(error) {
           window.location.href = '/login?expired=true';
           break;
         case 429:
-          toast.error('错误：请求次数过多，请稍后再试！', showErrorOptions);
+          Toast.error('错误：请求次数过多，请稍后再试！');
           break;
         case 500:
-          toast.error('错误：服务器内部错误，请联系管理员！', showErrorOptions);
+          Toast.error('错误：服务器内部错误，请联系管理员！');
           break;
         case 405:
-          toast.info('本站仅作演示之用，无服务端！');
+          Toast.info('本站仅作演示之用，无服务端！');
           break;
         default:
-          toast.error('错误：' + error.message, showErrorOptions);
+          Toast.error('错误：' + error.message);
       }
       return;
     }
-    toast.error('错误：' + error.message, showErrorOptions);
+    Toast.error('错误：' + error.message);
   } else {
-    toast.error('错误：' + error, showErrorOptions);
+    Toast.error('错误：' + error);
   }
 }
 
 export function showWarning(message) {
-  toast.warn(message, showWarningOptions);
+  Toast.warning(message);
 }
 
 export function showSuccess(message) {
-  toast.success(message, showSuccessOptions);
+  Toast.success(message);
 }
 
 export function showInfo(message) {
-  toast.info(message, showInfoOptions);
+  Toast.info(message);
 }
 
 export function showNotice(message, isHTML = false) {
   if (isHTML) {
     toast(<HTMLToastContent htmlContent={message} />, showNoticeOptions);
   } else {
-    toast.info(message, showNoticeOptions);
+    Toast.info(message);
   }
 }
 
