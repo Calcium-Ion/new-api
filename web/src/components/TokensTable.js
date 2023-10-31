@@ -5,6 +5,7 @@ import {API, copy, isAdmin, showError, showSuccess, showWarning, timestamp2strin
 import {ITEMS_PER_PAGE} from '../constants';
 import {renderQuota, stringToColor} from '../helpers/render';
 import {Avatar, Tag, Table, Button, Popover, Form, Modal, Popconfirm} from "@douyinfe/semi-ui";
+import EditToken from "../pages/Token/EditToken";
 
 const {Column} = Table;
 
@@ -77,7 +78,7 @@ const TokensTable = () => {
             render: (text, record, index) => {
                 return (
                     <div>
-                        {renderQuota(parseInt(text))}
+                        {record.unlimited_quota ? <Tag size={'large'} color={'white'}>无限制</Tag> : <Tag size={'large'} color={'light-blue'}>{renderQuota(parseInt(text))}</Tag>}
                     </div>
                 );
             },
@@ -95,11 +96,11 @@ const TokensTable = () => {
         },
         {
             title: '过期时间',
-            dataIndex: 'accessed_time',
+            dataIndex: 'expired_time',
             render: (text, record, index) => {
                 return (
                     <div>
-                        {renderTimestamp(text)}
+                        {record.expired_time === -1 ? "永不过期" : renderTimestamp(text)}
                     </div>
                 );
             },
@@ -159,12 +160,18 @@ const TokensTable = () => {
                                 }
                             }>启用</Button>
                     }
-                    <Button theme='light' type='tertiary' style={{marginRight: 1}}>编辑</Button>
+                    <Button theme='light' type='tertiary' style={{marginRight: 1}} onClick={
+                        () => {
+                            setEditingToken(record);
+                            setShowEdit(true);
+                        }
+                    }>编辑</Button>
                 </div>
             ),
         },
     ];
 
+    const [showEdit, setShowEdit] = useState(false);
     const [tokens, setTokens] = useState([]);
     const [selectedKeys, setSelectedKeys] = useState([]);
     const [tokenCount, setTokenCount] = useState(ITEMS_PER_PAGE);
@@ -174,6 +181,16 @@ const TokensTable = () => {
     const [searching, setSearching] = useState(false);
     const [showTopUpModal, setShowTopUpModal] = useState(false);
     const [targetTokenIdx, setTargetTokenIdx] = useState(0);
+    const [editingToken, setEditingToken] = useState({
+        id: undefined,
+    });
+
+    const closeEdit = () => {
+        setShowEdit(false);
+        setEditingToken({
+            id: undefined,
+        });
+    }
 
     const setTokensFormat = (tokens) => {
         setTokens(tokens);
@@ -409,19 +426,17 @@ const TokensTable = () => {
 
     const rowSelection = {
         onSelect: (record, selected) => {
-            // console.log(`select row: ${selected}`, record);
         },
         onSelectAll: (selected, selectedRows) => {
-            // console.log(`select all rows: ${selected}`, selectedRows);
         },
         onChange: (selectedRowKeys, selectedRows) => {
-            // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
             setSelectedKeys(selectedRows);
         },
     };
 
     return (
         <>
+            <EditToken refresh={refresh} editingToken={editingToken} visiable={showEdit} handleClose={closeEdit}></EditToken>
             <Form layout='horizontal' style={{marginTop: 10}} labelPosition={'left'}>
                 <Form.Input
                     field="keyword"
@@ -443,9 +458,20 @@ const TokensTable = () => {
                 onPageChange: handlePageChange,
             }} loading={loading} rowSelection={rowSelection}>
             </Table>
-            <Button theme='light' type='primary' style={{marginRight: 8}}>添加令牌</Button>
+            <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
+                () => {
+                    setEditingToken({
+                        id: undefined,
+                    });
+                    setShowEdit(true);
+                }
+            }>添加令牌</Button>
             <Button label='复制所选令牌' type="warning" onClick={
                 async () => {
+                    if (selectedKeys.length === 0) {
+                        showError('请至少选择一个令牌！');
+                        return;
+                    }
                     let keys = "";
                     for (let i = 0; i < selectedKeys.length; i++) {
                         keys += selectedKeys[i].name + "    sk-" + selectedKeys[i].key + "\n";
