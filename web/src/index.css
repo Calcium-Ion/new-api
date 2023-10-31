@@ -10,6 +10,14 @@ body {
     background-color: var( --semi-color-bg-0) !important;
 }
 
+.tableShow {
+    display: revert;
+}
+
+.tableHiddle {
+    display: none !important;
+}
+
 body::-webkit-scrollbar {
     display: none;
 }

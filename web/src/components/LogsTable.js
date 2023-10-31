@@ -20,6 +20,7 @@ import {
 } from '@douyinfe/semi-icons';
 
 const {Sider, Content, Header} = Layout;
+const { Column } = Table;
 
 
 function renderTimestamp(timestamp) {
@@ -45,7 +46,7 @@ function renderType(type) {
         case 1:
             return <Tag color='cyan' size='large'> 充值 </Tag>;
         case 2:
-            return <Tag color='yellow' size='large'> 消费 </Tag>;
+            return <Tag color='lime' size='large'> 消费 </Tag>;
         case 3:
             return <Tag color='orange' size='large'> 管理 </Tag>;
         case 4:
@@ -54,7 +55,6 @@ function renderType(type) {
             return <Tag color='black' size='large'> 未知 </Tag>;
     }
 }
-
 
 const LogsTable = () => {
     const columns = [
@@ -65,10 +65,11 @@ const LogsTable = () => {
         {
             title: '渠道',
             dataIndex: 'channel',
+            className: isAdmin()?'tableShow':'tableHiddle',
             render: (text, record, index) => {
                 return (
                     isAdminUser ?
-                        logType === 0 || logType === 2 ?
+                        record.type === 0 || record.type === 2 ?
                             <div>
                                 {<Tag color={colors[parseInt(text) % 10]} size='large'> {text} </Tag>}
                             </div>
@@ -82,6 +83,7 @@ const LogsTable = () => {
         {
             title: '用户',
             dataIndex: 'username',
+            className: isAdmin()?'tableShow':'tableHiddle',
             render: (text, record, index) => {
                 return (
                     isAdminUser ?
@@ -101,7 +103,7 @@ const LogsTable = () => {
             dataIndex: 'token_name',
             render: (text, record, index) => {
                 return (
-                    logType === 0 || logType === 2 ?
+                    record.type === 0 || record.type === 2 ?
                         <div>
                             {<Tag color='grey' size='large'> {text} </Tag>}
                         </div>
@@ -126,7 +128,7 @@ const LogsTable = () => {
             dataIndex: 'model_name',
             render: (text, record, index) => {
                 return (
-                    logType === 0 || logType === 2 ?
+                    record.type === 0 || record.type === 2 ?
                         <div>
                             {<Tag color={stringToColor(text)} size='large'> {text} </Tag>}
                         </div>
@@ -140,7 +142,7 @@ const LogsTable = () => {
             dataIndex: 'prompt_tokens',
             render: (text, record, index) => {
                 return (
-                    logType === 0 || logType === 2 ?
+                    record.type === 0 || record.type === 2 ?
                         <div>
                             {<span> {text} </span>}
                         </div>
@@ -154,7 +156,7 @@ const LogsTable = () => {
             dataIndex: 'completion_tokens',
             render: (text, record, index) => {
                 return (
-                    logType === 0 || logType === 2 ?
+                    parseInt(text) > 0 && (record.type === 0 || record.type === 2) ?
                         <div>
                             {<span> {text} </span>}
                         </div>
@@ -168,7 +170,7 @@ const LogsTable = () => {
             dataIndex: 'quota',
             render: (text, record, index) => {
                 return (
-                    logType === 0 || logType === 2 ?
+                    record.type === 0 || record.type === 2 ?
                         <div>
                             {
                                 renderQuota(text, 6)
