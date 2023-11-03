@@ -112,6 +112,7 @@ const EditToken = (props) => {
     return (
         <>
             <SideSheet
+                placement={isEdit ? 'right' : 'left'}
                 title={<Title level={3}>{isEdit ? '更新令牌信息' : '创建新的令牌'}</Title>}
                 headerStyle={{borderBottom: '1px solid var(--semi-color-border)'}}
                 bodyStyle={{borderBottom: '1px solid var(--semi-color-border)'}}

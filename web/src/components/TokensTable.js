@@ -187,21 +187,21 @@ const TokensTable = () => {
 
     const closeEdit = () => {
         setShowEdit(false);
-        setEditingToken({
-            id: undefined,
-        });
+        // setEditingToken({
+        //     id: undefined,
+        // });
     }
 
     const setTokensFormat = (tokens) => {
         setTokens(tokens);
-        if (tokens.length === ITEMS_PER_PAGE) {
+        if (tokens.length >= ITEMS_PER_PAGE) {
             setTokenCount(tokens.length + ITEMS_PER_PAGE);
         } else {
             setTokenCount(tokens.length);
         }
     }
 
-    // let pageData = tokens.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+    let pageData = tokens.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
     const loadTokens = async (startIdx) => {
         setLoading(true);
         const res = await API.get(`/api/token/?p=${startIdx}`);
@@ -450,11 +450,12 @@ const TokensTable = () => {
                         onClick={searchTokens} style={{marginRight: 8}}>查询</Button>
             </Form>
 
-            <Table style={{marginTop: 20}} columns={columns} dataSource={tokens} pagination={{
+            <Table style={{marginTop: 20}} columns={columns} dataSource={pageData} pagination={{
                 currentPage: activePage,
                 pageSize: ITEMS_PER_PAGE,
                 total: tokenCount,
-                pageSizeOpts: [10, 20, 50, 100],
+                showSizeChanger: true,
+                pageSizeOptions: [10, 20, 50, 100],
                 onPageChange: handlePageChange,
             }} loading={loading} rowSelection={rowSelection}>
             </Table>

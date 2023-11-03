@@ -22,7 +22,6 @@ root.render(
             <UserProvider>
                 <BrowserRouter>
                     <Layout>
-
                         <Sider>
                             <SiderBar/>
                         </Sider>
@@ -37,11 +36,12 @@ root.render(
                             >
                                 <App/>
                             </Content>
-                            <Footer></Footer>
+                            {/*<Layout.Footer>*/}
+                            {/*    <Footer></Footer>*/}
+                            {/*</Layout.Footer>*/}
                         </Layout>
+                        <ToastContainer/>
                     </Layout>
-                    <ToastContainer/>
-                    {/*<Footer />*/}
                 </BrowserRouter>
             </UserProvider>
         </StatusProvider>

@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Confirm, Form, Grid, Header, Segment, Statistic} from 'semantic-ui-react';
-import {API, showError, showInfo, showSuccess} from '../../helpers';
+import {Button, Card, Confirm, Form, Grid, Header, Segment, Statistic} from 'semantic-ui-react';
+import {API, isMobile, showError, showInfo, showSuccess} from '../../helpers';
 import {renderNumber, renderQuota} from '../../helpers/render';
+import {Col, Layout, Row, Typography} from "@douyinfe/semi-ui";
 
 const TopUp = () => {
     const [redemptionCode, setRedemptionCode] = useState('');
@@ -162,95 +163,101 @@ const TopUp = () => {
 
     return (
         <div>
-            <Segment>
-                <Confirm
-                    open={open}
-                    content={'充值数量：' + topUpCount + '，充值金额：' + renderAmount() + '，是否确认充值？'}
-                    cancelButton='取消充值'
-                    confirmButton="确定"
-                    onCancel={handleCancel}
-                    onConfirm={onlineTopUp}
-                />
-                <Header as='h3'>充值额度</Header>
-                <Grid columns={2} stackable>
-                    <Grid.Column>
-                        <Form>
-                            <Form.Input
-                                placeholder='兑换码'
-                                name='redemptionCode'
-                                value={redemptionCode}
-                                onChange={(e) => {
-                                    setRedemptionCode(e.target.value);
-                                }}
+            <Layout>
+                <Layout.Header>
+                    <h3>我的钱包</h3>
+                </Layout.Header>
+                <Layout.Content>
+                    <div style={{marginTop: 20, paddingLeft: isMobile()?0:200, paddingRight: isMobile()?0:200}}>
+                        <Card
+                            style={{width: '100%', padding: '20px'}}
+                        >
+                            <Confirm
+                                open={open}
+                                content={'充值数量：' + topUpCount + '，充值金额：' + renderAmount() + '，是否确认充值？'}
+                                cancelButton='取消充值'
+                                confirmButton="确定"
+                                onCancel={handleCancel}
+                                onConfirm={onlineTopUp}
                             />
-                            <Button color='green' onClick={openTopUpLink}>
-                              获取兑换码
-                            </Button>
-                            <Button color='yellow' onClick={topUp} disabled={isSubmitting}>
-                                {isSubmitting ? '兑换中...' : '兑换'}
-                            </Button>
-                        </Form>
-                    </Grid.Column>
-                    <Grid.Column>
-                        <Statistic.Group widths='one'>
-                            <Statistic>
-                                <Statistic.Value>{renderQuota(userQuota)}</Statistic.Value>
-                                <Statistic.Label>剩余额度</Statistic.Label>
-                            </Statistic>
-                        </Statistic.Group>
-                    </Grid.Column>
-                </Grid>
-            </Segment>
-            <Segment>
-                <Header as='h3'>在线充值，最低1</Header>
-                <Grid columns={2} stackable>
-                    <Grid.Column>
-                        <Form>
-                            <Form.Input
-                                placeholder='充值金额，最低1'
-                                name='redemptionCount'
-                                type={'number'}
-                                value={topUpCount}
-                                autoComplete={'off'}
-                                onChange={async (e) => {
-                                    setTopUpCount(e.target.value);
-                                    await getAmount(e.target.value);
-                                }}
-                            />
-                            {/*<Form.Input*/}
-                            {/*    placeholder='充值码，如果你没有充值码，可不填写'*/}
-                            {/*    name='redemptionCount'*/}
-                            {/*    value={topUpCode}*/}
-                            {/*    onChange={(e) => {*/}
-                            {/*        setTopUpCode(e.target.value);*/}
-                            {/*    }}*/}
-                            {/*/>*/}
-                            <Button color='blue' onClick={
-                                async () => {
-                                    preTopUp('zfb')
-                                }
-                            }>
-                                支付宝
-                            </Button>
-                            <Button color='green' onClick={
-                                async () => {
-                                    preTopUp('wx')
-                                }
-                            }>
-                                微信
-                            </Button>
-                        </Form>
-                    </Grid.Column>
-                    <Grid.Column>
-                        <Statistic.Group widths='one'>
-                            <Statistic>
-                                <Statistic.Value>{renderAmount()}</Statistic.Value>
-                                <Statistic.Label>支付金额</Statistic.Label>
-                            </Statistic>
-                        </Statistic.Group>
-                    </Grid.Column>
-                </Grid>
-            </Segment>
+                            <h3>兑换</h3>
+                            <Grid columns={2} stackable>
+                                <Grid.Column>
+                                    <Form>
+                                        <Form.Input
+                                            placeholder='兑换码'
+                                            name='redemptionCode'
+                                            value={redemptionCode}
+                                            onChange={(e) => {
+                                                setRedemptionCode(e.target.value);
+                                            }}
+                                        />
+                                        <Button color='green' onClick={openTopUpLink}>
+                                            获取兑换码
+                                        </Button>
+                                        <Button color='yellow' onClick={topUp} disabled={isSubmitting}>
+                                            {isSubmitting ? '兑换中...' : '兑换'}
+                                        </Button>
+                                    </Form>
+                                </Grid.Column>
+                                <Grid.Column>
+                                    <Statistic.Group widths='one'>
+                                        <Statistic>
+                                            <Statistic.Value>{renderQuota(userQuota)}</Statistic.Value>
+                                            <Statistic.Label>剩余额度</Statistic.Label>
+                                        </Statistic>
+                                    </Statistic.Group>
+                                </Grid.Column>
+                            </Grid>
+                        </Card>
+                        <Card
+                            style={{width: '100%', padding: '20px'}}
+                        >
+                            <Header as='h3'>在线充值，最低1</Header>
+                            <Grid columns={2} stackable>
+                                <Grid.Column>
+                                    <Form>
+                                        <Form.Input
+                                            placeholder='充值金额，最低1'
+                                            name='redemptionCount'
+                                            type={'number'}
+                                            value={topUpCount}
+                                            autoComplete={'off'}
+                                            onChange={async (e) => {
+                                                setTopUpCount(e.target.value);
+                                                await getAmount(e.target.value);
+                                            }}
+                                        />
+                                        <Button color='blue' onClick={
+                                            async () => {
+                                                preTopUp('zfb')
+                                            }
+                                        }>
+                                            支付宝
+                                        </Button>
+                                        <Button color='green' onClick={
+                                            async () => {
+                                                preTopUp('wx')
+                                            }
+                                        }>
+                                            微信
+                                        </Button>
+                                    </Form>
+                                </Grid.Column>
+                                <Grid.Column>
+                                    <Statistic.Group widths='one'>
+                                        <Statistic>
+                                            <Statistic.Value>{renderAmount()}</Statistic.Value>
+                                            <Statistic.Label>支付金额</Statistic.Label>
+                                        </Statistic>
+                                    </Statistic.Group>
+                                </Grid.Column>
+                            </Grid>
+                        </Card>
+                    </div>
+
+                </Layout.Content>
+            </Layout>
         </div>
 
     );

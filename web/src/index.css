@@ -8,6 +8,15 @@ body {
     scrollbar-width: none;
     color: var(--semi-color-text-0) !important;
     background-color: var( --semi-color-bg-0) !important;
+    height: 100%;
+}
+
+#root {
+    height: 100%;
+}
+
+.semi-layout {
+    height: 100%;
 }
 
 .tableShow {
@@ -40,7 +49,7 @@ code {
     /*display: flex;*/
     /*flex-direction: column;*/
     /*width: 100%;*/
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
 }
 

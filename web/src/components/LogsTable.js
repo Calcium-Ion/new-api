@@ -71,7 +71,7 @@ const LogsTable = () => {
                     isAdminUser ?
                         record.type === 0 || record.type === 2 ?
                             <div>
-                                {<Tag color={stringToColor(text)} size='large'> {text} </Tag>}
+                                {<Tag color={colors[parseInt(text) % colors.length]} size='large'> {text} </Tag>}
                             </div>
                             :
                             <></>
