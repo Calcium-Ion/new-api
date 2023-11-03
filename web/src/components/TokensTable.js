@@ -171,10 +171,11 @@ const TokensTable = () => {
         },
     ];
 
+    const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
     const [showEdit, setShowEdit] = useState(false);
     const [tokens, setTokens] = useState([]);
     const [selectedKeys, setSelectedKeys] = useState([]);
-    const [tokenCount, setTokenCount] = useState(ITEMS_PER_PAGE);
+    const [tokenCount, setTokenCount] = useState(pageSize);
     const [loading, setLoading] = useState(true);
     const [activePage, setActivePage] = useState(1);
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -194,24 +195,24 @@ const TokensTable = () => {
 
     const setTokensFormat = (tokens) => {
         setTokens(tokens);
-        if (tokens.length >= ITEMS_PER_PAGE) {
-            setTokenCount(tokens.length + ITEMS_PER_PAGE);
+        if (tokens.length >= pageSize) {
+            setTokenCount(tokens.length + pageSize);
         } else {
             setTokenCount(tokens.length);
         }
     }
 
-    let pageData = tokens.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+    let pageData = tokens.slice((activePage - 1) * pageSize, activePage * pageSize);
     const loadTokens = async (startIdx) => {
         setLoading(true);
-        const res = await API.get(`/api/token/?p=${startIdx}`);
+        const res = await API.get(`/api/token/?p=${startIdx}&size=${pageSize}`);
         const {success, message, data} = res.data;
         if (success) {
             if (startIdx === 0) {
                 setTokensFormat(data);
             } else {
                 let newTokens = [...tokens];
-                newTokens.splice(startIdx * ITEMS_PER_PAGE, data.length, ...data);
+                newTokens.splice(startIdx * pageSize, data.length, ...data);
                 setTokensFormat(newTokens);
             }
         } else {
@@ -222,7 +223,7 @@ const TokensTable = () => {
 
     const onPaginationChange = (e, {activePage}) => {
         (async () => {
-            if (activePage === Math.ceil(tokens.length / ITEMS_PER_PAGE) + 1) {
+            if (activePage === Math.ceil(tokens.length / pageSize) + 1) {
                 // In this case we have to load more data and then append them.
                 await loadTokens(activePage - 1);
             }
@@ -327,7 +328,7 @@ const TokensTable = () => {
             .catch((reason) => {
                 showError(reason);
             });
-    }, []);
+    }, [pageSize]);
 
     const removeRecord = key => {
         let newDataSource = [...tokens];
@@ -417,7 +418,7 @@ const TokensTable = () => {
 
     const handlePageChange = page => {
         setActivePage(page);
-        if (page === Math.ceil(tokens.length / ITEMS_PER_PAGE) + 1) {
+        if (page === Math.ceil(tokens.length / pageSize) + 1) {
             // In this case we have to load more data and then append them.
             loadTokens(page - 1).then(r => {
             });
@@ -452,10 +453,14 @@ const TokensTable = () => {
 
             <Table style={{marginTop: 20}} columns={columns} dataSource={pageData} pagination={{
                 currentPage: activePage,
-                pageSize: ITEMS_PER_PAGE,
+                pageSize: pageSize,
                 total: tokenCount,
                 showSizeChanger: true,
                 pageSizeOptions: [10, 20, 50, 100],
+                onPageSizeChange: (size) => {
+                    setPageSize(size);
+                    setActivePage(1);
+                },
                 onPageChange: handlePageChange,
             }} loading={loading} rowSelection={rowSelection}>
             </Table>

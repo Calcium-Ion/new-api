@@ -11,10 +11,16 @@ import (
 func GetAllTokens(c *gin.Context) {
 	userId := c.GetInt("id")
 	p, _ := strconv.Atoi(c.Query("p"))
+	size, _ := strconv.Atoi(c.Query("size"))
 	if p < 0 {
 		p = 0
 	}
-	tokens, err := model.GetAllUserTokens(userId, p*common.ItemsPerPage, common.ItemsPerPage)
+	if size <= 0 {
+		size = common.ItemsPerPage
+	} else if size > 100 {
+		size = 100
+	}
+	tokens, err := model.GetAllUserTokens(userId, p*size, size)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
