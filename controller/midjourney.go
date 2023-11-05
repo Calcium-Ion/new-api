@@ -2,14 +2,17 @@ package controller
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
 	"log"
 	"net/http"
 	"one-api/common"
 	"one-api/model"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -25,7 +28,9 @@ func UpdateMidjourneyTask() {
 		time.Sleep(time.Duration(15) * time.Second)
 		tasks := model.GetAllUnFinishTasks()
 		if len(tasks) != 0 {
+			log.Printf("检测到未完成的任务数有: %v", len(tasks))
 			for _, task := range tasks {
+				log.Printf("未完成的任务信息: %v", task)
 				midjourneyChannel, err := model.GetChannelById(task.ChannelId, true)
 				if err != nil {
 					log.Printf("UpdateMidjourneyTask: %v", err)
@@ -39,6 +44,7 @@ func UpdateMidjourneyTask() {
 					continue
 				}
 				requestUrl := fmt.Sprintf("%s/mj/task/%s/fetch", *midjourneyChannel.BaseURL, task.MjId)
+				log.Printf("requestUrl: %s", requestUrl)
 
 				req, err := http.NewRequest("GET", requestUrl, bytes.NewBuffer([]byte("")))
 				if err != nil {
@@ -46,7 +52,16 @@ func UpdateMidjourneyTask() {
 					continue
 				}
 
+				// 设置超时时间
+				timeout := time.Second * 5
+				ctx, cancel := context.WithTimeout(context.Background(), timeout)
+				defer cancel()
+
+				// 使用带有超时的 context 创建新的请求
+				req = req.WithContext(ctx)
+
 				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Authorization", "Bearer midjourney-proxy")
 				req.Header.Set("mj-api-secret", midjourneyChannel.Key)
 				resp, err := httpClient.Do(req)
 				if err != nil {
@@ -54,11 +69,37 @@ func UpdateMidjourneyTask() {
 					continue
 				}
 				defer resp.Body.Close()
+				responseBody, err := io.ReadAll(resp.Body)
+				log.Printf("responseBody: %s", string(responseBody))
 				var responseItem Midjourney
-				err = json.NewDecoder(resp.Body).Decode(&responseItem)
+				// err = json.NewDecoder(resp.Body).Decode(&responseItem)
+				err = json.Unmarshal(responseBody, &responseItem)
 				if err != nil {
-					log.Printf("UpdateMidjourneyTask error: %v", err)
-					continue
+					if strings.Contains(err.Error(), "cannot unmarshal number into Go struct field Midjourney.status of type string") {
+						var responseWithoutStatus MidjourneyWithoutStatus
+						var responseStatus MidjourneyStatus
+						err1 := json.Unmarshal(responseBody, &responseWithoutStatus)
+						err2 := json.Unmarshal(responseBody, &responseStatus)
+						if err1 == nil && err2 == nil {
+							jsonData, err3 := json.Marshal(responseWithoutStatus)
+							if err3 != nil {
+								log.Fatalf("UpdateMidjourneyTask error1: %v", err3)
+								continue
+							}
+							err4 := json.Unmarshal(jsonData, &responseStatus)
+							if err4 != nil {
+								log.Fatalf("UpdateMidjourneyTask error2: %v", err4)
+								continue
+							}
+							responseItem.Status = strconv.Itoa(responseStatus.Status)
+						} else {
+							log.Printf("UpdateMidjourneyTask error3: %v", err)
+							continue
+						}
+					} else {
+						log.Printf("UpdateMidjourneyTask error4: %v", err)
+						continue
+					}
 				}
 				task.Code = 1
 				task.Progress = responseItem.Progress
@@ -94,7 +135,7 @@ func UpdateMidjourneyTask() {
 
 				err = task.Update()
 				if err != nil {
-					log.Printf("UpdateMidjourneyTask error: %v", err)
+					log.Printf("UpdateMidjourneyTask error5: %v", err)
 				}
 				log.Printf("UpdateMidjourneyTask success: %v", task)
 			}

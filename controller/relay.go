@@ -26,6 +26,8 @@ const (
 	RelayModeImagesGenerations
 	RelayModeEdits
 	RelayModeMidjourneyImagine
+	RelayModeMidjourneyDescribe
+	RelayModeMidjourneyBlend
 	RelayModeMidjourneyChange
 	RelayModeMidjourneyNotify
 	RelayModeMidjourneyTaskFetch
