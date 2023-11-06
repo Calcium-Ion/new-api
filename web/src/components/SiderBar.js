@@ -179,7 +179,7 @@ const HeaderBar = () => {
                         }}
                         header={{
                             logo: <img src={logo} alt='logo' style={{marginRight: '0.75em'}}/>,
-                            text: 'NekoAPI'
+                            text: 'MiaoKoAPI'
                         }}
                         // footer={{
                         //   text: '© 2021 NekoAPI',
