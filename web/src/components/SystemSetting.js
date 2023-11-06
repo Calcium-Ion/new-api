@@ -155,8 +155,12 @@ const SystemSetting = () => {
         }
         let PayAddress = removeTrailingSlash(inputs.PayAddress);
         await updateOption('PayAddress', PayAddress);
-        await updateOption('EpayId', inputs.EpayId);
-        await updateOption('EpayKey', inputs.EpayKey);
+        if (inputs.EpayId !== '') {
+            await updateOption('EpayId', inputs.EpayId);
+        }
+        if (inputs.EpayKey !== '') {
+            await updateOption('EpayKey', inputs.EpayKey);
+        }
         await updateOption('Price', "" + inputs.Price);
     };
 
