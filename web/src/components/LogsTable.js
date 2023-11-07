@@ -2,9 +2,9 @@ import React, {useEffect, useState} from 'react';
 import {Label} from 'semantic-ui-react';
 import {API, isAdmin, showError, timestamp2string} from '../helpers';
 
-import {Table, Avatar, Tag, Form, Button, Layout, Select} from '@douyinfe/semi-ui';
+import {Table, Avatar, Tag, Form, Button, Layout, Select, Popover, Modal} from '@douyinfe/semi-ui';
 import {ITEMS_PER_PAGE} from '../constants';
-import {renderQuota, stringToColor} from '../helpers/render';
+import {renderNumber, renderQuota, stringToColor} from '../helpers/render';
 import {
     IconAt,
     IconHistogram,
@@ -88,7 +88,8 @@ const LogsTable = () => {
                 return (
                     isAdminUser ?
                         <div>
-                            <Avatar size="small" color={stringToColor(text)} style={{marginRight: 4}}>
+                            <Avatar size="small" color={stringToColor(text)} style={{marginRight: 4}}
+                                    onClick={() => showUserInfo(record.user_id)}>
                                 {typeof text === 'string' && text.slice(0, 1)}
                             </Avatar>
                             {text}
@@ -249,6 +250,28 @@ const LogsTable = () => {
             }
         }
         setShowStat(!showStat);
+    };
+
+    const showUserInfo = async (userId) => {
+        if (!isAdminUser) {
+            return;
+        }
+        const res = await API.get(`/api/user/${userId}`);
+        const {success, message, data} = res.data;
+        if (success) {
+            Modal.info({
+                title: '用户信息',
+                content: <div style={{padding: 12}}>
+                    <p>用户名: {data.username}</p>
+                    <p>余额: {renderQuota(data.quota)}</p>
+                    <p>已用额度：{renderQuota(data.used_quota)}</p>
+                    <p>请求次数：{renderNumber(data.request_count)}</p>
+                </div>,
+                centered: true,
+            })
+        } else {
+            showError(message);
+        }
     };
 
     const setLogsFormat = (logs) => {
