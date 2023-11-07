@@ -457,6 +457,7 @@ const TokensTable = () => {
                 total: tokenCount,
                 showSizeChanger: true,
                 pageSizeOptions: [10, 20, 50, 100],
+                formatPageText: (page) => `第 ${page.currentStart} - ${page.currentEnd} 条，共 ${tokens.length} 条`,
                 onPageSizeChange: (size) => {
                     setPageSize(size);
                     setActivePage(1);

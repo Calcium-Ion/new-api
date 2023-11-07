@@ -57,9 +57,6 @@ const HeaderBar = () => {
         navigate('/login');
     }
 
-    const toggleSidebar = () => {
-        setShowSidebar(!showSidebar);
-    };
 
     const renderButtons = (isMobile) => {
         return headerButtons.map((button) => {
@@ -84,82 +81,6 @@ const HeaderBar = () => {
             );
         });
     };
-
-    // if (isMobile()) {
-    //     return (
-    //         <>
-    //             <Menu
-    //                 borderless
-    //                 size='large'
-    //                 style={
-    //                     showSidebar
-    //                         ? {
-    //                             borderBottom: 'none',
-    //                             marginBottom: '0',
-    //                             borderTop: 'none',
-    //                             height: '51px'
-    //                         }
-    //                         : {borderTop: 'none', height: '52px'}
-    //                 }
-    //             >
-    //                 <Container>
-    //                     <Menu.Item as={Link} to='/'>
-    //                         <img
-    //                             src={logo}
-    //                             alt='logo'
-    //                             style={{marginRight: '0.75em'}}
-    //                         />
-    //                         <div style={{fontSize: '20px'}}>
-    //                             <b>{systemName}</b>
-    //                         </div>
-    //                     </Menu.Item>
-    //                     <Menu.Menu position='right'>
-    //                         <Menu.Item onClick={toggleSidebar}>
-    //                             <Icon name={showSidebar ? 'close' : 'sidebar'}/>
-    //                         </Menu.Item>
-    //                     </Menu.Menu>
-    //                 </Container>
-    //             </Menu>
-    //
-    //             {showSidebar ? (
-    //                 <Segment style={{marginTop: 0, borderTop: '0'}}>
-    //                     <Menu secondary vertical style={{ width: '100%', margin: 0 }}>
-    //                       {renderButtons(true)}
-    //                       <Menu.Item>
-    //                         {userState.user ? (
-    //                           <Button onClick={logout}>注销</Button>
-    //                         ) : (
-    //                           <>
-    //                             <Button
-    //                               onClick={() => {
-    //                                 setShowSidebar(false);
-    //                                 navigate('/login');
-    //                               }}
-    //                             >
-    //                               登录
-    //                             </Button>
-    //                             <Button
-    //                               onClick={() => {
-    //                                 setShowSidebar(false);
-    //                                 navigate('/register');
-    //                               }}
-    //                             >
-    //                               注册
-    //                             </Button>
-    //                           </>
-    //                         )}
-    //                       </Menu.Item>
-    //                     </Menu>
-    //
-    //                 </Segment>
-    //             ) : (
-    //                 <></>
-    //             )}
-    //
-    //
-    //         </>
-    //     );
-    // }
     const switchMode = (model) => {
         const body = document.body;
         if (!model) {
@@ -178,6 +99,8 @@ const HeaderBar = () => {
                         renderWrapper={({itemElement, isSubNav, isInSubNav, props}) => {
                             const routerMap = {
                                 about: "/about",
+                                login: "/login",
+                                register: "/register",
                             };
                             return (
                                 <Link
@@ -190,7 +113,9 @@ const HeaderBar = () => {
                         }}
                         selectedKeys={[]}
                         // items={headerButtons}
-                        onSelect={key => console.log(key)}
+                        onSelect={key => {
+
+                        }}
                         footer={
                             <>
                                 <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
