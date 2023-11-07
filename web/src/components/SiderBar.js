@@ -114,34 +114,6 @@ const HeaderBar = () => {
         navigate('/login');
     }
 
-    const toggleSidebar = () => {
-        setShowSidebar(!showSidebar);
-    };
-
-    const renderButtons = (isMobile) => {
-        return headerButtons.map((button) => {
-            if (button.admin && !isAdmin()) return <></>;
-            if (isMobile) {
-                return (
-                    <Menu.Item
-                        onClick={() => {
-                            navigate(button.to);
-                            setShowSidebar(false);
-                        }}
-                    >
-                        {button.name}
-                    </Menu.Item>
-                );
-            }
-            return (
-                <Menu.Item key={button.name} as={Link} to={button.to}>
-                    <Icon name={button.icon}/>
-                    {button.name}
-                </Menu.Item>
-            );
-        });
-    };
-
     return (
         <>
             <Layout>

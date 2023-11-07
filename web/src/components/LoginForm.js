@@ -163,55 +163,55 @@ const LoginForm = () => {
                                             ) : (
                                                 <></>
                                             )}
-                                            {status.wechat_login ? (
-                                                <Button
-                                                    circular
-                                                    color='green'
-                                                    icon='wechat'
-                                                    onClick={onWeChatLoginClicked}
-                                                />
-                                            ) : (
-                                                <></>
-                                            )}
+                                            {/*{status.wechat_login ? (*/}
+                                            {/*    <Button*/}
+                                            {/*        circular*/}
+                                            {/*        color='green'*/}
+                                            {/*        icon='wechat'*/}
+                                            {/*        onClick={onWeChatLoginClicked}*/}
+                                            {/*    />*/}
+                                            {/*) : (*/}
+                                            {/*    <></>*/}
+                                            {/*)}*/}
                                         </div>
                                     </>
                                 ) : (
                                     <></>
                                 )}
-                                <Modal
-                                    onClose={() => setShowWeChatLoginModal(false)}
-                                    onOpen={() => setShowWeChatLoginModal(true)}
-                                    open={showWeChatLoginModal}
-                                    size={'mini'}
-                                >
-                                    <Modal.Content>
-                                        <Modal.Description>
-                                            <Image src={status.wechat_qrcode} fluid/>
-                                            <div style={{textAlign: 'center'}}>
-                                                <p>
-                                                    微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）
-                                                </p>
-                                            </div>
-                                            <Form size='large'>
-                                                <Form.Input
-                                                    field={'wechat_verification_code'}
-                                                    placeholder='验证码'
-                                                    name='wechat_verification_code'
-                                                    value={inputs.wechat_verification_code}
-                                                    onChange={handleChange}
-                                                />
-                                                <Button
-                                                    color=''
-                                                    fluid
-                                                    size='large'
-                                                    onClick={onSubmitWeChatVerificationCode}
-                                                >
-                                                    登录
-                                                </Button>
-                                            </Form>
-                                        </Modal.Description>
-                                    </Modal.Content>
-                                </Modal>
+                                {/*<Modal*/}
+                                {/*    onClose={() => setShowWeChatLoginModal(false)}*/}
+                                {/*    onOpen={() => setShowWeChatLoginModal(true)}*/}
+                                {/*    open={showWeChatLoginModal}*/}
+                                {/*    size={'mini'}*/}
+                                {/*>*/}
+                                {/*    <Modal.Content>*/}
+                                {/*        <Modal.Description>*/}
+                                {/*            <Image src={status.wechat_qrcode} fluid/>*/}
+                                {/*            <div style={{textAlign: 'center'}}>*/}
+                                {/*                <p>*/}
+                                {/*                    微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）*/}
+                                {/*                </p>*/}
+                                {/*            </div>*/}
+                                {/*            <Form size='large'>*/}
+                                {/*                <Form.Input*/}
+                                {/*                    field={'wechat_verification_code'}*/}
+                                {/*                    placeholder='验证码'*/}
+                                {/*                    name='wechat_verification_code'*/}
+                                {/*                    value={inputs.wechat_verification_code}*/}
+                                {/*                    onChange={handleChange}*/}
+                                {/*                />*/}
+                                {/*                <Button*/}
+                                {/*                    color=''*/}
+                                {/*                    fluid*/}
+                                {/*                    size='large'*/}
+                                {/*                    onClick={onSubmitWeChatVerificationCode}*/}
+                                {/*                >*/}
+                                {/*                    登录*/}
+                                {/*                </Button>*/}
+                                {/*            </Form>*/}
+                                {/*        </Modal.Description>*/}
+                                {/*    </Modal.Content>*/}
+                                {/*</Modal>*/}
                             </Card>
                             {turnstileEnabled ? (
                                 <div style={{display: 'flex', justifyContent: 'center', marginTop: 20}}>

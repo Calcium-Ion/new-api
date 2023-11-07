@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {UserContext} from '../context/User';
 
@@ -45,8 +45,10 @@ const HeaderBar = () => {
     let navigate = useNavigate();
 
     const [showSidebar, setShowSidebar] = useState(false);
+    const [dark, setDark] = useState(false);
     const systemName = getSystemName();
     const logo = getLogo();
+    var themeMode = localStorage.getItem('theme-mode');
 
     async function logout() {
         setShowSidebar(false);
@@ -57,37 +59,22 @@ const HeaderBar = () => {
         navigate('/login');
     }
 
+    useEffect(() => {
+        if (themeMode === 'dark') {
+            switchMode(true);
+        }
+    }, []);
 
-    const renderButtons = (isMobile) => {
-        return headerButtons.map((button) => {
-            if (button.admin && !isAdmin()) return <></>;
-            if (isMobile) {
-                return (
-                    <Menu.Item
-                        onClick={() => {
-                            navigate(button.to);
-                            setShowSidebar(false);
-                        }}
-                    >
-                        {button.name}
-                    </Menu.Item>
-                );
-            }
-            return (
-                <Menu.Item key={button.name} as={Link} to={button.to}>
-                    <Icon name={button.icon}/>
-                    {button.name}
-                </Menu.Item>
-            );
-        });
-    };
     const switchMode = (model) => {
         const body = document.body;
         if (!model) {
             body.removeAttribute('theme-mode');
+            localStorage.setItem('theme-mode', 'light');
         } else {
             body.setAttribute('theme-mode', 'dark');
+            localStorage.setItem('theme-mode', 'dark');
         }
+        setDark(model);
     };
     return (
         <>
@@ -119,7 +106,7 @@ const HeaderBar = () => {
                         footer={
                             <>
                                 <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
-                                <Switch checkedText="🌞" size={'large'} uncheckedText="🌙" onChange={switchMode} />
+                                <Switch checkedText="🌞" size={'large'} checked={dark} uncheckedText="🌙" onChange={switchMode} />
                                 {userState.user ?
                                     <>
                                         <Dropdown

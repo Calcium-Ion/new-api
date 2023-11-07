@@ -1,14 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Card, Confirm, Form, Grid, Header, Segment, Statistic} from 'semantic-ui-react';
+import {Confirm} from 'semantic-ui-react';
 import {API, isMobile, showError, showInfo, showSuccess} from '../../helpers';
 import {renderNumber, renderQuota} from '../../helpers/render';
-import {Col, Layout, Row, Typography} from "@douyinfe/semi-ui";
+import {Col, Layout, Row, Typography, Card, Button, Form, Divider, Space, Modal} from "@douyinfe/semi-ui";
+import Title from "@douyinfe/semi-ui/lib/es/typography/title";
 
 const TopUp = () => {
     const [redemptionCode, setRedemptionCode] = useState('');
     const [topUpCode, setTopUpCode] = useState('');
     const [topUpCount, setTopUpCount] = useState(10);
-    const [amount, setAmount] = useState(0);
+    const [amount, setAmount] = useState(0.0);
     const [topUpLink, setTopUpLink] = useState('');
     const [userQuota, setUserQuota] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,7 +18,7 @@ const TopUp = () => {
 
     const topUp = async () => {
         if (redemptionCode === '') {
-            showInfo('请输入充值码！')
+            showInfo('请输入兑换码！')
             return;
         }
         setIsSubmitting(true);
@@ -27,7 +28,8 @@ const TopUp = () => {
             });
             const {success, message, data} = res.data;
             if (success) {
-                showSuccess('充值成功！');
+                showSuccess('兑换成功！');
+                Modal.success({title: '兑换成功！', content: '成功兑换额度：' + renderQuota(data), centered: true});
                 setUserQuota((quota) => {
                     return quota + data;
                 });
@@ -142,7 +144,7 @@ const TopUp = () => {
                 const {message, data} = res.data;
                 // showInfo(message);
                 if (message === 'success') {
-                    setAmount(parseInt(data));
+                    setAmount(parseFloat(data));
                 } else {
                     showError(data);
                     // setTopUpCount(parseInt(res.data.count));
@@ -168,91 +170,90 @@ const TopUp = () => {
                     <h3>我的钱包</h3>
                 </Layout.Header>
                 <Layout.Content>
-                    <div style={{marginTop: 20, paddingLeft: isMobile()?0:200, paddingRight: isMobile()?0:200}}>
+                    <Modal
+                        title="确定要充值吗"
+                        visible={open}
+                        onOk={onlineTopUp}
+                        onCancel={handleCancel}
+                        maskClosable={false}
+                        size={'small'}
+                        centered={true}
+                    >
+                        <p>充值数量：{topUpCount}</p>
+                        <p>充值金额：{renderAmount()}</p>
+                        <p>是否确认充值？</p>
+                    </Modal>
+                    <div style={{marginTop: 20, display: 'flex', justifyContent: 'center'}}>
                         <Card
-                            style={{width: '100%', padding: '20px'}}
+                            style={{width: '500px', padding: '20px'}}
                         >
-                            <Confirm
-                                open={open}
-                                content={'充值数量：' + topUpCount + '，充值金额：' + renderAmount() + '，是否确认充值？'}
-                                cancelButton='取消充值'
-                                confirmButton="确定"
-                                onCancel={handleCancel}
-                                onConfirm={onlineTopUp}
-                            />
-                            <h3>兑换</h3>
-                            <Grid columns={2} stackable>
-                                <Grid.Column>
-                                    <Form>
-                                        <Form.Input
-                                            placeholder='兑换码'
-                                            name='redemptionCode'
-                                            value={redemptionCode}
-                                            onChange={(e) => {
-                                                setRedemptionCode(e.target.value);
-                                            }}
-                                        />
-                                        <Button color='green' onClick={openTopUpLink}>
-                                            获取兑换码
-                                        </Button>
-                                        <Button color='yellow' onClick={topUp} disabled={isSubmitting}>
+                            <Title level={3} style={{textAlign: 'center'}}>余额 {renderQuota(userQuota)}</Title>
+                            <div style={{marginTop: 20}}>
+                                <Divider>
+                                    兑换余额
+                                </Divider>
+                                <Form>
+                                    <Form.Input
+                                        field={'redemptionCode'}
+                                        label={'兑换码'}
+                                        placeholder='兑换码'
+                                        name='redemptionCode'
+                                        value={redemptionCode}
+                                        onChange={(value) => {
+                                            setRedemptionCode(value);
+                                        }}
+                                    />
+                                    <Space>
+                                        {
+                                            topUpLink ?
+                                                <Button type={'primary'} theme={'solid'} onClick={openTopUpLink}>
+                                                    获取兑换码
+                                                </Button> : null
+                                        }
+                                        <Button type={"warning"} theme={'solid'} onClick={topUp}
+                                                disabled={isSubmitting}>
                                             {isSubmitting ? '兑换中...' : '兑换'}
                                         </Button>
-                                    </Form>
-                                </Grid.Column>
-                                <Grid.Column>
-                                    <Statistic.Group widths='one'>
-                                        <Statistic>
-                                            <Statistic.Value>{renderQuota(userQuota)}</Statistic.Value>
-                                            <Statistic.Label>剩余额度</Statistic.Label>
-                                        </Statistic>
-                                    </Statistic.Group>
-                                </Grid.Column>
-                            </Grid>
-                        </Card>
-                        <Card
-                            style={{width: '100%', padding: '20px'}}
-                        >
-                            <Header as='h3'>在线充值，最低1</Header>
-                            <Grid columns={2} stackable>
-                                <Grid.Column>
-                                    <Form>
-                                        <Form.Input
-                                            placeholder='充值金额，最低1'
-                                            name='redemptionCount'
-                                            type={'number'}
-                                            value={topUpCount}
-                                            autoComplete={'off'}
-                                            onChange={async (e) => {
-                                                setTopUpCount(e.target.value);
-                                                await getAmount(e.target.value);
-                                            }}
-                                        />
-                                        <Button color='blue' onClick={
+                                    </Space>
+                                </Form>
+                            </div>
+                            <div style={{marginTop: 20}}>
+                                <Divider>
+                                    在线充值
+                                </Divider>
+                                <Form>
+                                    <Form.Input
+                                        field={'redemptionCount'}
+                                        label={'充值金额：' + renderAmount()}
+                                        placeholder='充值数量'
+                                        name='redemptionCount'
+                                        type={'number'}
+                                        value={topUpCount}
+                                        onChange={async (value) => {
+                                            setTopUpCount(value);
+                                            await getAmount(value);
+                                        }}
+                                    />
+                                    <Space>
+                                        <Button type={'primary'} theme={'solid'} onClick={
                                             async () => {
                                                 preTopUp('zfb')
                                             }
                                         }>
                                             支付宝
                                         </Button>
-                                        <Button color='green' onClick={
+                                        <Button style={{backgroundColor: 'rgba(var(--semi-green-5), 1)'}}
+                                                type={'primary'}
+                                                theme={'solid'} onClick={
                                             async () => {
                                                 preTopUp('wx')
                                             }
                                         }>
                                             微信
                                         </Button>
-                                    </Form>
-                                </Grid.Column>
-                                <Grid.Column>
-                                    <Statistic.Group widths='one'>
-                                        <Statistic>
-                                            <Statistic.Value>{renderAmount()}</Statistic.Value>
-                                            <Statistic.Label>支付金额</Statistic.Label>
-                                        </Statistic>
-                                    </Statistic.Group>
-                                </Grid.Column>
-                            </Grid>
+                                    </Space>
+                                </Form>
+                            </div>
                         </Card>
                     </div>
 
