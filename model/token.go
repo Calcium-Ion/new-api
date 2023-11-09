@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"one-api/common"
+	"strings"
 )
 
 type Token struct {
@@ -28,8 +29,11 @@ func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {
 	return tokens, err
 }
 
-func SearchUserTokens(userId int, keyword string) (tokens []*Token, err error) {
-	err = DB.Where("user_id = ?", userId).Where("name LIKE ?", keyword+"%").Find(&tokens).Error
+func SearchUserTokens(userId int, keyword string, token string) (tokens []*Token, err error) {
+	if token != "" {
+		token = strings.Trim(token, "sk-")
+	}
+	err = DB.Where("user_id = ?", userId).Where("name LIKE ? or key LIKE ?", keyword+"%", token+"%").Find(&tokens).Error
 	return tokens, err
 }
 

@@ -179,6 +179,7 @@ const TokensTable = () => {
     const [loading, setLoading] = useState(true);
     const [activePage, setActivePage] = useState(1);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [searchToken, setSearchToken] = useState('');
     const [searching, setSearching] = useState(false);
     const [showTopUpModal, setShowTopUpModal] = useState(false);
     const [targetTokenIdx, setTargetTokenIdx] = useState(0);
@@ -188,9 +189,6 @@ const TokensTable = () => {
 
     const closeEdit = () => {
         setShowEdit(false);
-        // setEditingToken({
-        //     id: undefined,
-        // });
     }
 
     const setTokensFormat = (tokens) => {
@@ -401,6 +399,10 @@ const TokensTable = () => {
         setSearchKeyword(value.trim());
     };
 
+    const handleSearchTokenChange = async (value) => {
+        setSearchToken(value.trim());
+    };
+
     const sortToken = (key) => {
         if (tokens.length === 0) return;
         setLoading(true);
@@ -446,6 +448,14 @@ const TokensTable = () => {
                     value={searchKeyword}
                     loading={searching}
                     onChange={handleKeywordChange}
+                />
+                <Form.Input
+                    field="token"
+                    label='Key'
+                    placeholder='密钥'
+                    value={searchToken}
+                    loading={searching}
+                    onChange={handleSearchTokenChange}
                 />
                 <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
                         onClick={searchTokens} style={{marginRight: 8}}>查询</Button>

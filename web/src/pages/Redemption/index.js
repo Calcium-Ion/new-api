@@ -1,13 +1,19 @@
 import React from 'react';
 import { Segment, Header } from 'semantic-ui-react';
 import RedemptionsTable from '../../components/RedemptionsTable';
+import TokensTable from "../../components/TokensTable";
+import {Layout} from "@douyinfe/semi-ui";
 
 const Redemption = () => (
   <>
-    <Segment>
-      <Header as='h3'>管理兑换码</Header>
-      <RedemptionsTable/>
-    </Segment>
+      <Layout>
+          <Layout.Header>
+              <h3>管理兑换码</h3>
+          </Layout.Header>
+          <Layout.Content>
+              <RedemptionsTable/>
+          </Layout.Content>
+      </Layout>
   </>
 );
 

@@ -39,7 +39,8 @@ func GetAllTokens(c *gin.Context) {
 func SearchTokens(c *gin.Context) {
 	userId := c.GetInt("id")
 	keyword := c.Query("keyword")
-	tokens, err := model.SearchUserTokens(userId, keyword)
+	token := c.Query("token")
+	tokens, err := model.SearchUserTokens(userId, keyword, token)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

@@ -63,7 +63,7 @@ const EditToken = (props) => {
         if (isEdit) {
             loadToken().then(
                 () => {
-                    console.log(inputs);
+                    // console.log(inputs);
                 }
             );
         } else {
@@ -72,8 +72,8 @@ const EditToken = (props) => {
     }, [props.editingToken.id]);
 
     const submit = async () => {
-        setLoading(true);
         if (!isEdit && inputs.name === '') return;
+        setLoading(true);
         let localInputs = inputs;
         localInputs.remain_quota = parseInt(localInputs.remain_quota);
         if (localInputs.expired_time !== -1) {

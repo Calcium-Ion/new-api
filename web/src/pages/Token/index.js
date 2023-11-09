@@ -1,16 +1,15 @@
 import React from 'react';
 import TokensTable from '../../components/TokensTable';
 import {Layout} from "@douyinfe/semi-ui";
-const {Content, Header} = Layout;
 const Token = () => (
   <>
     <Layout>
-      <Header>
+      <Layout.Header>
           <h3>我的令牌</h3>
-      </Header>
-      <Content>
+      </Layout.Header>
+      <Layout.Content>
           <TokensTable/>
-      </Content>
+      </Layout.Content>
     </Layout>
   </>
 );
