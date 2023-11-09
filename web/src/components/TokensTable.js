@@ -377,14 +377,14 @@ const TokensTable = () => {
     };
 
     const searchTokens = async () => {
-        if (searchKeyword === '') {
+        if (searchKeyword === '' && searchToken === '') {
             // if keyword is blank, load files instead.
             await loadTokens(0);
             setActivePage(1);
             return;
         }
         setSearching(true);
-        const res = await API.get(`/api/token/search?keyword=${searchKeyword}`);
+        const res = await API.get(`/api/token/search?keyword=${searchKeyword}&token=${searchToken}`);
         const {success, message, data} = res.data;
         if (success) {
             setTokensFormat(data);
