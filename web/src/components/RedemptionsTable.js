@@ -166,16 +166,26 @@ const RedemptionsTable = () => {
         setShowEdit(false);
     }
 
+    const setCount = (data) => {
+        if (data.length >= (activePage) * ITEMS_PER_PAGE) {
+            setTokenCount(data.length + 1);
+        } else {
+            setTokenCount(data.length);
+        }
+    }
+
     const loadRedemptions = async (startIdx) => {
         const res = await API.get(`/api/redemption/?p=${startIdx}`);
         const {success, message, data} = res.data;
         if (success) {
             if (startIdx === 0) {
                 setRedemptions(data);
+                setCount(data);
             } else {
                 let newRedemptions = redemptions;
                 newRedemptions.push(...data);
                 setRedemptions(newRedemptions);
+                setCount(newRedemptions);
             }
         } else {
             showError(message);
