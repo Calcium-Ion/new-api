@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Label} from 'semantic-ui-react';
-import {API, isAdmin, showError, timestamp2string} from '../helpers';
+import {API, copy, isAdmin, showError, showSuccess, timestamp2string} from '../helpers';
 
 import {Table, Avatar, Tag, Form, Button, Layout, Select, Popover, Modal} from '@douyinfe/semi-ui';
 import {ITEMS_PER_PAGE} from '../constants';
@@ -106,7 +106,9 @@ const LogsTable = () => {
                 return (
                     record.type === 0 || record.type === 2 ?
                         <div>
-                            {<Tag color='grey' size='large'> {text} </Tag>}
+                            <Tag color='grey' size='large' onClick={()=>{
+                                copyText(text)
+                            }}> {text} </Tag>
                         </div>
                         :
                         <></>
@@ -131,7 +133,9 @@ const LogsTable = () => {
                 return (
                     record.type === 0 || record.type === 2 ?
                         <div>
-                            {<Tag color={stringToColor(text)} size='large'> {text} </Tag>}
+                            <Tag color={stringToColor(text)} size='large' onClick={()=>{
+                                copyText(text)
+                            }}> {text} </Tag>
                         </div>
                         :
                         <></>
@@ -329,6 +333,15 @@ const LogsTable = () => {
         await loadLogs(0);
     };
 
+    const copyText = async (text) => {
+        if (await copy(text)) {
+            showSuccess('已复制：' + text);
+        } else {
+            // setSearchKeyword(text);
+            Modal.error({ title: '无法复制到剪贴板，请手动复制', content: text });
+        }
+    }
+
     useEffect(() => {
         refresh().then();
     }, [logType]);
@@ -397,7 +410,7 @@ const LogsTable = () => {
                         <Form.Input field="model_name" label='模型名称' style={{width: 176}} value={model_name}
                                     placeholder='可选值'
                                     name='model_name'
-                                    onChange={value => handlePageChange(value, 'model_name')}/>
+                                    onChange={value => handleInputChange(value, 'model_name')}/>
                         <Form.DatePicker field="start_timestamp" label='起始时间' style={{width: 272}}
                                          value={start_timestamp} type='dateTime'
                                          name='start_timestamp'

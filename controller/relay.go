@@ -85,9 +85,11 @@ type TextRequest struct {
 }
 
 type ImageRequest struct {
-	Prompt string `json:"prompt"`
-	N      int    `json:"n"`
-	Size   string `json:"size"`
+	Model   string `json:"model"`
+	Quality string `json:"quality"`
+	Prompt  string `json:"prompt"`
+	N       int    `json:"n"`
+	Size    string `json:"size"`
 }
 
 type AudioResponse struct {
