@@ -102,7 +102,7 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 		tx = tx.Where("created_at <= ?", endTimestamp)
 	}
 	if channel != 0 {
-		tx = tx.Where("channel = ?", channel)
+		tx = tx.Where("channel_id = ?", channel)
 	}
 	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&logs).Error
 	return logs, err
@@ -165,7 +165,7 @@ func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelNa
 		tx = tx.Where("model_name = ?", modelName)
 	}
 	if channel != 0 {
-		tx = tx.Where("channel = ?", channel)
+		tx = tx.Where("channel_id = ?", channel)
 	}
 	tx.Where("type = ?", LogTypeConsume).Scan(&stat)
 	return stat
