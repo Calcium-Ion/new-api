@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -60,9 +59,6 @@ func getTokenEncoder(model string) *tiktoken.Tiktoken {
 }
 
 func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
-	if common.ApproximateTokenEnabled {
-		return int(float64(len(text)) * 0.38)
-	}
 	return len(tokenEncoder.Encode(text, nil, nil))
 }
 
@@ -118,11 +114,8 @@ func countTokenText(text string, model string) int {
 func errorWrapper(err error, code string, statusCode int) *OpenAIErrorWithStatusCode {
 	text := err.Error()
 	// 定义一个正则表达式匹配URL
-	urlPattern := `http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+`
-
-	urlRegexp, reErr := regexp.Compile(urlPattern)
-	if reErr == nil {
-		text = urlRegexp.ReplaceAllString(text, "https://api.openai.com")
+	if strings.Contains(text, "Post") {
+		text = "请求上游地址失败"
 	}
 	//避免暴露内部错误
 

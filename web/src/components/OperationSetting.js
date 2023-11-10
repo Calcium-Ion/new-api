@@ -19,7 +19,6 @@ const OperationSetting = () => {
         LogConsumeEnabled: '',
         DisplayInCurrencyEnabled: '',
         DisplayTokenStatEnabled: '',
-        ApproximateTokenEnabled: '',
         RetryTimes: 0
     });
     const [originInputs, setOriginInputs] = useState({});
@@ -199,12 +198,6 @@ const OperationSetting = () => {
                             checked={inputs.DisplayTokenStatEnabled === 'true'}
                             label='Billing 相关 API 显示令牌额度而非用户额度'
                             name='DisplayTokenStatEnabled'
-                            onChange={handleInputChange}
-                        />
-                        <Form.Checkbox
-                            checked={inputs.ApproximateTokenEnabled === 'true'}
-                            label='使用近似的方式估算 token 数以减少计算量'
-                            name='ApproximateTokenEnabled'
                             onChange={handleInputChange}
                         />
                     </Form.Group>
