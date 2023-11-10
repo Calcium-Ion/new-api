@@ -33,6 +33,9 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	if imageRequest.Model == "" {
 		imageRequest.Model = "dall-e"
 	}
+	if imageRequest.Size == "" {
+		imageRequest.Size = "1024x1024"
+	}
 	// Prompt validation
 	if imageRequest.Prompt == "" {
 		return errorWrapper(errors.New("prompt is required"), "required_field_missing", http.StatusBadRequest)
@@ -42,9 +45,14 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 		return errorWrapper(errors.New("size an unexpected error occurred in the parameter, please use 'x' instead of the multiplication sign '×'"), "invalid_field_value", http.StatusBadRequest)
 	}
 	// Not "256x256", "512x512", or "1024x1024"
-	if imageRequest.Size != "" && imageRequest.Size != "256x256" && imageRequest.Size != "512x512" && imageRequest.Size != "1024x1024" &&
-		(imageRequest.Model == "dall-e-3" && (imageRequest.Size != "1024x1792" && imageRequest.Size != "1792x1024")) {
-		return errorWrapper(errors.New("size must be one of 256x256, 512x512, or 1024x1024, dall-e-3 1024x1792 or 1792x1024"), "invalid_field_value", http.StatusBadRequest)
+	if imageRequest.Model == "dall-e-2" || imageRequest.Model == "dall-e" {
+		if imageRequest.Size != "" && imageRequest.Size != "256x256" && imageRequest.Size != "512x512" && imageRequest.Size != "1024x1024" {
+			return errorWrapper(errors.New("size must be one of 256x256, 512x512, or 1024x1024, dall-e-3 1024x1792 or 1792x1024"), "invalid_field_value", http.StatusBadRequest)
+		}
+	} else if imageRequest.Model == "dall-e-3" {
+		if imageRequest.Size != "" && imageRequest.Size != "1024x1024" && imageRequest.Size != "1024x1792" && imageRequest.Size != "1792x1024" {
+			return errorWrapper(errors.New("size must be one of 256x256, 512x512, or 1024x1024, dall-e-3 1024x1792 or 1792x1024"), "invalid_field_value", http.StatusBadRequest)
+		}
 	}
 
 	// N should between 1 and 10
