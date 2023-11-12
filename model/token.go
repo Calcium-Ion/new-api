@@ -178,59 +178,60 @@ func decreaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-func PreConsumeTokenQuota(tokenId int, quota int) (err error) {
+func PreConsumeTokenQuota(tokenId int, quota int) (userQuota int, err error) {
 	if quota < 0 {
-		return errors.New("quota 不能为负数！")
+		return 0, errors.New("quota 不能为负数！")
 	}
 	token, err := GetTokenById(tokenId)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if !token.UnlimitedQuota && token.RemainQuota < quota {
-		return errors.New("令牌额度不足")
+		return 0, errors.New("令牌额度不足")
 	}
-	userQuota, err := GetUserQuota(token.UserId)
+	userQuota, err = GetUserQuota(token.UserId)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if userQuota < quota {
-		return errors.New("用户额度不足")
-	}
-	quotaTooLow := userQuota >= common.QuotaRemindThreshold && userQuota-quota < common.QuotaRemindThreshold
-	noMoreQuota := userQuota-quota <= 0
-	if quotaTooLow || noMoreQuota {
-		go func() {
-			email, err := GetUserEmail(token.UserId)
-			if err != nil {
-				common.SysError("failed to fetch user email: " + err.Error())
-			}
-			prompt := "您的额度即将用尽"
-			if noMoreQuota {
-				prompt = "您的额度已用尽"
-			}
-			if email != "" {
-				topUpLink := fmt.Sprintf("%s/topup", common.ServerAddress)
-				err = common.SendEmail(prompt, email,
-					fmt.Sprintf("%s，当前剩余额度为 %d，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='%s'>%s</a>", prompt, userQuota, topUpLink, topUpLink))
-				if err != nil {
-					common.SysError("failed to send email" + err.Error())
-				}
-			}
-		}()
+		return userQuota, errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
 	}
 	if !token.UnlimitedQuota {
 		err = DecreaseTokenQuota(tokenId, quota)
 		if err != nil {
-			return err
+			return userQuota, err
 		}
 	}
 	err = DecreaseUserQuota(token.UserId, quota)
-	return err
+	return userQuota, err
 }
 
-func PostConsumeTokenQuota(tokenId int, quota int) (err error) {
+func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuota int) (err error) {
 	token, err := GetTokenById(tokenId)
+
 	if quota > 0 {
+		quotaTooLow := userQuota >= common.QuotaRemindThreshold && userQuota-(quota+preConsumedQuota) < common.QuotaRemindThreshold
+		noMoreQuota := userQuota-(quota+preConsumedQuota) <= 0
+		if quotaTooLow || noMoreQuota {
+			go func() {
+				email, err := GetUserEmail(token.UserId)
+				if err != nil {
+					common.SysError("failed to fetch user email: " + err.Error())
+				}
+				prompt := "您的额度即将用尽"
+				if noMoreQuota {
+					prompt = "您的额度已用尽"
+				}
+				if email != "" {
+					topUpLink := fmt.Sprintf("%s/topup", common.ServerAddress)
+					err = common.SendEmail(prompt, email,
+						fmt.Sprintf("%s，当前剩余额度为 %d，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='%s'>%s</a>", prompt, userQuota, topUpLink, topUpLink))
+					if err != nil {
+						common.SysError("failed to send email" + err.Error())
+					}
+				}
+			}()
+		}
 		err = DecreaseUserQuota(token.UserId, quota)
 	} else {
 		err = IncreaseUserQuota(token.UserId, -quota)
