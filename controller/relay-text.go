@@ -233,7 +233,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		//common.LogInfo(c.Request.Context(), fmt.Sprintf("user %d has enough quota %d, trusted and no need to pre-consume", userId, userQuota))
 	}
 	if consumeQuota && preConsumedQuota > 0 {
-		err := model.PreConsumeTokenQuota(tokenId, preConsumedQuota)
+		userQuota, err = model.PreConsumeTokenQuota(tokenId, preConsumedQuota)
 		if err != nil {
 			return errorWrapper(err, "pre_consume_token_quota_failed", http.StatusForbidden)
 		}
@@ -400,7 +400,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			if preConsumedQuota != 0 {
 				go func(ctx context.Context) {
 					// return pre-consumed quota
-					err := model.PostConsumeTokenQuota(tokenId, -preConsumedQuota)
+					err := model.PostConsumeTokenQuota(tokenId, userQuota, -preConsumedQuota, 0)
 					if err != nil {
 						common.LogError(ctx, "error return pre-consumed quota: "+err.Error())
 					}
@@ -434,7 +434,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 					quota = 0
 				}
 				quotaDelta := quota - preConsumedQuota
-				err := model.PostConsumeTokenQuota(tokenId, quotaDelta)
+				err := model.PostConsumeTokenQuota(tokenId, userQuota, quotaDelta, preConsumedQuota)
 				if err != nil {
 					common.LogError(ctx, "error consuming token remain quota: "+err.Error())
 				}

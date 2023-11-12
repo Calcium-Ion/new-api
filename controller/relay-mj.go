@@ -359,7 +359,7 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 
 	defer func(ctx context.Context) {
 		if consumeQuota {
-			err := model.PostConsumeTokenQuota(tokenId, quota)
+			err := model.PostConsumeTokenQuota(tokenId, userQuota, quota, 0)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}
