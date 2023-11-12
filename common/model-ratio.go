@@ -14,6 +14,7 @@ import (
 // 1 === $0.002 / 1K tokens
 // 1 === ￥0.014 / 1k tokens
 var ModelRatio = map[string]float64{
+	"midjourney":                50,
 	"gpt-4":                     15,
 	"gpt-4-0314":                15,
 	"gpt-4-0613":                15,

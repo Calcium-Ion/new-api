@@ -1,5 +1,6 @@
 export const CHANNEL_OPTIONS = [
   { key: 1, text: 'OpenAI', value: 1, color: 'green' },
+  { key: 99, text: 'Midjourney-Proxy', value: 99, color: 'green' },
   { key: 14, text: 'Anthropic Claude', value: 14, color: 'black' },
   { key: 3, text: 'Azure OpenAI', value: 3, color: 'olive' },
   { key: 11, text: 'Google PaLM2', value: 11, color: 'orange' },
