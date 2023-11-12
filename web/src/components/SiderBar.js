@@ -15,7 +15,7 @@ import {
     IconLayers,
     IconSetting,
     IconCreditCard,
-    IconSemiLogo,
+    IconComment,
     IconHome,
     IconImage
 } from '@douyinfe/semi-icons';
@@ -36,7 +36,13 @@ let headerButtons = [
         icon: <IconLayers/>,
         className: isAdmin()?'semi-navigation-item-normal':'tableHiddle',
     },
-
+    {
+        text: '聊天',
+        itemKey: 'chat',
+        to: '/chat',
+        icon: <IconComment />,
+        className: localStorage.getItem('chat_link')?'semi-navigation-item-normal':'tableHiddle',
+    },
     {
         text: '令牌',
         itemKey: 'token',
@@ -89,14 +95,6 @@ let headerButtons = [
     // }
 ];
 
-if (localStorage.getItem('chat_link')) {
-    headerButtons.splice(1, 0, {
-        name: '聊天',
-        to: '/chat',
-        icon: 'comments'
-    });
-}
-
 const HeaderBar = () => {
     const [userState, userDispatch] = useContext(UserContext);
     let navigate = useNavigate();
@@ -134,6 +132,7 @@ const HeaderBar = () => {
                                 midjourney: "/midjourney",
                                 setting: "/setting",
                                 about: "/about",
+                                chat: "/chat",
                             };
                             return (
                                 <Link
