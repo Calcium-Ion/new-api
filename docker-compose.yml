@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   one-api:
-    image: justsong/one-api:latest
+    image: calciumion/neko-api:main
     container_name: one-api
     restart: always
     command: --log-dir /app/logs

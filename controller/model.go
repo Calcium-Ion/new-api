@@ -55,6 +55,15 @@ func init() {
 	// https://platform.openai.com/docs/models/model-endpoint-compatibility
 	openAIModels = []OpenAIModels{
 		{
+			Id:         "midjourney",
+			Object:     "model",
+			Created:    1677649963,
+			OwnedBy:    "Midjourney",
+			Permission: permission,
+			Root:       "midjourney",
+			Parent:     nil,
+		},
+		{
 			Id:         "dall-e-2",
 			Object:     "model",
 			Created:    1677649963,
