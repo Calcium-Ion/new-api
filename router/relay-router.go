@@ -48,6 +48,8 @@ func SetRelayRouter(router *gin.Engine) {
 	{
 		relayMjRouter.POST("/submit/imagine", controller.RelayMidjourney)
 		relayMjRouter.POST("/submit/change", controller.RelayMidjourney)
+		relayMjRouter.POST("/submit/describe", controller.RelayMidjourney)
+		relayMjRouter.POST("/submit/blend", controller.RelayMidjourney)
 		relayMjRouter.POST("/notify", controller.RelayMidjourney)
 		relayMjRouter.GET("/task/:id/fetch", controller.RelayMidjourney)
 	}
