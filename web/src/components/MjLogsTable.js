@@ -338,7 +338,7 @@ const LogsTable = () => {
                       {log.prompt.length > 10
                           ? <div>
                             {log.prompt.slice(0, 10)}
-                            <a onClick={() => showFullContent(log.prompt)}>查看全部</a>
+                            <a style={{cursor: "pointer"}} onClick={() => showFullContent(log.prompt)}>查看全部</a>
                           </div>
                           : log.prompt
                       }
@@ -347,7 +347,7 @@ const LogsTable = () => {
                       {log.prompt_en.length > 10
                           ? <div>
                             {log.prompt_en.slice(0, 10)}
-                            <a onClick={() => showFullContent(log.prompt_en)}>查看全部</a>
+                            <a style={{cursor: "pointer"}} onClick={() => showFullContent(log.prompt_en)}>查看全部</a>
                           </div>
                           : log.prompt_en
                       }
@@ -356,7 +356,7 @@ const LogsTable = () => {
                       {log.fail_reason && log.fail_reason.length > 10
                           ? <div>
                             {log.fail_reason.slice(0, 10)}
-                            <a onClick={() => showFullContent(log.fail_reason)}>查看全部</a>
+                            <a style={{cursor: "pointer"}} onClick={() => showFullContent(log.fail_reason)}>查看全部</a>
                           </div>
                           : log.fail_reason || '无'
                       }
