@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Header, Label, Pagination, Segment, Select, Table } from 'semantic-ui-react';
+import { Button, Form, Header, Label, Pagination, Segment, Select, Table,Modal } from 'semantic-ui-react';
 import { API, isAdmin, showError, timestamp2string } from '../helpers';
 
 import { ITEMS_PER_PAGE } from '../constants';
@@ -85,6 +85,8 @@ const LogsTable = () => {
   const [searching, setSearching] = useState(false);
   const [logType, setLogType] = useState(0);
   const isAdminUser = isAdmin();
+
+
   let now = new Date();
   const [inputs, setInputs] = useState({
     username: '',
@@ -100,33 +102,14 @@ const LogsTable = () => {
     token: 0
   });
 
-  const handleInputChange = (e, { name, value }) => {
-    setInputs((inputs) => ({ ...inputs, [name]: value }));
+  const [modalContent, setModalContent] = useState('');
+  const [showModal, setShowModal] = useState(false);
+
+  const showFullContent = (content) => {
+    setModalContent(content);
+    setShowModal(true);
   };
 
-  const getLogSelfStat = async () => {
-    let localStartTimestamp = Date.parse(start_timestamp) / 1000;
-    let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    let res = await API.get(`/api/log/self/stat?type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      setStat(data);
-    } else {
-      showError(message);
-    }
-  };
-
-  const getLogStat = async () => {
-    let localStartTimestamp = Date.parse(start_timestamp) / 1000;
-    let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    let res = await API.get(`/api/log/stat?type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      setStat(data);
-    } else {
-      showError(message);
-    }
-  };
 
   const loadLogs = async (startIdx) => {
     let url = '';
@@ -304,6 +287,15 @@ const LogsTable = () => {
               <Table.HeaderCell
                   style={{ cursor: 'pointer' }}
                   onClick={() => {
+                    sortLog('prompt_en');
+                  }}
+                  width={3}
+              >
+                PromptEn
+              </Table.HeaderCell>
+              <Table.HeaderCell
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
                     sortLog('fail_reason');
                   }}
                   width={1}
@@ -342,8 +334,33 @@ const LogsTable = () => {
                         ) : '暂未生成图片'
                       }
                     </Table.Cell>
-                    <Table.Cell>{log.prompt}</Table.Cell>
-                    <Table.Cell>{log.fail_reason ? log.fail_reason : '无'}</Table.Cell>
+                    <Table.Cell>
+                      {log.prompt.length > 10
+                          ? <div>
+                            {log.prompt.slice(0, 10)}
+                            <a onClick={() => showFullContent(log.prompt)}>查看全部</a>
+                          </div>
+                          : log.prompt
+                      }
+                    </Table.Cell>
+                    <Table.Cell>
+                      {log.prompt_en.length > 10
+                          ? <div>
+                            {log.prompt_en.slice(0, 10)}
+                            <a onClick={() => showFullContent(log.prompt_en)}>查看全部</a>
+                          </div>
+                          : log.prompt_en
+                      }
+                    </Table.Cell>
+                    <Table.Cell>
+                      {log.fail_reason && log.fail_reason.length > 10
+                          ? <div>
+                            {log.fail_reason.slice(0, 10)}
+                            <a onClick={() => showFullContent(log.fail_reason)}>查看全部</a>
+                          </div>
+                          : log.fail_reason || '无'
+                      }
+                    </Table.Cell>
                   </Table.Row>
                 );
               })}
@@ -379,6 +396,12 @@ const LogsTable = () => {
           </Table.Footer>
         </Table>
       </Segment>
+      {/*Modal component goes here*/}
+      <Modal open={showModal} onClose={() => setShowModal(false)} centered>
+        <Modal.Content>
+          <pre style={{whiteSpace: "pre-wrap"}}>{modalContent}</pre>
+        </Modal.Content>
+      </Modal>
     </>
   );
 };
