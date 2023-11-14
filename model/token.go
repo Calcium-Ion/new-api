@@ -33,7 +33,7 @@ func SearchUserTokens(userId int, keyword string, token string) (tokens []*Token
 	if token != "" {
 		token = strings.Trim(token, "sk-")
 	}
-	err = DB.Where("user_id = ?", userId).Where("name LIKE ?", keyword+"%").Where("key LIKE ?", token+"%").Find(&tokens).Error
+	err = DB.Where("user_id = ?", userId).Where("name LIKE ?", keyword+"%").Where("`key` LIKE ?", token+"%").Find(&tokens).Error
 	return tokens, err
 }
 
