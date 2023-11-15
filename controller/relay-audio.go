@@ -99,7 +99,7 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 		go func() {
 			quota := countTokenText(audioResponse.Text, audioModel)
 			quotaDelta := quota - preConsumedQuota
-			err := model.PostConsumeTokenQuota(tokenId, userQuota, quotaDelta, preConsumedQuota)
+			err := model.PostConsumeTokenQuota(tokenId, userQuota, quotaDelta, preConsumedQuota, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}

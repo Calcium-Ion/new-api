@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"one-api/common"
+	"strconv"
 	"strings"
 )
 
@@ -194,22 +195,31 @@ func PreConsumeTokenQuota(tokenId int, quota int) (userQuota int, err error) {
 		return 0, err
 	}
 	if userQuota < quota {
-		return userQuota, errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
+		return 0, errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
 	}
 	if !token.UnlimitedQuota {
 		err = DecreaseTokenQuota(tokenId, quota)
 		if err != nil {
-			return userQuota, err
+			return 0, err
 		}
 	}
 	err = DecreaseUserQuota(token.UserId, quota)
-	return userQuota, err
+	return userQuota - quota, err
 }
 
-func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuota int) (err error) {
+func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuota int, sendEmail bool) (err error) {
 	token, err := GetTokenById(tokenId)
 
 	if quota > 0 {
+		err = DecreaseUserQuota(token.UserId, quota)
+	} else {
+		err = IncreaseUserQuota(token.UserId, -quota)
+	}
+	if err != nil {
+		return err
+	}
+
+	if sendEmail {
 		quotaTooLow := userQuota >= common.QuotaRemindThreshold && userQuota-(quota+preConsumedQuota) < common.QuotaRemindThreshold
 		noMoreQuota := userQuota-(quota+preConsumedQuota) <= 0
 		if quotaTooLow || noMoreQuota {
@@ -229,16 +239,12 @@ func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuo
 					if err != nil {
 						common.SysError("failed to send email" + err.Error())
 					}
+					common.SysLog("user quota is low, consumed quota: " + strconv.Itoa(quota) + ", user quota: " + strconv.Itoa(userQuota))
 				}
 			}()
 		}
-		err = DecreaseUserQuota(token.UserId, quota)
-	} else {
-		err = IncreaseUserQuota(token.UserId, -quota)
 	}
-	if err != nil {
-		return err
-	}
+
 	if !token.UnlimitedQuota {
 		if quota > 0 {
 			err = DecreaseTokenQuota(tokenId, quota)
