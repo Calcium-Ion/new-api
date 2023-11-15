@@ -29,6 +29,10 @@
 5. 渠道显示已使用额度，支持指定组织访问
 6. 分页支持选择每页显示数量
 
+## 交流群
+![IMG_2847](https://github.com/Calcium-Ion/new-api/assets/61247483/de536a8a-0161-47a7-a0a2-66ef6de81266)
+
+
 ## 界面截图
 ![image](https://github.com/Calcium-Ion/new-api/assets/61247483/3ca0b282-00ff-4c96-bf9d-e29ef615c605)  
 ![image](https://github.com/Calcium-Ion/new-api/assets/61247483/f4f40ed4-8ccb-43d7-a580-90677827646d)  
