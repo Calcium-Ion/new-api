@@ -70,6 +70,12 @@ func (r GeneralOpenAIRequest) ParseInput() []string {
 	return input
 }
 
+type AudioRequest struct {
+	Model string `json:"model"`
+	Voice string `json:"voice"`
+	Input string `json:"input"`
+}
+
 type ChatRequest struct {
 	Model     string    `json:"model"`
 	Messages  []Message `json:"messages"`

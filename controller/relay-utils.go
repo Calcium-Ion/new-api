@@ -10,6 +10,7 @@ import (
 	"one-api/common"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 var stopFinishReason = "stop"
@@ -104,6 +105,14 @@ func countTokenInput(input any, model string) int {
 		return countTokenText(text, model)
 	}
 	return 0
+}
+
+func countAudioToken(text string, model string) int {
+	if strings.HasPrefix(model, "tts") {
+		return utf8.RuneCountInString(text)
+	} else {
+		return countTokenText(text, model)
+	}
 }
 
 func countTokenText(text string, model string) int {

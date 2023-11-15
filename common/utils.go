@@ -207,3 +207,12 @@ func String2Int(str string) int {
 	}
 	return num
 }
+
+func StringsContains(strs []string, str string) bool {
+	for _, s := range strs {
+		if s == str {
+			return true
+		}
+	}
+	return false
+}
