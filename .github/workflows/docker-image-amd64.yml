@@ -1,52 +1,30 @@
-name: Publish Docker image (amd64)
+name: Docker Image CI
 
 on:
   push:
-    tags:
-      - '*'
-  workflow_dispatch:
-    inputs:
-      name:
-        description: 'reason'
-        required: false
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
-  push_to_registries:
-    name: Push Docker image to multiple registries
+
+  build:
+
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
+
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
-
-      - name: Save version info
-        run: |
-          git describe --tags > VERSION 
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v3.0.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v3
         with:
-          images: |
-            justsong/one-api
-            ghcr.io/${{ github.repository }}
-
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v3
+          images: calciumion/neko-api
+      - name: Build the Docker image
+        uses: docker/build-push-action@v5.0.0
         with:
           context: .
           push: true
