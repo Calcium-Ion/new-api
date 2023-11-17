@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,9 +13,20 @@ import (
 )
 
 type Message struct {
-	Role    string  `json:"role"`
-	Content string  `json:"content"`
-	Name    *string `json:"name,omitempty"`
+	Role    string          `json:"role"`
+	Content json.RawMessage `json:"content"`
+	Name    *string         `json:"name,omitempty"`
+}
+
+type MediaMessage struct {
+	Type     string          `json:"type"`
+	Text     string          `json:"text"`
+	ImageUrl MessageImageUrl `json:"image_url,omitempty"`
+}
+
+type MessageImageUrl struct {
+	Url    string `json:"url"`
+	Detail string `json:"detail"`
 }
 
 const (

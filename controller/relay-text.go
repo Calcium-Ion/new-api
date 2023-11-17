@@ -199,9 +199,13 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	}
 	var promptTokens int
 	var completionTokens int
+	var err error
 	switch relayMode {
 	case RelayModeChatCompletions:
-		promptTokens = countTokenMessages(textRequest.Messages, textRequest.Model)
+		promptTokens, err = countTokenMessages(textRequest.Messages, textRequest.Model)
+		if err != nil {
+			return errorWrapper(err, "count_token_messages_failed", http.StatusInternalServerError)
+		}
 	case RelayModeCompletions:
 		promptTokens = countTokenInput(textRequest.Prompt, textRequest.Model)
 	case RelayModeModerations:

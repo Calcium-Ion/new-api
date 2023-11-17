@@ -132,7 +132,7 @@ func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promp
 	if textResponse.Usage.TotalTokens == 0 {
 		completionTokens := 0
 		for _, choice := range textResponse.Choices {
-			completionTokens += countTokenText(choice.Message.Content, model)
+			completionTokens += countTokenText(string(choice.Message.Content), model)
 		}
 		textResponse.Usage = Usage{
 			PromptTokens:     promptTokens,
