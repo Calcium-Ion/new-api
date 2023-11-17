@@ -63,7 +63,8 @@ func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
 	return len(tokenEncoder.Encode(text, nil, nil))
 }
 
-func countTokenMessages(messages []Message, model string) int {
+func countTokenMessages(messages []Message, model string) (int, error) {
+	//recover when panic
 	tokenEncoder := getTokenEncoder(model)
 	// Reference:
 	// https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
@@ -82,15 +83,33 @@ func countTokenMessages(messages []Message, model string) int {
 	tokenNum := 0
 	for _, message := range messages {
 		tokenNum += tokensPerMessage
-		tokenNum += getTokenNum(tokenEncoder, message.Content)
 		tokenNum += getTokenNum(tokenEncoder, message.Role)
-		if message.Name != nil {
-			tokenNum += tokensPerName
-			tokenNum += getTokenNum(tokenEncoder, *message.Name)
+		var arrayContent []MediaMessage
+		if err := json.Unmarshal(message.Content, &arrayContent); err != nil {
+
+			var stringContent string
+			if err := json.Unmarshal(message.Content, &stringContent); err != nil {
+				return 0, err
+			} else {
+				tokenNum += getTokenNum(tokenEncoder, stringContent)
+				if message.Name != nil {
+					tokenNum += tokensPerName
+					tokenNum += getTokenNum(tokenEncoder, *message.Name)
+				}
+			}
+		} else {
+			for _, m := range arrayContent {
+				if m.Type == "image_url" {
+					//TODO: getImageToken
+					tokenNum += 1000
+				} else {
+					tokenNum += getTokenNum(tokenEncoder, m.Text)
+				}
+			}
 		}
 	}
 	tokenNum += 3 // Every reply is primed with <|start|>assistant<|message|>
-	return tokenNum
+	return tokenNum, nil
 }
 
 func countTokenInput(input any, model string) int {

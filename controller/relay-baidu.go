@@ -89,7 +89,7 @@ func requestOpenAI2Baidu(request GeneralOpenAIRequest) *BaiduChatRequest {
 		if message.Role == "system" {
 			messages = append(messages, BaiduMessage{
 				Role:    "user",
-				Content: message.Content,
+				Content: string(message.Content),
 			})
 			messages = append(messages, BaiduMessage{
 				Role:    "assistant",
@@ -98,7 +98,7 @@ func requestOpenAI2Baidu(request GeneralOpenAIRequest) *BaiduChatRequest {
 		} else {
 			messages = append(messages, BaiduMessage{
 				Role:    message.Role,
-				Content: message.Content,
+				Content: string(message.Content),
 			})
 		}
 	}
@@ -109,11 +109,12 @@ func requestOpenAI2Baidu(request GeneralOpenAIRequest) *BaiduChatRequest {
 }
 
 func responseBaidu2OpenAI(response *BaiduChatResponse) *OpenAITextResponse {
+	content, _ := json.Marshal(response.Result)
 	choice := OpenAITextResponseChoice{
 		Index: 0,
 		Message: Message{
 			Role:    "assistant",
-			Content: response.Result,
+			Content: content,
 		},
 		FinishReason: "stop",
 	}
