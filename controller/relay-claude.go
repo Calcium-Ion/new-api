@@ -93,11 +93,12 @@ func streamResponseClaude2OpenAI(claudeResponse *ClaudeResponse) *ChatCompletion
 }
 
 func responseClaude2OpenAI(claudeResponse *ClaudeResponse) *OpenAITextResponse {
+	content, _ := json.Marshal(strings.TrimPrefix(claudeResponse.Completion, " "))
 	choice := OpenAITextResponseChoice{
 		Index: 0,
 		Message: Message{
 			Role:    "assistant",
-			Content: strings.TrimPrefix(claudeResponse.Completion, " "),
+			Content: content,
 			Name:    nil,
 		},
 		FinishReason: stopReasonClaude2OpenAI(claudeResponse.StopReason),

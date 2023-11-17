@@ -48,7 +48,7 @@ type AIProxyLibraryStreamResponse struct {
 func requestOpenAI2AIProxyLibrary(request GeneralOpenAIRequest) *AIProxyLibraryRequest {
 	query := ""
 	if len(request.Messages) != 0 {
-		query = request.Messages[len(request.Messages)-1].Content
+		query = string(request.Messages[len(request.Messages)-1].Content)
 	}
 	return &AIProxyLibraryRequest{
 		Model:  request.Model,
@@ -69,7 +69,7 @@ func aiProxyDocuments2Markdown(documents []AIProxyLibraryDocument) string {
 }
 
 func responseAIProxyLibrary2OpenAI(response *AIProxyLibraryResponse) *OpenAITextResponse {
-	content := response.Answer + aiProxyDocuments2Markdown(response.Documents)
+	content, _ := json.Marshal(response.Answer + aiProxyDocuments2Markdown(response.Documents))
 	choice := OpenAITextResponseChoice{
 		Index: 0,
 		Message: Message{

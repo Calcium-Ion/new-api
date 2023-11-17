@@ -11,10 +11,19 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/model"
+	"strings"
 )
 
+var availableVoices = []string{
+	"alloy",
+	"echo",
+	"fable",
+	"onyx",
+	"nova",
+	"shimmer",
+}
+
 func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
-	audioModel := "whisper-1"
 
 	tokenId := c.GetInt("token_id")
 	channelType := c.GetInt("channel")
@@ -22,8 +31,28 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	userId := c.GetInt("id")
 	group := c.GetString("group")
 
+	var audioRequest AudioRequest
+	err := common.UnmarshalBodyReusable(c, &audioRequest)
+	if err != nil {
+		return errorWrapper(err, "bind_request_body_failed", http.StatusBadRequest)
+	}
+
+	// request validation
+	if audioRequest.Model == "" {
+		return errorWrapper(errors.New("model is required"), "required_field_missing", http.StatusBadRequest)
+	}
+
+	if strings.HasPrefix(audioRequest.Model, "tts-1") {
+		if audioRequest.Voice == "" {
+			return errorWrapper(errors.New("voice is required"), "required_field_missing", http.StatusBadRequest)
+		}
+		if !common.StringsContains(availableVoices, audioRequest.Voice) {
+			return errorWrapper(errors.New("voice must be one of "+strings.Join(availableVoices, ", ")), "invalid_field_value", http.StatusBadRequest)
+		}
+	}
+
 	preConsumedTokens := common.PreConsumedQuota
-	modelRatio := common.GetModelRatio(audioModel)
+	modelRatio := common.GetModelRatio(audioRequest.Model)
 	groupRatio := common.GetGroupRatio(group)
 	ratio := modelRatio * groupRatio
 	preConsumedQuota := int(float64(preConsumedTokens) * ratio)
@@ -58,8 +87,8 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 		if err != nil {
 			return errorWrapper(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
 		}
-		if modelMap[audioModel] != "" {
-			audioModel = modelMap[audioModel]
+		if modelMap[audioRequest.Model] != "" {
+			audioRequest.Model = modelMap[audioRequest.Model]
 		}
 	}
 
@@ -97,9 +126,20 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 
 	defer func(ctx context.Context) {
 		go func() {
-			quota := countTokenText(audioResponse.Text, audioModel)
+			quota := 0
+			var promptTokens = 0
+			if strings.HasPrefix(audioRequest.Model, "tts-1") {
+				quota = countAudioToken(audioRequest.Input, audioRequest.Model)
+				promptTokens = quota
+			} else {
+				quota = countAudioToken(audioResponse.Text, audioRequest.Model)
+			}
+			quota = int(float64(quota) * ratio)
+			if ratio != 0 && quota <= 0 {
+				quota = 1
+			}
 			quotaDelta := quota - preConsumedQuota
-			err := model.PostConsumeTokenQuota(tokenId, userQuota, quotaDelta, preConsumedQuota)
+			err := model.PostConsumeTokenQuota(tokenId, userQuota, quotaDelta, preConsumedQuota, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}
@@ -110,7 +150,7 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 			if quota != 0 {
 				tokenName := c.GetString("token_name")
 				logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f", modelRatio, groupRatio)
-				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, audioModel, tokenName, quota, logContent, tokenId)
+				model.RecordConsumeLog(ctx, userId, channelId, promptTokens, 0, audioRequest.Model, tokenName, quota, logContent, tokenId)
 				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 				channelId := c.GetInt("channel_id")
 				model.UpdateChannelUsedQuota(channelId, quota)
@@ -127,9 +167,13 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	if err != nil {
 		return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError)
 	}
-	err = json.Unmarshal(responseBody, &audioResponse)
-	if err != nil {
-		return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError)
+	if strings.HasPrefix(audioRequest.Model, "tts-1") {
+
+	} else {
+		err = json.Unmarshal(responseBody, &audioResponse)
+		if err != nil {
+			return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError)
+		}
 	}
 
 	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))

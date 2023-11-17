@@ -59,7 +59,7 @@ func requestOpenAI2PaLM(textRequest GeneralOpenAIRequest) *PaLMChatRequest {
 	}
 	for _, message := range textRequest.Messages {
 		palmMessage := PaLMChatMessage{
-			Content: message.Content,
+			Content: string(message.Content),
 		}
 		if message.Role == "user" {
 			palmMessage.Author = "0"
@@ -76,11 +76,12 @@ func responsePaLM2OpenAI(response *PaLMChatResponse) *OpenAITextResponse {
 		Choices: make([]OpenAITextResponseChoice, 0, len(response.Candidates)),
 	}
 	for i, candidate := range response.Candidates {
+		content, _ := json.Marshal(candidate.Content)
 		choice := OpenAITextResponseChoice{
 			Index: i,
 			Message: Message{
 				Role:    "assistant",
-				Content: candidate.Content,
+				Content: content,
 			},
 			FinishReason: "stop",
 		}

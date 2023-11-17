@@ -88,18 +88,18 @@ func requestOpenAI2Ali(request GeneralOpenAIRequest) *AliChatRequest {
 		message := request.Messages[i]
 		if message.Role == "system" {
 			messages = append(messages, AliMessage{
-				User: message.Content,
+				User: string(message.Content),
 				Bot:  "Okay",
 			})
 			continue
 		} else {
 			if i == len(request.Messages)-1 {
-				prompt = message.Content
+				prompt = string(message.Content)
 				break
 			}
 			messages = append(messages, AliMessage{
-				User: message.Content,
-				Bot:  request.Messages[i+1].Content,
+				User: string(message.Content),
+				Bot:  string(request.Messages[i+1].Content),
 			})
 			i++
 		}
@@ -184,11 +184,12 @@ func embeddingResponseAli2OpenAI(response *AliEmbeddingResponse) *OpenAIEmbeddin
 }
 
 func responseAli2OpenAI(response *AliChatResponse) *OpenAITextResponse {
+	content, _ := json.Marshal(response.Output.Text)
 	choice := OpenAITextResponseChoice{
 		Index: 0,
 		Message: Message{
 			Role:    "assistant",
-			Content: response.Output.Text,
+			Content: content,
 		},
 		FinishReason: response.Output.FinishReason,
 	}

@@ -86,9 +86,10 @@ func buildTestRequest() *ChatRequest {
 		Model:     "", // this will be set later
 		MaxTokens: 1,
 	}
+	content, _ := json.Marshal("hi")
 	testMessage := Message{
 		Role:    "user",
-		Content: "hi",
+		Content: content,
 	}
 	testRequest.Messages = append(testRequest.Messages, testMessage)
 	return testRequest
@@ -180,11 +181,16 @@ func testAllChannels(notify bool) error {
 			err, openaiErr := testChannel(channel, *testRequest)
 			tok := time.Now()
 			milliseconds := tok.Sub(tik).Milliseconds()
+
+			ban := false
 			if milliseconds > disableThreshold {
 				err = errors.New(fmt.Sprintf("响应时间 %.2fs 超过阈值 %.2fs", float64(milliseconds)/1000.0, float64(disableThreshold)/1000.0))
-				disableChannel(channel.Id, channel.Name, err.Error())
+				ban = true
 			}
-			ban := true
+			if openaiErr != nil {
+				err = errors.New(fmt.Sprintf("type %s, code %v, message %s", openaiErr.Type, openaiErr.Code, openaiErr.Message))
+				ban = true
+			}
 			// parse *int to bool
 			if channel.AutoBan != nil && *channel.AutoBan == 0 {
 				ban = false

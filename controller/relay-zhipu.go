@@ -114,7 +114,7 @@ func requestOpenAI2Zhipu(request GeneralOpenAIRequest) *ZhipuRequest {
 		if message.Role == "system" {
 			messages = append(messages, ZhipuMessage{
 				Role:    "system",
-				Content: message.Content,
+				Content: string(message.Content),
 			})
 			messages = append(messages, ZhipuMessage{
 				Role:    "user",
@@ -123,7 +123,7 @@ func requestOpenAI2Zhipu(request GeneralOpenAIRequest) *ZhipuRequest {
 		} else {
 			messages = append(messages, ZhipuMessage{
 				Role:    message.Role,
-				Content: message.Content,
+				Content: string(message.Content),
 			})
 		}
 	}
@@ -144,11 +144,12 @@ func responseZhipu2OpenAI(response *ZhipuResponse) *OpenAITextResponse {
 		Usage:   response.Data.Usage,
 	}
 	for i, choice := range response.Data.Choices {
+		content, _ := json.Marshal(strings.Trim(choice.Content, "\""))
 		openaiChoice := OpenAITextResponseChoice{
 			Index: i,
 			Message: Message{
 				Role:    choice.Role,
-				Content: strings.Trim(choice.Content, "\""),
+				Content: content,
 			},
 			FinishReason: "",
 		}

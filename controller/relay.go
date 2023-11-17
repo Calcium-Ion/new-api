@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,9 +13,20 @@ import (
 )
 
 type Message struct {
-	Role    string  `json:"role"`
-	Content string  `json:"content"`
-	Name    *string `json:"name,omitempty"`
+	Role    string          `json:"role"`
+	Content json.RawMessage `json:"content"`
+	Name    *string         `json:"name,omitempty"`
+}
+
+type MediaMessage struct {
+	Type     string          `json:"type"`
+	Text     string          `json:"text"`
+	ImageUrl MessageImageUrl `json:"image_url,omitempty"`
+}
+
+type MessageImageUrl struct {
+	Url    string `json:"url"`
+	Detail string `json:"detail"`
 }
 
 const (
@@ -70,6 +82,12 @@ func (r GeneralOpenAIRequest) ParseInput() []string {
 	return input
 }
 
+type AudioRequest struct {
+	Model string `json:"model"`
+	Voice string `json:"voice"`
+	Input string `json:"input"`
+}
+
 type ChatRequest struct {
 	Model     string    `json:"model"`
 	Messages  []Message `json:"messages"`
@@ -85,11 +103,13 @@ type TextRequest struct {
 }
 
 type ImageRequest struct {
-	Model   string `json:"model"`
-	Quality string `json:"quality"`
-	Prompt  string `json:"prompt"`
-	N       int    `json:"n"`
-	Size    string `json:"size"`
+	Model          string `json:"model"`
+	Prompt         string `json:"prompt"`
+	N              int    `json:"n"`
+	Size           string `json:"size"`
+	Quality        string `json:"quality,omitempty"`
+	ResponseFormat string `json:"response_format,omitempty"`
+	Style          string `json:"style,omitempty"`
 }
 
 type AudioResponse struct {
