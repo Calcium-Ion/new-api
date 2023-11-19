@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/chai2010/webp"
 	"github.com/gin-gonic/gin"
 	"github.com/pkoukk/tiktoken-go"
 	"image"
@@ -75,29 +74,21 @@ func getImageToken(imageUrl MessageImageUrl) (int, error) {
 	if imageUrl.Detail == "low" {
 		return 85, nil
 	}
-
-	response, err := http.Get(imageUrl.Url)
+	var config image.Config
+	var err error
+	if strings.HasPrefix(imageUrl.Url, "http") {
+		common.SysLog(fmt.Sprintf("downloading image: %s", imageUrl.Url))
+		config, err = common.DecodeUrlImageData(imageUrl.Url)
+	} else {
+		common.SysLog(fmt.Sprintf("decoding image"))
+		config, err = common.DecodeBase64ImageData(imageUrl.Url)
+	}
 	if err != nil {
-		fmt.Println("Error: Failed to get the URL")
 		return 0, err
 	}
 
-	// 限制读取的字节数，防止下载整个图片
-	limitReader := io.LimitReader(response.Body, 8192)
-
-	response.Body.Close()
-
-	// 读取图片的头部信息来获取图片尺寸
-	config, _, err := image.DecodeConfig(limitReader)
-	if err != nil {
-		common.SysLog(fmt.Sprintf("fail to decode image config(gif, jpg, png): %s", err.Error()))
-		config, err = webp.DecodeConfig(limitReader)
-		if err != nil {
-			common.SysLog(fmt.Sprintf("fail to decode image config(webp): %s", err.Error()))
-		}
-	}
 	if config.Width == 0 || config.Height == 0 {
-		return 0, errors.New(fmt.Sprintf("fail to decode image config: %s", err.Error()))
+		return 0, errors.New(fmt.Sprintf("fail to decode image config: %s", imageUrl.Url))
 	}
 	if config.Width < 512 && config.Height < 512 {
 		if imageUrl.Detail == "auto" || imageUrl.Detail == "" {

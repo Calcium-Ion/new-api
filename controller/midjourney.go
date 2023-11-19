@@ -19,12 +19,12 @@ import (
 func UpdateMidjourneyTask() {
 	//revocer
 	imageModel := "midjourney"
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("UpdateMidjourneyTask panic: %v", err)
+		}
+	}()
 	for {
-		defer func() {
-			if err := recover(); err != nil {
-				log.Printf("UpdateMidjourneyTask panic: %v", err)
-			}
-		}()
 		time.Sleep(time.Duration(15) * time.Second)
 		tasks := model.GetAllUnFinishTasks()
 		if len(tasks) != 0 {
@@ -55,7 +55,6 @@ func UpdateMidjourneyTask() {
 				// 设置超时时间
 				timeout := time.Second * 5
 				ctx, cancel := context.WithTimeout(context.Background(), timeout)
-				defer cancel()
 
 				// 使用带有超时的 context 创建新的请求
 				req = req.WithContext(ctx)
@@ -68,8 +67,8 @@ func UpdateMidjourneyTask() {
 					log.Printf("UpdateMidjourneyTask error: %v", err)
 					continue
 				}
-				defer resp.Body.Close()
 				responseBody, err := io.ReadAll(resp.Body)
+				resp.Body.Close()
 				log.Printf("responseBody: %s", string(responseBody))
 				var responseItem Midjourney
 				// err = json.NewDecoder(resp.Body).Decode(&responseItem)
@@ -83,12 +82,12 @@ func UpdateMidjourneyTask() {
 						if err1 == nil && err2 == nil {
 							jsonData, err3 := json.Marshal(responseWithoutStatus)
 							if err3 != nil {
-								log.Fatalf("UpdateMidjourneyTask error1: %v", err3)
+								log.Printf("UpdateMidjourneyTask error1: %v", err3)
 								continue
 							}
 							err4 := json.Unmarshal(jsonData, &responseStatus)
 							if err4 != nil {
-								log.Fatalf("UpdateMidjourneyTask error2: %v", err4)
+								log.Printf("UpdateMidjourneyTask error2: %v", err4)
 								continue
 							}
 							responseItem.Status = strconv.Itoa(responseStatus.Status)
@@ -138,6 +137,7 @@ func UpdateMidjourneyTask() {
 					log.Printf("UpdateMidjourneyTask error5: %v", err)
 				}
 				log.Printf("UpdateMidjourneyTask success: %v", task)
+				cancel()
 			}
 		}
 	}
