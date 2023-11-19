@@ -32,10 +32,17 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	group := c.GetString("group")
 
 	var audioRequest AudioRequest
-	err := common.UnmarshalBodyReusable(c, &audioRequest)
-	if err != nil {
-		return errorWrapper(err, "bind_request_body_failed", http.StatusBadRequest)
+	if !strings.HasPrefix(c.Request.URL.Path, "/v1/audio/transcriptions") {
+		err := common.UnmarshalBodyReusable(c, &audioRequest)
+		if err != nil {
+			return errorWrapper(err, "bind_request_body_failed", http.StatusBadRequest)
+		}
+	} else {
+		audioRequest = AudioRequest{
+			Model: "whisper-1",
+		}
 	}
+	//err := common.UnmarshalBodyReusable(c, &audioRequest)
 
 	// request validation
 	if audioRequest.Model == "" {

@@ -82,10 +82,10 @@ func getImageToken(imageUrl MessageImageUrl) (int, error) {
 		return 0, err
 	}
 
-	defer response.Body.Close()
-
 	// 限制读取的字节数，防止下载整个图片
 	limitReader := io.LimitReader(response.Body, 8192)
+
+	response.Body.Close()
 
 	// 读取图片的头部信息来获取图片尺寸
 	config, _, err := image.DecodeConfig(limitReader)

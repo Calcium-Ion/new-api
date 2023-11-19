@@ -46,7 +46,7 @@ func Distribute() func(c *gin.Context) {
 				if modelRequest.Model == "" {
 					modelRequest.Model = "midjourney"
 				}
-			} else {
+			} else if !strings.HasPrefix(c.Request.URL.Path, "/v1/audio/transcriptions") {
 				err = common.UnmarshalBodyReusable(c, &modelRequest)
 			}
 			if err != nil {
