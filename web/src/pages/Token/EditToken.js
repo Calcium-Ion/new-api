@@ -71,42 +71,94 @@ const EditToken = (props) => {
         }
     }, [props.editingToken.id]);
 
+    // 新增 state 变量 tokenCount 来记录用户想要创建的令牌数量，默认为 1
+    const [tokenCount, setTokenCount] = useState(1);
+
+    // 新增处理 tokenCount 变化的函数
+    const handleTokenCountChange = (value) => {
+        // 确保用户输入的是正整数
+        const count = parseInt(value, 10);
+        if (!isNaN(count) && count > 0) {
+            setTokenCount(count);
+        }
+    };
+
+    // 生成一个随机的四位字母数字字符串
+    const generateRandomSuffix = () => {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 6; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+    };
+
     const submit = async () => {
-        if (!isEdit && inputs.name === '') return;
         setLoading(true);
-        let localInputs = inputs;
-        localInputs.remain_quota = parseInt(localInputs.remain_quota);
-        if (localInputs.expired_time !== -1) {
-            let time = Date.parse(localInputs.expired_time);
-            if (isNaN(time)) {
-                showError('过期时间格式错误！');
-                return;
-            }
-            localInputs.expired_time = Math.ceil(time / 1000);
-        }
-        let res;
         if (isEdit) {
-            res = await API.put(`/api/token/`, {...localInputs, id: parseInt(props.editingToken.id)});
-        } else {
-            res = await API.post(`/api/token/`, localInputs);
-        }
-        const {success, message} = res.data;
-        if (success) {
-            if (isEdit) {
+            // 编辑令牌的逻辑保持不变
+            let localInputs = {...inputs};
+            localInputs.remain_quota = parseInt(localInputs.remain_quota);
+            if (localInputs.expired_time !== -1) {
+                let time = Date.parse(localInputs.expired_time);
+                if (isNaN(time)) {
+                    showError('过期时间格式错误！');
+                    setLoading(false);
+                    return;
+                }
+                localInputs.expired_time = Math.ceil(time / 1000);
+            }
+
+            let res = await API.put(`/api/token/`, {...localInputs, id: parseInt(props.editingToken.id)});
+            const {success, message} = res.data;
+            if (success) {
                 showSuccess('令牌更新成功！');
                 props.refresh();
                 props.handleClose();
             } else {
-                showSuccess('令牌创建成功，请在列表页面点击复制获取令牌！');
-                setInputs(originInputs);
-                props.refresh();
-                props.handleClose();
+                showError(message);
             }
         } else {
-            showError(message);
+            // 处理新增多个令牌的情况
+            let successCount = 0; // 记录成功创建的令牌数量
+            for (let i = 0; i < tokenCount; i++) {
+                let localInputs = {...inputs};
+                // 如果用户想要创建多个令牌，则给每个令牌一个序号后缀
+                localInputs.name = `${inputs.name}-${generateRandomSuffix()}`;
+                localInputs.remain_quota = parseInt(localInputs.remain_quota);
+
+                if (localInputs.expired_time !== -1) {
+                    let time = Date.parse(localInputs.expired_time);
+                    if (isNaN(time)) {
+                        showError('过期时间格式错误！');
+                        setLoading(false);
+                        break;
+                    }
+                    localInputs.expired_time = Math.ceil(time / 1000);
+                }
+
+                let res = await API.post(`/api/token/`, localInputs);
+                const {success, message} = res.data;
+
+                if (success) {
+                    successCount++;
+                } else {
+                    showError(message);
+                    break; // 如果创建失败，终止循环
+                }
+            }
+
+            if (successCount > 0) {
+                showSuccess(`${successCount}个令牌创建成功，请在列表页面点击复制获取令牌！`);
+            }
         }
         setLoading(false);
+        setInputs(originInputs); // 重置表单
+        setTokenCount(1); // 重置数量为默认值
+        props.refresh();
+        props.handleClose();
     };
+
 
 
     return (
@@ -131,7 +183,7 @@ const EditToken = (props) => {
             >
                 <Spin spinning={loading}>
                     <Input
-                        style={{ marginTop: 20 }}
+                        style={{marginTop: 20}}
                         label='名称'
                         name='name'
                         placeholder={'请输入名称'}
@@ -150,7 +202,7 @@ const EditToken = (props) => {
                         autoComplete='new-password'
                         type='dateTime'
                     />
-                    <div style={{ marginTop: 20 }}>
+                    <div style={{marginTop: 20}}>
                         <Space>
                             <Button type={'tertiary'} onClick={() => {
                                 setExpiredTime(0, 0, 0, 0);
@@ -168,12 +220,13 @@ const EditToken = (props) => {
                     </div>
 
                     <Divider/>
-                    <Banner type={'warning'} description={'注意，令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制。'}></Banner>
-                    <div style={{ marginTop: 20 }}>
+                    <Banner type={'warning'}
+                            description={'注意，令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制。'}></Banner>
+                    <div style={{marginTop: 20}}>
                         <Typography.Text>{`额度${renderQuotaWithPrompt(remain_quota)}`}</Typography.Text>
                     </div>
                     <AutoComplete
-                        style={{ marginTop: 8 }}
+                        style={{marginTop: 8}}
                         name='remain_quota'
                         placeholder={'请输入额度'}
                         onChange={(value) => handleInputChange('remain_quota', value)}
@@ -191,8 +244,31 @@ const EditToken = (props) => {
                         ]}
                         disabled={unlimited_quota}
                     />
+                    <div style={{marginTop: 20}}>
+                        <Typography.Text>{`新建数量`}</Typography.Text>
+                    </div>
+                    {!isEdit && (
+                        <AutoComplete
+                            style={{ marginTop: 8 }}
+                            label='数量'
+                            placeholder={'请选择或输入创建令牌的数量'}
+                            onChange={(value) => handleTokenCountChange(value)}
+                            onSelect={(value) => handleTokenCountChange(value)}
+                            value={tokenCount.toString()}
+                            autoComplete='off'
+                            type='number'
+                            data={[
+                                { value: 10, label: '10个' },
+                                { value: 20, label: '20个' },
+                                { value: 30, label: '30个' },
+                                { value: 100, label: '100个' },
+                            ]}
+                            disabled={unlimited_quota}
+                        />
+                    )}
+
                     <div>
-                        <Button style={{ marginTop: 8 }} type={'warning'} onClick={() => {
+                        <Button style={{marginTop: 8}} type={'warning'} onClick={() => {
                             setUnlimitedQuota();
                         }}>{unlimited_quota ? '取消无限额度' : '设为无限额度'}</Button>
                     </div>
