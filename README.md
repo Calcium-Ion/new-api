@@ -30,9 +30,6 @@
 6. 分页支持选择每页显示数量
 7. 支持gpt-4-1106-vision-preview，dall-e-3，tts-1
 
-## 交流群
-<img src="https://github.com/Calcium-Ion/new-api/assets/61247483/de536a8a-0161-47a7-a0a2-66ef6de81266" width="500">
-
 ## 界面截图
 ![image](https://github.com/Calcium-Ion/new-api/assets/61247483/d1ac216e-0804-4105-9fdc-66b35022d861)
 
