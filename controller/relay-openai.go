@@ -88,30 +88,28 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	return nil, responseText
 }
 
-func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage) {
+func openaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage) {
 	var textResponse TextResponse
-	if consumeQuota {
-		responseBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return errorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
-		}
-		err = resp.Body.Close()
-		if err != nil {
-			return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
-		}
-		err = json.Unmarshal(responseBody, &textResponse)
-		if err != nil {
-			return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
-		}
-		if textResponse.Error.Type != "" {
-			return &OpenAIErrorWithStatusCode{
-				OpenAIError: textResponse.Error,
-				StatusCode:  resp.StatusCode,
-			}, nil
-		}
-		// Reset response body
-		resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
 	}
+	err = resp.Body.Close()
+	if err != nil {
+		return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = json.Unmarshal(responseBody, &textResponse)
+	if err != nil {
+		return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+	if textResponse.Error.Type != "" {
+		return &OpenAIErrorWithStatusCode{
+			OpenAIError: textResponse.Error,
+			StatusCode:  resp.StatusCode,
+		}, nil
+	}
+	// Reset response body
+	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	// We shouldn't set the header before we parse the response body, because the parse part may fail.
 	// And then we will have to send an error response, but in this case, the header has already been set.
 	// So the httpClient will be confused by the response.
@@ -120,7 +118,7 @@ func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promp
 		c.Writer.Header().Set(k, v[0])
 	}
 	c.Writer.WriteHeader(resp.StatusCode)
-	_, err := io.Copy(c.Writer, resp.Body)
+	_, err = io.Copy(c.Writer, resp.Body)
 	if err != nil {
 		return errorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
 	}
