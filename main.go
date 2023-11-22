@@ -83,6 +83,12 @@ func main() {
 		common.SysLog("batch update enabled with interval " + strconv.Itoa(common.BatchUpdateInterval) + "s")
 		model.InitBatchUpdater()
 	}
+
+	if os.Getenv("ENABLE_PPROF") == "true" {
+		go common.Monitor()
+		common.SysLog("pprof enabled")
+	}
+
 	controller.InitTokenEncoders()
 
 	// Initialize HTTP server

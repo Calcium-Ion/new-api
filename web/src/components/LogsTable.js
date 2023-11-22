@@ -106,7 +106,7 @@ const LogsTable = () => {
                 return (
                     record.type === 0 || record.type === 2 ?
                         <div>
-                            <Tag color='grey' size='large' onClick={()=>{
+                            <Tag color='grey' size='large' onClick={() => {
                                 copyText(text)
                             }}> {text} </Tag>
                         </div>
@@ -133,7 +133,7 @@ const LogsTable = () => {
                 return (
                     record.type === 0 || record.type === 2 ?
                         <div>
-                            <Tag color={stringToColor(text)} size='large' onClick={()=>{
+                            <Tag color={stringToColor(text)} size='large' onClick={() => {
                                 copyText(text)
                             }}> {text} </Tag>
                         </div>
@@ -202,11 +202,12 @@ const LogsTable = () => {
     const [logType, setLogType] = useState(0);
     const isAdminUser = isAdmin();
     let now = new Date();
+    // 初始化start_timestamp为前一天
     const [inputs, setInputs] = useState({
         username: '',
         token_name: '',
         model_name: '',
-        start_timestamp: timestamp2string(0),
+        start_timestamp: timestamp2string(now.getTime() / 1000 - 86400),
         end_timestamp: timestamp2string(now.getTime() / 1000 + 3600),
         channel: ''
     });
@@ -338,7 +339,7 @@ const LogsTable = () => {
             showSuccess('已复制：' + text);
         } else {
             // setSearchKeyword(text);
-            Modal.error({ title: '无法复制到剪贴板，请手动复制', content: text });
+            Modal.error({title: '无法复制到剪贴板，请手动复制', content: text});
         }
     }
 
@@ -412,10 +413,12 @@ const LogsTable = () => {
                                     name='model_name'
                                     onChange={value => handleInputChange(value, 'model_name')}/>
                         <Form.DatePicker field="start_timestamp" label='起始时间' style={{width: 272}}
+                                         initValue={start_timestamp}
                                          value={start_timestamp} type='dateTime'
                                          name='start_timestamp'
                                          onChange={value => handleInputChange(value, 'start_timestamp')}/>
                         <Form.DatePicker field="end_timestamp" fluid label='结束时间' style={{width: 272}}
+                                         initValue={end_timestamp}
                                          value={end_timestamp} type='dateTime'
                                          name='end_timestamp'
                                          onChange={value => handleInputChange(value, 'end_timestamp')}/>

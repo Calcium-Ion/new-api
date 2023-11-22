@@ -220,28 +220,30 @@ func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuo
 	}
 
 	if sendEmail {
-		quotaTooLow := userQuota >= common.QuotaRemindThreshold && userQuota-(quota+preConsumedQuota) < common.QuotaRemindThreshold
-		noMoreQuota := userQuota-(quota+preConsumedQuota) <= 0
-		if quotaTooLow || noMoreQuota {
-			go func() {
-				email, err := GetUserEmail(token.UserId)
-				if err != nil {
-					common.SysError("failed to fetch user email: " + err.Error())
-				}
-				prompt := "您的额度即将用尽"
-				if noMoreQuota {
-					prompt = "您的额度已用尽"
-				}
-				if email != "" {
-					topUpLink := fmt.Sprintf("%s/topup", common.ServerAddress)
-					err = common.SendEmail(prompt, email,
-						fmt.Sprintf("%s，当前剩余额度为 %d，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='%s'>%s</a>", prompt, userQuota, topUpLink, topUpLink))
+		if (quota + preConsumedQuota) != 0 {
+			quotaTooLow := userQuota >= common.QuotaRemindThreshold && userQuota-(quota+preConsumedQuota) < common.QuotaRemindThreshold
+			noMoreQuota := userQuota-(quota+preConsumedQuota) <= 0
+			if quotaTooLow || noMoreQuota {
+				go func() {
+					email, err := GetUserEmail(token.UserId)
 					if err != nil {
-						common.SysError("failed to send email" + err.Error())
+						common.SysError("failed to fetch user email: " + err.Error())
 					}
-					common.SysLog("user quota is low, consumed quota: " + strconv.Itoa(quota) + ", user quota: " + strconv.Itoa(userQuota))
-				}
-			}()
+					prompt := "您的额度即将用尽"
+					if noMoreQuota {
+						prompt = "您的额度已用尽"
+					}
+					if email != "" {
+						topUpLink := fmt.Sprintf("%s/topup", common.ServerAddress)
+						err = common.SendEmail(prompt, email,
+							fmt.Sprintf("%s，当前剩余额度为 %d，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='%s'>%s</a>", prompt, userQuota, topUpLink, topUpLink))
+						if err != nil {
+							common.SysError("failed to send email" + err.Error())
+						}
+						common.SysLog("user quota is low, consumed quota: " + strconv.Itoa(quota) + ", user quota: " + strconv.Itoa(userQuota))
+					}
+				}()
+			}
 		}
 	}
 

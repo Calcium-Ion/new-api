@@ -13,6 +13,17 @@ type Ability struct {
 	Priority  *int64 `json:"priority" gorm:"bigint;default:0;index"`
 }
 
+func GetGroupModels(group string) []string {
+	var abilities []Ability
+	//去重
+	DB.Where("`group` = ?", group).Distinct("model").Find(&abilities)
+	models := make([]string, 0, len(abilities))
+	for _, ability := range abilities {
+		models = append(models, ability.Model)
+	}
+	return models
+}
+
 func GetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
 	ability := Ability{}
 	groupCol := "`group`"
