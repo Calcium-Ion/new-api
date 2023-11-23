@@ -148,7 +148,16 @@ func GetAllMidjourney(c *gin.Context) {
 	if p < 0 {
 		p = 0
 	}
-	logs := model.GetAllTasks(p*common.ItemsPerPage, common.ItemsPerPage)
+
+	// 解析其他查询参数
+	queryParams := model.TaskQueryParams{
+		ChannelID:      c.Query("channel_id"),
+		MjID:           c.Query("mj_id"),
+		StartTimestamp: c.Query("start_timestamp"),
+		EndTimestamp:   c.Query("end_timestamp"),
+	}
+
+	logs := model.GetAllTasks(p*common.ItemsPerPage, common.ItemsPerPage, queryParams)
 	if logs == nil {
 		logs = make([]*model.Midjourney, 0)
 	}
@@ -164,9 +173,17 @@ func GetUserMidjourney(c *gin.Context) {
 	if p < 0 {
 		p = 0
 	}
+
 	userId := c.GetInt("id")
 	log.Printf("userId = %d \n", userId)
-	logs := model.GetAllUserTask(userId, p*common.ItemsPerPage, common.ItemsPerPage)
+
+	queryParams := model.TaskQueryParams{
+		MjID:           c.Query("mj_id"),
+		StartTimestamp: c.Query("start_timestamp"),
+		EndTimestamp:   c.Query("end_timestamp"),
+	}
+
+	logs := model.GetAllUserTask(userId, p*common.ItemsPerPage, common.ItemsPerPage, queryParams)
 	if logs == nil {
 		logs = make([]*model.Midjourney, 0)
 	}
