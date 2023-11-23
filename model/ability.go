@@ -14,14 +14,10 @@ type Ability struct {
 }
 
 func GetGroupModels(group string) []string {
-	var abilities []Ability
-	//去重 enabled = true
-	DB.Where("`group` = ? and enabled = ?", group, true).Find(&abilities)
-	models := make([]string, 0, len(abilities))
-	for _, ability := range abilities {
-		models = append(models, ability.Model)
-	}
-	return models
+    var models []string
+    // Find distinct models
+    DB.Table("abilities").Where("`group` = ? and enabled = ?", group, true).Distinct("model").Pluck("model", &models)
+    return models
 }
 
 func GetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
