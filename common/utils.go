@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 func OpenBrowser(url string) {
@@ -142,7 +143,7 @@ func init() {
 }
 
 func GenerateKey() string {
-	rand.Seed(time.Now().UnixNano())
+	//rand.Seed(time.Now().UnixNano())
 	key := make([]byte, 48)
 	for i := 0; i < 16; i++ {
 		key[i] = keyChars[rand.Intn(len(keyChars))]
@@ -159,7 +160,7 @@ func GenerateKey() string {
 }
 
 func GetRandomString(length int) string {
-	rand.Seed(time.Now().UnixNano())
+	//rand.Seed(time.Now().UnixNano())
 	key := make([]byte, length)
 	for i := 0; i < length; i++ {
 		key[i] = keyChars[rand.Intn(len(keyChars))]
@@ -215,4 +216,11 @@ func StringsContains(strs []string, str string) bool {
 		}
 	}
 	return false
+}
+
+// []byte only read, panic on append
+func StringToByteSlice(s string) []byte {
+	tmp1 := (*[2]uintptr)(unsafe.Pointer(&s))
+	tmp2 := [3]uintptr{tmp1[0], tmp1[1], tmp1[1]}
+	return *(*[]byte)(unsafe.Pointer(&tmp2))
 }
