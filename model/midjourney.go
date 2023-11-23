@@ -1,7 +1,5 @@
 package model
 
-import "one-api/common"
-
 type Midjourney struct {
 	Id          int    `json:"id"`
 	Code        int    `json:"code"`
@@ -22,29 +20,68 @@ type Midjourney struct {
 	ChannelId   int    `json:"channel_id"`
 }
 
-func GetAllUserTask(userId int, startIdx int, num int) []*Midjourney {
+// TaskQueryParams 用于包含所有搜索条件的结构体，可以根据需求添加更多字段
+type TaskQueryParams struct {
+	ChannelID      string
+	MjID           string
+	StartTimestamp string
+	EndTimestamp   string
+}
+
+func GetAllUserTask(userId int, startIdx int, num int, queryParams TaskQueryParams) []*Midjourney {
 	var tasks []*Midjourney
 	var err error
-	err = DB.Where("user_id = ?", userId).Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
+
+	// 初始化查询构建器
+	query := DB.Where("user_id = ?", userId)
+
+	if queryParams.MjID != "" {
+		query = query.Where("mj_id = ?", queryParams.MjID)
+	}
+	if queryParams.StartTimestamp != "" {
+		// 假设您已将前端传来的时间戳转换为数据库所需的时间格式，并处理了时间戳的验证和解析
+		query = query.Where("submit_time >= ?", queryParams.StartTimestamp)
+	}
+	if queryParams.EndTimestamp != "" {
+		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
+	}
+
+	// 获取数据
+	err = query.Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
 	if err != nil {
 		return nil
 	}
-	for _, task := range tasks {
-		task.ImageUrl = common.ServerAddress + "/mj/image/" + task.MjId
-	}
+
 	return tasks
 }
 
-func GetAllTasks(startIdx int, num int) []*Midjourney {
+func GetAllTasks(startIdx int, num int, queryParams TaskQueryParams) []*Midjourney {
 	var tasks []*Midjourney
 	var err error
-	err = DB.Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
+
+	// 初始化查询构建器
+	query := DB
+
+	// 添加过滤条件
+	if queryParams.ChannelID != "" {
+		query = query.Where("channel_id = ?", queryParams.ChannelID)
+	}
+	if queryParams.MjID != "" {
+		query = query.Where("mj_id = ?", queryParams.MjID)
+	}
+	if queryParams.StartTimestamp != "" {
+		query = query.Where("submit_time >= ?", queryParams.StartTimestamp)
+	}
+	if queryParams.EndTimestamp != "" {
+		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
+	}
+
+	// 获取数据
+	err = query.Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
 	if err != nil {
 		return nil
 	}
-	for _, task := range tasks {
-		task.ImageUrl = common.ServerAddress + "/mj/image/" + task.MjId
-	}
+
 	return tasks
 }
 

@@ -1,409 +1,432 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Form, Header, Label, Pagination, Segment, Select, Table,Modal } from 'semantic-ui-react';
-import { API, isAdmin, showError, timestamp2string } from '../helpers';
+import React, {useEffect, useState} from 'react';
+import {Label} from 'semantic-ui-react';
+import {API, copy, isAdmin, showError, showSuccess, timestamp2string} from '../helpers';
 
-import { ITEMS_PER_PAGE } from '../constants';
-import { renderQuota } from '../helpers/render';
-import {Link} from "react-router-dom";
+import {Table, Avatar, Tag, Form, Button, Layout, Select, Popover, Modal } from '@douyinfe/semi-ui';
+import {ITEMS_PER_PAGE} from '../constants';
+import {renderNumber, renderQuota, stringToColor} from '../helpers/render';
 
-function renderTimestamp(timestamp) {
-  return (
-    <>
-      {timestamp2string(timestamp)}
-    </>
-  );
-}
 
-const MODE_OPTIONS = [
-  { key: 'all', text: '全部用户', value: 'all' },
-  { key: 'self', text: '当前用户', value: 'self' }
-];
-
-const LOG_OPTIONS = [
-  { key: '0', text: '全部', value: 0 },
-  // { key: '1', text: '绘图', value: 1 },
-  // { key: '2', text: '放大', value: 2 },
-  // { key: '3', text: '变换', value: 3 },
-  // { key: '4', text: '图生文', value: 4 },
-  // { key: '5', text: '图片混合', value: 5 }
-];
+const colors = ['amber', 'blue', 'cyan', 'green', 'grey', 'indigo',
+    'light-blue', 'lime', 'orange', 'pink',
+    'purple', 'red', 'teal', 'violet', 'yellow'
+]
 
 function renderType(type) {
   switch (type) {
     case 'IMAGINE':
-      return <Label basic color='blue'> 绘图 </Label>;
+      return <Tag color="blue" size='large'>绘图</Tag>;
     case 'UPSCALE':
-      return <Label basic color='orange'> 放大 </Label>;
+      return <Tag color="orange" size='large'>放大</Tag>;
     case 'VARIATION':
-      return <Label basic color='purple'> 变换 </Label>;
+      return <Tag color="purple" size='large'>变换</Tag>;
     case 'DESCRIBE':
-      return <Label basic color='yellow'> 图生文 </Label>;
+      return <Tag color="yellow" size='large'>图生文</Tag>;
     case 'BLEAND':
-      return <Label basic color='olive'> 图混合 </Label>;
+      return <Tag color="olive" size='large'>图混合</Tag>;
     default:
-      return <Label basic color='black'> 未知 </Label>;
+      return <Tag color="black" size='large'>未知</Tag>;
   }
 }
 
-function renderCode(type) {
-  switch (type) {
+
+function renderCode(code) {
+  switch (code) {
     case 1:
-      return <Label basic color='green'> 已提交 </Label>;
+      return <Tag color="green" size='large'>已提交</Tag>;
     case 21:
-      return <Label basic color='olive'> 排队中 </Label>;
+      return <Tag color="olive" size='large'>排队中</Tag>;
     case 22:
-      return <Label basic color='orange'> 重复提交 </Label>;
+      return <Tag color="orange" size='large'>重复提交</Tag>;
     default:
-      return <Label basic color='black'> 未知 </Label>;
+      return <Tag color="black" size='large'>未知</Tag>;
   }
 }
+
 
 function renderStatus(type) {
+  // Ensure all cases are string literals by adding quotes.
   switch (type) {
     case 'SUCCESS':
-      return <Label basic color='green'> 成功 </Label>;
+      return <Tag color="green" size='large'>成功</Tag>;
     case 'NOT_START':
-      return <Label basic color='black'> 未启动 </Label>;
+      return <Tag color="grey" size='large'>未启动</Tag>;
     case 'SUBMITTED':
-      return <Label basic color='yellow'> 队列中 </Label>;
+      return <Tag color="yellow" size='large'>队列中</Tag>;
     case 'IN_PROGRESS':
-      return <Label basic color='blue'> 执行中 </Label>;
+      return <Tag color="blue" size='large'>执行中</Tag>;
     case 'FAILURE':
-      return <Label basic color='red'> 失败 </Label>;
+      return <Tag color="red" size='large'>失败</Tag>;
     default:
-      return <Label basic color='black'> 未知 </Label>;
+      return <Tag color="black" size='large'>未知</Tag>;
   }
 }
 
+const renderTimestamp = (timestampInSeconds) => {
+  const date = new Date(timestampInSeconds * 1000); // 从秒转换为毫秒
+
+  const year = date.getFullYear(); // 获取年份
+  const month = ('0' + (date.getMonth() + 1)).slice(-2); // 获取月份，从0开始需要+1，并保证两位数
+  const day = ('0' + date.getDate()).slice(-2); // 获取日期，并保证两位数
+  const hours = ('0' + date.getHours()).slice(-2); // 获取小时，并保证两位数
+  const minutes = ('0' + date.getMinutes()).slice(-2); // 获取分钟，并保证两位数
+  const seconds = ('0' + date.getSeconds()).slice(-2); // 获取秒钟，并保证两位数
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`; // 格式化输出
+};
+
+
+
 const LogsTable = () => {
-  const [logs, setLogs] = useState([
-
-  ]);
-  const [loading, setLoading] = useState(true);
-  const [activePage, setActivePage] = useState(1);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [logType, setLogType] = useState(0);
-  const isAdminUser = isAdmin();
-
-
-  let now = new Date();
-  const [inputs, setInputs] = useState({
-    username: '',
-    token_name: '',
-    model_name: '',
-    start_timestamp: timestamp2string(0),
-    end_timestamp: timestamp2string(now.getTime() / 1000 + 3600)
-  });
-  const { username, token_name, model_name, start_timestamp, end_timestamp } = inputs;
-
-  const [stat, setStat] = useState({
-    quota: 0,
-    token: 0
-  });
-
-  const [modalContent, setModalContent] = useState('');
-  const [showModal, setShowModal] = useState(false);
-
-  const showFullContent = (content) => {
-    setModalContent(content);
-    setShowModal(true);
-  };
-
-
-  const loadLogs = async (startIdx) => {
-    let url = '';
-    let localStartTimestamp = Date.parse(start_timestamp) / 1000;
-    let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    if (isAdminUser) {
-      url = `/api/mj/?p=${startIdx}&username=${username}&token_name=${token_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
-    } else {
-      url = `/api/mj/self/?p=${startIdx}&token_name=${token_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
-    }
-    const res = await API.get(url);
-    const { success, message, data } = res.data;
-    if (success) {
-      if (startIdx === 0) {
-        setLogs(data);
-      } else {
-        let newLogs = [...logs];
-        newLogs.splice(startIdx * ITEMS_PER_PAGE, data.length, ...data);
-        setLogs(newLogs);
-      }
-    } else {
-      showError(message);
-    }
-    setLoading(false);
-  };
-
-  const onPaginationChange = (e, { activePage }) => {
-    (async () => {
-      if (activePage === Math.ceil(logs.length / ITEMS_PER_PAGE) + 1) {
-        // In this case we have to load more data and then append them.
-        await loadLogs(activePage - 1);
-      }
-      setActivePage(activePage);
-    })();
-  };
-
-  const refresh = async () => {
-    setLoading(true);
-    setActivePage(1)
-    await loadLogs(0);
-    // if (isAdminUser) {
-    //   getLogStat().then();
-    // } else {
-    //   getLogSelfStat().then();
-    // }
-  };
-
-  useEffect(() => {
-    refresh().then();
-  }, [logType]);
-
-  const searchLogs = async () => {
-    if (searchKeyword === '') {
-      // if keyword is blank, load files instead.
-      await loadLogs(0);
-      setActivePage(1);
-      return;
-    }
-    setSearching(true);
-    const res = await API.get(`/api/log/self/search?keyword=${searchKeyword}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      setLogs(data);
-      setActivePage(1);
-    } else {
-      showError(message);
-    }
-    setSearching(false);
-  };
-
-  const handleKeywordChange = async (e, { value }) => {
-    setSearchKeyword(value.trim());
-  };
-
-  const sortLog = (key) => {
-    if (logs.length === 0) return;
-    setLoading(true);
-    let sortedLogs = [...logs];
-    if (typeof sortedLogs[0][key] === 'string'){
-      sortedLogs.sort((a, b) => {
-        return ('' + a[key]).localeCompare(b[key]);
-      });
-    } else {
-      sortedLogs.sort((a, b) => {
-        if (a[key] === b[key]) return 0;
-        if (a[key] > b[key]) return -1;
-        if (a[key] < b[key]) return 1;
-      });
-    }
-    if (sortedLogs[0].id === logs[0].id) {
-      sortedLogs.reverse();
-    }
-    setLogs(sortedLogs);
-    setLoading(false);
-  };
-
-  return (
-    <>
-      <Segment>
-        <Table basic compact size='small'>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  sortLog('submit_time');
-                }}
-                width={2}
-              >
-                提交时间
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    sortLog('action');
-                  }}
-                  width={1}
-              >
-                类型
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    sortLog('mj_id');
-                  }}
-                  width={2}
-              >
-                任务ID
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  sortLog('code');
-                }}
-                width={1}
-              >
-                提交结果
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    sortLog('status');
-                  }}
-                  width={1}
-              >
-                任务状态
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  sortLog('progress');
-                }}
-                width={1}
-              >
-                进度
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  sortLog('image_url');
-                }}
-                width={1}
-              >
-                结果图片
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  sortLog('prompt');
-                }}
-                width={3}
-              >
-                Prompt
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    sortLog('prompt_en');
-                  }}
-                  width={3}
-              >
-                PromptEn
-              </Table.HeaderCell>
-              <Table.HeaderCell
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    sortLog('fail_reason');
-                  }}
-                  width={1}
-              >
-                失败原因
-              </Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-
-          <Table.Body>
-            {logs
-              .slice(
-                (activePage - 1) * ITEMS_PER_PAGE,
-                activePage * ITEMS_PER_PAGE
-              )
-              .map((log, idx) => {
-                if (log.deleted) return <></>;
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalContent, setModalContent] = useState('');
+    const columns = [
+        {
+          title: '提交时间',
+          dataIndex: 'submit_time',
+          render: (text, record, index) => {
+            return (
+              <div>
+                {renderTimestamp(text / 1000)} 
+              </div>
+            );
+          },
+        },
+        {
+            title: '渠道',
+            dataIndex: 'channel_id',
+            className: isAdmin() ? 'tableShow' : 'tableHiddle',
+            render: (text, record, index) => {
                 return (
-                  <Table.Row key={log.created_at}>
-                    <Table.Cell>{renderTimestamp(log.submit_time/1000)}</Table.Cell>
-                    {/*{*/}
-                    {/*  isAdminUser && (*/}
-                    {/*    <Table.Cell>{log.username ? <Label>{log.username}</Label> : ''}</Table.Cell>*/}
-                    {/*  )*/}
-                    {/*}*/}
-                    <Table.Cell>{renderType(log.action)}</Table.Cell>
-                    <Table.Cell>{log.mj_id}</Table.Cell>
-                    <Table.Cell>{renderCode(log.code)}</Table.Cell>
-                    <Table.Cell>{renderStatus(log.status)}</Table.Cell>
-                    <Table.Cell>{log.progress ? <Label basic>{log.progress}</Label> : ''}</Table.Cell>
-                    <Table.Cell>
-                      {
-                        log.image_url ? (
-                            // <Link to={log.image_url} target='_blank'>点击查看</Link>
-                            <a href={log.image_url} target='_blank'>点击查看</a>
-                        ) : '暂未生成图片'
-                      }
-                    </Table.Cell>
-                    <Table.Cell>
-                      {log.prompt.length > 10
-                          ? <div>
-                            {log.prompt.slice(0, 10)}
-                            <a style={{cursor: "pointer"}} onClick={() => showFullContent(log.prompt)}>查看全部</a>
-                          </div>
-                          : log.prompt
-                      }
-                    </Table.Cell>
-                    <Table.Cell>
-                      {log.prompt_en.length > 10
-                          ? <div>
-                            {log.prompt_en.slice(0, 10)}
-                            <a style={{cursor: "pointer"}} onClick={() => showFullContent(log.prompt_en)}>查看全部</a>
-                          </div>
-                          : log.prompt_en
-                      }
-                    </Table.Cell>
-                    <Table.Cell>
-                      {log.fail_reason && log.fail_reason.length > 10
-                          ? <div>
-                            {log.fail_reason.slice(0, 10)}
-                            <a style={{cursor: "pointer"}} onClick={() => showFullContent(log.fail_reason)}>查看全部</a>
-                          </div>
-                          : log.fail_reason || '无'
-                      }
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
-          </Table.Body>
 
-          <Table.Footer>
-            <Table.Row>
-              <Table.HeaderCell colSpan={'9'}>
-                <Select
-                  placeholder='选择明细分类'
-                  options={LOG_OPTIONS}
-                  style={{ marginRight: '8px' }}
-                  name='logType'
-                  value={logType}
-                  onChange={(e, { name, value }) => {
-                    setLogType(value);
-                  }}
-                />
-                <Button size='small' onClick={refresh} loading={loading}>刷新</Button>
-                <Pagination
-                  floated='right'
-                  activePage={activePage}
-                  onPageChange={onPaginationChange}
-                  size='small'
-                  siblingRange={1}
-                  totalPages={
-                    Math.ceil(logs.length / ITEMS_PER_PAGE) +
-                    (logs.length % ITEMS_PER_PAGE === 0 ? 1 : 0)
-                  }
-                />
-              </Table.HeaderCell>
-            </Table.Row>
-          </Table.Footer>
-        </Table>
-      </Segment>
-      {/*Modal component goes here*/}
-      <Modal open={showModal} onClose={() => setShowModal(false)} centered>
-        <Modal.Content>
-          <pre style={{whiteSpace: "pre-wrap"}}>{modalContent}</pre>
-        </Modal.Content>
-      </Modal>
-    </>
-  );
+                            <div>
+                                <Tag color={colors[parseInt(text) % colors.length]} size='large' onClick={()=>{
+                                    copyText(text); // 假设copyText是用于文本复制的函数
+                                }}> {text} </Tag>
+                            </div>
+
+                );
+            },
+        },
+        {
+          title: '类型',
+          dataIndex: 'action',
+          render: (text, record, index) => {
+              return (
+                  <div>
+                      {renderType(text)}
+                  </div>
+              );
+          },
+        },
+        {
+            title: '任务ID',
+            dataIndex: 'mj_id',
+            render: (text, record, index) => {
+                return (
+                  <div>
+                    {text}
+                </div>
+                );
+            },
+        },
+        {
+          title: '提交结果',
+          dataIndex: 'code',
+          className: isAdmin() ? 'tableShow' : 'tableHiddle',
+          render: (text, record, index) => {
+              return (
+                <div>
+                 {renderCode(text)}
+               </div>
+              );
+          },
+        },
+        {
+            title: '任务状态',
+            dataIndex: 'status',
+            className: isAdmin() ? 'tableShow' : 'tableHiddle',
+            render: (text, record, index) => {
+                return (
+                  <div>
+                    {renderStatus(text)}
+                  </div>
+                );
+            },
+        },
+        {
+            title: '进度',
+            dataIndex: 'progress',
+            render: (text, record, index) => {
+                return (
+                  <div>
+                     {<span> {text} </span>}
+                  </div>
+                );
+            },
+        },
+        {
+          title: '结果图片',
+          dataIndex: 'image_url',
+          render: (text, record, index) => {
+            if (!text) {
+              return '无';
+            }
+            return (
+              <Button
+                onClick={() => {
+                  setModalImageUrl(text);  // 更新图片URL状态
+                  setIsModalOpenurl(true);    // 打开模态框
+                }}
+              >
+                查看图片
+              </Button>
+            );
+          }
+        },
+        {
+            title: 'Prompt',
+            dataIndex: 'prompt',
+            render: (text, record, index) => {
+              // 如果text未定义，返回替代文本，例如空字符串''或其他
+              if (!text) {
+                  return '无';
+              }
+      
+              return (
+                  text.length > 10 ?
+                      <>
+                          {text.slice(0, 10)}
+                          <Button
+                              onClick={() => {
+                                  setModalContent(text);
+                                  setIsModalOpen(true);
+                              }}
+                          >
+                              查看全部
+                          </Button>
+                      </>
+                      : text
+              );
+          }
+        },
+        {
+            title: 'PromptEn',
+            dataIndex: 'prompt_en',
+            render: (text, record, index) => {
+              // 如果text未定义，返回替代文本，例如空字符串''或其他
+              if (!text) {
+                  return '无';
+              }
+      
+              return (
+                  text.length > 10 ?
+                      <>
+                          {text.slice(0, 10)}
+                          <Button
+                              onClick={() => {
+                                  setModalContent(text);
+                                  setIsModalOpen(true);
+                              }}
+                          >
+                              查看全部
+                          </Button>
+                      </>
+                      : text
+              );
+          }
+        },
+        {
+            title: '失败原因',
+            dataIndex: 'fail_reason',
+            render: (text, record, index) => {
+              // 如果text未定义，返回替代文本，例如空字符串''或其他
+              if (!text) {
+                  return '无';
+              }
+      
+              return (
+                  text.length > 10 ?
+                      <>
+                          {text.slice(0, 10)}
+                          <Button
+                              onClick={() => {
+                                  setModalContent(text);
+                                  setIsModalOpen(true);
+                              }}
+                          >
+                              查看全部
+                          </Button>
+                      </>
+                      : text
+              );
+          }
+        }
+
+    ];
+
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activePage, setActivePage] = useState(1);
+    const [logCount, setLogCount] = useState(ITEMS_PER_PAGE);
+    const [logType, setLogType] = useState(0);
+    const isAdminUser = isAdmin();
+    const [isModalOpenurl, setIsModalOpenurl] = useState(false);
+
+    // 定义模态框图片URL的状态和更新函数
+    const [modalImageUrl, setModalImageUrl] = useState('');
+    let now = new Date();
+    // 初始化start_timestamp为前一天
+    const [inputs, setInputs] = useState({
+        channel_id: '',
+        mj_id: '',
+        start_timestamp: timestamp2string(now.getTime() / 1000 - 2592000),
+        end_timestamp: timestamp2string(now.getTime() / 1000 + 3600),
+    });
+    const {channel_id, mj_id,  start_timestamp, end_timestamp} = inputs;
+
+    const [stat, setStat] = useState({
+        quota: 0,
+        token: 0
+    });
+
+    const handleInputChange = (value, name) => {
+        setInputs((inputs) => ({...inputs, [name]: value}));
+    };
+
+
+
+    const setLogsFormat = (logs) => {
+        for (let i = 0; i < logs.length; i++) {
+            logs[i].timestamp2string = timestamp2string(logs[i].created_at);
+            logs[i].key = '' + logs[i].id;
+        }
+        // data.key = '' + data.id
+        setLogs(logs);
+        setLogCount(logs.length + ITEMS_PER_PAGE);
+        console.log(logCount);
+    }
+
+    const loadLogs = async (startIdx) => {
+        setLoading(true);
+
+        let url = '';
+        let localStartTimestamp = Date.parse(start_timestamp);
+        let localEndTimestamp = Date.parse(end_timestamp);
+        if (isAdminUser) {
+          url = `/api/mj/?p=${startIdx}&channel_id=${channel_id}&mj_id=${mj_id}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+        } else {
+          url = `/api/mj/self/?p=${startIdx}&mj_id=${mj_id}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+        }
+        const res = await API.get(url);
+        const {success, message, data} = res.data;
+        if (success) {
+            if (startIdx === 0) {
+                setLogsFormat(data);
+            } else {
+                let newLogs = [...logs];
+                newLogs.splice(startIdx * ITEMS_PER_PAGE, data.length, ...data);
+                setLogsFormat(newLogs);
+            }
+        } else {
+            showError(message);
+        }
+        setLoading(false);
+    };
+
+    const pageData = logs.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+
+    const handlePageChange = page => {
+        setActivePage(page);
+        if (page === Math.ceil(logs.length / ITEMS_PER_PAGE) + 1) {
+            // In this case we have to load more data and then append them.
+            loadLogs(page - 1).then(r => {
+            });
+        }
+    };
+
+    const refresh = async () => {
+        // setLoading(true);
+        setActivePage(1);
+        await loadLogs(0);
+    };
+
+    const copyText = async (text) => {
+        if (await copy(text)) {
+            showSuccess('已复制：' + text);
+        } else {
+            // setSearchKeyword(text);
+            Modal.error({title: '无法复制到剪贴板，请手动复制', content: text});
+        }
+    }
+
+    useEffect(() => {
+        refresh().then();
+    }, [logType]);
+
+
+
+
+    return (
+        <>
+         
+            <Layout>
+                <Form layout='horizontal' style={{marginTop: 10}}>
+                    <>
+                        <Form.Input field="channel_id" label='渠道 ID' style={{width: 176}} value={channel_id}
+                                    placeholder={'可选值'} name='channel_id'
+                                    onChange={value => handleInputChange(value, 'channel_id')}/>
+                        <Form.Input field="mj_id" label='任务 ID' style={{width: 176}} value={mj_id}
+                                    placeholder='可选值'
+                                    name='mj_id'
+                                    onChange={value => handleInputChange(value, 'mj_id')}/>
+                        <Form.DatePicker field="start_timestamp" label='起始时间' style={{width: 272}}
+                                         initValue={start_timestamp}
+                                         value={start_timestamp} type='dateTime'
+                                         name='start_timestamp'
+                                         onChange={value => handleInputChange(value, 'start_timestamp')}/>
+                        <Form.DatePicker field="end_timestamp" fluid label='结束时间' style={{width: 272}}
+                                         initValue={end_timestamp}
+                                         value={end_timestamp} type='dateTime'
+                                         name='end_timestamp'
+                                         onChange={value => handleInputChange(value, 'end_timestamp')}/>
+
+                        <Form.Section>
+                            <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
+                                    onClick={refresh}>查询</Button>
+                        </Form.Section>
+                    </>
+                </Form>
+                <Table columns={columns} dataSource={pageData} pagination={{
+                    currentPage: activePage,
+                    pageSize: ITEMS_PER_PAGE,
+                    total: logCount,
+                    pageSizeOpts: [10, 20, 50, 100],
+                    onPageChange: handlePageChange,
+                }} loading={loading}/>
+                <Modal
+                    visible={isModalOpen}
+                    onOk={() => setIsModalOpen(false)}
+                    onCancel={() => setIsModalOpen(false)}
+                    closable={null}
+                    bodyStyle={{ height: '400px', overflow: 'auto' }} // 设置模态框内容区域样式
+                    width={800} // 设置模态框宽度
+                >
+                    <p style={{ whiteSpace: 'pre-line' }}>{modalContent}</p>
+                </Modal>
+                {/* 模态框组件，用于展示图片 */}
+               <Modal
+                  title="图片预览"
+                  visible={isModalOpenurl}
+                  onCancel={() => setIsModalOpenurl(false)}
+                  footer={null}  // 模态框不显示底部按钮
+                >
+                  <img src={modalImageUrl} style={{ width: '100%' }} alt="结果图片" />
+                </Modal>
+               
+            </Layout>
+        </>
+    );
 };
 
 export default LogsTable;

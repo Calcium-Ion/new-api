@@ -12,7 +12,7 @@ import (
 )
 
 func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*OpenAIErrorWithStatusCode, string) {
-	responseText := ""
+	var responseTextBuilder strings.Builder
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		if atEOF && len(data) == 0 {
@@ -29,6 +29,7 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	dataChan := make(chan string)
 	stopChan := make(chan bool)
 	go func() {
+		var streamItems []string
 		for scanner.Scan() {
 			data := scanner.Text()
 			if len(data) < 6 { // ignore blank line or wrong format
@@ -40,27 +41,33 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 			dataChan <- data
 			data = data[6:]
 			if !strings.HasPrefix(data, "[DONE]") {
-				switch relayMode {
-				case RelayModeChatCompletions:
-					var streamResponse ChatCompletionsStreamResponse
-					err := json.Unmarshal([]byte(data), &streamResponse)
-					if err != nil {
-						common.SysError("error unmarshalling stream response: " + err.Error())
-						continue // just ignore the error
-					}
-					for _, choice := range streamResponse.Choices {
-						responseText += choice.Delta.Content
-					}
-				case RelayModeCompletions:
-					var streamResponse CompletionsStreamResponse
-					err := json.Unmarshal([]byte(data), &streamResponse)
-					if err != nil {
-						common.SysError("error unmarshalling stream response: " + err.Error())
-						continue
-					}
-					for _, choice := range streamResponse.Choices {
-						responseText += choice.Text
-					}
+				streamItems = append(streamItems, data)
+			}
+		}
+		streamResp := "[" + strings.Join(streamItems, ",") + "]"
+		switch relayMode {
+		case RelayModeChatCompletions:
+			var streamResponses []ChatCompletionsStreamResponseSimple
+			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
+			if err != nil {
+				common.SysError("error unmarshalling stream response: " + err.Error())
+				return // just ignore the error
+			}
+			for _, streamResponse := range streamResponses {
+				for _, choice := range streamResponse.Choices {
+					responseTextBuilder.WriteString(choice.Delta.Content)
+				}
+			}
+		case RelayModeCompletions:
+			var streamResponses []CompletionsStreamResponse
+			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
+			if err != nil {
+				common.SysError("error unmarshalling stream response: " + err.Error())
+				return // just ignore the error
+			}
+			for _, streamResponse := range streamResponses {
+				for _, choice := range streamResponse.Choices {
+					responseTextBuilder.WriteString(choice.Text)
 				}
 			}
 		}
@@ -85,33 +92,31 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	if err != nil {
 		return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), ""
 	}
-	return nil, responseText
+	return nil, responseTextBuilder.String()
 }
 
-func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage) {
+func openaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*OpenAIErrorWithStatusCode, *Usage) {
 	var textResponse TextResponse
-	if consumeQuota {
-		responseBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return errorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
-		}
-		err = resp.Body.Close()
-		if err != nil {
-			return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
-		}
-		err = json.Unmarshal(responseBody, &textResponse)
-		if err != nil {
-			return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
-		}
-		if textResponse.Error.Type != "" {
-			return &OpenAIErrorWithStatusCode{
-				OpenAIError: textResponse.Error,
-				StatusCode:  resp.StatusCode,
-			}, nil
-		}
-		// Reset response body
-		resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
 	}
+	err = resp.Body.Close()
+	if err != nil {
+		return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = json.Unmarshal(responseBody, &textResponse)
+	if err != nil {
+		return errorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+	if textResponse.Error.Type != "" {
+		return &OpenAIErrorWithStatusCode{
+			OpenAIError: textResponse.Error,
+			StatusCode:  resp.StatusCode,
+		}, nil
+	}
+	// Reset response body
+	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	// We shouldn't set the header before we parse the response body, because the parse part may fail.
 	// And then we will have to send an error response, but in this case, the header has already been set.
 	// So the httpClient will be confused by the response.
@@ -120,7 +125,7 @@ func openaiHandler(c *gin.Context, resp *http.Response, consumeQuota bool, promp
 		c.Writer.Header().Set(k, v[0])
 	}
 	c.Writer.WriteHeader(resp.StatusCode)
-	_, err := io.Copy(c.Writer, resp.Body)
+	_, err = io.Copy(c.Writer, resp.Body)
 	if err != nil {
 		return errorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
 	}

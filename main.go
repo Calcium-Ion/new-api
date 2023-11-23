@@ -6,6 +6,8 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
 	"one-api/common"
 	"one-api/controller"
 	"one-api/middleware"
@@ -13,6 +15,8 @@ import (
 	"one-api/router"
 	"os"
 	"strconv"
+
+	_ "net/http/pprof"
 )
 
 //go:embed web/build
@@ -85,6 +89,9 @@ func main() {
 	}
 
 	if os.Getenv("ENABLE_PPROF") == "true" {
+		go func() {
+			log.Println(http.ListenAndServe("0.0.0.0:8005", nil))
+		}()
 		go common.Monitor()
 		common.SysLog("pprof enabled")
 	}
