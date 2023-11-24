@@ -69,7 +69,7 @@ const TopUp = () => {
             const res = await API.post('/api/user/pay', {
                 amount: parseInt(topUpCount),
                 top_up_code: topUpCode,
-                PaymentMethod: payWay
+                payment_method: payWay
             });
             if (res !== undefined) {
                 const {message, data} = res.data;

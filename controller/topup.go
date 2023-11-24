@@ -64,11 +64,13 @@ func RequestEpay(c *gin.Context) {
 	user, _ := model.GetUserById(id, false)
 	amount := GetAmount(float64(req.Amount), *user)
 
+	var payType epay.PurchaseType
 	if req.PaymentMethod == "zfb" {
-		req.PaymentMethod = "alipay"
+		payType = epay.Alipay
 	}
 	if req.PaymentMethod == "wx" {
 		req.PaymentMethod = "wxpay"
+		payType = epay.WechatPay
 	}
 
 	returnUrl, _ := url.Parse(common.ServerAddress + "/log")
@@ -81,7 +83,7 @@ func RequestEpay(c *gin.Context) {
 		return
 	}
 	uri, params, err := client.Purchase(&epay.PurchaseArgs{
-		Type:           epay.PurchaseType(req.PaymentMethod),
+		Type:           payType,
 		ServiceTradeNo: "A" + tradeNo,
 		Name:           "B" + tradeNo,
 		Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
