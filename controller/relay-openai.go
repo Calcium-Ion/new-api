@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"one-api/common"
 	"strings"
+	"sync"
 )
 
 func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*OpenAIErrorWithStatusCode, string) {
@@ -28,7 +29,9 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	})
 	dataChan := make(chan string)
 	stopChan := make(chan bool)
+	var wg sync.WaitGroup
 	go func() {
+		wg.Add(1)
 		var streamItems []string
 		for scanner.Scan() {
 			data := scanner.Text()
@@ -71,6 +74,7 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 				}
 			}
 		}
+		wg.Done()
 		stopChan <- true
 	}()
 	setEventStreamHeaders(c)
@@ -92,6 +96,7 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 	if err != nil {
 		return errorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), ""
 	}
+	wg.Wait()
 	return nil, responseTextBuilder.String()
 }
 
