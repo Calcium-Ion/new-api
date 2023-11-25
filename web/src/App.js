@@ -57,15 +57,15 @@ function App() {
       } else {
         localStorage.removeItem('chat_link');
       }
-      if (
-        data.version !== process.env.REACT_APP_VERSION &&
-        data.version !== 'v0.0.0' &&
-        process.env.REACT_APP_VERSION !== ''
-      ) {
-        showNotice(
-          `新版本可用：${data.version}，请使用快捷键 Shift + F5 刷新页面`
-        );
-      }
+      // if (
+      //   data.version !== process.env.REACT_APP_VERSION &&
+      //   data.version !== 'v0.0.0' &&
+      //   process.env.REACT_APP_VERSION !== ''
+      // ) {
+      //   showNotice(
+      //     `新版本可用：${data.version}，请使用快捷键 Shift + F5 刷新页面`
+      //   );
+      // }
     } else {
       showError('无法正常连接至服务器！');
     }
