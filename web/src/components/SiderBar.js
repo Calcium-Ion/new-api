@@ -95,7 +95,7 @@ let headerButtons = [
     // }
 ];
 
-const HeaderBar = () => {
+const SiderBar = () => {
     const [userState, userDispatch] = useContext(UserContext);
     let navigate = useNavigate();
     const [selectedKeys, setSelectedKeys] = useState(['home']);
@@ -119,6 +119,7 @@ const HeaderBar = () => {
                     <Nav
                         // mode={'horizontal'}
                         // bodyStyle={{ height: 100 }}
+                        defaultIsCollapsed={isMobile()}
                         selectedKeys={selectedKeys}
                         renderWrapper={({itemElement, isSubNav, isInSubNav, props}) => {
                             const routerMap = {
@@ -166,4 +167,4 @@ const HeaderBar = () => {
     );
 };
 
-export default HeaderBar;
+export default SiderBar;
