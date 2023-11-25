@@ -15,6 +15,20 @@ body {
     height: 100%;
 }
 
+@media only screen and (max-width: 767px) {
+    .semi-table-tbody, .semi-table-row, .semi-table-row-cell {
+        display: block!important;
+        width: auto!important;
+        padding: 2px!important;
+    }
+    .semi-table-row-cell {
+        border-bottom: 0!important;
+    }
+    .semi-table-tbody>.semi-table-row {
+        border-bottom: 1px solid rgba(0,0,0,.1);
+    }
+}
+
 .semi-layout {
     height: 100%;
 }

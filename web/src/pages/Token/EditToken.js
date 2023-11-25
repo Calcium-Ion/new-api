@@ -123,8 +123,10 @@ const EditToken = (props) => {
             let successCount = 0; // 记录成功创建的令牌数量
             for (let i = 0; i < tokenCount; i++) {
                 let localInputs = {...inputs};
-                // 如果用户想要创建多个令牌，则给每个令牌一个序号后缀
-                localInputs.name = `${inputs.name}-${generateRandomSuffix()}`;
+                if (i !== 0) {
+                    // 如果用户想要创建多个令牌，则给每个令牌一个序号后缀
+                    localInputs.name = `${inputs.name}-${generateRandomSuffix()}`;
+                }
                 localInputs.remain_quota = parseInt(localInputs.remain_quota);
 
                 if (localInputs.expired_time !== -1) {
