@@ -1,4 +1,5 @@
 import { Label } from 'semantic-ui-react';
+import {Tag} from "@douyinfe/semi-ui";
 
 export function renderText(text, limit) {
   if (text.length > limit) {
@@ -9,18 +10,22 @@ export function renderText(text, limit) {
 
 export function renderGroup(group) {
   if (group === '') {
-    return <Label>default</Label>;
+    return <Tag size='large'>default</Tag>;
   }
   let groups = group.split(',');
   groups.sort();
   return <>
     {groups.map((group) => {
       if (group === 'vip' || group === 'pro') {
-        return <Label color='yellow'>{group}</Label>;
+        return <Tag size='large' color='yellow'>{group}</Tag>;
       } else if (group === 'svip' || group === 'premium') {
-        return <Label color='red'>{group}</Label>;
+        return <Tag size='large' color='red'>{group}</Tag>;
       }
-      return <Label>{group}</Label>;
+      if (group === 'default') {
+        return <Tag size='large'>{group}</Tag>;
+      } else {
+        return <Tag size='large' color={stringToColor(group)}>{group}</Tag>;
+      }
     })}
   </>;
 }

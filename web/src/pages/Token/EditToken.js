@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from 'react';
-// import {Button, Form, Header, Message, Segment} from 'semantic-ui-react';
 import {useParams, useNavigate} from 'react-router-dom';
 import {API, isMobile, showError, showSuccess, timestamp2string} from '../../helpers';
 import {renderQuota, renderQuotaWithPrompt} from '../../helpers/render';
@@ -247,7 +246,7 @@ const EditToken = (props) => {
                         disabled={unlimited_quota}
                     />
                     <div style={{marginTop: 20}}>
-                        <Typography.Text>{`新建数量`}</Typography.Text>
+                        <Typography.Text>新建数量</Typography.Text>
                     </div>
                     {!isEdit && (
                         <AutoComplete
