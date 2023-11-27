@@ -102,7 +102,7 @@ const RedemptionsTable = () => {
                             }}
                     >复制</Button>
                     <Popconfirm
-                        title="确定是否要删除此令牌？"
+                        title="确定是否要删除此兑换码？"
                         content="此修改将不可逆"
                         okType={'danger'}
                         position={'left'}
