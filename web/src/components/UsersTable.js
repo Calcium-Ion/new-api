@@ -80,7 +80,6 @@ const UsersTable = () => {
             <Popconfirm
                 title="确定？"
                 okType={'warning'}
-                position={'left'}
                 onConfirm={() => {
                     manageUser(record.username, 'promote', record)
                 }}
@@ -90,7 +89,6 @@ const UsersTable = () => {
             <Popconfirm
                 title="确定？"
                 okType={'warning'}
-                position={'left'}
                 onConfirm={() => {
                     manageUser(record.username, 'demote', record)
                 }}
