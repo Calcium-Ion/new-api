@@ -265,6 +265,15 @@ const UsersTable = () => {
         setLoading(false);
     };
 
+    const handlePageChange = page => {
+        setActivePage(page);
+        if (page === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
+            // In this case we have to load more data and then append them.
+            loadUsers(page - 1).then(r => {
+            });
+        }
+    };
+
     const pageData = users.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
 
     const closeAddUser = () => {
@@ -303,7 +312,8 @@ const UsersTable = () => {
                 currentPage: activePage,
                 pageSize: ITEMS_PER_PAGE,
                 total: userCount,
-                pageSizeOpts: [10, 20, 50, 100], // onPageChange: handlePageChange,
+                pageSizeOpts: [10, 20, 50, 100],
+                onPageChange: handlePageChange,
             }} loading={loading}/>
             <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
                 () => {
