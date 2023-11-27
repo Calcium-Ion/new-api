@@ -36,6 +36,9 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	if imageRequest.Size == "" {
 		imageRequest.Size = "1024x1024"
 	}
+	if imageRequest.N == 0 {
+		imageRequest.N = 1
+	}
 	// Prompt validation
 	if imageRequest.Prompt == "" {
 		return errorWrapper(errors.New("prompt is required"), "required_field_missing", http.StatusBadRequest)

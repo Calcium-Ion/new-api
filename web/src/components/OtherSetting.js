@@ -108,7 +108,7 @@ const OtherSetting = () => {
       <Grid.Column>
         <Form loading={loading}>
           <Header as='h3'>通用设置</Header>
-          <Form.Button onClick={checkUpdate}>检查更新</Form.Button>
+          {/*<Form.Button onClick={checkUpdate}>检查更新</Form.Button>*/}
           <Form.Group widths='equal'>
             <Form.TextArea
               label='公告'
@@ -178,28 +178,28 @@ const OtherSetting = () => {
           <Form.Button onClick={submitFooter}>设置页脚</Form.Button>
         </Form>
       </Grid.Column>
-      <Modal
-        onClose={() => setShowUpdateModal(false)}
-        onOpen={() => setShowUpdateModal(true)}
-        open={showUpdateModal}
-      >
-        <Modal.Header>新版本：{updateData.tag_name}</Modal.Header>
-        <Modal.Content>
-          <Modal.Description>
-            <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>
-          </Modal.Description>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button onClick={() => setShowUpdateModal(false)}>关闭</Button>
-          <Button
-            content='详情'
-            onClick={() => {
-              setShowUpdateModal(false);
-              openGitHubRelease();
-            }}
-          />
-        </Modal.Actions>
-      </Modal>
+      {/*<Modal*/}
+      {/*  onClose={() => setShowUpdateModal(false)}*/}
+      {/*  onOpen={() => setShowUpdateModal(true)}*/}
+      {/*  open={showUpdateModal}*/}
+      {/*>*/}
+      {/*  <Modal.Header>新版本：{updateData.tag_name}</Modal.Header>*/}
+      {/*  <Modal.Content>*/}
+      {/*    <Modal.Description>*/}
+      {/*      <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>*/}
+      {/*    </Modal.Description>*/}
+      {/*  </Modal.Content>*/}
+      {/*  <Modal.Actions>*/}
+      {/*    <Button onClick={() => setShowUpdateModal(false)}>关闭</Button>*/}
+      {/*    <Button*/}
+      {/*      content='详情'*/}
+      {/*      onClick={() => {*/}
+      {/*        setShowUpdateModal(false);*/}
+      {/*        openGitHubRelease();*/}
+      {/*      }}*/}
+      {/*    />*/}
+      {/*  </Modal.Actions>*/}
+      {/*</Modal>*/}
     </Grid>
   );
 };
