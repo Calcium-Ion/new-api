@@ -129,6 +129,11 @@ func relayAudioHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	if err != nil {
 		return errorWrapper(err, "close_request_body_failed", http.StatusInternalServerError)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		return relayErrorHandler(resp)
+	}
+
 	var audioResponse AudioResponse
 
 	defer func(ctx context.Context) {

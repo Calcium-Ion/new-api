@@ -147,6 +147,11 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	if err != nil {
 		return errorWrapper(err, "close_request_body_failed", http.StatusInternalServerError)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		return relayErrorHandler(resp)
+	}
+
 	var textResponse ImageResponse
 	defer func(ctx context.Context) {
 		if consumeQuota {
