@@ -170,7 +170,8 @@ type OpenAIEmbeddingResponse struct {
 type ImageResponse struct {
 	Created int `json:"created"`
 	Data    []struct {
-		Url string `json:"url"`
+		Url     string `json:"url"`
+		B64Json string `json:"b64_json"`
 	}
 }
 
