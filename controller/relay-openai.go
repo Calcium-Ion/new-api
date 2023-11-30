@@ -10,6 +10,7 @@ import (
 	"one-api/common"
 	"strings"
 	"sync"
+	"time"
 )
 
 func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*OpenAIErrorWithStatusCode, string) {
