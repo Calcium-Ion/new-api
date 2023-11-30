@@ -1,13 +1,18 @@
 import React from 'react';
 import { Segment, Header } from 'semantic-ui-react';
 import UsersTable from '../../components/UsersTable';
+import {Layout} from "@douyinfe/semi-ui";
 
 const User = () => (
   <>
-    <Segment>
-      <Header as='h3'>管理用户</Header>
-      <UsersTable/>
-    </Segment>
+    <Layout>
+        <Layout.Header>
+            <h3>管理用户</h3>
+        </Layout.Header>
+        <Layout.Content>
+            <UsersTable/>
+        </Layout.Content>
+    </Layout>
   </>
 );
 

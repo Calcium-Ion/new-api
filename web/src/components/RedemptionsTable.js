@@ -1,12 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Link} from 'react-router-dom';
 import {API, copy, showError, showInfo, showSuccess, showWarning, timestamp2string} from '../helpers';
 
 import {ITEMS_PER_PAGE} from '../constants';
 import {renderQuota} from '../helpers/render';
 import {Button, Modal, Popconfirm, Popover, Table, Tag, Form} from "@douyinfe/semi-ui";
 import EditRedemption from "../pages/Redemption/EditRedemption";
-import editRedemption from "../pages/Redemption/EditRedemption";
 
 function renderTimestamp(timestamp) {
     return (
@@ -104,7 +102,7 @@ const RedemptionsTable = () => {
                             }}
                     >复制</Button>
                     <Popconfirm
-                        title="确定是否要删除此令牌？"
+                        title="确定是否要删除此兑换码？"
                         content="此修改将不可逆"
                         okType={'danger'}
                         position={'left'}

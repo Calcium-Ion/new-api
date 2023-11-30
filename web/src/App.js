@@ -8,7 +8,6 @@ import LoginForm from './components/LoginForm';
 import NotFound from './pages/NotFound';
 import Setting from './pages/Setting';
 import EditUser from './pages/User/EditUser';
-import AddUser from './pages/User/AddUser';
 import { API, getLogo, getSystemName, showError, showNotice } from './helpers';
 import PasswordResetForm from './components/PasswordResetForm';
 import GitHubOAuth from './components/GitHubOAuth';
@@ -17,10 +16,8 @@ import { UserContext } from './context/User';
 import { StatusContext } from './context/Status';
 import Channel from './pages/Channel';
 import Token from './pages/Token';
-import EditToken from './pages/Token/EditToken';
 import EditChannel from './pages/Channel/EditChannel';
 import Redemption from './pages/Redemption';
-import EditRedemption from './pages/Redemption/EditRedemption';
 import TopUp from './pages/TopUp';
 import Log from './pages/Log';
 import Chat from './pages/Chat';
@@ -57,15 +54,15 @@ function App() {
       } else {
         localStorage.removeItem('chat_link');
       }
-      if (
-        data.version !== process.env.REACT_APP_VERSION &&
-        data.version !== 'v0.0.0' &&
-        process.env.REACT_APP_VERSION !== ''
-      ) {
-        showNotice(
-          `新版本可用：${data.version}，请使用快捷键 Shift + F5 刷新页面`
-        );
-      }
+      // if (
+      //   data.version !== process.env.REACT_APP_VERSION &&
+      //   data.version !== 'v0.0.0' &&
+      //   process.env.REACT_APP_VERSION !== ''
+      // ) {
+      //   showNotice(
+      //     `新版本可用：${data.version}，请使用快捷键 Shift + F5 刷新页面`
+      //   );
+      // }
     } else {
       showError('无法正常连接至服务器！');
     }
@@ -132,43 +129,11 @@ function App() {
                     }
                 />
                 <Route
-                    path='/token/edit/:id'
-                    element={
-                        <Suspense fallback={<Loading></Loading>}>
-                            <EditToken />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path='/token/add'
-                    element={
-                        <Suspense fallback={<Loading></Loading>}>
-                            <EditToken />
-                        </Suspense>
-                    }
-                />
-                <Route
                     path='/redemption'
                     element={
                         <PrivateRoute>
                             <Redemption />
                         </PrivateRoute>
-                    }
-                />
-                <Route
-                    path='/redemption/edit/:id'
-                    element={
-                        <Suspense fallback={<Loading></Loading>}>
-                            <EditRedemption />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path='/redemption/add'
-                    element={
-                        <Suspense fallback={<Loading></Loading>}>
-                            <EditRedemption />
-                        </Suspense>
                     }
                 />
                 <Route
@@ -192,14 +157,6 @@ function App() {
                     element={
                         <Suspense fallback={<Loading></Loading>}>
                             <EditUser />
-                        </Suspense>
-                    }
-                />
-                <Route
-                    path='/user/add'
-                    element={
-                        <Suspense fallback={<Loading></Loading>}>
-                            <AddUser />
                         </Suspense>
                     }
                 />

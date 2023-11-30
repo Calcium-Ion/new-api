@@ -1,13 +1,10 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {
-    Modal,
-} from 'semantic-ui-react';
 import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import {UserContext} from '../context/User';
 import {API, getLogo, isMobile, showError, showInfo, showSuccess, showWarning} from '../helpers';
 import {onGitHubOAuthClicked} from './utils';
 import Turnstile from "react-turnstile";
-import {Layout, Card, Image, Form, Button, Divider} from "@douyinfe/semi-ui";
+import {Layout, Card, Image, Form, Button, Divider, Modal} from "@douyinfe/semi-ui";
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
 import Text from "@douyinfe/semi-ui/lib/es/typography/text";
 
@@ -90,14 +87,11 @@ const LoginForm = () => {
             if (success) {
                 userDispatch({type: 'login', payload: data});
                 localStorage.setItem('user', JSON.stringify(data));
+                showSuccess('登录成功！');
                 if (username === 'root' && password === '123456') {
-                    navigate('/user/edit');
-                    showSuccess('登录成功！');
-                    showWarning('请立刻修改默认密码！');
-                } else {
-                    navigate('/token');
-                    showSuccess('登录成功！');
+                    Modal.error({title: '您正在使用默认密码！', content: '请立刻修改默认密码！', centered: true});
                 }
+                navigate('/token');
             } else {
                 showError(message);
             }

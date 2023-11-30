@@ -60,7 +60,7 @@ func UpdateMidjourneyTask() {
 				req = req.WithContext(ctx)
 
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "Bearer midjourney-proxy")
+				//req.Header.Set("Authorization", "Bearer midjourney-proxy")
 				req.Header.Set("mj-api-secret", midjourneyChannel.Key)
 				resp, err := httpClient.Do(req)
 				if err != nil {

@@ -1,338 +1,327 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Form, Label, Pagination, Popup, Table } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
-import { API, showError, showSuccess } from '../helpers';
-
-import { ITEMS_PER_PAGE } from '../constants';
-import { renderGroup, renderNumber, renderQuota, renderText } from '../helpers/render';
+import React, {useEffect, useState} from 'react';
+import {API, isAdmin, showError, showSuccess} from '../helpers';
+import {Button, Modal, Popconfirm, Popover, Table, Tag, Form, Tooltip, Space} from "@douyinfe/semi-ui";
+import {ITEMS_PER_PAGE} from '../constants';
+import {renderGroup, renderNumber, renderQuota, renderText, stringToColor} from '../helpers/render';
+import AddUser from "../pages/User/AddUser";
+import EditUser from "../pages/User/EditUser";
 
 function renderRole(role) {
-  switch (role) {
-    case 1:
-      return <Label>普通用户</Label>;
-    case 10:
-      return <Label color='yellow'>管理员</Label>;
-    case 100:
-      return <Label color='orange'>超级管理员</Label>;
-    default:
-      return <Label color='red'>未知身份</Label>;
-  }
+    switch (role) {
+        case 1:
+            return <Tag size='large'>普通用户</Tag>;
+        case 10:
+            return <Tag color='yellow' size='large'>管理员</Tag>;
+        case 100:
+            return <Tag color='orange' size='large'>超级管理员</Tag>;
+        default:
+            return <Tag color='red' size='large'>未知身份</Tag>;
+    }
 }
 
 const UsersTable = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activePage, setActivePage] = useState(1);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searching, setSearching] = useState(false);
-
-  const loadUsers = async (startIdx) => {
-    const res = await API.get(`/api/user/?p=${startIdx}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      if (startIdx === 0) {
-        setUsers(data);
-      } else {
-        let newUsers = users;
-        newUsers.push(...data);
-        setUsers(newUsers);
-      }
-    } else {
-      showError(message);
-    }
-    setLoading(false);
-  };
-
-  const onPaginationChange = (e, { activePage }) => {
-    (async () => {
-      if (activePage === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
-        // In this case we have to load more data and then append them.
-        await loadUsers(activePage - 1);
-      }
-      setActivePage(activePage);
-    })();
-  };
-
-  useEffect(() => {
-    loadUsers(0)
-      .then()
-      .catch((reason) => {
-        showError(reason);
-      });
-  }, []);
-
-  const manageUser = (username, action, idx) => {
-    (async () => {
-      const res = await API.post('/api/user/manage', {
-        username,
-        action
-      });
-      const { success, message } = res.data;
-      if (success) {
-        showSuccess('操作成功完成！');
-        let user = res.data.data;
-        let newUsers = [...users];
-        let realIdx = (activePage - 1) * ITEMS_PER_PAGE + idx;
-        if (action === 'delete') {
-          newUsers[realIdx].deleted = true;
-        } else {
-          newUsers[realIdx].status = user.status;
-          newUsers[realIdx].role = user.role;
+    const columns = [{
+        title: 'ID', dataIndex: 'id',
+    }, {
+        title: '用户名', dataIndex: 'username',
+    }, {
+        title: '分组', dataIndex: 'group', render: (text, record, index) => {
+            return (<div>
+                {renderGroup(text)}
+            </div>);
+        },
+    }, {
+        title: '统计信息', dataIndex: 'info', render: (text, record, index) => {
+            return (<div>
+                <Space spacing={1}>
+                    <Tooltip content={'剩余额度'}>
+                        <Tag color='white' size='large'>{renderQuota(record.quota)}</Tag>
+                    </Tooltip>
+                    <Tooltip content={'已用额度'}>
+                        <Tag color='white' size='large'>{renderQuota(record.used_quota)}</Tag>
+                    </Tooltip>
+                    <Tooltip content={'调用次数'}>
+                        <Tag color='white' size='large'>{renderNumber(record.request_count)}</Tag>
+                    </Tooltip>
+                </Space>
+            </div>);
         }
-        setUsers(newUsers);
-      } else {
-        showError(message);
-      }
-    })();
-  };
+    }, {
+        title: '邀请信息', dataIndex: 'invite', render: (text, record, index) => {
+            return (<div>
+                <Space spacing={1}>
+                    <Tooltip content={'邀请人数'}>
+                        <Tag color='white' size='large'>{renderNumber(record.aff_count)}</Tag>
+                    </Tooltip>
+                    <Tooltip content={'邀请总收益'}>
+                        <Tag color='white' size='large'>{renderQuota(record.aff_history_quota)}</Tag>
+                    </Tooltip>
+                    <Tooltip content={'邀请人ID'}>
+                        {record.inviter_id === 0 ? <Tag color='white' size='large'>无</Tag> :
+                            <Tag color='white' size='large'>{record.inviter_id}</Tag>}
+                    </Tooltip>
+                </Space>
+            </div>);
+        }
+    }, {
+        title: '角色', dataIndex: 'role', render: (text, record, index) => {
+            return (<div>
+                {renderRole(text)}
+            </div>);
+        },
+    }, {
+        title: '状态', dataIndex: 'status', render: (text, record, index) => {
+            return (<div>
+                {renderStatus(text)}
+            </div>);
+        },
+    }, {
+        title: '', dataIndex: 'operate', render: (text, record, index) => (<div>
+            <Popconfirm
+                title="确定？"
+                okType={'warning'}
+                onConfirm={() => {
+                    manageUser(record.username, 'promote', record)
+                }}
+            >
+                <Button theme='light' type='warning' style={{marginRight: 1}}>提升</Button>
+            </Popconfirm>
+            <Popconfirm
+                title="确定？"
+                okType={'warning'}
+                onConfirm={() => {
+                    manageUser(record.username, 'demote', record)
+                }}
+            >
+                <Button theme='light' type='secondary' style={{marginRight: 1}}>降级</Button>
+            </Popconfirm>
+            <Popconfirm
+                title="确定是否要删除此用户？"
+                content="此修改将不可逆"
+                okType={'danger'}
+                position={'left'}
+                onConfirm={() => {
+                    manageUser(record.username, 'delete', record).then(() => {
+                        removeRecord(record.id);
+                    })
+                }}
+            >
+                <Button theme='light' type='danger' style={{marginRight: 1}}>删除</Button>
+            </Popconfirm>
+            {record.status === 1 ?
+                <Button theme='light' type='warning' style={{marginRight: 1}} onClick={async () => {
+                    manageUser(record.username, 'disable', record)
+                }}>禁用</Button> :
+                <Button theme='light' type='secondary' style={{marginRight: 1}} onClick={async () => {
+                    manageUser(record.username, 'enable', record);
+                }} disabled={record.status === 3}>启用</Button>}
+            <Button theme='light' type='tertiary' style={{marginRight: 1}} onClick={() => {
+                setEditingUser(record);
+                setShowEditUser(true);
+            }}>编辑</Button>
+        </div>),
+    },];
 
-  const renderStatus = (status) => {
-    switch (status) {
-      case 1:
-        return <Label basic>已激活</Label>;
-      case 2:
-        return (
-          <Label basic color='red'>
-            已封禁
-          </Label>
-        );
-      default:
-        return (
-          <Label basic color='grey'>
-            未知状态
-          </Label>
-        );
-    }
-  };
-
-  const searchUsers = async () => {
-    if (searchKeyword === '') {
-      // if keyword is blank, load files instead.
-      await loadUsers(0);
-      setActivePage(1);
-      return;
-    }
-    setSearching(true);
-    const res = await API.get(`/api/user/search?keyword=${searchKeyword}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      setUsers(data);
-      setActivePage(1);
-    } else {
-      showError(message);
-    }
-    setSearching(false);
-  };
-
-  const handleKeywordChange = async (e, { value }) => {
-    setSearchKeyword(value.trim());
-  };
-
-  const sortUser = (key) => {
-    if (users.length === 0) return;
-    setLoading(true);
-    let sortedUsers = [...users];
-    sortedUsers.sort((a, b) => {
-      return ('' + a[key]).localeCompare(b[key]);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activePage, setActivePage] = useState(1);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [searching, setSearching] = useState(false);
+    const [userCount, setUserCount] = useState(ITEMS_PER_PAGE);
+    const [showAddUser, setShowAddUser] = useState(false);
+    const [showEditUser, setShowEditUser] = useState(false);
+    const [editingUser, setEditingUser] = useState({
+        id: undefined,
     });
-    if (sortedUsers[0].id === users[0].id) {
-      sortedUsers.reverse();
+
+    const setCount = (data) => {
+        if (data.length >= (activePage) * ITEMS_PER_PAGE) {
+            setUserCount(data.length + 1);
+        } else {
+            setUserCount(data.length);
+        }
     }
-    setUsers(sortedUsers);
-    setLoading(false);
-  };
 
-  return (
-    <>
-      <Form onSubmit={searchUsers}>
-        <Form.Input
-          icon='search'
-          fluid
-          iconPosition='left'
-          placeholder='搜索用户的 ID，用户名，显示名称，以及邮箱地址 ...'
-          value={searchKeyword}
-          loading={searching}
-          onChange={handleKeywordChange}
-        />
-      </Form>
+    const removeRecord = key => {
+        console.log(key);
+        let newDataSource = [...users];
+        if (key != null) {
+            let idx = newDataSource.findIndex(data => data.id === key);
 
-      <Table basic compact size='small'>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortUser('id');
-              }}
-            >
-              ID
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortUser('username');
-              }}
-            >
-              用户名
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortUser('group');
-              }}
-            >
-              分组
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortUser('quota');
-              }}
-            >
-              统计信息
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortUser('role');
-              }}
-            >
-              用户角色
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                sortUser('status');
-              }}
-            >
-              状态
-            </Table.HeaderCell>
-            <Table.HeaderCell>操作</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
+            if (idx > -1) {
+                newDataSource.splice(idx, 1);
+                setUsers(newDataSource);
+            }
+        }
+    };
 
-        <Table.Body>
-          {users
-            .slice(
-              (activePage - 1) * ITEMS_PER_PAGE,
-              activePage * ITEMS_PER_PAGE
-            )
-            .map((user, idx) => {
-              if (user.deleted) return <></>;
-              return (
-                <Table.Row key={user.id}>
-                  <Table.Cell>{user.id}</Table.Cell>
-                  <Table.Cell>
-                    <Popup
-                      content={user.email ? user.email : '未绑定邮箱地址'}
-                      key={user.username}
-                      header={user.display_name ? user.display_name : user.username}
-                      trigger={<span>{renderText(user.username, 15)}</span>}
-                      hoverable
-                    />
-                  </Table.Cell>
-                  <Table.Cell>{renderGroup(user.group)}</Table.Cell>
-                  {/*<Table.Cell>*/}
-                  {/*  {user.email ? <Popup hoverable content={user.email} trigger={<span>{renderText(user.email, 24)}</span>} /> : '无'}*/}
-                  {/*</Table.Cell>*/}
-                  <Table.Cell>
-                    <Popup content='剩余额度' trigger={<Label basic>{renderQuota(user.quota)}</Label>} />
-                    <Popup content='已用额度' trigger={<Label basic>{renderQuota(user.used_quota)}</Label>} />
-                    <Popup content='请求次数' trigger={<Label basic>{renderNumber(user.request_count)}</Label>} />
-                  </Table.Cell>
-                  <Table.Cell>{renderRole(user.role)}</Table.Cell>
-                  <Table.Cell>{renderStatus(user.status)}</Table.Cell>
-                  <Table.Cell>
-                    <div>
-                      <Button
-                        size={'small'}
-                        positive
-                        onClick={() => {
-                          manageUser(user.username, 'promote', idx);
-                        }}
-                        disabled={user.role === 100}
-                      >
-                        提升
-                      </Button>
-                      <Button
-                        size={'small'}
-                        color={'yellow'}
-                        onClick={() => {
-                          manageUser(user.username, 'demote', idx);
-                        }}
-                        disabled={user.role === 100}
-                      >
-                        降级
-                      </Button>
-                      <Popup
-                        trigger={
-                          <Button size='small' negative disabled={user.role === 100}>
-                            删除
-                          </Button>
-                        }
-                        on='click'
-                        flowing
-                        hoverable
-                      >
-                        <Button
-                          negative
-                          onClick={() => {
-                            manageUser(user.username, 'delete', idx);
-                          }}
-                        >
-                          删除用户 {user.username}
-                        </Button>
-                      </Popup>
-                      <Button
-                        size={'small'}
-                        onClick={() => {
-                          manageUser(
-                            user.username,
-                            user.status === 1 ? 'disable' : 'enable',
-                            idx
-                          );
-                        }}
-                        disabled={user.role === 100}
-                      >
-                        {user.status === 1 ? '禁用' : '启用'}
-                      </Button>
-                      <Button
-                        size={'small'}
-                        as={Link}
-                        to={'/user/edit/' + user.id}
-                      >
-                        编辑
-                      </Button>
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
-        </Table.Body>
+    const loadUsers = async (startIdx) => {
+        const res = await API.get(`/api/user/?p=${startIdx}`);
+        const {success, message, data} = res.data;
+        if (success) {
+            if (startIdx === 0) {
+                setUsers(data);
+                setCount(data);
+            } else {
+                let newUsers = users;
+                newUsers.push(...data);
+                setUsers(newUsers);
+                setCount(newUsers);
+            }
+        } else {
+            showError(message);
+        }
+        setLoading(false);
+    };
 
-        <Table.Footer>
-          <Table.Row>
-            <Table.HeaderCell colSpan='7'>
-              <Button size='small' as={Link} to='/user/add' loading={loading}>
-                添加新的用户
-              </Button>
-              <Pagination
-                floated='right'
-                activePage={activePage}
-                onPageChange={onPaginationChange}
-                size='small'
-                siblingRange={1}
-                totalPages={
-                  Math.ceil(users.length / ITEMS_PER_PAGE) +
-                  (users.length % ITEMS_PER_PAGE === 0 ? 1 : 0)
+    const onPaginationChange = (e, {activePage}) => {
+        (async () => {
+            if (activePage === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
+                // In this case we have to load more data and then append them.
+                await loadUsers(activePage - 1);
+            }
+            setActivePage(activePage);
+        })();
+    };
+
+    useEffect(() => {
+        loadUsers(0)
+            .then()
+            .catch((reason) => {
+                showError(reason);
+            });
+    }, []);
+
+    const manageUser = async (username, action, record) => {
+        const res = await API.post('/api/user/manage', {
+            username, action
+        });
+        const {success, message} = res.data;
+        if (success) {
+            showSuccess('操作成功完成！');
+            let user = res.data.data;
+            let newUsers = [...users];
+            if (action === 'delete') {
+
+            } else {
+                record.status = user.status;
+                record.role = user.role;
+            }
+            setUsers(newUsers);
+        } else {
+            showError(message);
+        }
+    };
+
+    const renderStatus = (status) => {
+        switch (status) {
+            case 1:
+                return <Tag size='large'>已激活</Tag>;
+            case 2:
+                return (<Tag size='large' color='red'>
+                    已封禁
+                </Tag>);
+            default:
+                return (<Tag size='large' color='grey'>
+                    未知状态
+                </Tag>);
+        }
+    };
+
+    const searchUsers = async () => {
+        if (searchKeyword === '') {
+            // if keyword is blank, load files instead.
+            await loadUsers(0);
+            setActivePage(1);
+            return;
+        }
+        setSearching(true);
+        const res = await API.get(`/api/user/search?keyword=${searchKeyword}`);
+        const {success, message, data} = res.data;
+        if (success) {
+            setUsers(data);
+            setActivePage(1);
+        } else {
+            showError(message);
+        }
+        setSearching(false);
+    };
+
+    const handleKeywordChange = async (value) => {
+        setSearchKeyword(value.trim());
+    };
+
+    const sortUser = (key) => {
+        if (users.length === 0) return;
+        setLoading(true);
+        let sortedUsers = [...users];
+        sortedUsers.sort((a, b) => {
+            return ('' + a[key]).localeCompare(b[key]);
+        });
+        if (sortedUsers[0].id === users[0].id) {
+            sortedUsers.reverse();
+        }
+        setUsers(sortedUsers);
+        setLoading(false);
+    };
+
+    const handlePageChange = page => {
+        setActivePage(page);
+        if (page === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
+            // In this case we have to load more data and then append them.
+            loadUsers(page - 1).then(r => {
+            });
+        }
+    };
+
+    const pageData = users.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+
+    const closeAddUser = () => {
+        setShowAddUser(false);
+    }
+
+    const closeEditUser = () => {
+        setShowEditUser(false);
+        setEditingUser({
+            id: undefined,
+        });
+    }
+
+    const refresh = async () => {
+        await loadUsers(activePage - 1);
+    };
+
+    return (
+        <>
+            <AddUser refresh={refresh} visible={showAddUser} handleClose={closeAddUser}></AddUser>
+            <EditUser refresh={refresh} visible={showEditUser} handleClose={closeEditUser} editingUser={editingUser}></EditUser>
+            <Form onSubmit={searchUsers}>
+                <Form.Input
+                    label='搜索关键字'
+                    icon='search'
+                    field='keyword'
+                    iconPosition='left'
+                    placeholder='搜索用户的 ID，用户名，显示名称，以及邮箱地址 ...'
+                    value={searchKeyword}
+                    loading={searching}
+                    onChange={value => handleKeywordChange(value)}
+                />
+            </Form>
+
+            <Table columns={columns} dataSource={pageData} pagination={{
+                currentPage: activePage,
+                pageSize: ITEMS_PER_PAGE,
+                total: userCount,
+                pageSizeOpts: [10, 20, 50, 100],
+                onPageChange: handlePageChange,
+            }} loading={loading}/>
+            <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
+                () => {
+                    setShowAddUser(true);
                 }
-              />
-            </Table.HeaderCell>
-          </Table.Row>
-        </Table.Footer>
-      </Table>
-    </>
-  );
+            }>添加用户</Button>
+        </>
+    );
 };
 
 export default UsersTable;

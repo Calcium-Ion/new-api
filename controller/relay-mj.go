@@ -327,7 +327,7 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 	//if c.Request.Header.Get("Authorization") != "" {
 	//	mjToken = strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
 	//}
-	req.Header.Set("Authorization", "Bearer midjourney-proxy")
+	//req.Header.Set("Authorization", "Bearer midjourney-proxy")
 	req.Header.Set("mj-api-secret", strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
 	// print request header
 	log.Printf("request header: %s", req.Header)

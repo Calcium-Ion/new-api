@@ -16,7 +16,6 @@ func GetStatus(c *gin.Context) {
 		"success": true,
 		"message": "",
 		"data": gin.H{
-			"version":             common.Version,
 			"start_time":          common.StartTime,
 			"email_verification":  common.EmailVerificationEnabled,
 			"github_oauth":        common.GitHubOAuthEnabled,
@@ -34,6 +33,7 @@ func GetStatus(c *gin.Context) {
 			"chat_link":           common.ChatLink,
 			"quota_per_unit":      common.QuotaPerUnit,
 			"display_in_currency": common.DisplayInCurrencyEnabled,
+			"enable_batch_update": common.BatchUpdateEnabled,
 		},
 	})
 	return

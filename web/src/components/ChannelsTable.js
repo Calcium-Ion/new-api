@@ -483,16 +483,6 @@ const ChannelsTable = () => {
                       >
                         测试
                       </Button>
-                      {/*<Button*/}
-                      {/*  size={'small'}*/}
-                      {/*  positive*/}
-                      {/*  loading={updatingBalance}*/}
-                      {/*  onClick={() => {*/}
-                      {/*    updateChannelBalance(channel.id, channel.name, idx);*/}
-                      {/*  }}*/}
-                      {/*>*/}
-                      {/*  更新余额*/}
-                      {/*</Button>*/}
                       <Popup
                         trigger={
                           <Button size='small' negative>
@@ -580,17 +570,6 @@ const ChannelsTable = () => {
                   确认删除
                 </Button>
               </Popup>
-              <Pagination
-                floated='right'
-                activePage={activePage}
-                onPageChange={onPaginationChange}
-                size='small'
-                siblingRange={1}
-                totalPages={
-                  Math.ceil(channels.length / ITEMS_PER_PAGE) +
-                  (channels.length % ITEMS_PER_PAGE === 0 ? 1 : 0)
-                }
-              />
               <Button size='small' onClick={refresh} loading={loading}>刷新</Button>
 
             </Table.HeaderCell>

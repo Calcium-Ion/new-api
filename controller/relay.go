@@ -170,7 +170,8 @@ type OpenAIEmbeddingResponse struct {
 type ImageResponse struct {
 	Created int `json:"created"`
 	Data    []struct {
-		Url string `json:"url"`
+		Url     string `json:"url"`
+		B64Json string `json:"b64_json"`
 	}
 }
 
@@ -314,7 +315,7 @@ func RelayMidjourney(c *gin.Context) {
 				err.Result = "当前分组负载已饱和，请稍后再试，或升级账户以提升服务质量。"
 			}
 			c.JSON(400, gin.H{
-				"error": err.Result,
+				"error": err.Description + " " + err.Result,
 			})
 		}
 		channelId := c.GetInt("channel_id")

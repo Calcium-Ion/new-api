@@ -257,6 +257,15 @@ const PersonalSetting = () => {
         setOpenTransfer(false);
     }
 
+    const copyText = async (text) => {
+        if (await copy(text)) {
+            showSuccess('已复制：' + text);
+        } else {
+            // setSearchKeyword(text);
+            Modal.error({title: '无法复制到剪贴板，请手动复制', content: text});
+        }
+    }
+
     return (
         <div style={{lineHeight: '40px'}}>
             <Layout>
@@ -313,7 +322,9 @@ const PersonalSetting = () => {
                             <div style={{marginTop: 10}}>
                                 <Space wrap>
                                     {models.map((model) => (
-                                        <Tag key={model} color="cyan">
+                                        <Tag key={model} color="cyan" onClick={() => {
+                                            copyText(model)
+                                        }}>
                                             {model}
                                         </Tag>
                                     ))}
