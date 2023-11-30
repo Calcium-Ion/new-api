@@ -78,6 +78,10 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 				}
 			}
 		}
+		if len(dataChan) > 0 {
+			// wait data out
+			time.Sleep(2 * time.Second)
+		}
 		stopChan <- true
 	}()
 	setEventStreamHeaders(c)
