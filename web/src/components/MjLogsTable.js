@@ -23,7 +23,7 @@ function renderType(type) {
     case 'DESCRIBE':
       return <Tag color="yellow" size='large'>图生文</Tag>;
     case 'BLEAND':
-      return <Tag color="olive" size='large'>图混合</Tag>;
+      return <Tag color="lime" size='large'>图混合</Tag>;
     default:
       return <Tag color="black" size='large'>未知</Tag>;
   }
@@ -35,7 +35,7 @@ function renderCode(code) {
     case 1:
       return <Tag color="green" size='large'>已提交</Tag>;
     case 21:
-      return <Tag color="olive" size='large'>排队中</Tag>;
+      return <Tag color="lime" size='large'>排队中</Tag>;
     case 22:
       return <Tag color="orange" size='large'>重复提交</Tag>;
     default:

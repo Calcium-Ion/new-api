@@ -151,13 +151,13 @@ const EditToken = (props) => {
 
             if (successCount > 0) {
                 showSuccess(`${successCount}个令牌创建成功，请在列表页面点击复制获取令牌！`);
+                props.refresh();
+                props.handleClose();
             }
         }
         setLoading(false);
         setInputs(originInputs); // 重置表单
         setTokenCount(1); // 重置数量为默认值
-        props.refresh();
-        props.handleClose();
     };
 
 

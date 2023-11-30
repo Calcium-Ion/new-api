@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {Confirm} from 'semantic-ui-react';
 import {API, isMobile, showError, showInfo, showSuccess} from '../../helpers';
 import {renderNumber, renderQuota} from '../../helpers/render';
 import {Col, Layout, Row, Typography, Card, Button, Form, Divider, Space, Modal} from "@douyinfe/semi-ui";
@@ -179,8 +178,8 @@ const TopUp = () => {
                         size={'small'}
                         centered={true}
                     >
-                        <p>充值数量：{topUpCount}</p>
-                        <p>充值金额：{renderAmount()}</p>
+                        <p>充值数量：{topUpCount}$</p>
+                        <p>实付金额：{renderAmount()}</p>
                         <p>是否确认充值？</p>
                     </Modal>
                     <div style={{marginTop: 20, display: 'flex', justifyContent: 'center'}}>
@@ -224,7 +223,7 @@ const TopUp = () => {
                                 <Form>
                                     <Form.Input
                                         field={'redemptionCount'}
-                                        label={'充值金额：' + renderAmount()}
+                                        label={'实付金额：' + renderAmount()}
                                         placeholder='充值数量'
                                         name='redemptionCount'
                                         type={'number'}
