@@ -288,7 +288,11 @@ const UsersTable = () => {
     }
 
     const refresh = async () => {
-        await loadUsers(activePage - 1);
+        if (searchKeyword === '') {
+            await loadUsers(activePage - 1);
+        } else {
+            await searchUsers();
+        }
     };
 
     return (

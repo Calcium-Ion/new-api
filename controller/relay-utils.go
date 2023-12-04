@@ -70,7 +70,7 @@ func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
 	return len(tokenEncoder.Encode(text, nil, nil))
 }
 
-func getImageToken(imageUrl MessageImageUrl) (int, error) {
+func getImageToken(imageUrl *MessageImageUrl) (int, error) {
 	if imageUrl.Detail == "low" {
 		return 85, nil
 	}
@@ -90,8 +90,11 @@ func getImageToken(imageUrl MessageImageUrl) (int, error) {
 	if config.Width == 0 || config.Height == 0 {
 		return 0, errors.New(fmt.Sprintf("fail to decode image config: %s", imageUrl.Url))
 	}
+	// TODO: 适配官方auto计费
 	if config.Width < 512 && config.Height < 512 {
 		if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
+			// 如果图片尺寸小于512，强制使用low
+			imageUrl.Detail = "low"
 			return 85, nil
 		}
 	}
@@ -157,7 +160,7 @@ func countTokenMessages(messages []Message, model string) (int, error) {
 		} else {
 			for _, m := range arrayContent {
 				if m.Type == "image_url" {
-					imageTokenNum, err := getImageToken(m.ImageUrl)
+					imageTokenNum, err := getImageToken(&m.ImageUrl)
 					if err != nil {
 						return 0, err
 					}
@@ -204,13 +207,14 @@ func errorWrapper(err error, code string, statusCode int) *OpenAIErrorWithStatus
 	text := err.Error()
 	// 定义一个正则表达式匹配URL
 	if strings.Contains(text, "Post") {
+		common.SysLog(fmt.Sprintf("error: %s", text))
 		text = "请求上游地址失败"
 	}
 	//避免暴露内部错误
 
 	openAIError := OpenAIError{
 		Message: text,
-		Type:    "one_api_error",
+		Type:    "new_api_error",
 		Code:    code,
 	}
 	return &OpenAIErrorWithStatusCode{

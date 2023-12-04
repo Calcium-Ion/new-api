@@ -56,6 +56,9 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 		if imageRequest.Size != "" && imageRequest.Size != "1024x1024" && imageRequest.Size != "1024x1792" && imageRequest.Size != "1792x1024" {
 			return errorWrapper(errors.New("size must be one of 256x256, 512x512, or 1024x1024, dall-e-3 1024x1792 or 1792x1024"), "invalid_field_value", http.StatusBadRequest)
 		}
+		if imageRequest.N != 1 {
+			return errorWrapper(errors.New("n must be 1"), "invalid_field_value", http.StatusBadRequest)
+		}
 	}
 
 	// N should between 1 and 10

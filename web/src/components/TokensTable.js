@@ -437,6 +437,18 @@ const TokensTable = () => {
         },
     };
 
+    const handleRow = (record, index) => {
+        if (record.status !== 1) {
+            return {
+                style: {
+                    background: 'var(--semi-color-disabled-border)',
+                },
+            };
+        } else {
+            return {};
+        }
+    };
+
     return (
         <>
             <EditToken refresh={refresh} editingToken={editingToken} visiable={showEdit} handleClose={closeEdit}></EditToken>
@@ -473,7 +485,7 @@ const TokensTable = () => {
                     setActivePage(1);
                 },
                 onPageChange: handlePageChange,
-            }} loading={loading} rowSelection={rowSelection}>
+            }} loading={loading} rowSelection={rowSelection} onRow={handleRow}>
             </Table>
             <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
                 () => {
