@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Header, Segment } from 'semantic-ui-react';
 import { API, showError } from '../../helpers';
 import { marked } from 'marked';
+import {Layout} from "@douyinfe/semi-ui";
 
 const About = () => {
   const [about, setAbout] = useState('');
@@ -33,14 +34,23 @@ const About = () => {
     <>
       {
         aboutLoaded && about === '' ? <>
-          <Segment>
-            <Header as='h3'>关于</Header>
-            <p>可在设置页面设置关于内容，支持 HTML & Markdown</p>
-            魔改版项目仓库地址：
-            <a href='https://github.com/Calcium-Ion/one-api'>
-              https://github.com/Calcium-Ion/one-api
-            </a>
-          </Segment>
+          <Layout>
+            <Layout.Header>
+              <h3>关于</h3>
+            </Layout.Header>
+            <Layout.Content>
+              <p>
+                可在设置页面设置关于内容，支持 HTML & Markdown
+              </p>
+              new-api项目仓库地址：
+              <a href='https://github.com/Calcium-Ion/new-api'>
+                https://github.com/Calcium-Ion/new-api
+              </a>
+              <p>
+                NewAPI © 2023 CalciumIon | 基于 One API v0.5.4 © 2023 JustSong。本项目根据MIT许可证授权。
+              </p>
+            </Layout.Content>
+          </Layout>
         </> : <>
           {
             about.startsWith('https://') ? <iframe

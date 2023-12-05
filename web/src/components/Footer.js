@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Container, Segment } from 'semantic-ui-react';
 import { getFooterHTML, getSystemName } from '../helpers';
+import {Layout} from "@douyinfe/semi-ui";
 
 const Footer = () => {
   const systemName = getSystemName();
@@ -28,8 +29,8 @@ const Footer = () => {
   }, []);
 
   return (
-    <Segment vertical>
-      <Container textAlign='center'>
+    <Layout>
+      <Layout.Content style={{textAlign: 'center'}}>
         {footer ? (
           <div
             className='custom-footer'
@@ -38,23 +39,28 @@ const Footer = () => {
         ) : (
           <div className='custom-footer'>
             <a
-              href='https://github.com/Calcium-Ion/one-api'
+              href='https://github.com/Calcium-Ion/new-api'
               target='_blank'
             >
-              {systemName} {process.env.REACT_APP_VERSION}{' '}
+              New API {process.env.REACT_APP_VERSION}{' '}
             </a>
             由{' '}
             <a href='https://github.com/Calcium-Ion' target='_blank'>
               Calcium-Ion
             </a>{' '}
-            构建，源代码遵循{' '}
+            开发，基于{' '}
+            <a href='https://github.com/songquanpeng/one-api' target='_blank'>
+              One API v0.5.4
+            </a>{' '}
+            ，本项目根据{' '}
             <a href='https://opensource.org/licenses/mit-license.php'>
-              MIT 协议
-            </a>
+              MIT 许可证
+            </a>{' '}
+            授权
           </div>
         )}
-      </Container>
-    </Segment>
+      </Layout.Content>
+    </Layout>
   );
 };
 
