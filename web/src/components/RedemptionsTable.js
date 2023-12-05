@@ -173,9 +173,9 @@ const RedemptionsTable = () => {
     // }
 
     const setRedemptionFormat = (redeptions) => {
-        for (let i = 0; i < redeptions.length; i++) {
-            redeptions[i].key = '' + redeptions[i].id;
-        }
+        // for (let i = 0; i < redeptions.length; i++) {
+        //     redeptions[i].key = '' + redeptions[i].id;
+        // }
         // data.key = '' + data.id
         setRedemptions(redeptions);
         if (redeptions.length >= (activePage) * ITEMS_PER_PAGE) {
