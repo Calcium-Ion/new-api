@@ -165,6 +165,7 @@ const ChannelsTable = () => {
             dataIndex: 'operate',
             render: (text, record, index) => (
                 <div>
+                    <Button theme='light' type='primary' style={{marginRight: 1}} onClick={()=>testChannel(record)}>测试</Button>
                     <Popconfirm
                         title="确定是否要删除此渠道？"
                         content="此修改将不可逆"
@@ -415,16 +416,15 @@ const ChannelsTable = () => {
         setSearching(false);
     };
 
-    const testChannel = async (id, name, idx) => {
-        const res = await API.get(`/api/channel/test/${id}/`);
+    const testChannel = async (record) => {
+        const res = await API.get(`/api/channel/test/${record.id}/`);
         const {success, message, time} = res.data;
         if (success) {
             let newChannels = [...channels];
-            let realIdx = (activePage - 1) * pageSize + idx;
-            newChannels[realIdx].response_time = time * 1000;
-            newChannels[realIdx].test_time = Date.now() / 1000;
+            record.response_time = time * 1000;
+            record.test_time = Date.now() / 1000;
             setChannels(newChannels);
-            showInfo(`通道 ${name} 测试成功，耗时 ${time.toFixed(2)} 秒。`);
+            showInfo(`通道 ${record.name} 测试成功，耗时 ${time.toFixed(2)} 秒。`);
         } else {
             showError(message);
         }
