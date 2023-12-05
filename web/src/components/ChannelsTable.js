@@ -254,7 +254,7 @@ const ChannelsTable = () => {
         }
     }
 
-    const loadChannels = async (startIdx) => {
+    const loadChannels = async (startIdx, pageSize, idSort) => {
         setLoading(true);
         const res = await API.get(`/api/channel/?p=${startIdx}&page_size=${pageSize}&id_sort=${idSort}`);
         const {success, message, data} = res.data;
@@ -272,39 +272,31 @@ const ChannelsTable = () => {
         setLoading(false);
     };
 
-    useEffect(() => {
-        loadChannels(0)
-            .then()
-            .catch((reason) => {
-                showError(reason);
-            });
-    }, [pageSize]);
-
     const refresh = async () => {
-        await loadChannels(activePage - 1);
+        await loadChannels(activePage - 1, pageSize, idSort);
     };
 
     useEffect(() => {
-        loadChannels(0)
+        // console.log('default effect')
+        const localIdSort = localStorage.getItem('id-sort') === 'true';
+        setIdSort(localIdSort)
+        loadChannels(0, pageSize, localIdSort)
             .then()
             .catch((reason) => {
                 showError(reason);
             });
         fetchGroups().then();
-        console.log(localStorage.getItem('id-sort'))
-        if (localStorage.getItem('id-sort') === 'true') {
-            setIdSort(true)
-        }
     }, []);
 
-    useEffect(() => {
-        searchChannels()
-    }, [searchGroup]);
+    // useEffect(() => {
+    //     console.log('search effect')
+    //     searchChannels()
+    // }, [searchGroup]);
 
-    useEffect(() => {
-        refresh()
-        localStorage.setItem('id-sort', idSort + '');
-    }, [idSort]);
+    // useEffect(() => {
+    //     localStorage.setItem('id-sort', idSort + '');
+    //     refresh()
+    // }, [idSort]);
 
     const manageChannel = async (id, action, record, value) => {
         let data = {id};
@@ -404,10 +396,10 @@ const ChannelsTable = () => {
         }
     };
 
-    const searchChannels = async () => {
+    const searchChannels = async (searchKeyword, searchGroup) => {
         if (searchKeyword === '' && searchGroup === '') {
             // if keyword is blank, load files instead.
-            await loadChannels(0);
+            await loadChannels(0, pageSize, idSort);
             setActivePage(1);
             return;
         }
@@ -511,9 +503,19 @@ const ChannelsTable = () => {
         setActivePage(page);
         if (page === Math.ceil(channels.length / pageSize) + 1) {
             // In this case we have to load more data and then append them.
-            loadChannels(page - 1).then(r => {
+            loadChannels(page - 1, pageSize, idSort).then(r => {
             });
         }
+    };
+
+    const handlePageSizeChange = async(size) => {
+        setPageSize(size)
+        setActivePage(1)
+        loadChannels(0, size, idSort)
+            .then()
+            .catch((reason) => {
+                showError(reason);
+            })
     };
 
     const fetchGroups = async () => {
@@ -549,7 +551,7 @@ const ChannelsTable = () => {
     return (
         <>
             <EditChannel refresh={refresh} visible={showEdit} handleClose={closeEdit} editingChannel={editingChannel}/>
-            <Form onSubmit={searchChannels} labelPosition='left'>
+            <Form onSubmit={() => {searchChannels(searchKeyword, searchGroup)}} labelPosition='left'>
 
                 <div style={{display: 'flex'}}>
                     <Space>
@@ -565,6 +567,7 @@ const ChannelsTable = () => {
                         />
                         <Form.Select field="group" label='分组' optionList={groupOptions} onChange={(v) => {
                             setSearchGroup(v)
+                            searchChannels(searchKeyword, v)
                         }}/>
                     </Space>
                 </div>
@@ -573,7 +576,13 @@ const ChannelsTable = () => {
                 <Space>
                     <Typography.Text strong>使用ID排序</Typography.Text>
                     <Switch checked={idSort} label='使用ID排序' uncheckedText="关" aria-label="是否用ID排序" onChange={(v) => {
+                        localStorage.setItem('id-sort', v + '')
                         setIdSort(v)
+                        loadChannels(0, pageSize, v)
+                            .then()
+                            .catch((reason) => {
+                                showError(reason);
+                            })
                     }}></Switch>
                 </Space>
             </div>
@@ -585,8 +594,7 @@ const ChannelsTable = () => {
                 pageSizeOpts: [10, 20, 50, 100],
                 showSizeChanger: true,
                 onPageSizeChange: (size) => {
-                    setPageSize(size)
-                    setActivePage(1)
+                    handlePageSizeChange(size).then()
                 },
                 onPageChange: handlePageChange,
             }} loading={loading} onRow={handleRow}/>
