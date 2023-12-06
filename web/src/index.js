@@ -36,9 +36,9 @@ root.render(
                             >
                                 <App/>
                             </Content>
-                            {/*<Layout.Footer>*/}
-                            {/*    <Footer></Footer>*/}
-                            {/*</Layout.Footer>*/}
+                            <Layout.Footer>
+                                <Footer></Footer>
+                            </Layout.Footer>
                         </Layout>
                         <ToastContainer/>
                     </Layout>
