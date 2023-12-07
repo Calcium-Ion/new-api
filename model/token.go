@@ -219,6 +219,17 @@ func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuo
 		return err
 	}
 
+	if !token.UnlimitedQuota {
+		if quota > 0 {
+			err = DecreaseTokenQuota(tokenId, quota)
+		} else {
+			err = IncreaseTokenQuota(tokenId, -quota)
+		}
+		if err != nil {
+			return err
+		}
+	}
+
 	if sendEmail {
 		if (quota + preConsumedQuota) != 0 {
 			quotaTooLow := userQuota >= common.QuotaRemindThreshold && userQuota-(quota+preConsumedQuota) < common.QuotaRemindThreshold
@@ -247,15 +258,5 @@ func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuo
 		}
 	}
 
-	if !token.UnlimitedQuota {
-		if quota > 0 {
-			err = DecreaseTokenQuota(tokenId, quota)
-		} else {
-			err = IncreaseTokenQuota(tokenId, -quota)
-		}
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
