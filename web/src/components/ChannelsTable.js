@@ -608,8 +608,8 @@ const ChannelsTable = () => {
                 },
                 onPageChange: handlePageChange,
             }} loading={loading} onRow={handleRow}/>
-            <div style={{display: isMobile()?'':'flex', marginTop: isMobile()?0:-45, zIndex: 999, position: 'relative'}}>
-                <Space>
+            <div style={{display: isMobile()?'':'flex', marginTop: isMobile()?0:-45, zIndex: 999, position: 'relative', pointerEvents: 'none'}}>
+                <Space style={{pointerEvents: 'auto'}}>
                     <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
                         () => {
                             setEditingChannel({
@@ -644,6 +644,9 @@ const ChannelsTable = () => {
 
                     <Button theme='light' type='primary' style={{marginRight: 8}} onClick={refresh}>刷新</Button>
                 </Space>
+                {/*<div style={{width: '100%', pointerEvents: 'none', position: 'absolute'}}>*/}
+
+                {/*</div>*/}
             </div>
         </>
     );
