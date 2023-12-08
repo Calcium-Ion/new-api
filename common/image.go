@@ -39,7 +39,12 @@ func DecodeUrlImageData(imageUrl string) (image.Config, error) {
 	}
 
 	// 限制读取的字节数，防止下载整个图片
-	limitReader := io.LimitReader(response.Body, 8192)
+	limitReader := io.LimitReader(response.Body, 1024*20)
+	//data, err := io.ReadAll(limitReader)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//log.Printf("%x", data)
 	config, err := getImageConfig(limitReader)
 	response.Body.Close()
 	return config, err
