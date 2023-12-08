@@ -27,6 +27,9 @@ body {
     .semi-table-tbody>.semi-table-row {
         border-bottom: 1px solid rgba(0,0,0,.1);
     }
+    .semi-space {
+        display: block!important;
+    }
 }
 
 .semi-layout {

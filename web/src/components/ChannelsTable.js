@@ -1,7 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {Input, Label, Message, Popup} from 'semantic-ui-react';
 import {Link} from 'react-router-dom';
-import {API, setPromptShown, shouldShowPrompt, showError, showInfo, showSuccess, timestamp2string} from '../helpers';
+import {
+    API,
+    isMobile,
+    setPromptShown,
+    shouldShowPrompt,
+    showError,
+    showInfo,
+    showSuccess,
+    timestamp2string
+} from '../helpers';
 
 import {CHANNEL_OPTIONS, ITEMS_PER_PAGE} from '../constants';
 import {renderGroup, renderNumber, renderQuota, renderQuotaWithPrompt} from '../helpers/render';
@@ -593,12 +602,13 @@ const ChannelsTable = () => {
                 total: channelCount,
                 pageSizeOpts: [10, 20, 50, 100],
                 showSizeChanger: true,
+                formatPageText:(page) => '',
                 onPageSizeChange: (size) => {
                     handlePageSizeChange(size).then()
                 },
                 onPageChange: handlePageChange,
             }} loading={loading} onRow={handleRow}/>
-            <div style={{display: 'flex'}}>
+            <div style={{display: isMobile()?'':'flex', marginTop: isMobile()?0:-45, zIndex: 999, position: 'relative'}}>
                 <Space>
                     <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
                         () => {
@@ -612,6 +622,7 @@ const ChannelsTable = () => {
                         title="确定？"
                         okType={'warning'}
                         onConfirm={testAllChannels}
+                        position={isMobile()?'top':''}
                     >
                         <Button theme='light' type='warning' style={{marginRight: 8}}>测试所有已启用通道</Button>
                     </Popconfirm>
