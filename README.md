@@ -11,7 +11,7 @@
 > 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
 
 > [!NOTE]
-> 最新版Docker镜像 calciumion/neko-api:latest
+> 最新版Docker镜像 calciumion/new-api:latest  
 > 更新指令 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
 
 ## 此分叉版本的主要变更

@@ -446,7 +446,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			// record all the consume log even if quota is 0
 			useTimeSeconds := time.Now().Unix() - startTime.Unix()
 			logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f，用时 %d秒", modelRatio, groupRatio, useTimeSeconds)
-			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, textRequest.Model, tokenName, quota, logContent, tokenId)
+			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, textRequest.Model, tokenName, quota, logContent, tokenId, userQuota)
 			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 			model.UpdateChannelUsedQuota(channelId, quota)
 			//if quota != 0 {
