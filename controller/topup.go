@@ -98,7 +98,7 @@ func RequestEpay(c *gin.Context) {
 	topUp := &model.TopUp{
 		UserId:     id,
 		Amount:     req.Amount,
-		Money:      int(amount),
+		Money:      payMoney,
 		TradeNo:    "A" + tradeNo,
 		CreateTime: time.Now().Unix(),
 		Status:     "pending",
@@ -175,5 +175,6 @@ func RequestAmount(c *gin.Context) {
 	}
 	id := c.GetInt("id")
 	user, _ := model.GetUserById(id, false)
-	c.JSON(200, gin.H{"message": "success", "data": GetAmount(float64(req.Amount), *user)})
+	payMoney := GetAmount(float64(req.Amount), *user)
+	c.JSON(200, gin.H{"message": "success", "data": strconv.FormatFloat(payMoney, 'f', 2, 64)})
 }
