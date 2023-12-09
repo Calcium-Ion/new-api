@@ -1,13 +1,13 @@
 package model
 
 type TopUp struct {
-	Id         int    `json:"id"`
-	UserId     int    `json:"user_id" gorm:"index"`
-	Amount     int    `json:"amount"`
-	Money      int    `json:"money"`
-	TradeNo    string `json:"trade_no"`
-	CreateTime int64  `json:"create_time"`
-	Status     string `json:"status"`
+	Id         int     `json:"id"`
+	UserId     int     `json:"user_id" gorm:"index"`
+	Amount     int     `json:"amount"`
+	Money      float64 `json:"money"`
+	TradeNo    string  `json:"trade_no"`
+	CreateTime int64   `json:"create_time"`
+	Status     string  `json:"status"`
 }
 
 func (topUp *TopUp) Insert() error {
