@@ -143,7 +143,7 @@ const ChannelsTable = () => {
                                 <Tag color='white' type='ghost' size='large'>{renderQuota(record.used_quota)}</Tag>
                             </Tooltip>
                             <Tooltip content={'剩余额度，点击更新'}>
-                                <Tag color='white' type='ghost' size='large' onClick={() => {updateChannelBalance(record)}}>${record.balance}</Tag>
+                                <Tag color='white' type='ghost' size='large' onClick={() => {updateChannelBalance(record)}}>${record.balance.toFixed(2)}</Tag>
                             </Tooltip>
                         </Space>
                     </div>
