@@ -29,7 +29,8 @@
     + 配合项目[neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)可实现用key查询使用情况，方便二次分销
 5. 渠道显示已使用额度，支持指定组织访问
 6. 分页支持选择每页显示数量
-7. 支持gpt-4-1106-vision-preview，dall-e-3，tts-1
+7. 支持 gpt-4-1106-vision-preview，dall-e-3，tts-1
+8. 支持第三方模型 **gpt-4-gizmo-***（gpts）
 
 ## 交流群
 <img src="https://github.com/Calcium-Ion/new-api/assets/61247483/de536a8a-0161-47a7-a0a2-66ef6de81266" width="500">
