@@ -74,12 +74,17 @@ const TopUp = () => {
                 const {message, data} = res.data;
                 // showInfo(message);
                 if (message === 'success') {
+
                     let params = data
                     let url = res.data.url
                     let form = document.createElement('form')
                     form.action = url
                     form.method = 'POST'
-                    form.target = '_blank'
+                    // 判断是否为safari浏览器
+                    let isSafari = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") < 1;
+                    if (!isSafari) {
+                        form.target = '_blank'
+                    }
                     for (let key in params) {
                         let input = document.createElement('input')
                         input.type = 'hidden'
