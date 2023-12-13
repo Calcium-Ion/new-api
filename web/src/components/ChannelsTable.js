@@ -13,7 +13,7 @@ import {
 } from '../helpers';
 
 import {CHANNEL_OPTIONS, ITEMS_PER_PAGE} from '../constants';
-import {renderGroup, renderNumber, renderQuota, renderQuotaWithPrompt} from '../helpers/render';
+import {renderGroup, renderNumber, renderNumberWithPoint, renderQuota, renderQuotaWithPrompt} from '../helpers/render';
 import {
     Avatar,
     Tag,
@@ -142,8 +142,8 @@ const ChannelsTable = () => {
                             <Tooltip content={'已用额度'}>
                                 <Tag color='white' type='ghost' size='large'>{renderQuota(record.used_quota)}</Tag>
                             </Tooltip>
-                            <Tooltip content={'剩余额度，点击更新'}>
-                                <Tag color='white' type='ghost' size='large' onClick={() => {updateChannelBalance(record)}}>${record.balance.toFixed(2)}</Tag>
+                            <Tooltip content={'剩余额度' + record.balance + '，点击更新'}>
+                                <Tag color='white' type='ghost' size='large' onClick={() => {updateChannelBalance(record)}}>${renderNumberWithPoint(record.balance)}</Tag>
                             </Tooltip>
                         </Space>
                     </div>

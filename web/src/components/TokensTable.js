@@ -4,7 +4,22 @@ import {API, copy, isAdmin, showError, showSuccess, showWarning, timestamp2strin
 
 import {ITEMS_PER_PAGE} from '../constants';
 import {renderQuota, stringToColor} from '../helpers/render';
-import {Avatar, Tag, Table, Button, Popover, Form, Modal, Popconfirm} from "@douyinfe/semi-ui";
+import {
+    Avatar,
+    Tag,
+    Table,
+    Button,
+    Popover,
+    Form,
+    Modal,
+    Popconfirm,
+    SplitButtonGroup,
+    Dropdown
+} from "@douyinfe/semi-ui";
+
+import {
+    IconTreeTriangleDown,
+} from '@douyinfe/semi-icons';
 import EditToken from "../pages/Token/EditToken";
 
 const {Column} = Table;
@@ -44,6 +59,13 @@ function renderStatus(status) {
 }
 
 const TokensTable = () => {
+
+    const link_menu = [
+        {node: 'item', key: 'next', name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next')}},
+        {node: 'item', key: 'ama', name: 'AMA 问天', value: 'ama'},
+        {node: 'item', key: 'opencat', name: 'OpenCat', value: 'opencat'},
+    ];
+
     const columns = [
         {
             title: '名称',
@@ -124,6 +146,19 @@ const TokensTable = () => {
                                 await copyText('sk-' + record.key)
                             }}
                     >复制</Button>
+                    <SplitButtonGroup style={{marginRight: 1}} aria-label="项目操作按钮组">
+                        <Button theme="light" style={{ color: 'rgba(var(--semi-teal-7), 1)' }} onClick={()=>{onOpenLink('next', record.key)}}>聊天</Button>
+                        <Dropdown trigger="click" position="bottomRight" menu={
+                            [
+                                {node: 'item', key: 'next', name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next', record.key)}},
+                                {node: 'item', key: 'ama', name: 'AMA 问天（BotGrem）', onClick: () => {onOpenLink('ama', record.key)}},
+                                {node: 'item', key: 'opencat', name: 'OpenCat', onClick: () => {onOpenLink('opencat', record.key)}},
+                            ]
+                        }
+                        >
+                            <Button style={ { padding: '8px 4px', color: 'rgba(var(--semi-teal-7), 1)' }} type="primary" icon={<IconTreeTriangleDown />}></Button>
+                        </Dropdown>
+                    </SplitButtonGroup>
                     <Popconfirm
                         title="确定是否要删除此令牌？"
                         content="此修改将不可逆"
@@ -301,7 +336,8 @@ const TokensTable = () => {
         if (chatLink) {
             defaultUrl = chatLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
         } else {
-            defaultUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
+            showError('管理员未设置聊天链接')
+            return
         }
         let url;
         switch (type) {

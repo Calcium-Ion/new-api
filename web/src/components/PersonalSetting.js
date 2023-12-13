@@ -1,5 +1,4 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Form, Image, Message} from 'semantic-ui-react';
 import {Link, useNavigate} from 'react-router-dom';
 import {API, copy, isRoot, showError, showInfo, showNotice, showSuccess} from '../helpers';
 import Turnstile from 'react-turnstile';
@@ -10,7 +9,7 @@ import {
     Button,
     Card,
     Descriptions,
-    Divider,
+    Divider, Image,
     Input, InputNumber,
     Layout,
     Modal,
@@ -267,7 +266,7 @@ const PersonalSetting = () => {
     }
 
     return (
-        <div style={{lineHeight: '40px'}}>
+        <div>
             <Layout>
                 <Layout.Content>
                     <Modal
@@ -426,8 +425,7 @@ const PersonalSetting = () => {
                                 </Space>
 
                                 {systemToken && (
-                                    <Form.Input
-                                        fluid
+                                    <Input
                                         readOnly
                                         value={systemToken}
                                         onClick={handleSystemTokenClick}
@@ -451,24 +449,21 @@ const PersonalSetting = () => {
                                     visible={showWeChatBindModal}
                                     size={'mini'}
                                 >
-                                    <Image src={status.wechat_qrcode} fluid/>
+                                    <Image src={status.wechat_qrcode}/>
                                     <div style={{textAlign: 'center'}}>
                                         <p>
                                             微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）
                                         </p>
                                     </div>
-                                    <Form size='large'>
-                                        <Form.Input
-                                            fluid
-                                            placeholder='验证码'
-                                            name='wechat_verification_code'
-                                            value={inputs.wechat_verification_code}
-                                            onChange={handleInputChange}
-                                        />
-                                        <Button color='' fluid size='large' onClick={bindWeChat}>
-                                            绑定
-                                        </Button>
-                                    </Form>
+                                    <Input
+                                        placeholder='验证码'
+                                        name='wechat_verification_code'
+                                        value={inputs.wechat_verification_code}
+                                        onChange={(v)=>handleInputChange('wechat_verification_code', v)}
+                                    />
+                                    <Button color='' fluid size='large' onClick={bindWeChat}>
+                                        绑定
+                                    </Button>
                                 </Modal>
                             </div>
                         </Card>

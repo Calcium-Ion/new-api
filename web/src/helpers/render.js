@@ -42,6 +42,34 @@ export function renderNumber(num) {
   }
 }
 
+export function renderNumberWithPoint(num) {
+  num = num.toFixed(2);
+  if (num >= 100000) {
+    // Convert number to string to manipulate it
+    let numStr = num.toString();
+    // Find the position of the decimal point
+    let decimalPointIndex = numStr.indexOf('.');
+
+    let wholePart = numStr;
+    let decimalPart = '';
+
+    // If there is a decimal point, split the number into whole and decimal parts
+    if (decimalPointIndex !== -1) {
+      wholePart = numStr.slice(0, decimalPointIndex);
+      decimalPart = numStr.slice(decimalPointIndex);
+    }
+
+    // Take the first two and last two digits of the whole number part
+    let shortenedWholePart = wholePart.slice(0, 2) + '..' + wholePart.slice(-2);
+
+    // Return the formatted number
+    return shortenedWholePart + decimalPart;
+  }
+
+  // If the number is less than 100,000, return it unmodified
+  return num;
+}
+
 export function getQuotaPerUnit() {
   let quotaPerUnit = localStorage.getItem('quota_per_unit');
   quotaPerUnit = parseFloat(quotaPerUnit);

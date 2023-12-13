@@ -2,7 +2,6 @@ import React, {useContext, useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {UserContext} from '../context/User';
 
-import {Button, Container, Icon, Menu, Segment} from 'semantic-ui-react';
 import {API, getLogo, getSystemName, isAdmin, isMobile, showSuccess} from '../helpers';
 import '../index.css';
 

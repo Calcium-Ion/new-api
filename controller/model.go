@@ -262,6 +262,15 @@ func init() {
 			Parent:     nil,
 		},
 		{
+			Id:         "gpt-4-1106-vision-preview",
+			Object:     "model",
+			Created:    1699593571,
+			OwnedBy:    "openai",
+			Permission: permission,
+			Root:       "gpt-4-1106-vision-preview",
+			Parent:     nil,
+		},
+		{
 			Id:         "text-embedding-ada-002",
 			Object:     "model",
 			Created:    1677649963,

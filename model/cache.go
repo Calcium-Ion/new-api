@@ -190,6 +190,10 @@ func SyncChannelCache(frequency int) {
 }
 
 func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
+	if strings.HasPrefix(model, "gpt-4-gizmo") {
+		model = "gpt-4-gizmo-*"
+	}
+
 	if !common.MemoryCacheEnabled {
 		return GetRandomSatisfiedChannel(group, model)
 	}
