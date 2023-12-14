@@ -151,6 +151,36 @@ func DeleteDisabledChannel(c *gin.Context) {
 	return
 }
 
+type ChannelBatch struct {
+	Ids []int `json:"ids"`
+}
+
+func DeleteChannelBatch(c *gin.Context) {
+	channelBatch := ChannelBatch{}
+	err := c.ShouldBindJSON(&channelBatch)
+	if err != nil || len(channelBatch.Ids) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "参数错误",
+		})
+		return
+	}
+	err = model.BatchDeleteChannels(channelBatch.Ids)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    len(channelBatch.Ids),
+	})
+	return
+}
+
 func UpdateChannel(c *gin.Context) {
 	channel := model.Channel{}
 	err := c.ShouldBindJSON(&channel)
