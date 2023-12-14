@@ -86,6 +86,25 @@ func BatchInsertChannels(channels []Channel) error {
 	return nil
 }
 
+func BatchDeleteChannels(ids []int) error {
+	//使用事务 删除channel表和channel_ability表
+	tx := DB.Begin()
+	err := tx.Where("id in (?)", ids).Delete(&Channel{}).Error
+	if err != nil {
+		// 回滚事务
+		tx.Rollback()
+		return err
+	}
+	err = tx.Where("channel_id in (?)", ids).Delete(&Ability{}).Error
+	if err != nil {
+		// 回滚事务
+		tx.Rollback()
+	}
+	// 提交事务
+	tx.Commit()
+	return err
+}
+
 func (channel *Channel) GetPriority() int64 {
 	if channel.Priority == nil {
 		return 0

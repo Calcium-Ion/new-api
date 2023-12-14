@@ -187,6 +187,12 @@ func GetUserMidjourney(c *gin.Context) {
 	if logs == nil {
 		logs = make([]*model.Midjourney, 0)
 	}
+	if !strings.Contains(common.ServerAddress, "localhost") {
+		for i, midjourney := range logs {
+			midjourney.ImageUrl = common.ServerAddress + "/mj/image/" + midjourney.MjId
+			logs[i] = midjourney
+		}
+	}
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": "",

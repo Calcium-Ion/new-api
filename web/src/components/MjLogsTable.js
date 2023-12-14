@@ -2,7 +2,19 @@ import React, {useEffect, useState} from 'react';
 import {Label} from 'semantic-ui-react';
 import {API, copy, isAdmin, showError, showSuccess, timestamp2string} from '../helpers';
 
-import {Table, Avatar, Tag, Form, Button, Layout, Select, Popover, Modal } from '@douyinfe/semi-ui';
+import {
+    Table,
+    Avatar,
+    Tag,
+    Form,
+    Button,
+    Layout,
+    Select,
+    Popover,
+    Modal,
+    ImagePreview,
+    Typography
+} from '@douyinfe/semi-ui';
 import {ITEMS_PER_PAGE} from '../constants';
 import {renderNumber, renderQuota, stringToColor} from '../helpers/render';
 
@@ -194,19 +206,16 @@ const LogsTable = () => {
               }
       
               return (
-                  text.length > 10 ?
-                      <>
-                          {text.slice(0, 10)}
-                          <Button
-                              onClick={() => {
-                                  setModalContent(text);
-                                  setIsModalOpen(true);
-                              }}
-                          >
-                              查看全部
-                          </Button>
-                      </>
-                      : text
+                  <Typography.Text
+                      ellipsis={{ showTooltip: true }}
+                      style={{ width: 100 }}
+                      onClick={() => {
+                          setModalContent(text);
+                          setIsModalOpen(true);
+                      }}
+                  >
+                      {text}
+                  </Typography.Text>
               );
           }
         },
@@ -220,19 +229,16 @@ const LogsTable = () => {
               }
       
               return (
-                  text.length > 10 ?
-                      <>
-                          {text.slice(0, 10)}
-                          <Button
-                              onClick={() => {
-                                  setModalContent(text);
-                                  setIsModalOpen(true);
-                              }}
-                          >
-                              查看全部
-                          </Button>
-                      </>
-                      : text
+                  <Typography.Text
+                      ellipsis={{ showTooltip: true }}
+                      style={{ width: 100 }}
+                      onClick={() => {
+                          setModalContent(text);
+                          setIsModalOpen(true);
+                      }}
+                  >
+                      {text}
+                  </Typography.Text>
               );
           }
         },
@@ -246,19 +252,16 @@ const LogsTable = () => {
               }
       
               return (
-                  text.length > 10 ?
-                      <>
-                          {text.slice(0, 10)}
-                          <Button
-                              onClick={() => {
-                                  setModalContent(text);
-                                  setIsModalOpen(true);
-                              }}
-                          >
-                              查看全部
-                          </Button>
-                      </>
-                      : text
+                  <Typography.Text
+                      ellipsis={{ showTooltip: true }}
+                      style={{ width: 100 }}
+                      onClick={() => {
+                          setModalContent(text);
+                          setIsModalOpen(true);
+                      }}
+                  >
+                      {text}
+                  </Typography.Text>
               );
           }
         }
@@ -414,15 +417,11 @@ const LogsTable = () => {
                 >
                     <p style={{ whiteSpace: 'pre-line' }}>{modalContent}</p>
                 </Modal>
-                {/* 模态框组件，用于展示图片 */}
-               <Modal
-                  title="图片预览"
-                  visible={isModalOpenurl}
-                  onCancel={() => setIsModalOpenurl(false)}
-                  footer={null}  // 模态框不显示底部按钮
-                >
-                  <img src={modalImageUrl} style={{ width: '100%' }} alt="结果图片" />
-                </Modal>
+                <ImagePreview
+                    src={modalImageUrl}
+                    visible={isModalOpenurl}
+                    onVisibleChange={(visible) => setIsModalOpenurl(visible)}
+                />
                
             </Layout>
         </>

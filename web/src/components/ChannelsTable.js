@@ -74,6 +74,11 @@ function renderBalance(type, balance) {
 
 const ChannelsTable = () => {
     const columns = [
+        // {
+        //     title: '',
+        //     dataIndex: 'checkbox',
+        //     className: 'checkbox',
+        // },
         {
             title: 'ID',
             dataIndex: 'id',
@@ -235,9 +240,11 @@ const ChannelsTable = () => {
     const [channelCount, setChannelCount] = useState(pageSize);
     const [groupOptions, setGroupOptions] = useState([]);
     const [showEdit, setShowEdit] = useState(false);
+    const [enableBatchDelete, setEnableBatchDelete] = useState(false);
     const [editingChannel, setEditingChannel] = useState({
         id: undefined,
     });
+    const [selectedChannels, setSelectedChannels] = useState([]);
 
     const removeRecord = id => {
         let newDataSource = [...channels];
@@ -484,6 +491,27 @@ const ChannelsTable = () => {
         setUpdatingBalance(false);
     };
 
+    const batchDeleteChannels = async () => {
+        if (selectedChannels.length === 0) {
+            showError('请先选择要删除的通道！');
+            return;
+        }
+        setLoading(true);
+        let ids = [];
+        selectedChannels.forEach((channel) => {
+            ids.push(channel.id);
+        });
+        const res = await API.post(`/api/channel/batch`, {ids: ids});
+        const {success, message, data} = res.data;
+        if (success) {
+            showSuccess(`已删除 ${data} 个通道！`);
+            await refresh();
+        } else {
+            showError(message);
+        }
+        setLoading(false);
+    }
+
     const sortChannel = (key) => {
         if (channels.length === 0) return;
         setLoading(true);
@@ -557,6 +585,7 @@ const ChannelsTable = () => {
         }
     };
 
+
     return (
         <>
             <EditChannel refresh={refresh} visible={showEdit} handleClose={closeEdit} editingChannel={editingChannel}/>
@@ -583,16 +612,18 @@ const ChannelsTable = () => {
             </Form>
             <div style={{marginTop: 10, display: 'flex'}}>
                 <Space>
-                    <Typography.Text strong>使用ID排序</Typography.Text>
-                    <Switch checked={idSort} label='使用ID排序' uncheckedText="关" aria-label="是否用ID排序" onChange={(v) => {
-                        localStorage.setItem('id-sort', v + '')
-                        setIdSort(v)
-                        loadChannels(0, pageSize, v)
-                            .then()
-                            .catch((reason) => {
-                                showError(reason);
-                            })
-                    }}></Switch>
+                    <Space>
+                        <Typography.Text strong>使用ID排序</Typography.Text>
+                        <Switch checked={idSort} label='使用ID排序' uncheckedText="关" aria-label="是否用ID排序" onChange={(v) => {
+                            localStorage.setItem('id-sort', v + '')
+                            setIdSort(v)
+                            loadChannels(0, pageSize, v)
+                                .then()
+                                .catch((reason) => {
+                                    showError(reason);
+                                })
+                        }}></Switch>
+                    </Space>
                 </Space>
             </div>
 
@@ -607,7 +638,15 @@ const ChannelsTable = () => {
                     handlePageSizeChange(size).then()
                 },
                 onPageChange: handlePageChange,
-            }} loading={loading} onRow={handleRow}/>
+            }} loading={loading} onRow={handleRow} rowSelection={
+                enableBatchDelete ?
+                {
+                    onChange: (selectedRowKeys, selectedRows) => {
+                        // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+                        setSelectedChannels(selectedRows);
+                    },
+                } : null
+            }/>
             <div style={{display: isMobile()?'':'flex', marginTop: isMobile()?0:-45, zIndex: 999, position: 'relative', pointerEvents: 'none'}}>
                 <Space style={{pointerEvents: 'auto'}}>
                     <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
@@ -622,7 +661,7 @@ const ChannelsTable = () => {
                         title="确定？"
                         okType={'warning'}
                         onConfirm={testAllChannels}
-                        position={isMobile()?'top':''}
+                        position={isMobile()?'top':'top'}
                     >
                         <Button theme='light' type='warning' style={{marginRight: 8}}>测试所有已启用通道</Button>
                     </Popconfirm>
@@ -647,6 +686,24 @@ const ChannelsTable = () => {
                 {/*<div style={{width: '100%', pointerEvents: 'none', position: 'absolute'}}>*/}
 
                 {/*</div>*/}
+            </div>
+            <div style={{marginTop: 20}}>
+                <Space>
+                    <Typography.Text strong>开启批量删除</Typography.Text>
+                    <Switch label='开启批量删除' uncheckedText="关" aria-label="是否开启批量删除" onChange={(v) => {
+                        setEnableBatchDelete(v)
+                    }}></Switch>
+                    <Popconfirm
+                        title="确定是否要删除所选通道？"
+                        content="此修改将不可逆"
+                        okType={'danger'}
+                        onConfirm={batchDeleteChannels}
+                        disabled={!enableBatchDelete}
+                        position={'top'}
+                    >
+                        <Button disabled={!enableBatchDelete} theme='light' type='danger' style={{marginRight: 8}}>删除所选通道</Button>
+                    </Popconfirm>
+                </Space>
             </div>
         </>
     );
