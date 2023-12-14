@@ -622,7 +622,7 @@ const ChannelsTable = () => {
                         title="确定？"
                         okType={'warning'}
                         onConfirm={testAllChannels}
-                        position={isMobile()?'top':''}
+                        position={isMobile()?'top':'top'}
                     >
                         <Button theme='light' type='warning' style={{marginRight: 8}}>测试所有已启用通道</Button>
                     </Popconfirm>
