@@ -22,7 +22,7 @@ jobs:
 
       - name: Save version info
         run: |
-          git rev-parse --short HEAD > VERSION 
+          echo "VERSION=$(git describe --tags)" > $GITHUB_ENV
 
       - name: Translate
         run: |
