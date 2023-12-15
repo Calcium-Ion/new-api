@@ -22,7 +22,7 @@ jobs:
 
       - name: Save version info
         run: |
-          git describe --tags > VERSION 
+          git rev-parse --short HEAD > VERSION 
 
       - name: Translate
         run: |
