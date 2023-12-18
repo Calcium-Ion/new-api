@@ -29,6 +29,8 @@ func testChannel(channel *model.Channel, request ChatRequest) (err error, openai
 		fallthrough
 	case common.ChannelType360:
 		fallthrough
+	case common.ChannelTypeGemini:
+		fallthrough
 	case common.ChannelTypeXunfei:
 		return errors.New("该渠道类型当前版本不支持测试，请手动测试"), nil
 	case common.ChannelTypeAzure:
