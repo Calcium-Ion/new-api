@@ -160,10 +160,27 @@ func countTokenMessages(messages []Message, model string) (int, error) {
 		} else {
 			for _, m := range arrayContent {
 				if m.Type == "image_url" {
-					imageTokenNum, err := getImageToken(&m.ImageUrl)
+					var imageTokenNum int
+					if str, ok := m.ImageUrl.(string); ok {
+						imageTokenNum, err = getImageToken(&MessageImageUrl{Url: str, Detail: "auto"})
+					} else {
+						imageUrlMap := m.ImageUrl.(map[string]interface{})
+						detail, ok := imageUrlMap["detail"]
+						if ok {
+							imageUrlMap["detail"] = detail.(string)
+						} else {
+							imageUrlMap["detail"] = "auto"
+						}
+						imageUrl := MessageImageUrl{
+							Url:    imageUrlMap["url"].(string),
+							Detail: imageUrlMap["detail"].(string),
+						}
+						imageTokenNum, err = getImageToken(&imageUrl)
+					}
 					if err != nil {
 						return 0, err
 					}
+
 					tokenNum += imageTokenNum
 					log.Printf("image token num: %d", imageTokenNum)
 				} else {

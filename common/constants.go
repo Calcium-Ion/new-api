@@ -190,6 +190,7 @@ const (
 	ChannelTypeAIProxyLibrary = 21
 	ChannelTypeFastGPT        = 22
 	ChannelTypeTencent        = 23
+	ChannelTypeGemini         = 24
 )
 
 var ChannelBaseURLs = []string{

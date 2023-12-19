@@ -1,9 +1,9 @@
 version: '3.4'
 
 services:
-  one-api:
+  new-api:
     image: calciumion/new-api:latest
-    container_name: one-api
+    container_name: new-api
     restart: always
     command: --log-dir /app/logs
     ports:
@@ -12,7 +12,7 @@ services:
       - ./data:/data
       - ./logs:/app/logs
     environment:
-      - SQL_DSN=root:123456@tcp(host.docker.internal:3306)/one-api  # 修改此行，或注释掉以使用 SQLite 作为数据库
+      - SQL_DSN=root:123456@tcp(host.docker.internal:3306)/new-api  # 修改此行，或注释掉以使用 SQLite 作为数据库
       - REDIS_CONN_STRING=redis://redis
       - SESSION_SECRET=random_string  # 修改为随机字符串
       - TZ=Asia/Shanghai

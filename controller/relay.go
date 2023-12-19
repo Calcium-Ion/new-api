@@ -19,9 +19,9 @@ type Message struct {
 }
 
 type MediaMessage struct {
-	Type     string          `json:"type"`
-	Text     string          `json:"text"`
-	ImageUrl MessageImageUrl `json:"image_url,omitempty"`
+	Type     string `json:"type"`
+	Text     string `json:"text"`
+	ImageUrl any    `json:"image_url,omitempty"`
 }
 
 type MessageImageUrl struct {

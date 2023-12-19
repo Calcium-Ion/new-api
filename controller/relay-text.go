@@ -26,6 +26,7 @@ const (
 	APITypeXunfei
 	APITypeAIProxyLibrary
 	APITypeTencent
+	APITypeGemini
 )
 
 var httpClient *http.Client
@@ -119,6 +120,8 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		apiType = APITypeAIProxyLibrary
 	case common.ChannelTypeTencent:
 		apiType = APITypeTencent
+	case common.ChannelTypeGemini:
+		apiType = APITypeGemini
 	}
 	baseURL := common.ChannelBaseURLs[channelType]
 	requestURL := c.Request.URL.String()
@@ -180,6 +183,25 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		apiKey := c.Request.Header.Get("Authorization")
 		apiKey = strings.TrimPrefix(apiKey, "Bearer ")
 		fullRequestURL += "?key=" + apiKey
+	case APITypeGemini:
+		requestBaseURL := "https://generativelanguage.googleapis.com"
+		if baseURL != "" {
+			requestBaseURL = baseURL
+		}
+		version := "v1beta"
+		if c.GetString("api_version") != "" {
+			version = c.GetString("api_version")
+		}
+		action := "generateContent"
+		if textRequest.Stream {
+			action = "streamGenerateContent"
+		}
+		fullRequestURL = fmt.Sprintf("%s/%s/models/%s:%s", requestBaseURL, version, textRequest.Model, action)
+		apiKey := c.Request.Header.Get("Authorization")
+		apiKey = strings.TrimPrefix(apiKey, "Bearer ")
+		fullRequestURL += "?key=" + apiKey
+		//log.Println(fullRequestURL)
+
 	case APITypeZhipu:
 		method := "invoke"
 		if textRequest.Stream {
@@ -276,6 +298,13 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	case APITypePaLM:
 		palmRequest := requestOpenAI2PaLM(textRequest)
 		jsonStr, err := json.Marshal(palmRequest)
+		if err != nil {
+			return errorWrapper(err, "marshal_text_request_failed", http.StatusInternalServerError)
+		}
+		requestBody = bytes.NewBuffer(jsonStr)
+	case APITypeGemini:
+		geminiChatRequest := requestOpenAI2Gemini(textRequest)
+		jsonStr, err := json.Marshal(geminiChatRequest)
 		if err != nil {
 			return errorWrapper(err, "marshal_text_request_failed", http.StatusInternalServerError)
 		}
@@ -531,6 +560,25 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			return nil
 		} else {
 			err, usage := palmHandler(c, resp, promptTokens, textRequest.Model)
+			if err != nil {
+				return err
+			}
+			if usage != nil {
+				textResponse.Usage = *usage
+			}
+			return nil
+		}
+	case APITypeGemini:
+		if textRequest.Stream {
+			err, responseText := geminiChatStreamHandler(c, resp)
+			if err != nil {
+				return err
+			}
+			textResponse.Usage.PromptTokens = promptTokens
+			textResponse.Usage.CompletionTokens = countTokenText(responseText, textRequest.Model)
+			return nil
+		} else {
+			err, usage := geminiChatHandler(c, resp, promptTokens, textRequest.Model)
 			if err != nil {
 				return err
 			}
