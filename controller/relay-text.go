@@ -188,7 +188,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		if baseURL != "" {
 			requestBaseURL = baseURL
 		}
-		version := "v1"
+		version := "v1beta"
 		if c.GetString("api_version") != "" {
 			version = c.GetString("api_version")
 		}
@@ -200,6 +200,8 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		apiKey := c.Request.Header.Get("Authorization")
 		apiKey = strings.TrimPrefix(apiKey, "Bearer ")
 		fullRequestURL += "?key=" + apiKey
+		//log.Println(fullRequestURL)
+
 	case APITypeZhipu:
 		method := "invoke"
 		if textRequest.Stream {
