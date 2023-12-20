@@ -1,11 +1,12 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
 	"one-api/model"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetAllTokens(c *gin.Context) {
@@ -132,6 +133,7 @@ func AddToken(c *gin.Context) {
 		ExpiredTime:    token.ExpiredTime,
 		RemainQuota:    token.RemainQuota,
 		UnlimitedQuota: token.UnlimitedQuota,
+		Group:          token.Group, // 确保 Group 字段也被包含进来
 	}
 	err = cleanToken.Insert()
 	if err != nil {
@@ -217,6 +219,7 @@ func UpdateToken(c *gin.Context) {
 		cleanToken.ExpiredTime = token.ExpiredTime
 		cleanToken.RemainQuota = token.RemainQuota
 		cleanToken.UnlimitedQuota = token.UnlimitedQuota
+		cleanToken.Group = token.Group
 	}
 	err = cleanToken.Update()
 	if err != nil {

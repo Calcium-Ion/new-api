@@ -3,10 +3,11 @@ package model
 import (
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"one-api/common"
 	"strconv"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 type Token struct {
@@ -20,7 +21,8 @@ type Token struct {
 	ExpiredTime    int64  `json:"expired_time" gorm:"bigint;default:-1"` // -1 means never expired
 	RemainQuota    int    `json:"remain_quota" gorm:"default:0"`
 	UnlimitedQuota bool   `json:"unlimited_quota" gorm:"default:false"`
-	UsedQuota      int    `json:"used_quota" gorm:"default:0"` // used quota
+	UsedQuota      int    `json:"used_quota" gorm:"default:0"`    // used quota
+	Group          string `json:"group" gorm:"type:varchar(32);"` // 添加 group 字段
 }
 
 func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {
@@ -107,7 +109,7 @@ func (token *Token) Insert() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (token *Token) Update() error {
 	var err error
-	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota").Updates(token).Error
+	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "group").Updates(token).Error
 	return err
 }
 

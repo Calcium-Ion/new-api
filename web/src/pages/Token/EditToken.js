@@ -1,14 +1,19 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState,useContext} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
-import {API, isMobile, showError, showSuccess, timestamp2string} from '../../helpers';
+import {API, isMobile, showError, showSuccess, timestamp2string,isAdmin} from '../../helpers';
 import {renderQuota, renderQuotaWithPrompt} from '../../helpers/render';
-import {Layout, SideSheet, Button, Space, Spin, Banner, Input, DatePicker, AutoComplete, Typography} from "@douyinfe/semi-ui";
+import {Layout, SideSheet, Button, Space, Spin, Banner, Input, DatePicker, AutoComplete, Typography,Select} from "@douyinfe/semi-ui";
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
 import {Divider} from "semantic-ui-react";
+import {UserContext} from '../../context/User';
 
 const EditToken = (props) => {
     const isEdit = props.editingToken.id !== undefined;
     const [loading, setLoading] = useState(isEdit);
+    const isAdminUser = isAdmin();
+    const [groupOptions, setGroupOptions] = useState([]);
+    const [userState] = useContext(UserContext);
+    const [selectedGroup, setSelectedGroup] = useState();
     const originInputs = {
         name: '',
         remain_quota: isEdit ? 0 : 500000,
@@ -53,6 +58,7 @@ const EditToken = (props) => {
                 data.expired_time = timestamp2string(data.expired_time);
             }
             setInputs(data);
+            setSelectedGroup(data.group || userState?.user?.group || 'default');// 根据加载的数据设置分组
         } else {
             showError(message);
         }
@@ -62,13 +68,18 @@ const EditToken = (props) => {
         if (isEdit) {
             loadToken().then(
                 () => {
-                    // console.log(inputs);
+                    //console.log("Token loaded: ", inputs);
                 }
             );
         } else {
             setInputs(originInputs);
+            setSelectedGroup(userState?.user?.group || 'default');
         }
+        if (isAdminUser) {
+            fetchGroups().then(); // 如果是管理员，则获取分组选项
+          }
     }, [props.editingToken.id]);
+
 
     // 新增 state 变量 tokenCount 来记录用户想要创建的令牌数量，默认为 1
     const [tokenCount, setTokenCount] = useState(1);
@@ -98,6 +109,8 @@ const EditToken = (props) => {
             // 编辑令牌的逻辑保持不变
             let localInputs = {...inputs};
             localInputs.remain_quota = parseInt(localInputs.remain_quota);
+            localInputs.group = selectedGroup;
+            //console.log("Submitting token data: ", localInputs); // 打印提交的数据
             if (localInputs.expired_time !== -1) {
                 let time = Date.parse(localInputs.expired_time);
                 if (isNaN(time)) {
@@ -109,6 +122,7 @@ const EditToken = (props) => {
             }
 
             let res = await API.put(`/api/token/`, {...localInputs, id: parseInt(props.editingToken.id)});
+            //console.log("Update response: ", res.data);
             const {success, message} = res.data;
             if (success) {
                 showSuccess('令牌更新成功！');
@@ -127,6 +141,8 @@ const EditToken = (props) => {
                     localInputs.name = `${inputs.name}-${generateRandomSuffix()}`;
                 }
                 localInputs.remain_quota = parseInt(localInputs.remain_quota);
+                // 仅管理员创建新令牌时设置 group 字段
+                localInputs.group = selectedGroup;
 
                 if (localInputs.expired_time !== -1) {
                     let time = Date.parse(localInputs.expired_time);
@@ -139,6 +155,7 @@ const EditToken = (props) => {
                 }
 
                 let res = await API.post(`/api/token/`, localInputs);
+                //console.log("Create response: ", res.data);
                 const {success, message} = res.data;
 
                 if (success) {
@@ -159,6 +176,19 @@ const EditToken = (props) => {
         setInputs(originInputs); // 重置表单
         setTokenCount(1); // 重置数量为默认值
     };
+
+    const fetchGroups = async () => {
+        try {
+          let res = await API.get(`/api/group/`);
+          setGroupOptions(res.data.data.map((group) => ({
+            label: group,
+            value: group,
+          })));
+        } catch (error) {
+          showError(error.message);
+        }
+    };
+
 
 
 
@@ -245,10 +275,12 @@ const EditToken = (props) => {
                         ]}
                         disabled={unlimited_quota}
                     />
-                    <div style={{marginTop: 20}}>
-                        <Typography.Text>新建数量</Typography.Text>
-                    </div>
+                   
                     {!isEdit && (
+                        <>
+                         <div style={{marginTop: 20}}>
+                            <Typography.Text>新建数量</Typography.Text>
+                        </div>
                         <AutoComplete
                             style={{ marginTop: 8 }}
                             label='数量'
@@ -266,6 +298,7 @@ const EditToken = (props) => {
                             ]}
                             disabled={unlimited_quota}
                         />
+                        </>
                     )}
 
                     <div>
@@ -273,6 +306,28 @@ const EditToken = (props) => {
                             setUnlimitedQuota();
                         }}>{unlimited_quota ? '取消无限额度' : '设为无限额度'}</Button>
                     </div>
+                    {isAdminUser && (
+                            <>
+                            <Divider />
+                            <div style={{marginTop: 20}}>
+                                <Typography.Text>选择分组</Typography.Text>
+                            </div>
+                            
+                            <Select
+                                placeholder={'请选择分组'}
+                                name='group'
+                                fluid
+                                search
+                                selection
+                                allowAdditions
+                                additionLabel={'请在系统设置页面编辑分组倍率以添加新的分组：'}
+                                onChange={(value) => setSelectedGroup(value)}
+                                value={selectedGroup}
+                                autoComplete='new-password'
+                                optionList={groupOptions}
+                            />
+                            </>
+                        )}
                 </Spin>
             </SideSheet>
         </>

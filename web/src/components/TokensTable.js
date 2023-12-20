@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {API, copy, isAdmin, showError, showSuccess, showWarning, timestamp2string} from '../helpers';
 
 import {ITEMS_PER_PAGE} from '../constants';
-import {renderQuota, stringToColor} from '../helpers/render';
+import {renderQuota, stringToColor,renderGroup} from '../helpers/render';
 import {
     Avatar,
     Tag,
@@ -22,18 +22,6 @@ import {
 } from '@douyinfe/semi-icons';
 import EditToken from "../pages/Token/EditToken";
 
-const {Column} = Table;
-
-const COPY_OPTIONS = [
-    {key: 'next', text: 'ChatGPT Next Web', value: 'next'},
-    {key: 'ama', text: 'AMA 问天', value: 'ama'},
-    {key: 'opencat', text: 'OpenCat', value: 'opencat'},
-];
-
-const OPEN_LINK_OPTIONS = [
-    {key: 'ama', text: 'AMA 问天', value: 'ama'},
-    {key: 'opencat', text: 'OpenCat', value: 'opencat'},
-];
 
 function renderTimestamp(timestamp) {
     return (
@@ -59,6 +47,7 @@ function renderStatus(status) {
 }
 
 const TokensTable = () => {
+    const isAdminUser = isAdmin();
 
     const link_menu = [
         {node: 'item', key: 'next', name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next')}},
@@ -70,6 +59,29 @@ const TokensTable = () => {
         {
             title: '名称',
             dataIndex: 'name',
+            render: (text, record, dataIndex) => {
+                return (
+                        <div>
+                            <Tag onClick={async () => {
+                                await copyText(text);
+                            }}>
+                                {text}
+                            </Tag>
+                        </div>
+                );
+            },
+        },  
+        isAdminUser && {
+            title: '分组',
+            dataIndex: 'group',
+            key: 'group',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        {renderGroup(text)}
+                    </div>
+                );
+            },
         },
         {
             title: '状态',
@@ -204,7 +216,8 @@ const TokensTable = () => {
                 </div>
             ),
         },
-    ];
+    ].filter(Boolean);
+    
 
     const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
     const [showEdit, setShowEdit] = useState(false);
@@ -216,11 +229,10 @@ const TokensTable = () => {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchToken, setSearchToken] = useState('');
     const [searching, setSearching] = useState(false);
-    const [showTopUpModal, setShowTopUpModal] = useState(false);
-    const [targetTokenIdx, setTargetTokenIdx] = useState(0);
     const [editingToken, setEditingToken] = useState({
         id: undefined,
     });
+
 
     const closeEdit = () => {
         setShowEdit(false);
@@ -254,61 +266,12 @@ const TokensTable = () => {
         setLoading(false);
     };
 
-    const onPaginationChange = (e, {activePage}) => {
-        (async () => {
-            if (activePage === Math.ceil(tokens.length / pageSize) + 1) {
-                // In this case we have to load more data and then append them.
-                await loadTokens(activePage - 1);
-            }
-            setActivePage(activePage);
-        })();
-    };
+
 
     const refresh = async () => {
         await loadTokens(activePage - 1);
     };
 
-    const onCopy = async (type, key) => {
-        let status = localStorage.getItem('status');
-        let serverAddress = '';
-        if (status) {
-            status = JSON.parse(status);
-            serverAddress = status.server_address;
-        }
-        if (serverAddress === '') {
-            serverAddress = window.location.origin;
-        }
-        let encodedServerAddress = encodeURIComponent(serverAddress);
-        const nextLink = localStorage.getItem('chat_link');
-        let nextUrl;
-
-        if (nextLink) {
-            nextUrl = nextLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-        } else {
-            nextUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-        }
-
-        let url;
-        switch (type) {
-            case 'ama':
-                url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
-                break;
-            case 'opencat':
-                url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
-                break;
-            case 'next':
-                url = nextUrl;
-                break;
-            default:
-                url = `sk-${key}`;
-        }
-        // if (await copy(url)) {
-        //     showSuccess('已复制到剪贴板！');
-        // } else {
-        //     showWarning('无法复制到剪贴板，请手动复制，已将令牌填入搜索框。');
-        //     setSearchKeyword(url);
-        // }
-    };
 
     const copyText = async (text) => {
         if (await copy(text)) {
@@ -380,6 +343,7 @@ const TokensTable = () => {
         setLoading(true);
         let data = {id};
         let res;
+        // eslint-disable-next-line default-case
         switch (action) {
             case 'delete':
                 res = await API.delete(`/api/token/${id}/`);
@@ -463,6 +427,35 @@ const TokensTable = () => {
         }
     };
 
+    // 新增一个函数用于删除所选token
+    const deleteSelectedTokens = async () => {
+        if (selectedKeys.length === 0) {
+        showError('请至少选择一个令牌！');
+        return;
+        }
+
+        setLoading(true);
+        try {
+        // 这里注释掉了原有代码是为了集中展示删除逻辑
+        // let newTokens = [...tokens];
+
+        // 使用Promise.all同时开始所有删除请求
+        await Promise.all(selectedKeys.map(async (record) => {
+            await API.delete(`/api/token/${record.id}/`);
+        }));
+
+        // 过滤掉已被删除的token
+        let remainingTokens = tokens.filter(token => !selectedKeys.includes(token));
+        setTokens(remainingTokens);
+        setSelectedKeys([]); // 清空选择
+        showSuccess('所选令牌已成功删除。');
+        } catch (error) {
+        showError('删除失败: ' + error.message);
+        }
+        setLoading(false);
+    };
+
+
     const rowSelection = {
         onSelect: (record, selected) => {
         },
@@ -544,6 +537,8 @@ const TokensTable = () => {
                     await copyText(keys);
                 }
             }>复制所选令牌到剪贴板</Button>
+            {/* 新增删除按钮 */}
+            <Button theme='light' type='danger' style={{ marginLeft: '8px' }} onClick={deleteSelectedTokens}>删除所选令牌</Button>
         </>
     );
 };
