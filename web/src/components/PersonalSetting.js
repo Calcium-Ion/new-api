@@ -20,6 +20,7 @@ import {
 import {getQuotaPerUnit, renderQuota, renderQuotaWithPrompt, stringToColor} from "../helpers/render";
 import EditToken from "../pages/Token/EditToken";
 import EditUser from "../pages/User/EditUser";
+import passwordResetConfirm from "./PasswordResetConfirm";
 
 const PersonalSetting = () => {
     const [userState, userDispatch] = useContext(UserContext);
@@ -29,9 +30,12 @@ const PersonalSetting = () => {
         wechat_verification_code: '',
         email_verification_code: '',
         email: '',
-        self_account_deletion_confirmation: ''
+        self_account_deletion_confirmation: '',
+        set_new_password: '',
+        set_new_password_confirmation: '',
     });
     const [status, setStatus] = useState({});
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [showWeChatBindModal, setShowWeChatBindModal] = useState(false);
     const [showEmailBindModal, setShowEmailBindModal] = useState(false);
     const [showAccountDeleteModal, setShowAccountDeleteModal] = useState(false);
@@ -178,6 +182,27 @@ const PersonalSetting = () => {
         } else {
             showError(message);
         }
+    };
+
+    const changePassword = async () => {
+        if (inputs.set_new_password !== inputs.set_new_password_confirmation) {
+            showError('两次输入的密码不一致！');
+            return;
+        }
+        const res = await API.put(
+            `/api/user/self`,
+            {
+                password: inputs.set_new_password
+            }
+        );
+        const {success, message} = res.data;
+        if (success) {
+            showSuccess('密码修改成功！');
+            setShowWeChatBindModal(false);
+        } else {
+            showError(message);
+        }
+        setShowChangePasswordModal(false);
     };
 
     const transfer = async () => {
@@ -420,6 +445,9 @@ const PersonalSetting = () => {
                                 <Space>
                                     <Button onClick={generateAccessToken}>生成系统访问令牌</Button>
                                     <Button onClick={() => {
+                                        setShowChangePasswordModal(true);
+                                    }}>修改密码</Button>
+                                    <Button type={'danger'} onClick={() => {
                                         setShowAccountDeleteModal(true);
                                     }}>删除个人账户</Button>
                                 </Space>
@@ -530,6 +558,39 @@ const PersonalSetting = () => {
                                     name='self_account_deletion_confirmation'
                                     value={inputs.self_account_deletion_confirmation}
                                     onChange={(value)=>handleInputChange('self_account_deletion_confirmation', value)}
+                                />
+                                {turnstileEnabled ? (
+                                    <Turnstile
+                                        sitekey={turnstileSiteKey}
+                                        onVerify={(token) => {
+                                            setTurnstileToken(token);
+                                        }}
+                                    />
+                                ) : (
+                                    <></>
+                                )}
+                            </div>
+                        </Modal>
+                        <Modal
+                            onCancel={() => setShowChangePasswordModal(false)}
+                            visible={showChangePasswordModal}
+                            size={'small'}
+                            centered={true}
+                            onOk={changePassword}
+                        >
+                            <div style={{marginTop: 20}}>
+                                <Input
+                                    name='set_new_password'
+                                    placeholder='新密码'
+                                    value={inputs.set_new_password}
+                                    onChange={(value)=>handleInputChange('set_new_password', value)}
+                                />
+                                <Input
+                                    style={{marginTop: 20}}
+                                    name='set_new_password_confirmation'
+                                    placeholder='确认新密码'
+                                    value={inputs.set_new_password_confirmation}
+                                    onChange={(value)=>handleInputChange('set_new_password_confirmation', value)}
                                 />
                                 {turnstileEnabled ? (
                                     <Turnstile
