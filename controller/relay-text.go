@@ -231,14 +231,24 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	case RelayModeModerations:
 		promptTokens = countTokenInput(textRequest.Input, textRequest.Model)
 	}
-	preConsumedTokens := common.PreConsumedQuota
-	if textRequest.MaxTokens != 0 {
-		preConsumedTokens = promptTokens + int(textRequest.MaxTokens)
-	}
-	modelRatio := common.GetModelRatio(textRequest.Model)
+	modelPrice := common.GetModelPrice(textRequest.Model)
 	groupRatio := common.GetGroupRatio(group)
-	ratio := modelRatio * groupRatio
-	preConsumedQuota := int(float64(preConsumedTokens) * ratio)
+
+	var preConsumedQuota int
+	var ratio float64
+	var modelRatio float64
+	if modelPrice == -1 {
+		preConsumedTokens := common.PreConsumedQuota
+		if textRequest.MaxTokens != 0 {
+			preConsumedTokens = promptTokens + int(textRequest.MaxTokens)
+		}
+		modelRatio = common.GetModelRatio(textRequest.Model)
+		ratio = modelRatio * groupRatio
+		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
+	} else {
+		preConsumedQuota = int(modelPrice * common.QuotaPerUnit * groupRatio)
+	}
+
 	userQuota, err := model.CacheGetUserQuota(userId)
 	if err != nil {
 		return errorWrapper(err, "get_user_quota_failed", http.StatusInternalServerError)
@@ -452,15 +462,19 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	defer func(ctx context.Context) {
 		// c.Writer.Flush()
 		go func() {
-			quota := 0
-			completionRatio := common.GetCompletionRatio(textRequest.Model)
 			promptTokens = textResponse.Usage.PromptTokens
 			completionTokens = textResponse.Usage.CompletionTokens
 
-			quota = promptTokens + int(float64(completionTokens)*completionRatio)
-			quota = int(float64(quota) * ratio)
-			if ratio != 0 && quota <= 0 {
-				quota = 1
+			quota := 0
+			if modelPrice == -1 {
+				completionRatio := common.GetCompletionRatio(textRequest.Model)
+				quota = promptTokens + int(float64(completionTokens)*completionRatio)
+				quota = int(float64(quota) * ratio)
+				if ratio != 0 && quota <= 0 {
+					quota = 1
+				}
+			} else {
+				quota = int(modelPrice * common.QuotaPerUnit * groupRatio)
 			}
 			totalTokens := promptTokens + completionTokens
 			if totalTokens == 0 {
@@ -477,10 +491,22 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			if err != nil {
 				common.LogError(ctx, "error update user quota cache: "+err.Error())
 			}
+
 			// record all the consume log even if quota is 0
 			useTimeSeconds := time.Now().Unix() - startTime.Unix()
-			logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f，用时 %d秒", modelRatio, groupRatio, useTimeSeconds)
-			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, textRequest.Model, tokenName, quota, logContent, tokenId, userQuota)
+			var logContent string
+			if modelPrice == -1 {
+				logContent = fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f，用时 %d秒", modelRatio, groupRatio, useTimeSeconds)
+			} else {
+				logContent = fmt.Sprintf("模型价格 %.2f，分组倍率 %.2f，用时 %d秒", modelPrice, groupRatio, useTimeSeconds)
+			}
+			logModel := textRequest.Model
+			if strings.HasPrefix(logModel, "gpt-4-gizmo") {
+				logModel = "gpt-4-gizmo-*"
+				logContent += fmt.Sprintf("，模型 %s", textRequest.Model)
+			}
+
+			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, logModel, tokenName, quota, logContent, tokenId, userQuota)
 			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 			model.UpdateChannelUsedQuota(channelId, quota)
 			//if quota != 0 {

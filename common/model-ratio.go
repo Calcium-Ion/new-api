@@ -77,6 +77,35 @@ var ModelRatio = map[string]float64{
 	"hunyuan":                   7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
 }
 
+var ModelPrice = map[string]float64{
+	"gpt-4-gizmo-*": 0.1,
+}
+
+func ModelPrice2JSONString() string {
+	jsonBytes, err := json.Marshal(ModelPrice)
+	if err != nil {
+		SysError("error marshalling model price: " + err.Error())
+	}
+	return string(jsonBytes)
+}
+
+func UpdateModelPriceByJSONString(jsonStr string) error {
+	ModelPrice = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &ModelPrice)
+}
+
+func GetModelPrice(name string) float64 {
+	if strings.HasPrefix(name, "gpt-4-gizmo") {
+		name = "gpt-4-gizmo-*"
+	}
+	price, ok := ModelPrice[name]
+	if !ok {
+		//SysError("model price not found: " + name)
+		return -1
+	}
+	return price
+}
+
 func ModelRatio2JSONString() string {
 	jsonBytes, err := json.Marshal(ModelRatio)
 	if err != nil {
