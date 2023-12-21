@@ -486,6 +486,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			if err != nil {
 				common.LogError(ctx, "error update user quota cache: "+err.Error())
 			}
+
 			// record all the consume log even if quota is 0
 			useTimeSeconds := time.Now().Unix() - startTime.Unix()
 			var logContent string
@@ -494,7 +495,13 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			} else {
 				logContent = fmt.Sprintf("模型价格 %.2f，分组倍率 %.2f，用时 %d秒", modelPrice, groupRatio, useTimeSeconds)
 			}
-			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, textRequest.Model, tokenName, quota, logContent, tokenId, userQuota)
+			logModel := textRequest.Model
+			if strings.HasPrefix(logModel, "gpt-4-gizmo") {
+				logModel = "gpt-4-gizmo-*"
+				logContent += fmt.Sprintf("，模型 %s", textRequest.Model)
+			}
+
+			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, logModel, tokenName, quota, logContent, tokenId, userQuota)
 			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 			model.UpdateChannelUsedQuota(channelId, quota)
 			//if quota != 0 {
