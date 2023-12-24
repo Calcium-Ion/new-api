@@ -18,7 +18,7 @@ type ClaudeMetadata struct {
 type ClaudeRequest struct {
 	Model             string   `json:"model"`
 	Prompt            string   `json:"prompt"`
-	MaxTokensToSample int      `json:"max_tokens_to_sample"`
+	MaxTokensToSample uint     `json:"max_tokens_to_sample"`
 	StopSequences     []string `json:"stop_sequences,omitempty"`
 	Temperature       float64  `json:"temperature,omitempty"`
 	TopP              float64  `json:"top_p,omitempty"`

@@ -133,6 +133,7 @@ func CacheIsUserEnabled(userId int) (bool, error) {
 }
 
 var group2model2channels map[string]map[string][]*Channel
+var channelsIDM map[int]*Channel
 var channelSyncLock sync.RWMutex
 
 func InitChannelCache() {
@@ -149,10 +150,12 @@ func InitChannelCache() {
 		groups[ability.Group] = true
 	}
 	newGroup2model2channels := make(map[string]map[string][]*Channel)
+	newChannelsIDM := make(map[int]*Channel)
 	for group := range groups {
 		newGroup2model2channels[group] = make(map[string][]*Channel)
 	}
 	for _, channel := range channels {
+		newChannelsIDM[channel.Id] = channel
 		groups := strings.Split(channel.Group, ",")
 		for _, group := range groups {
 			models := strings.Split(channel.Models, ",")
@@ -177,6 +180,7 @@ func InitChannelCache() {
 
 	channelSyncLock.Lock()
 	group2model2channels = newGroup2model2channels
+	channelsIDM = newChannelsIDM
 	channelSyncLock.Unlock()
 	common.SysLog("channels synced from database")
 }
@@ -216,4 +220,18 @@ func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error
 	}
 	idx := rand.Intn(endIdx)
 	return channels[idx], nil
+}
+
+func CacheGetChannel(id int) (*Channel, error) {
+	if !common.MemoryCacheEnabled {
+		return GetChannelById(id, true)
+	}
+	channelSyncLock.RLock()
+	defer channelSyncLock.RUnlock()
+
+	c, ok := channelsIDM[id]
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("当前渠道# %d，已不存在", id))
+	}
+	return c, nil
 }

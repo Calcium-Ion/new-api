@@ -32,6 +32,8 @@
 7. 支持 gpt-4-1106-vision-preview，dall-e-3，tts-1
 8. 支持第三方模型 **gps** （gpt-4-gizmo-*），在渠道中添加自定义模型gpt-4-gizmo-*即可
 9. 兼容原版One API的数据库，可直接使用原版数据库（one-api.db）
+10. 支持模型按次数收费，可在 系统设置-运营设置 中设置
+11. 支持gemini-pro模型
 
 ## 部署
 ### 基于 Docker 进行部署

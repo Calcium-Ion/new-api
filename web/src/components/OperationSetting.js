@@ -10,6 +10,7 @@ const OperationSetting = () => {
         QuotaRemindThreshold: 0,
         PreConsumedQuota: 0,
         ModelRatio: '',
+        ModelPrice: '',
         GroupRatio: '',
         TopUpLink: '',
         ChatLink: '',
@@ -30,7 +31,7 @@ const OperationSetting = () => {
     if (success) {
       let newInputs = {};
       data.forEach((item) => {
-        if (item.key === 'ModelRatio' || item.key === 'GroupRatio') {
+        if (item.key === 'ModelRatio' || item.key === 'GroupRatio'|| item.key === 'ModelPrice') {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
         newInputs[item.key] = item.value;
@@ -97,6 +98,13 @@ const OperationSetting = () => {
           }
           await updateOption('GroupRatio', inputs.GroupRatio);
         }
+          if (originInputs['ModelPrice'] !== inputs.ModelPrice) {
+              if (!verifyJSON(inputs.ModelPrice)) {
+                  showError('模型固定价格不是合法的 JSON 字符串');
+                  return;
+              }
+              await updateOption('ModelPrice', inputs.ModelPrice);
+          }
         break;
       case 'quota':
         if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
@@ -315,6 +323,17 @@ const OperationSetting = () => {
                     <Header as='h3'>
                         倍率设置
                     </Header>
+                    <Form.Group widths='equal'>
+                        <Form.TextArea
+                            label='模型固定价格（一次调用消耗多少刀，优先级大于模型倍率）'
+                            name='ModelPrice'
+                            onChange={handleInputChange}
+                            style={{minHeight: 250, fontFamily: 'JetBrains Mono, Consolas'}}
+                            autoComplete='new-password'
+                            value={inputs.ModelPrice}
+                            placeholder='为一个 JSON 文本，键为模型名称，值为一次调用消耗多少刀，比如 "gpt-4-gizmo-*": 0.1，一次消耗0.1刀'
+                        />
+                    </Form.Group>
                     <Form.Group widths='equal'>
                         <Form.TextArea
                             label='模型倍率'

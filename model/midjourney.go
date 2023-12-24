@@ -131,3 +131,9 @@ func (midjourney *Midjourney) Update() error {
 	err = DB.Save(midjourney).Error
 	return err
 }
+
+func MjBulkUpdate(taskIDs []string, params map[string]any) error {
+	return DB.Model(&Midjourney{}).
+		Where("mj_id in (?)", taskIDs).
+		Updates(params).Error
+}
