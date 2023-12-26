@@ -194,12 +194,12 @@ func countTokenMessages(messages []Message, model string) (int, error) {
 }
 
 func countTokenInput(input any, model string) int {
-	switch input.(type) {
+	switch v := input.(type) {
 	case string:
-		return countTokenText(input.(string), model)
+		return countTokenText(v, model)
 	case []string:
 		text := ""
-		for _, s := range input.([]string) {
+		for _, s := range v {
 			text += s
 		}
 		return countTokenText(text, model)
