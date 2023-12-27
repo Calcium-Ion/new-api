@@ -72,13 +72,13 @@ const UsersTable = () => {
     }, {
         title: '状态', dataIndex: 'status', render: (text, record, index) => {
             return (<div>
-                {record.deleted_at !== null? <Tag color='red'>已注销</Tag> : renderStatus(text)}
+                {record.DeletedAt !== null? <Tag color='red'>已注销</Tag> : renderStatus(text)}
             </div>);
         },
     }, {
         title: '', dataIndex: 'operate', render: (text, record, index) => (<div>
             {
-                record.deleted_at !== null ? <></>:
+                record.DeletedAt !== null ? <></>:
                     <>
                         <Popconfirm
                             title="确定？"
