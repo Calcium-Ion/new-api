@@ -168,7 +168,7 @@ const ChannelsTable = () => {
                                 manageChannel(record.id, 'priority', record, value);
                             }}
                             defaultValue={record.priority}
-                            min={0}
+                            min={-999}
                         />
                     </div>
                 );
