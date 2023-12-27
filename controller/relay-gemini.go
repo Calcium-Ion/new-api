@@ -12,6 +12,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	GeminiVisionMaxImageNum = 16
+)
+
 type GeminiChatRequest struct {
 	Contents         []GeminiChatContent        `json:"contents"`
 	SafetySettings   []GeminiChatSafetySettings `json:"safety_settings,omitempty"`
@@ -97,6 +101,31 @@ func requestOpenAI2Gemini(textRequest GeneralOpenAIRequest) *GeminiChatRequest {
 				},
 			},
 		}
+		openaiContent := message.ParseContent()
+		var parts []GeminiPart
+		imageNum := 0
+		for _, part := range openaiContent {
+
+			if part.Type == ContentTypeText {
+				parts = append(parts, GeminiPart{
+					Text: part.Text,
+				})
+			} else if part.Type == ContentTypeImageURL {
+				imageNum += 1
+				if imageNum > GeminiVisionMaxImageNum {
+					continue
+				}
+				mimeType, data, _ := common.GetImageFromUrl(part.ImageUrl.(MessageImageUrl).Url)
+				parts = append(parts, GeminiPart{
+					InlineData: &GeminiInlineData{
+						MimeType: mimeType,
+						Data:     data,
+					},
+				})
+			}
+		}
+		content.Parts = parts
+
 		// there's no assistant role in gemini and API shall vomit if Role is not user or model
 		if content.Role == "assistant" {
 			content.Role = "model"

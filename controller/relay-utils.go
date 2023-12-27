@@ -76,12 +76,13 @@ func getImageToken(imageUrl *MessageImageUrl) (int, error) {
 	}
 	var config image.Config
 	var err error
+	var format string
 	if strings.HasPrefix(imageUrl.Url, "http") {
 		common.SysLog(fmt.Sprintf("downloading image: %s", imageUrl.Url))
-		config, err = common.DecodeUrlImageData(imageUrl.Url)
+		config, format, err = common.DecodeUrlImageData(imageUrl.Url)
 	} else {
 		common.SysLog(fmt.Sprintf("decoding image"))
-		config, err = common.DecodeBase64ImageData(imageUrl.Url)
+		config, format, err = common.DecodeBase64ImageData(imageUrl.Url)
 	}
 	if err != nil {
 		return 0, err
@@ -101,7 +102,7 @@ func getImageToken(imageUrl *MessageImageUrl) (int, error) {
 
 	shortSide := config.Width
 	otherSide := config.Height
-	log.Printf("width: %d, height: %d", config.Width, config.Height)
+	log.Printf("format: %s, width: %d, height: %d", format, config.Width, config.Height)
 	// 缩放倍数
 	scale := 1.0
 	if config.Height < shortSide {

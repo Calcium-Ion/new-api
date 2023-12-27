@@ -30,6 +30,60 @@ type MessageImageUrl struct {
 }
 
 const (
+	ContentTypeText     = "text"
+	ContentTypeImageURL = "image_url"
+)
+
+func (m Message) ParseContent() []MediaMessage {
+	var contentList []MediaMessage
+	var stringContent string
+	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
+		contentList = append(contentList, MediaMessage{
+			Type: ContentTypeText,
+			Text: stringContent,
+		})
+		return contentList
+	}
+	var arrayContent []json.RawMessage
+	if err := json.Unmarshal(m.Content, &arrayContent); err == nil {
+		for _, contentItem := range arrayContent {
+			var contentMap map[string]any
+			if err := json.Unmarshal(contentItem, &contentMap); err != nil {
+				continue
+			}
+			switch contentMap["type"] {
+			case ContentTypeText:
+				if subStr, ok := contentMap["text"].(string); ok {
+					contentList = append(contentList, MediaMessage{
+						Type: ContentTypeText,
+						Text: subStr,
+					})
+				}
+			case ContentTypeImageURL:
+				if subObj, ok := contentMap["image_url"].(map[string]any); ok {
+					detail, ok := subObj["detail"]
+					if ok {
+						subObj["detail"] = detail.(string)
+					} else {
+						subObj["detail"] = "auto"
+					}
+					contentList = append(contentList, MediaMessage{
+						Type: ContentTypeImageURL,
+						ImageUrl: MessageImageUrl{
+							Url:    subObj["url"].(string),
+							Detail: subObj["detail"].(string),
+						},
+					})
+				}
+			}
+		}
+		return contentList
+	}
+
+	return nil
+}
+
+const (
 	RelayModeUnknown = iota
 	RelayModeChatCompletions
 	RelayModeCompletions
