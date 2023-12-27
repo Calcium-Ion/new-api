@@ -647,7 +647,7 @@ func ManageUser(c *gin.Context) {
 		Username: req.Username,
 	}
 	// Fill attributes
-	model.DB.Where(&user).First(&user)
+	model.DB.Unscoped().Where(&user).First(&user)
 	if user.Id == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -683,7 +683,7 @@ func ManageUser(c *gin.Context) {
 			})
 			return
 		}
-		if err := user.Delete(); err != nil {
+		if err := user.HardDelete(); err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": err.Error(),
