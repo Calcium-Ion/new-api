@@ -113,6 +113,13 @@ func (channel *Channel) GetPriority() int64 {
 	return *channel.Priority
 }
 
+func (channel *Channel) GetWeight() int {
+	if channel.Weight == nil {
+		return 0
+	}
+	return int(*channel.Weight)
+}
+
 func (channel *Channel) GetBaseURL() string {
 	if channel.BaseURL == nil {
 		return ""
