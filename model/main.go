@@ -54,7 +54,11 @@ func chooseDB() (*gorm.DB, error) {
 		common.SysLog("using MySQL as database")
 		// check parseTime
 		if !strings.Contains(dsn, "parseTime") {
-			dsn += "?parseTime=true"
+			if strings.Contains(dsn, "?") {
+				dsn += "&parseTime=true"
+			} else {
+				dsn += "?parseTime=true"
+			}
 		}
 		return gorm.Open(mysql.Open(dsn), &gorm.Config{
 			PrepareStmt: true, // precompile SQL
