@@ -133,6 +133,7 @@ func CacheIsUserEnabled(userId int) (bool, error) {
 }
 
 var group2model2channels map[string]map[string][]*Channel
+var channelsIDM map[int]*Channel
 var channelSyncLock sync.RWMutex
 
 func InitChannelCache() {
@@ -149,10 +150,12 @@ func InitChannelCache() {
 		groups[ability.Group] = true
 	}
 	newGroup2model2channels := make(map[string]map[string][]*Channel)
+	newChannelsIDM := make(map[int]*Channel)
 	for group := range groups {
 		newGroup2model2channels[group] = make(map[string][]*Channel)
 	}
 	for _, channel := range channels {
+		newChannelsIDM[channel.Id] = channel
 		groups := strings.Split(channel.Group, ",")
 		for _, group := range groups {
 			models := strings.Split(channel.Models, ",")
@@ -177,6 +180,7 @@ func InitChannelCache() {
 
 	channelSyncLock.Lock()
 	group2model2channels = newGroup2model2channels
+	channelsIDM = newChannelsIDM
 	channelSyncLock.Unlock()
 	common.SysLog("channels synced from database")
 }
@@ -194,6 +198,7 @@ func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error
 		model = "gpt-4-gizmo-*"
 	}
 
+	// if memory cache is disabled, get channel directly from database
 	if !common.MemoryCacheEnabled {
 		return GetRandomSatisfiedChannel(group, model)
 	}
@@ -214,6 +219,41 @@ func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error
 			}
 		}
 	}
-	idx := rand.Intn(endIdx)
-	return channels[idx], nil
+	// Calculate the total weight of all channels up to endIdx
+	totalWeight := 0
+	for _, channel := range channels[:endIdx] {
+		totalWeight += channel.GetWeight()
+	}
+
+	if totalWeight == 0 {
+		// If all weights are 0, select a channel randomly
+		return channels[rand.Intn(endIdx)], nil
+	}
+
+	// Generate a random value in the range [0, totalWeight)
+	randomWeight := rand.Intn(totalWeight)
+
+	// Find a channel based on its weight
+	for _, channel := range channels[:endIdx] {
+		randomWeight -= channel.GetWeight()
+		if randomWeight <= 0 {
+			return channel, nil
+		}
+	}
+	// return the last channel if no channel is found
+	return channels[endIdx-1], nil
+}
+
+func CacheGetChannel(id int) (*Channel, error) {
+	if !common.MemoryCacheEnabled {
+		return GetChannelById(id, true)
+	}
+	channelSyncLock.RLock()
+	defer channelSyncLock.RUnlock()
+
+	c, ok := channelsIDM[id]
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("当前渠道# %d，已不存在", id))
+	}
+	return c, nil
 }

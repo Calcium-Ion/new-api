@@ -72,32 +72,49 @@ const UsersTable = () => {
     }, {
         title: '状态', dataIndex: 'status', render: (text, record, index) => {
             return (<div>
-                {renderStatus(text)}
+                {record.DeletedAt !== null? <Tag color='red'>已注销</Tag> : renderStatus(text)}
             </div>);
         },
     }, {
         title: '', dataIndex: 'operate', render: (text, record, index) => (<div>
-            <Popconfirm
-                title="确定？"
-                okType={'warning'}
-                onConfirm={() => {
-                    manageUser(record.username, 'promote', record)
-                }}
-            >
-                <Button theme='light' type='warning' style={{marginRight: 1}}>提升</Button>
-            </Popconfirm>
-            <Popconfirm
-                title="确定？"
-                okType={'warning'}
-                onConfirm={() => {
-                    manageUser(record.username, 'demote', record)
-                }}
-            >
-                <Button theme='light' type='secondary' style={{marginRight: 1}}>降级</Button>
-            </Popconfirm>
+            {
+                record.DeletedAt !== null ? <></>:
+                    <>
+                        <Popconfirm
+                            title="确定？"
+                            okType={'warning'}
+                            onConfirm={() => {
+                                manageUser(record.username, 'promote', record)
+                            }}
+                        >
+                            <Button theme='light' type='warning' style={{marginRight: 1}}>提升</Button>
+                        </Popconfirm>
+                        <Popconfirm
+                            title="确定？"
+                            okType={'warning'}
+                            onConfirm={() => {
+                                manageUser(record.username, 'demote', record)
+                            }}
+                        >
+                            <Button theme='light' type='secondary' style={{marginRight: 1}}>降级</Button>
+                        </Popconfirm>
+                        {record.status === 1 ?
+                            <Button theme='light' type='warning' style={{marginRight: 1}} onClick={async () => {
+                                manageUser(record.username, 'disable', record)
+                            }}>禁用</Button> :
+                            <Button theme='light' type='secondary' style={{marginRight: 1}} onClick={async () => {
+                                manageUser(record.username, 'enable', record);
+                            }} disabled={record.status === 3}>启用</Button>}
+                        <Button theme='light' type='tertiary' style={{marginRight: 1}} onClick={() => {
+                            setEditingUser(record);
+                            setShowEditUser(true);
+                        }}>编辑</Button>
+                    </>
+
+            }
             <Popconfirm
                 title="确定是否要删除此用户？"
-                content="此修改将不可逆"
+                content="硬删除，此修改将不可逆"
                 okType={'danger'}
                 position={'left'}
                 onConfirm={() => {
@@ -108,17 +125,6 @@ const UsersTable = () => {
             >
                 <Button theme='light' type='danger' style={{marginRight: 1}}>删除</Button>
             </Popconfirm>
-            {record.status === 1 ?
-                <Button theme='light' type='warning' style={{marginRight: 1}} onClick={async () => {
-                    manageUser(record.username, 'disable', record)
-                }}>禁用</Button> :
-                <Button theme='light' type='secondary' style={{marginRight: 1}} onClick={async () => {
-                    manageUser(record.username, 'enable', record);
-                }} disabled={record.status === 3}>启用</Button>}
-            <Button theme='light' type='tertiary' style={{marginRight: 1}} onClick={() => {
-                setEditingUser(record);
-                setShowEditUser(true);
-            }}>编辑</Button>
         </div>),
     },];
 

@@ -11,6 +11,7 @@ type Ability struct {
 	ChannelId int    `json:"channel_id" gorm:"primaryKey;autoIncrement:false;index"`
 	Enabled   bool   `json:"enabled"`
 	Priority  *int64 `json:"priority" gorm:"bigint;default:0;index"`
+	Weight    uint   `json:"weight" gorm:"default:0;index"`
 }
 
 func GetGroupModels(group string) []string {
@@ -25,7 +26,7 @@ func GetGroupModels(group string) []string {
 }
 
 func GetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
-	ability := Ability{}
+	var abilities []Ability
 	groupCol := "`group`"
 	trueVal := "1"
 	if common.UsingPostgreSQL {
@@ -37,16 +38,39 @@ func GetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
 	maxPrioritySubQuery := DB.Model(&Ability{}).Select("MAX(priority)").Where(groupCol+" = ? and model = ? and enabled = "+trueVal, group, model)
 	channelQuery := DB.Where(groupCol+" = ? and model = ? and enabled = "+trueVal+" and priority = (?)", group, model, maxPrioritySubQuery)
 	if common.UsingSQLite || common.UsingPostgreSQL {
-		err = channelQuery.Order("RANDOM()").First(&ability).Error
+		err = channelQuery.Order("weight DESC").Find(&abilities).Error
 	} else {
-		err = channelQuery.Order("RAND()").First(&ability).Error
+		err = channelQuery.Order("weight DESC").Find(&abilities).Error
 	}
 	if err != nil {
 		return nil, err
 	}
 	channel := Channel{}
-	channel.Id = ability.ChannelId
-	err = DB.First(&channel, "id = ?", ability.ChannelId).Error
+	if len(abilities) > 0 {
+		// Randomly choose one
+		weightSum := uint(0)
+		for _, ability_ := range abilities {
+			weightSum += ability_.Weight
+		}
+		if weightSum == 0 {
+			// All weight is 0, randomly choose one
+			channel.Id = abilities[common.GetRandomInt(len(abilities))].ChannelId
+		} else {
+			// Randomly choose one
+			weight := common.GetRandomInt(int(weightSum))
+			for _, ability_ := range abilities {
+				weight -= int(ability_.Weight)
+				//log.Printf("weight: %d, ability weight: %d", weight, *ability_.Weight)
+				if weight <= 0 {
+					channel.Id = ability_.ChannelId
+					break
+				}
+			}
+		}
+	} else {
+		return nil, nil
+	}
+	err = DB.First(&channel, "id = ?", channel.Id).Error
 	return &channel, err
 }
 
@@ -62,6 +86,7 @@ func (channel *Channel) AddAbilities() error {
 				ChannelId: channel.Id,
 				Enabled:   channel.Status == common.ChannelStatusEnabled,
 				Priority:  channel.Priority,
+				Weight:    uint(channel.GetWeight()),
 			}
 			abilities = append(abilities, ability)
 		}

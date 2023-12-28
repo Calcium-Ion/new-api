@@ -27,7 +27,7 @@ var indexPage []byte
 
 func main() {
 	common.SetupLogger()
-	common.SysLog("One API " + common.Version + " started")
+	common.SysLog("New API " + common.Version + " started")
 	if os.Getenv("GIN_MODE") != "debug" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -81,7 +81,7 @@ func main() {
 		}
 		go controller.AutomaticallyTestChannels(frequency)
 	}
-	go controller.UpdateMidjourneyTask()
+	go controller.UpdateMidjourneyTaskBulk()
 	if os.Getenv("BATCH_UPDATE_ENABLED") == "true" {
 		common.BatchUpdateEnabled = true
 		common.SysLog("batch update enabled with interval " + strconv.Itoa(common.BatchUpdateInterval) + "s")

@@ -163,11 +163,30 @@ const ChannelsTable = () => {
                     <div>
                         <InputNumber
                             style={{width: 70}}
-                            name='name'
+                            name='priority'
                             onChange={value => {
                                 manageChannel(record.id, 'priority', record, value);
                             }}
                             defaultValue={record.priority}
+                            min={-999}
+                        />
+                    </div>
+                );
+            },
+        },
+        {
+            title: '权重',
+            dataIndex: 'weight',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        <InputNumber
+                            style={{width: 70}}
+                            name='weight'
+                            onChange={value => {
+                                manageChannel(record.id, 'weight', record, value);
+                            }}
+                            defaultValue={record.weight}
                             min={0}
                         />
                     </div>

@@ -152,6 +152,21 @@ func Register(c *gin.Context) {
 			return
 		}
 	}
+	exist, err := model.CheckUserExistOrDeleted(user.Username, user.Email)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	if exist {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "用户名已存在，或已注销",
+		})
+		return
+	}
 	affCode := user.AffCode // this code is the inviter's code, not the user's own code
 	inviterId, _ := model.GetUserIdByAffCode(affCode)
 	cleanUser := model.User{
@@ -525,7 +540,7 @@ func DeleteUser(c *gin.Context) {
 		})
 		return
 	}
-	err = model.DeleteUserById(id)
+	err = model.HardDeleteUserById(id)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
@@ -632,7 +647,7 @@ func ManageUser(c *gin.Context) {
 		Username: req.Username,
 	}
 	// Fill attributes
-	model.DB.Where(&user).First(&user)
+	model.DB.Unscoped().Where(&user).First(&user)
 	if user.Id == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -668,7 +683,7 @@ func ManageUser(c *gin.Context) {
 			})
 			return
 		}
-		if err := user.Delete(); err != nil {
+		if err := user.HardDelete(); err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": err.Error(),
