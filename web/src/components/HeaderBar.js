@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {UserContext} from '../context/User';
 
@@ -6,18 +6,12 @@ import {Button, Container, Icon, Menu, Segment} from 'semantic-ui-react';
 import {API, getLogo, getSystemName, isAdmin, isMobile, showSuccess} from '../helpers';
 import '../index.css';
 
+import fireworks from 'react-fireworks';
+
 import {
-    IconAt,
-    IconHistogram,
-    IconGift,
     IconKey,
     IconUser,
-    IconLayers,
-    IconHelpCircle,
-    IconCreditCard,
-    IconSemiLogo,
-    IconHome,
-    IconImage
+    IconHelpCircle
 } from '@douyinfe/semi-icons';
 import {Nav, Avatar, Dropdown, Layout, Switch} from '@douyinfe/semi-ui';
 import {stringToColor} from "../helpers/render";
@@ -49,6 +43,8 @@ const HeaderBar = () => {
     const systemName = getSystemName();
     const logo = getLogo();
     var themeMode = localStorage.getItem('theme-mode');
+    const currentDate = new Date();
+    const isNewYear = currentDate.getMonth() === 0 && currentDate.getDate() === 1;
 
     async function logout() {
         setShowSidebar(false);
@@ -59,9 +55,23 @@ const HeaderBar = () => {
         navigate('/login');
     }
 
+    const handleNewYearClick = () => {
+        fireworks.init("root",{});
+        fireworks.start();
+        setTimeout(() => {
+            fireworks.stop();
+            setTimeout(() => {
+                window.location.reload();
+            }, 10000);
+        }, 3000);
+    };
+
     useEffect(() => {
         if (themeMode === 'dark') {
             switchMode(true);
+        }
+        if (isNewYear) {
+            console.log('Happy New Year!');
         }
     }, []);
 
@@ -105,6 +115,19 @@ const HeaderBar = () => {
                         }}
                         footer={
                             <>
+                                {isNewYear &&
+                                    // happy new year
+                                    <Dropdown
+                                        position="bottomRight"
+                                        render={
+                                            <Dropdown.Menu>
+                                                <Dropdown.Item onClick={handleNewYearClick}>Happy New Year!!!</Dropdown.Item>
+                                            </Dropdown.Menu>
+                                        }
+                                    >
+                                        <Nav.Item itemKey={'new-year'} text={'🏮'}/>
+                                    </Dropdown>
+                                }
                                 <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
                                 <Switch checkedText="🌞" size={'large'} checked={dark} uncheckedText="🌙" onChange={switchMode} />
                                 {userState.user ?
