@@ -96,10 +96,30 @@ func GetAllUnFinishTasks() []*Midjourney {
 	return tasks
 }
 
-func GetByMJId(mjId string) *Midjourney {
+func GetByOnlyMJId(mjId string) *Midjourney {
 	var mj *Midjourney
 	var err error
 	err = DB.Where("mj_id = ?", mjId).First(&mj).Error
+	if err != nil {
+		return nil
+	}
+	return mj
+}
+
+func GetByMJId(userId int, mjId string) *Midjourney {
+	var mj *Midjourney
+	var err error
+	err = DB.Where("user_id = ? and mj_id = ?", userId, mjId).First(&mj).Error
+	if err != nil {
+		return nil
+	}
+	return mj
+}
+
+func GetByMJIds(userId int, mjIds []string) []*Midjourney {
+	var mj []*Midjourney
+	var err error
+	err = DB.Where("user_id = ? and mj_id in (?)", userId, mjIds).Find(&mj).Error
 	if err != nil {
 		return nil
 	}
