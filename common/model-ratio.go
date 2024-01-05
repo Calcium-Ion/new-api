@@ -14,7 +14,7 @@ import (
 // 1 === $0.002 / 1K tokens
 // 1 === ￥0.014 / 1k tokens
 var ModelRatio = map[string]float64{
-	"midjourney":                50,
+	//"midjourney":                50,
 	"gpt-4-gizmo-*":             15,
 	"gpt-4":                     15,
 	"gpt-4-0314":                15,
@@ -32,6 +32,8 @@ var ModelRatio = map[string]float64{
 	"gpt-3.5-turbo-16k-0613":    1.5,
 	"gpt-3.5-turbo-instruct":    0.75, // $0.0015 / 1K tokens
 	"gpt-3.5-turbo-1106":        0.5,  // $0.001 / 1K tokens
+	"babbage-002":               0.2,  // $0.0004 / 1K tokens
+	"davinci-002":               1,    // $0.002 / 1K tokens
 	"text-ada-001":              0.2,
 	"text-babbage-001":          0.25,
 	"text-curie-001":            1,
@@ -80,6 +82,12 @@ var ModelRatio = map[string]float64{
 
 var ModelPrice = map[string]float64{
 	"gpt-4-gizmo-*": 0.1,
+	"mj_imagine":    0.1,
+	"mj_variation":  0.1,
+	"mj_reroll":     0.1,
+	"mj_blend":      0.1,
+	"mj_describe":   0.05,
+	"mj_upscale":    0.05,
 }
 
 func ModelPrice2JSONString() string {
