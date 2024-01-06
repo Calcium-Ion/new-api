@@ -394,7 +394,7 @@ const RedemptionsTable = () => {
                     }
                     let keys = "";
                     for (let i = 0; i < selectedKeys.length; i++) {
-                        keys += selectedKeys[i].name + "    sk-" + selectedKeys[i].key + "\n";
+                        keys += selectedKeys[i].name + "    " + selectedKeys[i].key + "\n";
                     }
                     await copyText(keys);
                 }
