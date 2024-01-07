@@ -18,6 +18,12 @@ type QuotaData struct {
 }
 
 func UpdateQuotaData() {
+	// recover
+	defer func() {
+		if r := recover(); r != nil {
+			common.SysLog(fmt.Sprintf("UpdateQuotaData panic: %s", r))
+		}
+	}()
 	for {
 		if common.DataExportEnabled {
 			common.SysLog("正在更新数据看板数据...")
