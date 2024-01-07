@@ -95,8 +95,10 @@ const (
 	RelayModeMidjourneyDescribe
 	RelayModeMidjourneyBlend
 	RelayModeMidjourneyChange
+	RelayModeMidjourneySimpleChange
 	RelayModeMidjourneyNotify
 	RelayModeMidjourneyTaskFetch
+	RelayModeMidjourneyTaskFetchByCondition
 	RelayModeAudio
 )
 
@@ -263,6 +265,7 @@ type MidjourneyRequest struct {
 	State       string   `json:"state"`
 	TaskId      string   `json:"taskId"`
 	Base64Array []string `json:"base64Array"`
+	Content     string   `json:"content"`
 }
 
 type MidjourneyResponse struct {
@@ -342,14 +345,19 @@ func RelayMidjourney(c *gin.Context) {
 		relayMode = RelayModeMidjourneyNotify
 	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/change") {
 		relayMode = RelayModeMidjourneyChange
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/task") {
+	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/simple-change") {
+		relayMode = RelayModeMidjourneyChange
+	} else if strings.HasSuffix(c.Request.URL.Path, "/fetch") {
 		relayMode = RelayModeMidjourneyTaskFetch
+	} else if strings.HasSuffix(c.Request.URL.Path, "/list-by-condition") {
+		relayMode = RelayModeMidjourneyTaskFetchByCondition
 	}
+
 	var err *MidjourneyResponse
 	switch relayMode {
 	case RelayModeMidjourneyNotify:
 		err = relayMidjourneyNotify(c)
-	case RelayModeMidjourneyTaskFetch:
+	case RelayModeMidjourneyTaskFetch, RelayModeMidjourneyTaskFetchByCondition:
 		err = relayMidjourneyTask(c, relayMode)
 	default:
 		err = relayMidjourneySubmit(c, relayMode)

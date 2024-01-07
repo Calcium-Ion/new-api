@@ -76,6 +76,12 @@ export function getQuotaPerUnit() {
   return quotaPerUnit;
 }
 
+export function getQuotaWithUnit(quota, digits = 6) {
+  let quotaPerUnit = localStorage.getItem('quota_per_unit');
+  quotaPerUnit = parseFloat(quotaPerUnit);
+  return (quota / quotaPerUnit).toFixed(digits);
+}
+
 export function renderQuota(quota, digits = 2) {
   let quotaPerUnit = localStorage.getItem('quota_per_unit');
   let displayInCurrency = localStorage.getItem('display_in_currency');

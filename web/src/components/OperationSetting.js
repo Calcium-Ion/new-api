@@ -3,7 +3,8 @@ import {Divider, Form, Grid, Header} from 'semantic-ui-react';
 import {API, showError, showSuccess, timestamp2string, verifyJSON} from '../helpers';
 
 const OperationSetting = () => {
-    let now = new Date();let [inputs, setInputs] = useState({
+    let now = new Date();
+    let [inputs, setInputs] = useState({
         QuotaForNewUser: 0,
         QuotaForInviter: 0,
         QuotaForInvitee: 0,
@@ -20,28 +21,32 @@ const OperationSetting = () => {
         LogConsumeEnabled: '',
         DisplayInCurrencyEnabled: '',
         DisplayTokenStatEnabled: '',
+        DrawingEnabled: '',
+        DataExportEnabled: '',
+        DataExportInterval: 5,
         RetryTimes: 0
     });
     const [originInputs, setOriginInputs] = useState({});
-    let [loading, setLoading] = useState(false);let [historyTimestamp, setHistoryTimestamp] = useState(timestamp2string(now.getTime() / 1000 - 30 * 24 * 3600)); // a month ago
+    let [loading, setLoading] = useState(false);
+    let [historyTimestamp, setHistoryTimestamp] = useState(timestamp2string(now.getTime() / 1000 - 30 * 24 * 3600)); // a month ago
 
-  const getOptions = async () => {
-    const res = await API.get('/api/option/');
-    const { success, message, data } = res.data;
-    if (success) {
-      let newInputs = {};
-      data.forEach((item) => {
-        if (item.key === 'ModelRatio' || item.key === 'GroupRatio'|| item.key === 'ModelPrice') {
-          item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+    const getOptions = async () => {
+        const res = await API.get('/api/option/');
+        const {success, message, data} = res.data;
+        if (success) {
+            let newInputs = {};
+            data.forEach((item) => {
+                if (item.key === 'ModelRatio' || item.key === 'GroupRatio' || item.key === 'ModelPrice') {
+                    item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+                }
+                newInputs[item.key] = item.value;
+            });
+            setInputs(newInputs);
+            setOriginInputs(newInputs);
+        } else {
+            showError(message);
         }
-        newInputs[item.key] = item.value;
-      });
-      setInputs(newInputs);
-      setOriginInputs(newInputs);
-    } else {
-      showError(message);
-    }
-  };
+    };
 
     useEffect(() => {
         getOptions().then();
@@ -66,87 +71,88 @@ const OperationSetting = () => {
     };
 
     const handleInputChange = async (e, {name, value}) => {
-        if (name.endsWith('Enabled')) {
+        if (name.endsWith('Enabled') || name === 'DataExportInterval') {
             await updateOption(name, value);
         } else {
             setInputs((inputs) => ({...inputs, [name]: value}));
         }
     };
 
-  const submitConfig = async (group) => {
-    switch (group) {
-      case 'monitor':
-        if (originInputs['ChannelDisableThreshold'] !== inputs.ChannelDisableThreshold) {
-          await updateOption('ChannelDisableThreshold', inputs.ChannelDisableThreshold);
+    const submitConfig = async (group) => {
+        switch (group) {
+            case 'monitor':
+                if (originInputs['ChannelDisableThreshold'] !== inputs.ChannelDisableThreshold) {
+                    await updateOption('ChannelDisableThreshold', inputs.ChannelDisableThreshold);
+                }
+                if (originInputs['QuotaRemindThreshold'] !== inputs.QuotaRemindThreshold) {
+                    await updateOption('QuotaRemindThreshold', inputs.QuotaRemindThreshold);
+                }
+                break;
+            case 'ratio':
+                if (originInputs['ModelRatio'] !== inputs.ModelRatio) {
+                    if (!verifyJSON(inputs.ModelRatio)) {
+                        showError('模型倍率不是合法的 JSON 字符串');
+                        return;
+                    }
+                    await updateOption('ModelRatio', inputs.ModelRatio);
+                }
+                if (originInputs['GroupRatio'] !== inputs.GroupRatio) {
+                    if (!verifyJSON(inputs.GroupRatio)) {
+                        showError('分组倍率不是合法的 JSON 字符串');
+                        return;
+                    }
+                    await updateOption('GroupRatio', inputs.GroupRatio);
+                }
+                if (originInputs['ModelPrice'] !== inputs.ModelPrice) {
+                    if (!verifyJSON(inputs.ModelPrice)) {
+                        showError('模型固定价格不是合法的 JSON 字符串');
+                        return;
+                    }
+                    await updateOption('ModelPrice', inputs.ModelPrice);
+                }
+                break;
+            case 'quota':
+                if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
+                    await updateOption('QuotaForNewUser', inputs.QuotaForNewUser);
+                }
+                if (originInputs['QuotaForInvitee'] !== inputs.QuotaForInvitee) {
+                    await updateOption('QuotaForInvitee', inputs.QuotaForInvitee);
+                }
+                if (originInputs['QuotaForInviter'] !== inputs.QuotaForInviter) {
+                    await updateOption('QuotaForInviter', inputs.QuotaForInviter);
+                }
+                if (originInputs['PreConsumedQuota'] !== inputs.PreConsumedQuota) {
+                    await updateOption('PreConsumedQuota', inputs.PreConsumedQuota);
+                }
+                break;
+            case 'general':
+                if (originInputs['TopUpLink'] !== inputs.TopUpLink) {
+                    await updateOption('TopUpLink', inputs.TopUpLink);
+                }
+                if (originInputs['ChatLink'] !== inputs.ChatLink) {
+                    await updateOption('ChatLink', inputs.ChatLink);
+                }
+                if (originInputs['QuotaPerUnit'] !== inputs.QuotaPerUnit) {
+                    await updateOption('QuotaPerUnit', inputs.QuotaPerUnit);
+                }
+                if (originInputs['RetryTimes'] !== inputs.RetryTimes) {
+                    await updateOption('RetryTimes', inputs.RetryTimes);
+                }
+                break;
         }
-        if (originInputs['QuotaRemindThreshold'] !== inputs.QuotaRemindThreshold) {
-          await updateOption('QuotaRemindThreshold', inputs.QuotaRemindThreshold);
-        }
-        break;
-      case 'ratio':
-        if (originInputs['ModelRatio'] !== inputs.ModelRatio) {
-          if (!verifyJSON(inputs.ModelRatio)) {
-            showError('模型倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('ModelRatio', inputs.ModelRatio);
-        }
-        if (originInputs['GroupRatio'] !== inputs.GroupRatio) {
-          if (!verifyJSON(inputs.GroupRatio)) {
-            showError('分组倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('GroupRatio', inputs.GroupRatio);
-        }
-          if (originInputs['ModelPrice'] !== inputs.ModelPrice) {
-              if (!verifyJSON(inputs.ModelPrice)) {
-                  showError('模型固定价格不是合法的 JSON 字符串');
-                  return;
-              }
-              await updateOption('ModelPrice', inputs.ModelPrice);
-          }
-        break;
-      case 'quota':
-        if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
-          await updateOption('QuotaForNewUser', inputs.QuotaForNewUser);
-        }
-        if (originInputs['QuotaForInvitee'] !== inputs.QuotaForInvitee) {
-          await updateOption('QuotaForInvitee', inputs.QuotaForInvitee);
-        }
-        if (originInputs['QuotaForInviter'] !== inputs.QuotaForInviter) {
-          await updateOption('QuotaForInviter', inputs.QuotaForInviter);
-        }
-        if (originInputs['PreConsumedQuota'] !== inputs.PreConsumedQuota) {
-          await updateOption('PreConsumedQuota', inputs.PreConsumedQuota);
-        }
-        break;
-      case 'general':
-        if (originInputs['TopUpLink'] !== inputs.TopUpLink) {
-          await updateOption('TopUpLink', inputs.TopUpLink);
-        }
-        if (originInputs['ChatLink'] !== inputs.ChatLink) {
-          await updateOption('ChatLink', inputs.ChatLink);
-        }
-        if (originInputs['QuotaPerUnit'] !== inputs.QuotaPerUnit) {
-          await updateOption('QuotaPerUnit', inputs.QuotaPerUnit);
-        }
-        if (originInputs['RetryTimes'] !== inputs.RetryTimes) {
-          await updateOption('RetryTimes', inputs.RetryTimes);
-        }
-        break;
-    }
-  };
+    };
 
     const deleteHistoryLogs = async () => {
-    console.log(inputs);
-    const res = await API.delete(`/api/log/?target_timestamp=${Date.parse(historyTimestamp) / 1000}`);
-    const { success, message, data } = res.data;
-    if (success) {
-      showSuccess(`${data} 条日志已清理！`);
-      return;
-    }
-    showError('日志清理失败：' + message);
-  };return (
+        console.log(inputs);
+        const res = await API.delete(`/api/log/?target_timestamp=${Date.parse(historyTimestamp) / 1000}`);
+        const {success, message, data} = res.data;
+        if (success) {
+            showSuccess(`${data} 条日志已清理！`);
+            return;
+        }
+        showError('日志清理失败：' + message);
+    };
+    return (
         <Grid columns={1}>
             <Grid.Column>
                 <Form loading={loading}>
@@ -208,31 +214,58 @@ const OperationSetting = () => {
                             name='DisplayTokenStatEnabled'
                             onChange={handleInputChange}
                         />
+                        <Form.Checkbox
+                            checked={inputs.DrawingEnabled === 'true'}
+                            label='启用绘图功能'
+                            name='DrawingEnabled'
+                            onChange={handleInputChange}
+                        />
                     </Form.Group>
                     <Form.Button onClick={() => {
                         submitConfig('general').then();
-                    }}>保存通用设置</Form.Button><Divider />
-          <Header as='h3'>
-            日志设置
-          </Header>
-          <Form.Group inline>
-            <Form.Checkbox
-              checked={inputs.LogConsumeEnabled === 'true'}
-              label='启用额度消费日志记录'
-              name='LogConsumeEnabled'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group widths={4}>
-            <Form.Input label='目标时间' value={historyTimestamp} type='datetime-local'
-                        name='history_timestamp'
-                        onChange={(e, { name, value }) => {
-                          setHistoryTimestamp(value);
-                        }} />
-          </Form.Group>
-          <Form.Button onClick={() => {
-            deleteHistoryLogs().then();
-          }}>清理历史日志</Form.Button>
+                    }}>保存通用设置</Form.Button><Divider/>
+                    <Header as='h3'>
+                        日志设置
+                    </Header>
+                    <Form.Group inline>
+                        <Form.Checkbox
+                            checked={inputs.LogConsumeEnabled === 'true'}
+                            label='启用额度消费日志记录'
+                            name='LogConsumeEnabled'
+                            onChange={handleInputChange}
+                        />
+
+                    </Form.Group>
+                    <Form.Group inline>
+                        <Form.Checkbox
+                            checked={inputs.DataExportEnabled === 'true'}
+                            label='启用数据看板（实验性）'
+                            name='DataExportEnabled'
+                            onChange={handleInputChange}
+                        />
+                        <Form.Input
+                            label='数据看板更新间隔（分钟，设置过短会影响数据库性能）'
+                            name='DataExportInterval'
+                            type={'number'}
+                            step='1'
+                            min='1'
+                            onChange={handleInputChange}
+                            autoComplete='new-password'
+                            value={inputs.DataExportInterval}
+                            placeholder='数据看板更新间隔（分钟，设置过短会影响数据库性能）'
+                        />
+                    </Form.Group>
+                    <Divider/>
+                    <Form.Group widths={4}>
+                        <Form.Input label='目标时间' value={historyTimestamp} type='datetime-local'
+                                    name='history_timestamp'
+                                    onChange={(e, {name, value}) => {
+                                        setHistoryTimestamp(value);
+                                    }}/>
+                    </Form.Group>
+                    <Form.Button onClick={() => {
+                        deleteHistoryLogs().then();
+                    }}>清理历史日志</Form.Button>
                     <Divider/>
                     <Header as='h3'>
                         监控设置
