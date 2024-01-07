@@ -171,6 +171,32 @@ export function timestamp2string(timestamp) {
   );
 }
 
+export function timestamp2string1(timestamp) {
+  let date = new Date(timestamp * 1000);
+  // let year = date.getFullYear().toString();
+  let month = (date.getMonth() + 1).toString();
+  let day = date.getDate().toString();
+  let hour = date.getHours().toString();
+  if (month.length === 1) {
+    month = '0' + month;
+  }
+  if (day.length === 1) {
+    day = '0' + day;
+  }
+  if (hour.length === 1) {
+    hour = '0' + hour;
+  }
+  return (
+      // year +
+      // '-' +
+      month +
+      '-' +
+      day +
+      ' ' +
+      hour + ":00"
+  );
+}
+
 export function downloadTextAsFile(text, filename) {
   let blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
   let url = URL.createObjectURL(blob);

@@ -23,10 +23,10 @@ import Log from './pages/Log';
 import Chat from './pages/Chat';
 import {Layout} from "@douyinfe/semi-ui";
 import Midjourney from "./pages/Midjourney";
+import Detail from "./pages/Detail";
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
-
 function App() {
   const [userState, userDispatch] = useContext(UserContext);
   const [statusState, statusDispatch] = useContext(StatusContext);
@@ -49,6 +49,8 @@ function App() {
       localStorage.setItem('footer_html', data.footer_html);
       localStorage.setItem('quota_per_unit', data.quota_per_unit);
       localStorage.setItem('display_in_currency', data.display_in_currency);
+      localStorage.setItem('enable_drawing', data.enable_drawing);
+      localStorage.setItem('enable_data_export', data.enable_data_export);
       if (data.chat_link) {
         localStorage.setItem('chat_link', data.chat_link);
       } else {
@@ -225,6 +227,14 @@ function App() {
                     element={
                         <PrivateRoute>
                             <Log />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path='/detail'
+                    element={
+                        <PrivateRoute>
+                            <Detail />
                         </PrivateRoute>
                     }
                 />

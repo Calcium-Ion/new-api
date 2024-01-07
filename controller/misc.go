@@ -34,6 +34,8 @@ func GetStatus(c *gin.Context) {
 			"quota_per_unit":      common.QuotaPerUnit,
 			"display_in_currency": common.DisplayInCurrencyEnabled,
 			"enable_batch_update": common.BatchUpdateEnabled,
+			"enable_drawing":      common.DrawingEnabled,
+			"enable_data_export":  common.DataExportEnabled,
 		},
 	})
 	return

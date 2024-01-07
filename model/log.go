@@ -59,9 +59,10 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 	if !common.LogConsumeEnabled {
 		return
 	}
+	username := GetUsernameById(userId)
 	log := &Log{
 		UserId:           userId,
-		Username:         GetUsernameById(userId),
+		Username:         username,
 		CreatedAt:        common.GetTimestamp(),
 		Type:             LogTypeConsume,
 		Content:          content,
@@ -76,6 +77,9 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 	err := DB.Create(log).Error
 	if err != nil {
 		common.LogError(ctx, "failed to record log: "+err.Error())
+	}
+	if common.DataExportEnabled {
+		LogQuotaData(userId, username, modelName, quota, common.GetTimestamp())
 	}
 }
 

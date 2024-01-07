@@ -1,7 +1,8 @@
+import { initVChartSemiTheme } from '@visactor/vchart-semi-theme';
+import VChart from "@visactor/vchart";
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {BrowserRouter} from 'react-router-dom';
-import {Container} from 'semantic-ui-react';
 import App from './App';
 import HeaderBar from './components/HeaderBar';
 import Footer from './components/Footer';
@@ -13,6 +14,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import {StatusProvider} from './context/Status';
 import {Layout} from "@douyinfe/semi-ui";
 import SiderBar from "./components/SiderBar";
+
+// initialization
+initVChartSemiTheme({
+    isWatchingThemeSwitch: true,
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const {Sider, Content, Header} = Layout;
