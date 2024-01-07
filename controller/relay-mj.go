@@ -263,8 +263,6 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 		}
 	}
 
-	action := midjRequest.Action
-
 	if relayMode == RelayModeMidjourneyImagine { //绘画任务，此类任务可重复
 		if midjRequest.Prompt == "" {
 			return &MidjourneyResponse{
@@ -296,7 +294,7 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 					Description: "index_can_only_be_1_2_3_4",
 				}
 			}
-			action = midjRequest.Action
+			//action = midjRequest.Action
 			mjId = midjRequest.TaskId
 		} else if relayMode == RelayModeMidjourneySimpleChange {
 			if midjRequest.Content == "" {
@@ -313,8 +311,9 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 				}
 			}
 			mjId = params.ID
-			action = params.Action
+			midjRequest.Action = params.Action
 		}
+
 		originTask := model.GetByMJId(userId, mjId)
 		if originTask == nil {
 			return &MidjourneyResponse{
@@ -391,8 +390,9 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 	} else {
 		requestBody = c.Request.Body
 	}
-	mjAction := "mj_" + strings.ToLower(action)
+	mjAction := "mj_" + strings.ToLower(midjRequest.Action)
 	modelPrice := common.GetModelPrice(mjAction)
+	// 如果没有配置价格，则使用默认价格
 	if modelPrice == -1 {
 		defaultPrice, ok := DefaultModelPrice[mjAction]
 		if !ok {
@@ -476,7 +476,7 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 			}
 			if quota != 0 {
 				tokenName := c.GetString("token_name")
-				logContent := fmt.Sprintf("模型固定价格 %.2f，分组倍率 %.2f，操作 %s", modelPrice, groupRatio, action)
+				logContent := fmt.Sprintf("模型固定价格 %.2f，分组倍率 %.2f，操作 %s", modelPrice, groupRatio, midjRequest.Action)
 				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageModel, tokenName, quota, logContent, tokenId, userQuota)
 				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 				channelId := c.GetInt("channel_id")
@@ -530,7 +530,7 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 	midjourneyTask := &model.Midjourney{
 		UserId:      userId,
 		Code:        midjResponse.Code,
-		Action:      action,
+		Action:      midjRequest.Action,
 		MjId:        midjResponse.Result,
 		Prompt:      midjRequest.Prompt,
 		PromptEn:    "",

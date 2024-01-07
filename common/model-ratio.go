@@ -109,7 +109,7 @@ func GetModelPrice(name string) float64 {
 	}
 	price, ok := ModelPrice[name]
 	if !ok {
-		//SysError("model price not found: " + name)
+		SysError("model price not found: " + name)
 		return -1
 	}
 	return price
