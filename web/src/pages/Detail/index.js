@@ -132,6 +132,9 @@ const Detail = (props) => {
         const {success, message, data} = res.data;
         if (success) {
             setQuotaData(data);
+            if (data.length === 0) {
+                return;
+            }
             updateChart(lineChart, pieChart, data);
         } else {
             showError(message);
@@ -168,28 +171,27 @@ const Detail = (props) => {
         let lineData = [];
         for (let i = 0; i < data.length; i++) {
             const item = data[i];
-            const {count, id, model_name, quota, user_id, username} = item;
             // 合并model_name
-            let pieItem = pieData.find(item => item.type === model_name);
+            let pieItem = pieData.find(it => it.type === item.model_name);
             if (pieItem) {
-                pieItem.count += count;
+                pieItem.value += item.count;
             } else {
                 pieData.push({
-                    "type": model_name,
-                    "value": count
+                    "type": item.model_name,
+                    "value": item.count
                 });
             }
             // 合并created_at和model_name 为 lineData, created_at 数据类型是小时的时间戳
             // 转换日期格式
             let createTime = timestamp2string1(item.created_at);
-            let lineItem = lineData.find(item => item.Time === createTime && item.Model === model_name);
+            let lineItem = lineData.find(it => it.Time === createTime && it.Model === item.model_name);
             if (lineItem) {
-                lineItem.Usage += parseFloat(getQuotaWithUnit(quota));
+                lineItem.Usage += parseFloat(getQuotaWithUnit(item.quota));
             } else {
                 lineData.push({
                     "Time": createTime,
-                    "Model": model_name,
-                    "Usage": parseFloat(getQuotaWithUnit(quota))
+                    "Model": item.model_name,
+                    "Usage": parseFloat(getQuotaWithUnit(item.quota))
                 });
             }
 
