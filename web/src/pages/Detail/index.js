@@ -68,6 +68,7 @@ const Detail = (props) => {
                 id: 'id0',
                 values: [
                     { type: 'null', value: '0' },
+                    { type: 'null', value: '0' },
                 ]
             }
         ],
@@ -181,14 +182,14 @@ const Detail = (props) => {
             // 合并created_at和model_name 为 lineData, created_at 数据类型是小时的时间戳
             // 转换日期格式
             let createTime = timestamp2string1(item.created_at);
-            let lineItem = lineData.find(item => item.Time === item.createTime && item.Model === model_name);
+            let lineItem = lineData.find(item => item.Time === createTime && item.Model === model_name);
             if (lineItem) {
-                lineItem.Usage += getQuotaWithUnit(quota);
+                lineItem.Usage += parseFloat(getQuotaWithUnit(quota));
             } else {
                 lineData.push({
                     "Time": createTime,
                     "Model": model_name,
-                    "Usage": getQuotaWithUnit(quota)
+                    "Usage": parseFloat(getQuotaWithUnit(quota))
                 });
             }
 
@@ -197,15 +198,16 @@ const Detail = (props) => {
         pieData.sort((a, b) => b.value - a.value);
         pieChart.updateData('id0', pieData);
         lineChart.updateData('barData', lineData);
-
+        pieChart.reLayout();
+        lineChart.reLayout();
     }
 
-    useEffectOnce(() => {
+    useEffect(() => {
         if (!initialized.current) {
             initialized.current = true;
             initChart();
         }
-    });
+    }, []);
 
     return (
         <>
@@ -240,10 +242,10 @@ const Detail = (props) => {
                         </>
                     </Form>
                     <div style={{height: 500}}>
-                        <div id="model_pie" style={{width: '100%'}}></div>
+                        <div id="model_pie" style={{width: '100%', minWidth: 100}}></div>
                     </div>
                     <div style={{height: 500}}>
-                        <div id="model_data" style={{width: '100%'}}></div>
+                        <div id="model_data" style={{width: '100%', minWidth: 100}}></div>
                     </div>
                 </Layout.Content>
             </Layout>
