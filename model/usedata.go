@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"one-api/common"
+	"sync"
 	"time"
 )
 
@@ -10,9 +11,9 @@ import (
 type QuotaData struct {
 	Id        int    `json:"id"`
 	UserID    int    `json:"user_id" gorm:"index"`
-	Username  string `json:"username" gorm:"index:index_quota_data_model_user_name,priority:2;default:''"`
-	ModelName string `json:"model_name" gorm:"index;index:index_quota_data_model_user_name,priority:1;default:''"`
-	CreatedAt int64  `json:"created_at" gorm:"bigint;index:index_quota_data_created_at,priority:2"`
+	Username  string `json:"username" gorm:"index:idx_qdt_model_user_name,priority:2;default:''"`
+	ModelName string `json:"model_name" gorm:"index;index:idx_qdt_model_user_name,priority:1;default:''"`
+	CreatedAt int64  `json:"created_at" gorm:"bigint;index:idx_qdt_created_at,priority:2"`
 	Count     int    `json:"count" gorm:"default:0"`
 	Quota     int    `json:"quota" gorm:"default:0"`
 }
@@ -34,6 +35,7 @@ func UpdateQuotaData() {
 }
 
 var CacheQuotaData = make(map[string]*QuotaData)
+var CacheQuotaDataLock = sync.Mutex{}
 
 func LogQuotaDataCache(userId int, username string, modelName string, quota int, createdAt int64) {
 	// 只精确到小时
@@ -57,10 +59,15 @@ func LogQuotaDataCache(userId int, username string, modelName string, quota int,
 }
 
 func LogQuotaData(userId int, username string, modelName string, quota int, createdAt int64) {
+	CacheQuotaDataLock.Lock()
+	defer CacheQuotaDataLock.Unlock()
 	LogQuotaDataCache(userId, username, modelName, quota, createdAt)
 }
 
 func SaveQuotaDataCache() {
+	CacheQuotaDataLock.Lock()
+	defer CacheQuotaDataLock.Unlock()
+	size := len(CacheQuotaData)
 	// 如果缓存中有数据，就保存到数据库中
 	// 1. 先查询数据库中是否有数据
 	// 2. 如果有数据，就更新数据
@@ -78,6 +85,7 @@ func SaveQuotaDataCache() {
 		}
 	}
 	CacheQuotaData = make(map[string]*QuotaData)
+	common.SysLog(fmt.Sprintf("保存数据看板数据成功，共保存%d条数据", size))
 }
 
 func GetQuotaDataByUsername(username string, startTime int64, endTime int64) (quotaData []*QuotaData, err error) {
