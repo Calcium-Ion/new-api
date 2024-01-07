@@ -74,16 +74,23 @@ func SaveQuotaDataCache() {
 	CacheQuotaData = make(map[string]*QuotaData)
 }
 
-func GetQuotaDataByUsername(username string) (quotaData []*QuotaData, err error) {
+func GetQuotaDataByUsername(username string, startTime int64, endTime int64) (quotaData []*QuotaData, err error) {
 	var quotaDatas []*QuotaData
 	// 从quota_data表中查询数据
 	err = DB.Table("quota_data").Where("username = ?", username).Find(&quotaDatas).Error
 	return quotaDatas, err
 }
 
-func GetAllQuotaDates() (quotaData []*QuotaData, err error) {
+func GetQuotaDataByUserId(userId int, startTime int64, endTime int64) (quotaData []*QuotaData, err error) {
 	var quotaDatas []*QuotaData
 	// 从quota_data表中查询数据
-	err = DB.Table("quota_data").Find(&quotaDatas).Error
+	err = DB.Table("quota_data").Where("user_id = ? and created_at >= ? and created_at <= ?", userId, startTime, endTime).Find(&quotaDatas).Error
+	return quotaDatas, err
+}
+
+func GetAllQuotaDates(startTime int64, endTime int64) (quotaData []*QuotaData, err error) {
+	var quotaDatas []*QuotaData
+	// 从quota_data表中查询数据
+	err = DB.Table("quota_data").Where("created_at >= ? and created_at <= ?", startTime, endTime).Find(&quotaDatas).Error
 	return quotaDatas, err
 }

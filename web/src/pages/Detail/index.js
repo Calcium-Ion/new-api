@@ -1,9 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Button, Col, Form, Layout, Row} from "@douyinfe/semi-ui";
 import VChart from '@visactor/vchart';
 import {useEffectOnce} from "usehooks-ts";
 import {API, isAdmin, showError, timestamp2string, timestamp2string1} from "../../helpers";
-import {ITEMS_PER_PAGE} from "../../constants";
 import {getQuotaWithUnit} from "../../helpers/render";
 
 const Detail = (props) => {
@@ -19,8 +18,9 @@ const Detail = (props) => {
     });
     const {username, token_name, model_name, start_timestamp, end_timestamp, channel} = inputs;
     const isAdminUser = isAdmin();
-    let modelDataChart = null;
-    let modelDataPieChart = null;
+    const initialized = useRef(false)
+    const [modelDataChart, setModelDataChart] = useState(null);
+    const [modelDataPieChart, setModelDataPieChart] = useState(null);
     const [loading, setLoading] = useState(true);
     const [quotaData, setQuotaData] = useState([]);
     const [quotaDataPie, setQuotaDataPie] = useState([]);
@@ -116,22 +116,22 @@ const Detail = (props) => {
         }
     };
 
-    const loadQuotaData = async () => {
+    const loadQuotaData = async (lineChart, pieChart) => {
         setLoading(true);
 
         let url = '';
         let localStartTimestamp = Date.parse(start_timestamp) / 1000;
         let localEndTimestamp = Date.parse(end_timestamp) / 1000;
         if (isAdminUser) {
-            url = `/api/data`;
+            url = `/api/data/?username=${username}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
         } else {
-            url = `/api/data/self`;
+            url = `/api/data/self/?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
         }
         const res = await API.get(url);
         const {success, message, data} = res.data;
         if (success) {
             setQuotaData(data);
-            updateChart(data);
+            updateChart(lineChart, pieChart, data);
         } else {
             showError(message);
         }
@@ -139,74 +139,73 @@ const Detail = (props) => {
     };
 
     const refresh = async () => {
-        await loadQuotaData();
+        await loadQuotaData(modelDataChart, modelDataPieChart);
     };
 
-    const updateChart = (data) => {
-        if (isAdminUser) {
-            // 将所有用户的数据累加
-            let pieData = [];
-            let lineData = [];
-            for (let i = 0; i < data.length; i++) {
-                const item = data[i];
-                const {count, id, model_name, quota, user_id, username} = item;
-                // 合并model_name
-                let pieItem = pieData.find(item => item.model_name === model_name);
-                if (pieItem) {
-                    pieItem.count += count;
-                } else {
-                    pieData.push({
-                        "type": model_name,
-                        "value": count
-                    });
-                }
-                // 合并created_at和model_name 为 lineData, created_at 数据类型是小时的时间戳
-                // 转换日期格式
-                let createTime = timestamp2string1(item.created_at);
-                let lineItem = lineData.find(item => item.Time === item.createTime && item.Model === model_name);
-                if (lineItem) {
-                    lineItem.Usage += getQuotaWithUnit(quota);
-                } else {
-                    lineData.push({
-                        "Time": createTime,
-                        "Model": model_name,
-                        "Usage": getQuotaWithUnit(quota)
-                    });
-                }
-
-            }
-            // sort by count
-            pieData.sort((a, b) => b.value - a.value);
-            spec_line.data[0].values = lineData;
-            spec_pie.data[0].values = pieData;
-            // console.log('spec_line', spec_line);
-            console.log('spec_pie', spec_pie);
-            // modelDataChart.renderAsync();
-            modelDataPieChart.updateSpec(spec_pie);
-            modelDataChart.updateSpec(spec_line);
+    const initChart  = async () => {
+        let lineChart = modelDataChart
+        if (!modelDataChart) {
+            lineChart = new VChart(spec_line, {dom: 'model_data'});
+            setModelDataChart(lineChart);
+            await lineChart.renderAsync();
         }
+        let pieChart = modelDataPieChart
+        if (!modelDataPieChart) {
+            pieChart = new VChart(spec_pie, {dom: 'model_pie'});
+            setModelDataPieChart(pieChart);
+            await pieChart.renderAsync();
+        }
+        console.log('init vchart');
+        await loadQuotaData(lineChart, pieChart)
     }
 
-    useEffect(() => {
-        refresh();
-    }, []);
+    const updateChart = (lineChart, pieChart, data) => {
+        if (isAdminUser) {
+            // 将所有用户合并
+        }
+        let pieData = [];
+        let lineData = [];
+        for (let i = 0; i < data.length; i++) {
+            const item = data[i];
+            const {count, id, model_name, quota, user_id, username} = item;
+            // 合并model_name
+            let pieItem = pieData.find(item => item.type === model_name);
+            if (pieItem) {
+                pieItem.count += count;
+            } else {
+                pieData.push({
+                    "type": model_name,
+                    "value": count
+                });
+            }
+            // 合并created_at和model_name 为 lineData, created_at 数据类型是小时的时间戳
+            // 转换日期格式
+            let createTime = timestamp2string1(item.created_at);
+            let lineItem = lineData.find(item => item.Time === item.createTime && item.Model === model_name);
+            if (lineItem) {
+                lineItem.Usage += getQuotaWithUnit(quota);
+            } else {
+                lineData.push({
+                    "Time": createTime,
+                    "Model": model_name,
+                    "Usage": getQuotaWithUnit(quota)
+                });
+            }
+
+        }
+        // sort by count
+        pieData.sort((a, b) => b.value - a.value);
+        pieChart.updateData('id0', pieData);
+        lineChart.updateData('barData', lineData);
+
+    }
 
     useEffectOnce(() => {
-        // 创建 vchart 实例
-        if (!modelDataChart) {
-            modelDataChart = new VChart(spec_line, {dom: 'model_data'});
-            // 绘制
-            modelDataChart.renderAsync();
+        if (!initialized.current) {
+            initialized.current = true;
+            initChart();
         }
-
-        if (!modelDataPieChart) {
-            modelDataPieChart = new VChart(spec_pie, {dom: 'model_pie'});
-            // 绘制
-            modelDataPieChart.renderAsync();
-        }
-
-        console.log('render vchart');
-    })
+    });
 
     return (
         <>
@@ -227,7 +226,6 @@ const Detail = (props) => {
                                              value={end_timestamp} type='dateTime'
                                              name='end_timestamp'
                                              onChange={value => handleInputChange(value, 'end_timestamp')}/>
-                            {/*<Form.Button fluid label='操作' width={2} onClick={refresh}>查询</Form.Button>*/}
                             {/*{*/}
                             {/*    isAdminUser && <>*/}
                             {/*        <Form.Input field="username" label='用户名称' style={{width: 176}} value={username}*/}
@@ -235,10 +233,10 @@ const Detail = (props) => {
                             {/*                    onChange={value => handleInputChange(value, 'username')}/>*/}
                             {/*    </>*/}
                             {/*}*/}
-                            {/*<Form.Section>*/}
-                            {/*    <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"*/}
-                            {/*            >查询</Button>*/}
-                            {/*</Form.Section>*/}
+                            <Form.Section>
+                                <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
+                                        onClick={refresh}>查询</Button>
+                            </Form.Section>
                         </>
                     </Form>
                     <div style={{height: 500}}>
