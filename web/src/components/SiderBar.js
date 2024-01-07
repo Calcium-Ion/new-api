@@ -6,7 +6,7 @@ import {API, getLogo, getSystemName, isAdmin, isMobile, showSuccess} from '../he
 import '../index.css';
 
 import {
-    IconAt,
+    IconCalendarClock,
     IconHistogram,
     IconGift,
     IconKey,
@@ -75,10 +75,18 @@ let headerButtons = [
         icon: <IconHistogram/>
     },
     {
+        text: '数据看版',
+        itemKey: 'detail',
+        to: '/detail',
+        icon: <IconCalendarClock />,
+        className: localStorage.getItem('enable_data_export') === 'true'?'semi-navigation-item-normal':'tableHiddle',
+    },
+    {
         text: '绘图',
         itemKey: 'midjourney',
         to: '/midjourney',
-        icon: <IconImage/>
+        icon: <IconImage/>,
+        className: localStorage.getItem('enable_drawing') === 'true'?'semi-navigation-item-normal':'tableHiddle',
     },
     {
         text: '设置',
@@ -133,6 +141,7 @@ const SiderBar = () => {
                                 setting: "/setting",
                                 about: "/about",
                                 chat: "/chat",
+                                detail: "/detail",
                             };
                             return (
                                 <Link
