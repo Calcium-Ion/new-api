@@ -67,9 +67,10 @@ func main() {
 		go model.SyncOptions(common.SyncFrequency)
 		go model.SyncChannelCache(common.SyncFrequency)
 	}
-	if common.DataExportEnabled {
-		go model.UpdateQuotaData(common.DataExportInterval)
-	}
+
+	// 数据看板
+	go model.UpdateQuotaData()
+
 	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {
 		frequency, err := strconv.Atoi(os.Getenv("CHANNEL_UPDATE_FREQUENCY"))
 		if err != nil {

@@ -17,11 +17,13 @@ type QuotaData struct {
 	Quota     int    `json:"quota" gorm:"default:0"`
 }
 
-func UpdateQuotaData(frequency int) {
+func UpdateQuotaData() {
 	for {
-		common.SysLog("正在更新数据看板数据...")
-		SaveQuotaDataCache()
-		time.Sleep(time.Duration(frequency) * time.Minute)
+		if common.DataExportEnabled {
+			common.SysLog("正在更新数据看板数据...")
+			SaveQuotaDataCache()
+		}
+		time.Sleep(time.Duration(common.DataExportInterval) * time.Minute)
 	}
 }
 
