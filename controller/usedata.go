@@ -10,7 +10,8 @@ import (
 func GetAllQuotaDates(c *gin.Context) {
 	startTimestamp, _ := strconv.ParseInt(c.Query("start_timestamp"), 10, 64)
 	endTimestamp, _ := strconv.ParseInt(c.Query("end_timestamp"), 10, 64)
-	dates, err := model.GetAllQuotaDates(startTimestamp, endTimestamp)
+	username := c.Query("username")
+	dates, err := model.GetAllQuotaDates(startTimestamp, endTimestamp, username)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

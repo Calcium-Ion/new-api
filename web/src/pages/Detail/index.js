@@ -72,9 +72,18 @@ const Detail = (props) => {
                 content: [
                     {
                         key: datum => datum['Model'],
-                        value: datum => renderQuotaNumberWithDigit(datum['Usage'], 4)
+                        value: datum => datum['Usage']
                     }
-                ]
+                ],
+                updateContent: array => {
+                    // sort by value
+                    array.sort((a, b) => b.value - a.value);
+                    // add $
+                    for (let i = 0; i < array.length; i++) {
+                        array[i].value = renderQuotaNumberWithDigit(array[i].value, 4);
+                    }
+                    return array;
+                }
             }
         }
     };
@@ -85,7 +94,6 @@ const Detail = (props) => {
             {
                 id: 'id0',
                 values: [
-                    { type: 'null', value: '0' },
                     { type: 'null', value: '0' },
                 ]
             }
@@ -151,7 +159,12 @@ const Detail = (props) => {
         if (success) {
             setQuotaData(data);
             if (data.length === 0) {
-                return;
+                data.push({
+                    'count': 0,
+                    'model_name': '无数据',
+                    'quota': 0,
+                    'created_at': now.getTime() / 1000
+                })
             }
             updateChart(lineChart, pieChart, data);
         } else {
@@ -169,13 +182,13 @@ const Detail = (props) => {
         if (!modelDataChart) {
             lineChart = new VChart(spec_line, {dom: 'model_data'});
             setModelDataChart(lineChart);
-            await lineChart.renderAsync();
+            lineChart.renderAsync();
         }
         let pieChart = modelDataPieChart
         if (!modelDataPieChart) {
             pieChart = new VChart(spec_pie, {dom: 'model_pie'});
             setModelDataPieChart(pieChart);
-            await pieChart.renderAsync();
+            pieChart.renderAsync();
         }
         console.log('init vchart');
         await loadQuotaData(lineChart, pieChart)
@@ -248,13 +261,13 @@ const Detail = (props) => {
                                              value={end_timestamp} type='dateTime'
                                              name='end_timestamp'
                                              onChange={value => handleInputChange(value, 'end_timestamp')}/>
-                            {/*{*/}
-                            {/*    isAdminUser && <>*/}
-                            {/*        <Form.Input field="username" label='用户名称' style={{width: 176}} value={username}*/}
-                            {/*                    placeholder={'可选值'} name='username'*/}
-                            {/*                    onChange={value => handleInputChange(value, 'username')}/>*/}
-                            {/*    </>*/}
-                            {/*}*/}
+                            {
+                                isAdminUser && <>
+                                    <Form.Input field="username" label='用户名称' style={{width: 176}} value={username}
+                                                placeholder={'可选值'} name='username'
+                                                onChange={value => handleInputChange(value, 'username')}/>
+                                </>
+                            }
                             <Form.Section>
                                 <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
                                         onClick={refresh} loading={loading}>查询</Button>
