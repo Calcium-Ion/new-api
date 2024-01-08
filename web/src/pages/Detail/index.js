@@ -21,7 +21,7 @@ const Detail = (props) => {
     const initialized = useRef(false)
     const [modelDataChart, setModelDataChart] = useState(null);
     const [modelDataPieChart, setModelDataPieChart] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [quotaData, setQuotaData] = useState([]);
     const [quotaDataPie, setQuotaDataPie] = useState([]);
     const [quotaDataLine, setQuotaDataLine] = useState([]);

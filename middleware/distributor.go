@@ -77,6 +77,27 @@ func Distribute() func(c *gin.Context) {
 					}
 				}
 			}
+			// check token model mapping
+			modelLimitEnable := c.GetBool("token_model_limit_enabled")
+			if modelLimitEnable {
+				s, ok := c.Get("token_model_limit")
+				var tokenModelLimit map[string]bool
+				if ok {
+					tokenModelLimit = s.(map[string]bool)
+				} else {
+					tokenModelLimit = map[string]bool{}
+				}
+				if tokenModelLimit != nil {
+					if _, ok := tokenModelLimit[modelRequest.Model]; !ok {
+						abortWithMessage(c, http.StatusForbidden, "该令牌无权访问模型 "+modelRequest.Model)
+						return
+					}
+				} else {
+					// token model limit is empty, all models are not allowed
+					abortWithMessage(c, http.StatusForbidden, "该令牌无权访问任何模型")
+					return
+				}
+			}
 			channel, err = model.CacheGetRandomSatisfiedChannel(userGroup, modelRequest.Model)
 			if err != nil {
 				message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", userGroup, modelRequest.Model)

@@ -43,10 +43,14 @@ function renderTimestamp(timestamp) {
     );
 }
 
-function renderStatus(status) {
+function renderStatus(status, model_limits_enabled = false) {
     switch (status) {
         case 1:
-            return <Tag color='green' size='large'>已启用</Tag>;
+            if (model_limits_enabled) {
+                return <Tag color='green' size='large'>已启用：限制模型</Tag>;
+            } else {
+                return <Tag color='green' size='large'>已启用</Tag>;
+            }
         case 2:
             return <Tag color='red' size='large'> 已禁用 </Tag>;
         case 3:
@@ -78,7 +82,7 @@ const TokensTable = () => {
             render: (text, record, index) => {
                 return (
                     <div>
-                        {renderStatus(text)}
+                        {renderStatus(text, record.model_limits_enabled)}
                     </div>
                 );
             },
@@ -224,6 +228,11 @@ const TokensTable = () => {
 
     const closeEdit = () => {
         setShowEdit(false);
+        setTimeout(() => {
+            setEditingToken({
+                id: undefined,
+            });
+        }, 500);
     }
 
     const setTokensFormat = (tokens) => {

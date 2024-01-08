@@ -10,17 +10,19 @@ import (
 )
 
 type Token struct {
-	Id             int    `json:"id"`
-	UserId         int    `json:"user_id"`
-	Key            string `json:"key" gorm:"type:char(48);uniqueIndex"`
-	Status         int    `json:"status" gorm:"default:1"`
-	Name           string `json:"name" gorm:"index" `
-	CreatedTime    int64  `json:"created_time" gorm:"bigint"`
-	AccessedTime   int64  `json:"accessed_time" gorm:"bigint"`
-	ExpiredTime    int64  `json:"expired_time" gorm:"bigint;default:-1"` // -1 means never expired
-	RemainQuota    int    `json:"remain_quota" gorm:"default:0"`
-	UnlimitedQuota bool   `json:"unlimited_quota" gorm:"default:false"`
-	UsedQuota      int    `json:"used_quota" gorm:"default:0"` // used quota
+	Id                 int    `json:"id"`
+	UserId             int    `json:"user_id"`
+	Key                string `json:"key" gorm:"type:char(48);uniqueIndex"`
+	Status             int    `json:"status" gorm:"default:1"`
+	Name               string `json:"name" gorm:"index" `
+	CreatedTime        int64  `json:"created_time" gorm:"bigint"`
+	AccessedTime       int64  `json:"accessed_time" gorm:"bigint"`
+	ExpiredTime        int64  `json:"expired_time" gorm:"bigint;default:-1"` // -1 means never expired
+	RemainQuota        int    `json:"remain_quota" gorm:"default:0"`
+	UnlimitedQuota     bool   `json:"unlimited_quota" gorm:"default:false"`
+	ModelLimitsEnabled bool   `json:"model_limits_enabled" gorm:"default:false"`
+	ModelLimits        string `json:"model_limits" gorm:"type:varchar(1024);default:''"`
+	UsedQuota          int    `json:"used_quota" gorm:"default:0"` // used quota
 }
 
 func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {
@@ -107,7 +109,7 @@ func (token *Token) Insert() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (token *Token) Update() error {
 	var err error
-	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota").Updates(token).Error
+	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "model_limits_enabled", "model_limits").Updates(token).Error
 	return err
 }
 
@@ -120,6 +122,36 @@ func (token *Token) Delete() error {
 	var err error
 	err = DB.Delete(token).Error
 	return err
+}
+
+func (token *Token) IsModelLimitsEnabled() bool {
+	return token.ModelLimitsEnabled
+}
+
+func (token *Token) GetModelLimits() []string {
+	if token.ModelLimits == "" {
+		return []string{}
+	}
+	return strings.Split(token.ModelLimits, ",")
+}
+
+func (token *Token) GetModelLimitsMap() map[string]bool {
+	limits := token.GetModelLimits()
+	limitsMap := make(map[string]bool)
+	for _, limit := range limits {
+		limitsMap[limit] = true
+	}
+	return limitsMap
+}
+
+func DisableModelLimits(tokenId int) error {
+	token, err := GetTokenById(tokenId)
+	if err != nil {
+		return err
+	}
+	token.ModelLimitsEnabled = false
+	token.ModelLimits = ""
+	return token.Update()
 }
 
 func DeleteTokenById(id int, userId int) (err error) {

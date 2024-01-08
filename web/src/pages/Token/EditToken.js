@@ -2,22 +2,37 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
 import {API, isMobile, showError, showSuccess, timestamp2string} from '../../helpers';
 import {renderQuota, renderQuotaWithPrompt} from '../../helpers/render';
-import {Layout, SideSheet, Button, Space, Spin, Banner, Input, DatePicker, AutoComplete, Typography} from "@douyinfe/semi-ui";
+import {
+    Layout,
+    SideSheet,
+    Button,
+    Space,
+    Spin,
+    Banner,
+    Input,
+    DatePicker,
+    AutoComplete,
+    Typography,
+    Checkbox, Select
+} from "@douyinfe/semi-ui";
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
 import {Divider} from "semantic-ui-react";
 
 const EditToken = (props) => {
-    const isEdit = props.editingToken.id !== undefined;
+    const [isEdit, setIsEdit] = useState(false);
     const [loading, setLoading] = useState(isEdit);
     const originInputs = {
         name: '',
         remain_quota: isEdit ? 0 : 500000,
         expired_time: -1,
-        unlimited_quota: false
+        unlimited_quota: false,
+        model_limits_enabled: false,
+        model_limits: [],
     };
     const [inputs, setInputs] = useState(originInputs);
-    const {name, remain_quota, expired_time, unlimited_quota} = inputs;
+    const {name, remain_quota, expired_time, unlimited_quota, model_limits_enabled, model_limits} = inputs;
     // const [visible, setVisible] = useState(false);
+    const [models, setModels] = useState({});
     const navigate = useNavigate();
     const handleInputChange = (name, value) => {
         setInputs((inputs) => ({...inputs, [name]: value}));
@@ -44,6 +59,20 @@ const EditToken = (props) => {
         setInputs({...inputs, unlimited_quota: !unlimited_quota});
     };
 
+    const loadModels = async () => {
+        let res = await API.get(`/api/user/models`);
+        const {success, message, data} = res.data;
+        if (success) {
+            let localModelOptions = data.map((model) => ({
+                label: model,
+                value: model
+            }));
+            setModels(localModelOptions);
+        } else {
+            showError(message);
+        }
+    }
+
     const loadToken = async () => {
         setLoading(true);
         let res = await API.get(`/api/token/${props.editingToken.id}`);
@@ -52,6 +81,11 @@ const EditToken = (props) => {
             if (data.expired_time !== -1) {
                 data.expired_time = timestamp2string(data.expired_time);
             }
+            if (data.model_limits !== '') {
+                data.model_limits = data.model_limits.split(',');
+            } else {
+                data.model_limits = [];
+            }
             setInputs(data);
         } else {
             showError(message);
@@ -59,16 +93,21 @@ const EditToken = (props) => {
         setLoading(false);
     };
     useEffect(() => {
-        if (isEdit) {
-            loadToken().then(
-                () => {
-                    // console.log(inputs);
-                }
-            );
-        } else {
-            setInputs(originInputs);
-        }
+        setIsEdit(props.editingToken.id !== undefined);
     }, [props.editingToken.id]);
+
+    useEffect(() => {
+       if (!isEdit) {
+           setInputs(originInputs);
+       } else {
+           loadToken().then(
+               () => {
+                   // console.log(inputs);
+               }
+           );
+       }
+       loadModels();
+    }, [isEdit]);
 
     // 新增 state 变量 tokenCount 来记录用户想要创建的令牌数量，默认为 1
     const [tokenCount, setTokenCount] = useState(1);
@@ -107,7 +146,7 @@ const EditToken = (props) => {
                 }
                 localInputs.expired_time = Math.ceil(time / 1000);
             }
-
+            localInputs.model_limits = localInputs.model_limits.join(',');
             let res = await API.put(`/api/token/`, {...localInputs, id: parseInt(props.editingToken.id)});
             const {success, message} = res.data;
             if (success) {
@@ -137,7 +176,7 @@ const EditToken = (props) => {
                     }
                     localInputs.expired_time = Math.ceil(time / 1000);
                 }
-
+                localInputs.model_limits = localInputs.model_limits.join(',');
                 let res = await API.post(`/api/token/`, localInputs);
                 const {success, message} = res.data;
 
@@ -234,7 +273,7 @@ const EditToken = (props) => {
                         value={remain_quota}
                         autoComplete='new-password'
                         type='number'
-                        position={'top'}
+                        // position={'top'}
                         data={[
                             {value: 500000, label: '1$'},
                             {value: 5000000, label: '10$'},
@@ -245,27 +284,30 @@ const EditToken = (props) => {
                         ]}
                         disabled={unlimited_quota}
                     />
-                    <div style={{marginTop: 20}}>
-                        <Typography.Text>新建数量</Typography.Text>
-                    </div>
+
                     {!isEdit && (
-                        <AutoComplete
-                            style={{ marginTop: 8 }}
-                            label='数量'
-                            placeholder={'请选择或输入创建令牌的数量'}
-                            onChange={(value) => handleTokenCountChange(value)}
-                            onSelect={(value) => handleTokenCountChange(value)}
-                            value={tokenCount.toString()}
-                            autoComplete='off'
-                            type='number'
-                            data={[
-                                { value: 10, label: '10个' },
-                                { value: 20, label: '20个' },
-                                { value: 30, label: '30个' },
-                                { value: 100, label: '100个' },
-                            ]}
-                            disabled={unlimited_quota}
-                        />
+                        <>
+                            <div style={{marginTop: 20}}>
+                                <Typography.Text>新建数量</Typography.Text>
+                            </div>
+                            <AutoComplete
+                                style={{ marginTop: 8 }}
+                                label='数量'
+                                placeholder={'请选择或输入创建令牌的数量'}
+                                onChange={(value) => handleTokenCountChange(value)}
+                                onSelect={(value) => handleTokenCountChange(value)}
+                                value={tokenCount.toString()}
+                                autoComplete='off'
+                                type='number'
+                                data={[
+                                    { value: 10, label: '10个' },
+                                    { value: 20, label: '20个' },
+                                    { value: 30, label: '30个' },
+                                    { value: 100, label: '100个' },
+                                ]}
+                                disabled={unlimited_quota}
+                            />
+                        </>
                     )}
 
                     <div>
@@ -273,6 +315,34 @@ const EditToken = (props) => {
                             setUnlimitedQuota();
                         }}>{unlimited_quota ? '取消无限额度' : '设为无限额度'}</Button>
                     </div>
+                    <Divider/>
+                    <div style={{marginTop: 10, display: 'flex'}}>
+                        <Space>
+                            <Checkbox
+                                name='model_limits_enabled'
+                                checked={model_limits_enabled}
+                                onChange={(e) => handleInputChange('model_limits_enabled', e.target.checked)}
+                            >
+                            </Checkbox>
+                            <Typography.Text>启用模型限制（非必要，不建议启用）</Typography.Text>
+                        </Space>
+                    </div>
+
+                    <Select
+                        style={{marginTop: 8}}
+                        placeholder={'请选择该渠道所支持的模型'}
+                        name='models'
+                        required
+                        multiple
+                        selection
+                        onChange={value => {
+                            handleInputChange('model_limits', value);
+                        }}
+                        value={inputs.model_limits}
+                        autoComplete='new-password'
+                        optionList={models}
+                        disabled={!model_limits_enabled}
+                    />
                 </Spin>
             </SideSheet>
         </>

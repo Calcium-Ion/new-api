@@ -115,6 +115,12 @@ func TokenAuth() func(c *gin.Context) {
 		c.Set("id", token.UserId)
 		c.Set("token_id", token.Id)
 		c.Set("token_name", token.Name)
+		if token.ModelLimitsEnabled {
+			c.Set("token_model_limit_enabled", true)
+			c.Set("token_model_limit", token.GetModelLimitsMap())
+		} else {
+			c.Set("token_model_limit_enabled", false)
+		}
 		requestURL := c.Request.URL.String()
 		consumeQuota := true
 		if strings.HasPrefix(requestURL, "/v1/models") {
