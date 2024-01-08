@@ -9,7 +9,7 @@ import (
 )
 
 type Log struct {
-	Id               int    `json:"id;index:idx_created_at_id,priority:1"`
+	Id               int    `json:"id" gorm:"index:idx_created_at_id,priority:1"`
 	UserId           int    `json:"user_id" gorm:"index"`
 	CreatedAt        int64  `json:"created_at" gorm:"bigint;index:idx_created_at_id,priority:2;index:idx_created_at_type"`
 	Type             int    `json:"type" gorm:"index:idx_created_at_type"`
