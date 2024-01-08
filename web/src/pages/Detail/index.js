@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, Col, Form, Layout, Row} from "@douyinfe/semi-ui";
+import {Button, Col, Form, Layout, Row, Spin} from "@douyinfe/semi-ui";
 import VChart from '@visactor/vchart';
 import {useEffectOnce} from "usehooks-ts";
 import {API, isAdmin, showError, timestamp2string, timestamp2string1} from "../../helpers";
-import {getQuotaWithUnit} from "../../helpers/render";
+import {getQuotaWithUnit, renderNumber, renderQuotaNumberWithDigit} from "../../helpers/render";
 
 const Detail = (props) => {
 
@@ -48,7 +48,7 @@ const Detail = (props) => {
         },
         title: {
             visible: true,
-            text: '模型消耗分布'
+            text: '模型消耗分布（小时）'
         },
         bar: {
             // The state style of bar
@@ -57,6 +57,24 @@ const Detail = (props) => {
                     stroke: '#000',
                     lineWidth: 1
                 }
+            }
+        },
+        tooltip: {
+            mark: {
+                content: [
+                    {
+                        key: datum => datum['Model'],
+                        value: datum => renderQuotaNumberWithDigit(datum['Usage'], 4)
+                    }
+                ]
+            },
+            dimension: {
+                content: [
+                    {
+                        key: datum => datum['Model'],
+                        value: datum => renderQuotaNumberWithDigit(datum['Usage'], 4)
+                    }
+                ]
             }
         }
     };
@@ -110,7 +128,7 @@ const Detail = (props) => {
                 content: [
                     {
                         key: datum => datum['type'],
-                        value: datum => datum['value']
+                        value: datum => renderNumber(datum['value'])
                     }
                 ]
             }
@@ -215,7 +233,7 @@ const Detail = (props) => {
         <>
             <Layout>
                 <Layout.Header>
-                    <h3>数据看板(24H)</h3>
+                    <h3>数据看板</h3>
                 </Layout.Header>
                 <Layout.Content>
                     <Form layout='horizontal' style={{marginTop: 10}}>
@@ -239,16 +257,18 @@ const Detail = (props) => {
                             {/*}*/}
                             <Form.Section>
                                 <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
-                                        onClick={refresh}>查询</Button>
+                                        onClick={refresh} loading={loading}>查询</Button>
                             </Form.Section>
                         </>
                     </Form>
-                    <div style={{height: 500}}>
-                        <div id="model_pie" style={{width: '100%', minWidth: 100}}></div>
-                    </div>
-                    <div style={{height: 500}}>
-                        <div id="model_data" style={{width: '100%', minWidth: 100}}></div>
-                    </div>
+                    <Spin spinning={loading}>
+                        <div style={{height: 500}}>
+                            <div id="model_pie" style={{width: '100%', minWidth: 100}}></div>
+                        </div>
+                        <div style={{height: 500}}>
+                            <div id="model_data" style={{width: '100%', minWidth: 100}}></div>
+                        </div>
+                    </Spin>
                 </Layout.Content>
             </Layout>
         </>
