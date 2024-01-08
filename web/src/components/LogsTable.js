@@ -287,7 +287,7 @@ const LogsTable = () => {
         // data.key = '' + data.id
         setLogs(logs);
         setLogCount(logs.length + ITEMS_PER_PAGE);
-        console.log(logCount);
+        // console.log(logCount);
     }
 
     const loadLogs = async (startIdx) => {
