@@ -79,7 +79,7 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 		common.LogError(ctx, "failed to record log: "+err.Error())
 	}
 	if common.DataExportEnabled {
-		LogQuotaData(userId, username, modelName, quota, common.GetTimestamp())
+		go LogQuotaData(userId, username, modelName, quota, common.GetTimestamp())
 	}
 }
 

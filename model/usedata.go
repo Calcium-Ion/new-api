@@ -37,9 +37,7 @@ func UpdateQuotaData() {
 var CacheQuotaData = make(map[string]*QuotaData)
 var CacheQuotaDataLock = sync.Mutex{}
 
-func LogQuotaDataCache(userId int, username string, modelName string, quota int, createdAt int64) {
-	// 只精确到小时
-	createdAt = createdAt - (createdAt % 3600)
+func logQuotaDataCache(userId int, username string, modelName string, quota int, createdAt int64) {
 	key := fmt.Sprintf("%d-%s-%s-%d", userId, username, modelName, createdAt)
 	quotaData, ok := CacheQuotaData[key]
 	if ok {
@@ -59,9 +57,12 @@ func LogQuotaDataCache(userId int, username string, modelName string, quota int,
 }
 
 func LogQuotaData(userId int, username string, modelName string, quota int, createdAt int64) {
+	// 只精确到小时
+	createdAt = createdAt - (createdAt % 3600)
+
 	CacheQuotaDataLock.Lock()
 	defer CacheQuotaDataLock.Unlock()
-	LogQuotaDataCache(userId, username, modelName, quota, createdAt)
+	logQuotaDataCache(userId, username, modelName, quota, createdAt)
 }
 
 func SaveQuotaDataCache() {
