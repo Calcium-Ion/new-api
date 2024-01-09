@@ -301,3 +301,12 @@ func getFullRequestURL(baseURL string, requestURL string, channelType int) strin
 	}
 	return fullRequestURL
 }
+
+func GetAPIVersion(c *gin.Context) string {
+	query := c.Request.URL.Query()
+	apiVersion := query.Get("api-version")
+	if apiVersion == "" {
+		apiVersion = c.GetString("api_version")
+	}
+	return apiVersion
+}

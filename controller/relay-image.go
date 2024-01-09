@@ -31,7 +31,7 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	}
 
 	if imageRequest.Model == "" {
-		imageRequest.Model = "dall-e"
+		imageRequest.Model = "dall-e-2"
 	}
 	if imageRequest.Size == "" {
 		imageRequest.Size = "1024x1024"
@@ -86,8 +86,14 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 		baseURL = c.GetString("base_url")
 	}
 	fullRequestURL := getFullRequestURL(baseURL, requestURL, channelType)
+	if channelType == common.ChannelTypeAzure && relayMode == RelayModeImagesGenerations {
+		// https://learn.microsoft.com/en-us/azure/ai-services/openai/dall-e-quickstart?tabs=dalle3%2Ccommand-line&pivots=rest-api
+		apiVersion := GetAPIVersion(c)
+		// https://{resource_name}.openai.azure.com/openai/deployments/dall-e-3/images/generations?api-version=2023-06-01-preview
+		fullRequestURL = fmt.Sprintf("%s/openai/deployments/%s/images/generations?api-version=%s", baseURL, imageRequest.Model, apiVersion)
+	}
 	var requestBody io.Reader
-	if isModelMapped {
+	if isModelMapped || channelType == common.ChannelTypeAzure { // make Azure channel request body
 		jsonStr, err := json.Marshal(imageRequest)
 		if err != nil {
 			return errorWrapper(err, "marshal_text_request_failed", http.StatusInternalServerError)
@@ -132,8 +138,14 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	if err != nil {
 		return errorWrapper(err, "new_request_failed", http.StatusInternalServerError)
 	}
-	req.Header.Set("Authorization", c.Request.Header.Get("Authorization"))
 
+	token := c.Request.Header.Get("Authorization")
+	if channelType == common.ChannelTypeAzure { // Azure authentication
+		token = strings.TrimPrefix(token, "Bearer ")
+		req.Header.Set("api-key", token)
+	} else {
+		req.Header.Set("Authorization", token)
+	}
 	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
 	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
 
