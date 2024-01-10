@@ -83,7 +83,7 @@ func openaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*O
 			// wait data out
 			time.Sleep(2 * time.Second)
 		}
-		stopChan <- true
+		common.SafeSend(stopChan, true)
 	}()
 	setEventStreamHeaders(c)
 	c.Stream(func(w io.Writer) bool {
