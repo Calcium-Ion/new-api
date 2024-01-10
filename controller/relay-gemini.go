@@ -60,24 +60,24 @@ type GeminiChatGenerationConfig struct {
 func requestOpenAI2Gemini(textRequest GeneralOpenAIRequest) *GeminiChatRequest {
 	geminiRequest := GeminiChatRequest{
 		Contents: make([]GeminiChatContent, 0, len(textRequest.Messages)),
-		//SafetySettings: []GeminiChatSafetySettings{
-		//	{
-		//		Category:  "HARM_CATEGORY_HARASSMENT",
-		//		Threshold: "BLOCK_ONLY_HIGH",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_HATE_SPEECH",
-		//		Threshold: "BLOCK_ONLY_HIGH",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-		//		Threshold: "BLOCK_ONLY_HIGH",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
-		//		Threshold: "BLOCK_ONLY_HIGH",
-		//	},
-		//},
+		SafetySettings: []GeminiChatSafetySettings{
+			{
+				Category:  "HARM_CATEGORY_HARASSMENT",
+				Threshold: common.GeminiSafetySetting,
+			},
+			{
+				Category:  "HARM_CATEGORY_HATE_SPEECH",
+				Threshold: common.GeminiSafetySetting,
+			},
+			{
+				Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+				Threshold: common.GeminiSafetySetting,
+			},
+			{
+				Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
+				Threshold: common.GeminiSafetySetting,
+			},
+		},
 		GenerationConfig: GeminiChatGenerationConfig{
 			Temperature:     textRequest.Temperature,
 			TopP:            textRequest.TopP,

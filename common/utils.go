@@ -202,6 +202,13 @@ func GetOrDefault(env string, defaultValue int) int {
 	return num
 }
 
+func GetOrDefaultString(env string, defaultValue string) string {
+	if env == "" || os.Getenv(env) == "" {
+		return defaultValue
+	}
+	return os.Getenv(env)
+}
+
 func MessageWithRequestId(message string, id string) string {
 	return fmt.Sprintf("%s (request id: %s)", message, id)
 }
