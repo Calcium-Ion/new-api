@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"one-api/common"
 	"strings"
 )
@@ -117,4 +118,46 @@ func (channel *Channel) UpdateAbilities() error {
 
 func UpdateAbilityStatus(channelId int, status bool) error {
 	return DB.Model(&Ability{}).Where("channel_id = ?", channelId).Select("enabled").Update("enabled", status).Error
+}
+
+func FixAbility() (int, error) {
+	var channelIds []int
+	count := 0
+	// Find all channel ids from channel table
+	err := DB.Model(&Channel{}).Pluck("id", &channelIds).Error
+	if err != nil {
+		common.SysError(fmt.Sprintf("Get channel ids from channel table failed: %s", err.Error()))
+		return 0, err
+	}
+	// Delete abilities of channels that are not in channel table
+	err = DB.Where("channel_id NOT IN (?)", channelIds).Delete(&Ability{}).Error
+	if err != nil {
+		common.SysError(fmt.Sprintf("Delete abilities of channels that are not in channel table failed: %s", err.Error()))
+		return 0, err
+	}
+	common.SysLog(fmt.Sprintf("Delete abilities of channels that are not in channel table successfully, ids: %v", channelIds))
+	count += len(channelIds)
+
+	// Use channelIds to find channel not in abilities table
+	var abilityChannelIds []int
+	err = DB.Model(&Ability{}).Pluck("channel_id", &abilityChannelIds).Error
+	if err != nil {
+		common.SysError(fmt.Sprintf("Get channel ids from abilities table failed: %s", err.Error()))
+		return 0, err
+	}
+	var channels []Channel
+	err = DB.Where("id NOT IN (?)", abilityChannelIds).Find(&channels).Error
+	if err != nil {
+		return 0, err
+	}
+	for _, channel := range channels {
+		err := channel.UpdateAbilities()
+		if err != nil {
+			common.SysError(fmt.Sprintf("Update abilities of channel %d failed: %s", channel.Id, err.Error()))
+		} else {
+			common.SysLog(fmt.Sprintf("Update abilities of channel %d successfully", channel.Id))
+			count++
+		}
+	}
+	return count, nil
 }

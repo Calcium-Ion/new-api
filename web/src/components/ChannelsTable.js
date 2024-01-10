@@ -531,6 +531,17 @@ const ChannelsTable = () => {
         setLoading(false);
     }
 
+    const fixChannelsAbilities = async () => {
+        const res = await API.post(`/api/channel/fix`);
+        const {success, message, data} = res.data;
+        if (success) {
+            showSuccess(`已修复 ${data} 个通道！`);
+            await refresh();
+        } else {
+            showError(message);
+        }
+    }
+
     const sortChannel = (key) => {
         if (channels.length === 0) return;
         setLoading(true);
@@ -721,6 +732,15 @@ const ChannelsTable = () => {
                         position={'top'}
                     >
                         <Button disabled={!enableBatchDelete} theme='light' type='danger' style={{marginRight: 8}}>删除所选通道</Button>
+                    </Popconfirm>
+                    <Popconfirm
+                        title="确定是否要修复数据库一致性？"
+                        content="进行该操作时，可能导致渠道访问错误，请仅在数据库出现问题时使用"
+                        okType={'warning'}
+                        onConfirm={fixChannelsAbilities}
+                        position={'top'}
+                    >
+                        <Button theme='light' type='secondary' style={{marginRight: 8}}>修复数据库一致性</Button>
                     </Popconfirm>
                 </Space>
             </div>

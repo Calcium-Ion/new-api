@@ -35,6 +35,22 @@ func GetAllChannels(c *gin.Context) {
 	return
 }
 
+func FixChannelsAbilities(c *gin.Context) {
+	count, err := model.FixAbility()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    count,
+	})
+}
+
 func SearchChannels(c *gin.Context) {
 	keyword := c.Query("keyword")
 	group := c.Query("group")
