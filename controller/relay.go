@@ -248,7 +248,7 @@ type ChatCompletionsStreamResponseChoice struct {
 	Delta struct {
 		Content string `json:"content"`
 	} `json:"delta"`
-	FinishReason *string `json:"finish_reason"`
+	FinishReason *string `json:"finish_reason,omitempty"`
 }
 
 type ChatCompletionsStreamResponse struct {
