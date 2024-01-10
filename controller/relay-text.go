@@ -52,6 +52,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	tokenId := c.GetInt("token_id")
 	userId := c.GetInt("id")
 	group := c.GetString("group")
+	tokenQuota := c.GetInt("token_quota")
 	startTime := time.Now()
 	var textRequest GeneralOpenAIRequest
 
@@ -261,10 +262,20 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 		return errorWrapper(err, "decrease_user_quota_failed", http.StatusInternalServerError)
 	}
 	if userQuota > 100*preConsumedQuota {
-		// in this case, we do not pre-consume quota
-		// because the user has enough quota
-		preConsumedQuota = 0
-		common.LogInfo(c.Request.Context(), fmt.Sprintf("user %d has enough quota %d, trusted and no need to pre-consume", userId, userQuota))
+		// 用户额度充足，判断令牌额度是否充足
+		if tokenQuota != -1 {
+			// 非无限令牌，判断令牌额度是否充足
+			if tokenQuota > 100*preConsumedQuota {
+				// 令牌额度充足，信任令牌
+				preConsumedQuota = 0
+				common.LogInfo(c.Request.Context(), fmt.Sprintf("user %d quota %d and token %d quota %d are enough, trusted and no need to pre-consume", userId, userQuota, tokenId, tokenQuota))
+			}
+		} else {
+			// in this case, we do not pre-consume quota
+			// because the user has enough quota
+			preConsumedQuota = 0
+			common.LogInfo(c.Request.Context(), fmt.Sprintf("user %d with unlimited token has enough quota %d, trusted and no need to pre-consume", userId, userQuota))
+		}
 	}
 	if preConsumedQuota > 0 {
 		userQuota, err = model.PreConsumeTokenQuota(tokenId, preConsumedQuota)
