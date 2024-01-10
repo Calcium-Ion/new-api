@@ -3,7 +3,13 @@ import {Button, Col, Form, Layout, Row, Spin} from "@douyinfe/semi-ui";
 import VChart from '@visactor/vchart';
 import {useEffectOnce} from "usehooks-ts";
 import {API, isAdmin, showError, timestamp2string, timestamp2string1} from "../../helpers";
-import {getQuotaWithUnit, renderNumber, renderQuotaNumberWithDigit} from "../../helpers/render";
+import {
+    getQuotaWithUnit, modelColorMap,
+    renderNumber,
+    renderQuota,
+    renderQuotaNumberWithDigit,
+    stringToColor
+} from "../../helpers/render";
 
 const Detail = (props) => {
 
@@ -23,8 +29,8 @@ const Detail = (props) => {
     const [modelDataPieChart, setModelDataPieChart] = useState(null);
     const [loading, setLoading] = useState(false);
     const [quotaData, setQuotaData] = useState([]);
-    const [quotaDataPie, setQuotaDataPie] = useState([]);
-    const [quotaDataLine, setQuotaDataLine] = useState([]);
+    const [consumeQuota, setConsumeQuota] = useState(0);
+    const [times, setTimes] = useState(0);
 
     const handleInputChange = (value, name) => {
         setInputs((inputs) => ({...inputs, [name]: value}));
@@ -48,7 +54,8 @@ const Detail = (props) => {
         },
         title: {
             visible: true,
-            text: '模型消耗分布（小时）'
+            text: '模型消耗分布（小时）',
+            subtext: '0'
         },
         bar: {
             // The state style of bar
@@ -85,6 +92,9 @@ const Detail = (props) => {
                     return array;
                 }
             }
+        },
+        color: {
+            specified: modelColorMap
         }
     };
 
@@ -140,6 +150,9 @@ const Detail = (props) => {
                     }
                 ]
             }
+        },
+        color: {
+            specified: modelColorMap
         }
     };
 
@@ -200,8 +213,12 @@ const Detail = (props) => {
         }
         let pieData = [];
         let lineData = [];
+        let consumeQuota = 0;
+        let times = 0;
         for (let i = 0; i < data.length; i++) {
             const item = data[i];
+            consumeQuota += item.quota;
+            times += item.count;
             // 合并model_name
             let pieItem = pieData.find(it => it.type === item.model_name);
             if (pieItem) {
@@ -225,12 +242,22 @@ const Detail = (props) => {
                     "Usage": parseFloat(getQuotaWithUnit(item.quota))
                 });
             }
-
         }
+        setConsumeQuota(consumeQuota);
+        setTimes(times);
+
         // sort by count
         pieData.sort((a, b) => b.value - a.value);
-        pieChart.updateData('id0', pieData);
-        lineChart.updateData('barData', lineData);
+        spec_pie.title.subtext = `总计：${renderNumber(times)}`;
+        spec_pie.data[0].values = pieData;
+
+        spec_line.title.subtext = `总计：${renderQuota(consumeQuota, 2)}`;
+        spec_line.data[0].values = lineData;
+        pieChart.updateSpec(spec_pie);
+        lineChart.updateSpec(spec_line);
+
+        // pieChart.updateData('id0', pieData);
+        // lineChart.updateData('barData', lineData);
         pieChart.reLayout();
         lineChart.reLayout();
     }
