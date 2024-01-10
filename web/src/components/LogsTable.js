@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Label} from 'semantic-ui-react';
 import {API, copy, isAdmin, showError, showSuccess, timestamp2string} from '../helpers';
 
-import {Table, Avatar, Tag, Form, Button, Layout, Select, Popover, Modal} from '@douyinfe/semi-ui';
+import {Table, Avatar, Tag, Form, Button, Layout, Select, Popover, Modal, Spin} from '@douyinfe/semi-ui';
 import {ITEMS_PER_PAGE} from '../constants';
 import {renderNumber, renderQuota, stringToColor} from '../helpers/render';
 import {
@@ -194,7 +194,8 @@ const LogsTable = () => {
 
     const [logs, setLogs] = useState([]);
     const [showStat, setShowStat] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [loadingStat, setLoadingStat] = useState(false);
     const [activePage, setActivePage] = useState(1);
     const [logCount, setLogCount] = useState(ITEMS_PER_PAGE);
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -247,14 +248,14 @@ const LogsTable = () => {
     };
 
     const handleEyeClick = async () => {
-        if (!showStat) {
-            if (isAdminUser) {
-                await getLogStat();
-            } else {
-                await getLogSelfStat();
-            }
+        setLoadingStat(true);
+        if (isAdminUser) {
+            await getLogStat();
+        } else {
+            await getLogSelfStat();
         }
-        setShowStat(!showStat);
+        setShowStat(true);
+        setLoadingStat(false);
     };
 
     const showUserInfo = async (userId) => {
@@ -396,12 +397,12 @@ const LogsTable = () => {
         <>
             <Layout>
                 <Header>
-                    <h3>使用明细（总消耗额度：
-                        {showStat && renderQuota(stat.quota)}
-                        {!showStat &&
-                            <span onClick={handleEyeClick} style={{cursor: 'pointer', color: 'gray'}}>点击查看</span>}
-                        ）
-                    </h3>
+                    <Spin spinning={loadingStat}>
+                        <h3>使用明细（总消耗额度：
+                            <span onClick={handleEyeClick} style={{cursor: 'pointer', color: 'gray'}}>{showStat?renderQuota(stat.quota):"点击查看"}</span>
+                            ）
+                        </h3>
+                    </Spin>
                 </Header>
                 <Form layout='horizontal' style={{marginTop: 10}}>
                     <>
@@ -434,17 +435,17 @@ const LogsTable = () => {
                         }
                         <Form.Section>
                             <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
-                                    onClick={refresh}>查询</Button>
+                                    onClick={refresh} loading={loading}>查询</Button>
                         </Form.Section>
                     </>
                 </Form>
-                <Table columns={columns} dataSource={pageData} pagination={{
+                <Table style={{marginTop: 5}} columns={columns} dataSource={pageData} pagination={{
                     currentPage: activePage,
                     pageSize: ITEMS_PER_PAGE,
                     total: logCount,
                     pageSizeOpts: [10, 20, 50, 100],
                     onPageChange: handlePageChange,
-                }} loading={loading}/>
+                }}/>
                 <Select defaultValue="0" style={{width: 120}} onChange={
                     (value) => {
                         setLogType(parseInt(value));

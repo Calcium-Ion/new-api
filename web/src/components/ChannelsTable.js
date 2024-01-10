@@ -1,6 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {Input, Label, Message, Popup} from 'semantic-ui-react';
-import {Link} from 'react-router-dom';
 import {
     API,
     isMobile,
@@ -389,23 +387,15 @@ const ChannelsTable = () => {
                 return <Tag size='large' color='green'>已启用</Tag>;
             case 2:
                 return (
-                    <Popup
-                        trigger={<Tag size='large' color='red'>
-                            已禁用
-                        </Tag>}
-                        content='本渠道被手动禁用'
-                        basic
-                    />
+                    <Tag size='large' color='yellow'>
+                        已禁用
+                    </Tag>
                 );
             case 3:
                 return (
-                    <Popup
-                        trigger={<Tag size='large' color='yellow'>
-                            已禁用
-                        </Tag>}
-                        content='本渠道被程序自动禁用'
-                        basic
-                    />
+                    <Tag size='large' color='yellow'>
+                        自动禁用
+                    </Tag>
                 );
             default:
                 return (
@@ -657,7 +647,7 @@ const ChannelsTable = () => {
                 </Space>
             </div>
 
-            <Table columns={columns} dataSource={pageData} pagination={{
+            <Table style={{marginTop: 15}} columns={columns} dataSource={pageData} pagination={{
                 currentPage: activePage,
                 pageSize: pageSize,
                 total: channelCount,
