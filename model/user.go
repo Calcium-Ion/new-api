@@ -452,7 +452,7 @@ func updateUserRequestCount(id int, count int) {
 	}
 }
 
-func GetUsernameById(id int) (username string) {
-	DB.Model(&User{}).Where("id = ?", id).Select("username").Find(&username)
-	return username
+func GetUsernameById(id int) (username string, err error) {
+	err = DB.Model(&User{}).Where("id = ?", id).Select("username").Find(&username).Error
+	return username, err
 }

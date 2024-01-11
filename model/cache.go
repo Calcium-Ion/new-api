@@ -68,6 +68,24 @@ func CacheGetUserGroup(id int) (group string, err error) {
 	return group, err
 }
 
+func CacheGetUsername(id int) (username string, err error) {
+	if !common.RedisEnabled {
+		return GetUsernameById(id)
+	}
+	username, err = common.RedisGet(fmt.Sprintf("user_name:%d", id))
+	if err != nil {
+		username, err = GetUserGroup(id)
+		if err != nil {
+			return "", err
+		}
+		err = common.RedisSet(fmt.Sprintf("user_name:%d", id), username, time.Duration(UserId2GroupCacheSeconds)*time.Second)
+		if err != nil {
+			common.SysError("Redis set user group error: " + err.Error())
+		}
+	}
+	return username, err
+}
+
 func CacheGetUserQuota(id int) (quota int, err error) {
 	if !common.RedisEnabled {
 		return GetUserQuota(id)

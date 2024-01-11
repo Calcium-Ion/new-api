@@ -41,9 +41,10 @@ func RecordLog(userId int, logType int, content string) {
 	if logType == LogTypeConsume && !common.LogConsumeEnabled {
 		return
 	}
+	username, _ := CacheGetUsername(userId)
 	log := &Log{
 		UserId:    userId,
-		Username:  GetUsernameById(userId),
+		Username:  username,
 		CreatedAt: common.GetTimestamp(),
 		Type:      logType,
 		Content:   content,
@@ -59,7 +60,7 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 	if !common.LogConsumeEnabled {
 		return
 	}
-	username := GetUsernameById(userId)
+	username, _ := CacheGetUsername(userId)
 	log := &Log{
 		UserId:           userId,
 		Username:         username,

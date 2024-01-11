@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"one-api/common"
 	"sync"
 	"time"
@@ -78,15 +79,27 @@ func SaveQuotaDataCache() {
 		DB.Table("quota_data").Where("user_id = ? and username = ? and model_name = ? and created_at = ?",
 			quotaData.UserID, quotaData.Username, quotaData.ModelName, quotaData.CreatedAt).First(quotaDataDB)
 		if quotaDataDB.Id > 0 {
-			quotaDataDB.Count += quotaData.Count
-			quotaDataDB.Quota += quotaData.Quota
-			DB.Table("quota_data").Save(quotaDataDB)
+			//quotaDataDB.Count += quotaData.Count
+			//quotaDataDB.Quota += quotaData.Quota
+			//DB.Table("quota_data").Save(quotaDataDB)
+			increaseQuotaData(quotaData.UserID, quotaData.Username, quotaData.ModelName, quotaData.Count, quotaData.Quota, quotaData.CreatedAt)
 		} else {
 			DB.Table("quota_data").Create(quotaData)
 		}
 	}
 	CacheQuotaData = make(map[string]*QuotaData)
 	common.SysLog(fmt.Sprintf("保存数据看板数据成功，共保存%d条数据", size))
+}
+
+func increaseQuotaData(userId int, username string, modelName string, count int, quota int, createdAt int64) {
+	err := DB.Table("quota_data").Where("user_id = ? and username = ? and model_name = ? and created_at = ?",
+		userId, username, modelName, createdAt).Updates(map[string]interface{}{
+		"count": gorm.Expr("count + ?", count),
+		"quota": gorm.Expr("quota + ?", quota),
+	}).Error
+	if err != nil {
+		common.SysLog(fmt.Sprintf("increaseQuotaData error: %s", err))
+	}
 }
 
 func GetQuotaDataByUsername(username string, startTime int64, endTime int64) (quotaData []*QuotaData, err error) {
