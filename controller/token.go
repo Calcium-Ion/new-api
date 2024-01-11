@@ -124,14 +124,16 @@ func AddToken(c *gin.Context) {
 		return
 	}
 	cleanToken := model.Token{
-		UserId:         c.GetInt("id"),
-		Name:           token.Name,
-		Key:            common.GenerateKey(),
-		CreatedTime:    common.GetTimestamp(),
-		AccessedTime:   common.GetTimestamp(),
-		ExpiredTime:    token.ExpiredTime,
-		RemainQuota:    token.RemainQuota,
-		UnlimitedQuota: token.UnlimitedQuota,
+		UserId:             c.GetInt("id"),
+		Name:               token.Name,
+		Key:                common.GenerateKey(),
+		CreatedTime:        common.GetTimestamp(),
+		AccessedTime:       common.GetTimestamp(),
+		ExpiredTime:        token.ExpiredTime,
+		RemainQuota:        token.RemainQuota,
+		UnlimitedQuota:     token.UnlimitedQuota,
+		ModelLimitsEnabled: token.ModelLimitsEnabled,
+		ModelLimits:        token.ModelLimits,
 	}
 	err = cleanToken.Insert()
 	if err != nil {
