@@ -52,7 +52,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	tokenId := c.GetInt("token_id")
 	userId := c.GetInt("id")
 	group := c.GetString("group")
-	tokenQuota := c.GetInt("token_quota")
+	tokenUnlimited := c.GetBool("token_unlimited_quota")
 	startTime := time.Now()
 	var textRequest GeneralOpenAIRequest
 
@@ -263,8 +263,9 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	}
 	if userQuota > 100*preConsumedQuota {
 		// 用户额度充足，判断令牌额度是否充足
-		if tokenQuota != -1 {
+		if !tokenUnlimited {
 			// 非无限令牌，判断令牌额度是否充足
+			tokenQuota := c.GetInt("token_quota")
 			if tokenQuota > 100*preConsumedQuota {
 				// 令牌额度充足，信任令牌
 				preConsumedQuota = 0
