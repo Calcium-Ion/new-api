@@ -159,5 +159,6 @@ func FixAbility() (int, error) {
 			count++
 		}
 	}
+	InitChannelCache()
 	return count, nil
 }
