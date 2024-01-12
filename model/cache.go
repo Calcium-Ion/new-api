@@ -74,7 +74,7 @@ func CacheGetUsername(id int) (username string, err error) {
 	}
 	username, err = common.RedisGet(fmt.Sprintf("user_name:%d", id))
 	if err != nil {
-		username, err = GetUserGroup(id)
+		username, err = GetUsernameById(id)
 		if err != nil {
 			return "", err
 		}
