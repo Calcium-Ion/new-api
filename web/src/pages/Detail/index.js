@@ -76,7 +76,7 @@ const Detail = (props) => {
                 content: [
                     {
                         key: datum => datum['Model'],
-                        value: datum => renderQuotaNumberWithDigit(datum['Usage'], 4)
+                        value: datum => renderQuotaNumberWithDigit(parseFloat(datum['Usage']), 4)
                     }
                 ]
             },
@@ -92,7 +92,7 @@ const Detail = (props) => {
                     array.sort((a, b) => b.value - a.value);
                     // add $
                     for (let i = 0; i < array.length; i++) {
-                        array[i].value = renderQuotaNumberWithDigit(array[i].value, 4);
+                        array[i].value = renderQuotaNumberWithDigit(parseFloat(array[i].value), 4);
                     }
                     return array;
                 }
