@@ -26,7 +26,8 @@ var DisplayInCurrencyEnabled = true
 var DisplayTokenStatEnabled = true
 var DrawingEnabled = true
 var DataExportEnabled = true
-var DataExportInterval = 5 // unit: minute
+var DataExportInterval = 5         // unit: minute
+var DataExportDefaultTime = "hour" // unit: minute
 
 // Any options with "Secret", "Token" in its key won't be return by GetOptions
 

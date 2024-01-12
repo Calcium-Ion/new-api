@@ -23,13 +23,19 @@ const OperationSetting = () => {
         DisplayTokenStatEnabled: '',
         DrawingEnabled: '',
         DataExportEnabled: '',
+        DataExportDefaultTime: 'hour',
         DataExportInterval: 5,
         RetryTimes: 0
     });
     const [originInputs, setOriginInputs] = useState({});
     let [loading, setLoading] = useState(false);
     let [historyTimestamp, setHistoryTimestamp] = useState(timestamp2string(now.getTime() / 1000 - 30 * 24 * 3600)); // a month ago
-
+    // 精确时间选项（小时，天，周）
+    const timeOptions = [
+        {key: 'hour', text: '小时', value: 'hour'},
+        {key: 'day', text: '天', value: 'day'},
+        {key: 'week', text: '周', value: 'week'}
+    ];
     const getOptions = async () => {
         const res = await API.get('/api/option/');
         const {success, message, data} = res.data;
@@ -71,7 +77,10 @@ const OperationSetting = () => {
     };
 
     const handleInputChange = async (e, {name, value}) => {
-        if (name.endsWith('Enabled') || name === 'DataExportInterval') {
+        if (name.endsWith('Enabled') || name === 'DataExportInterval' || name === 'DataExportDefaultTime') {
+            if (name === 'DataExportDefaultTime') {
+                localStorage.setItem('data_export_default_time', value);
+            }
             await updateOption(name, value);
         } else {
             setInputs((inputs) => ({...inputs, [name]: value}));
@@ -234,15 +243,28 @@ const OperationSetting = () => {
                             name='LogConsumeEnabled'
                             onChange={handleInputChange}
                         />
-
                     </Form.Group>
-                    <Form.Group inline>
-                        <Form.Checkbox
-                            checked={inputs.DataExportEnabled === 'true'}
-                            label='启用数据看板（实验性）'
-                            name='DataExportEnabled'
-                            onChange={handleInputChange}
-                        />
+                    <Form.Group widths={4}>
+                        <Form.Input label='目标时间' value={historyTimestamp} type='datetime-local'
+                                    name='history_timestamp'
+                                    onChange={(e, {name, value}) => {
+                                        setHistoryTimestamp(value);
+                                    }}/>
+                    </Form.Group>
+                    <Form.Button onClick={() => {
+                        deleteHistoryLogs().then();
+                    }}>清理历史日志</Form.Button>
+                    <Divider/>
+                    <Header as='h3'>
+                        数据看板
+                    </Header>
+                    <Form.Checkbox
+                        checked={inputs.DataExportEnabled === 'true'}
+                        label='启用数据看板（实验性）'
+                        name='DataExportEnabled'
+                        onChange={handleInputChange}
+                    />
+                    <Form.Group>
                         <Form.Input
                             label='数据看板更新间隔（分钟，设置过短会影响数据库性能）'
                             name='DataExportInterval'
@@ -254,18 +276,16 @@ const OperationSetting = () => {
                             value={inputs.DataExportInterval}
                             placeholder='数据看板更新间隔（分钟，设置过短会影响数据库性能）'
                         />
+                        <Form.Select
+                            label='数据看板默认时间粒度（仅修改展示粒度，统计精确到小时）'
+                            options={timeOptions}
+                            name='DataExportDefaultTime'
+                            onChange={handleInputChange}
+                            autoComplete='new-password'
+                            value={inputs.DataExportDefaultTime}
+                            placeholder='数据看板默认时间粒度'
+                        />
                     </Form.Group>
-                    <Divider/>
-                    <Form.Group widths={4}>
-                        <Form.Input label='目标时间' value={historyTimestamp} type='datetime-local'
-                                    name='history_timestamp'
-                                    onChange={(e, {name, value}) => {
-                                        setHistoryTimestamp(value);
-                                    }}/>
-                    </Form.Group>
-                    <Form.Button onClick={() => {
-                        deleteHistoryLogs().then();
-                    }}>清理历史日志</Form.Button>
                     <Divider/>
                     <Header as='h3'>
                         监控设置
