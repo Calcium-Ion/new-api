@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"one-api/common"
 	"strings"
@@ -69,7 +70,7 @@ func GetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
 			}
 		}
 	} else {
-		return nil, nil
+		return nil, errors.New("channel not found")
 	}
 	err = DB.First(&channel, "id = ?", channel.Id).Error
 	return &channel, err
