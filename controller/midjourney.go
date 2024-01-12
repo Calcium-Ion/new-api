@@ -148,12 +148,6 @@ import (
 */
 
 func UpdateMidjourneyTaskBulk() {
-	//revocer
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("UpdateMidjourneyTask panic: %v", err)
-		}
-	}()
 	//imageModel := "midjourney"
 	ctx := context.TODO()
 	for {
