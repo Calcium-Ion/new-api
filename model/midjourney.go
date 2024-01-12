@@ -18,6 +18,7 @@ type Midjourney struct {
 	Progress    string `json:"progress"`
 	FailReason  string `json:"fail_reason"`
 	ChannelId   int    `json:"channel_id"`
+	Quota       int    `json:"quota"`
 }
 
 // TaskQueryParams 用于包含所有搜索条件的结构体，可以根据需求添加更多字段
@@ -152,8 +153,14 @@ func (midjourney *Midjourney) Update() error {
 	return err
 }
 
-func MjBulkUpdate(taskIDs []string, params map[string]any) error {
+func MjBulkUpdate(mjIds []string, params map[string]any) error {
 	return DB.Model(&Midjourney{}).
-		Where("mj_id in (?)", taskIDs).
+		Where("mj_id in (?)", mjIds).
+		Updates(params).Error
+}
+
+func MjBulkUpdateByTaskIds(taskIDs []int, params map[string]any) error {
+	return DB.Model(&Midjourney{}).
+		Where("id in (?)", taskIDs).
 		Updates(params).Error
 }

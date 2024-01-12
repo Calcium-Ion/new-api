@@ -154,7 +154,7 @@ func UpdateMidjourneyTaskBulk() {
 			log.Printf("UpdateMidjourneyTask panic: %v", err)
 		}
 	}()
-	imageModel := "midjourney"
+	//imageModel := "midjourney"
 	ctx := context.TODO()
 	for {
 		time.Sleep(time.Duration(15) * time.Second)
@@ -167,12 +167,26 @@ func UpdateMidjourneyTaskBulk() {
 		common.LogInfo(ctx, fmt.Sprintf("检测到未完成的任务数有: %v", len(tasks)))
 		taskChannelM := make(map[int][]string)
 		taskM := make(map[string]*model.Midjourney)
+		nullTaskIds := make([]int, 0)
 		for _, task := range tasks {
 			if task.MjId == "" {
+				// 统计失败的未完成任务
+				nullTaskIds = append(nullTaskIds, task.Id)
 				continue
 			}
 			taskM[task.MjId] = task
 			taskChannelM[task.ChannelId] = append(taskChannelM[task.ChannelId], task.MjId)
+		}
+		if len(nullTaskIds) > 0 {
+			err := model.MjBulkUpdateByTaskIds(nullTaskIds, map[string]any{
+				"status":   "FAILURE",
+				"progress": "100%",
+			})
+			if err != nil {
+				common.LogError(ctx, fmt.Sprintf("Fix null mj_id task error: %v", err))
+			} else {
+				common.LogInfo(ctx, fmt.Sprintf("Fix null mj_id task success: %v", nullTaskIds))
+			}
 		}
 		if len(taskChannelM) == 0 {
 			continue
@@ -256,10 +270,7 @@ func UpdateMidjourneyTaskBulk() {
 					if err != nil {
 						common.LogError(ctx, "error update user quota cache: "+err.Error())
 					} else {
-						modelRatio := common.GetModelRatio(imageModel)
-						groupRatio := common.GetGroupRatio("default")
-						ratio := modelRatio * groupRatio
-						quota := int(ratio * 1 * 1000)
+						quota := task.Quota
 						if quota != 0 {
 							err = model.IncreaseUserQuota(task.UserId, quota)
 							if err != nil {
