@@ -37,7 +37,7 @@ function renderType(type) {
         case 'BLEAND':
             return <Tag color="lime" size='large'>图混合</Tag>;
         default:
-            return <Tag color="black" size='large'>未知</Tag>;
+            return <Tag color="white" size='large'>未知</Tag>;
     }
 }
 
@@ -51,7 +51,7 @@ function renderCode(code) {
         case 22:
             return <Tag color="orange" size='large'>重复提交</Tag>;
         default:
-            return <Tag color="black" size='large'>未知</Tag>;
+            return <Tag color="white" size='large'>未知</Tag>;
     }
 }
 
@@ -70,7 +70,7 @@ function renderStatus(type) {
         case 'FAILURE':
             return <Tag color="red" size='large'>失败</Tag>;
         default:
-            return <Tag color="black" size='large'>未知</Tag>;
+            return <Tag color="white" size='large'>未知</Tag>;
     }
 }
 
@@ -173,7 +173,7 @@ const LogsTable = () => {
                     <div>
                         {
                             // 转换例如100%为数字100，如果text未定义，返回0
-                            <Progress percent={text ? parseInt(text.replace('%', '')) : 0} showInfo={true}
+                            <Progress stroke={record.status === "FAILURE"?"var(--semi-color-warning)":null} percent={text ? parseInt(text.replace('%', '')) : 0} showInfo={true}
                                       aria-label="drawing progress"/>
                         }
                     </div>
