@@ -206,7 +206,8 @@ func UpdateMidjourneyTaskBulk() {
 			var responseItems []Midjourney
 			err = json.Unmarshal(responseBody, &responseItems)
 			if err != nil {
-				common.LogError(ctx, fmt.Sprintf("Get Task parse body error2: %v", err))
+				common.LogError(ctx, fmt.Sprintf("Get Task parse body error2: %v, body: %s", err, string(responseBody)))
+				continue
 			}
 			resp.Body.Close()
 			req.Body.Close()

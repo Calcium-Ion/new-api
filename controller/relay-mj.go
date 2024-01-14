@@ -78,6 +78,7 @@ func RelayMidjourneyImage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "http_get_image_failed",
 		})
+		return
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
