@@ -12,17 +12,18 @@ import {
 } from "../../helpers/render";
 
 const Detail = (props) => {
-
+    const formRef = useRef();
     let now = new Date();
     const [inputs, setInputs] = useState({
         username: '',
         token_name: '',
         model_name: '',
-        start_timestamp: timestamp2string(now.getTime() / 1000 - 86400),
+        start_timestamp: localStorage.getItem('data_export_default_time') === 'hour' ? timestamp2string(now.getTime() / 1000 - 86400) : (localStorage.getItem('data_export_default_time') === 'week' ? timestamp2string(now.getTime() / 1000 - 86400 * 30) : timestamp2string(now.getTime() / 1000 - 86400 * 7)),
         end_timestamp: timestamp2string(now.getTime() / 1000 + 3600),
-        channel: ''
+        channel: '',
+        data_export_default_time: ''
     });
-    const {username, token_name, model_name, start_timestamp, end_timestamp, channel} = inputs;
+    const {username, model_name, start_timestamp, end_timestamp, channel} = inputs;
     const isAdminUser = isAdmin();
     const initialized = useRef(false)
     const [modelDataChart, setModelDataChart] = useState(null);
@@ -31,8 +32,13 @@ const Detail = (props) => {
     const [quotaData, setQuotaData] = useState([]);
     const [consumeQuota, setConsumeQuota] = useState(0);
     const [times, setTimes] = useState(0);
+    const [dataExportDefaultTime, setDataExportDefaultTime] = useState(localStorage.getItem('data_export_default_time') || 'hour');
 
     const handleInputChange = (value, name) => {
+        if (name === 'data_export_default_time') {
+            setDataExportDefaultTime(value);
+            return
+        }
         setInputs((inputs) => ({...inputs, [name]: value}));
     };
 
@@ -41,8 +47,7 @@ const Detail = (props) => {
         data: [
             {
                 id: 'barData',
-                values: [
-                ]
+                values: []
             }
         ],
         xField: 'Time',
@@ -54,7 +59,7 @@ const Detail = (props) => {
         },
         title: {
             visible: true,
-            text: '模型消耗分布（小时）',
+            text: '模型消耗分布',
             subtext: '0'
         },
         bar: {
@@ -71,7 +76,7 @@ const Detail = (props) => {
                 content: [
                     {
                         key: datum => datum['Model'],
-                        value: datum => renderQuotaNumberWithDigit(datum['Usage'], 4)
+                        value: datum => renderQuotaNumberWithDigit(parseFloat(datum['Usage']), 4)
                     }
                 ]
             },
@@ -87,7 +92,7 @@ const Detail = (props) => {
                     array.sort((a, b) => b.value - a.value);
                     // add $
                     for (let i = 0; i < array.length; i++) {
-                        array[i].value = renderQuotaNumberWithDigit(array[i].value, 4);
+                        array[i].value = renderQuotaNumberWithDigit(parseFloat(array[i].value), 4);
                     }
                     return array;
                 }
@@ -104,7 +109,7 @@ const Detail = (props) => {
             {
                 id: 'id0',
                 values: [
-                    { type: 'null', value: '0' },
+                    {type: 'null', value: '0'},
                 ]
             }
         ],
@@ -163,9 +168,9 @@ const Detail = (props) => {
         let localStartTimestamp = Date.parse(start_timestamp) / 1000;
         let localEndTimestamp = Date.parse(end_timestamp) / 1000;
         if (isAdminUser) {
-            url = `/api/data/?username=${username}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+            url = `/api/data/?username=${username}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
         } else {
-            url = `/api/data/self/?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+            url = `/api/data/self/?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
         }
         const res = await API.get(url);
         const {success, message, data} = res.data;
@@ -179,6 +184,16 @@ const Detail = (props) => {
                     'created_at': now.getTime() / 1000
                 })
             }
+            // 根据dataExportDefaultTime重制时间粒度
+            let timeGranularity = 3600;
+            if (dataExportDefaultTime === 'day') {
+                timeGranularity = 86400;
+            } else if (dataExportDefaultTime === 'week') {
+                timeGranularity = 604800;
+            }
+            data.forEach(item => {
+                item['created_at'] = Math.floor(item['created_at'] / timeGranularity) * timeGranularity;
+            });
             updateChart(lineChart, pieChart, data);
         } else {
             showError(message);
@@ -190,7 +205,7 @@ const Detail = (props) => {
         await loadQuotaData(modelDataChart, modelDataPieChart);
     };
 
-    const initChart  = async () => {
+    const initChart = async () => {
         let lineChart = modelDataChart
         if (!modelDataChart) {
             lineChart = new VChart(spec_line, {dom: 'model_data'});
@@ -231,7 +246,7 @@ const Detail = (props) => {
             }
             // 合并created_at和model_name 为 lineData, created_at 数据类型是小时的时间戳
             // 转换日期格式
-            let createTime = timestamp2string1(item.created_at);
+            let createTime = timestamp2string1(item.created_at, dataExportDefaultTime);
             let lineItem = lineData.find(it => it.Time === createTime && it.Model === item.model_name);
             if (lineItem) {
                 lineItem.Usage += parseFloat(getQuotaWithUnit(item.quota));
@@ -263,6 +278,13 @@ const Detail = (props) => {
     }
 
     useEffect(() => {
+        // setDataExportDefaultTime(localStorage.getItem('data_export_default_time'));
+        // if (dataExportDefaultTime === 'day') {
+        //     // 设置开始时间为7天前
+        //     let st = timestamp2string(now.getTime() / 1000 - 86400 * 7)
+        //     inputs.start_timestamp = st;
+        //     formRef.current.formApi.setValue('start_timestamp', st);
+        // }
         if (!initialized.current) {
             initialized.current = true;
             initChart();
@@ -276,7 +298,7 @@ const Detail = (props) => {
                     <h3>数据看板</h3>
                 </Layout.Header>
                 <Layout.Content>
-                    <Form layout='horizontal' style={{marginTop: 10}}>
+                    <Form ref={formRef} layout='horizontal' style={{marginTop: 10}}>
                         <>
                             <Form.DatePicker field="start_timestamp" label='起始时间' style={{width: 272}}
                                              initValue={start_timestamp}
@@ -288,6 +310,18 @@ const Detail = (props) => {
                                              value={end_timestamp} type='dateTime'
                                              name='end_timestamp'
                                              onChange={value => handleInputChange(value, 'end_timestamp')}/>
+                            <Form.Select field="data_export_default_time" label='时间粒度' style={{width: 176}}
+                                         initValue={dataExportDefaultTime}
+                                         placeholder={'时间粒度'} name='data_export_default_time'
+                                         optionList={
+                                             [
+                                                 {label: '小时', value: 'hour'},
+                                                 {label: '天', value: 'day'},
+                                                 {label: '周', value: 'week'}
+                                             ]
+                                         }
+                                         onChange={value => handleInputChange(value, 'data_export_default_time')}>
+                            </Form.Select>
                             {
                                 isAdminUser && <>
                                     <Form.Input field="username" label='用户名称' style={{width: 176}} value={username}
