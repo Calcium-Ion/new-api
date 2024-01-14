@@ -1,6 +1,8 @@
 package model
 
 import (
+	"context"
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -133,6 +135,24 @@ func InitDB() (err error) {
 		}
 		common.SysLog("database migrated")
 		err = createRootAccountIfNeed()
+		// 冷启动的时候加载未完成的Midjourney任务到map中
+		midList := GetAllUnFinishTasks()
+		for _, mid := range midList {
+			if mid.MjId == "" {
+				ctx := context.TODO()
+				err := MjBulkUpdateByTaskIds([]int{mid.Id}, map[string]any{
+					"status":   "FAILURE",
+					"progress": "100%",
+				})
+				if err != nil {
+					common.LogError(ctx, fmt.Sprintf("Fix null mj_id task error: %v", err))
+				} else {
+					common.LogInfo(ctx, fmt.Sprintf("Fix null mj_id task success: %v", mid.Id))
+				}
+			} else {
+				common.MjTaskMap.Store(mid.Id, mid)
+			}
+		}
 		return err
 	} else {
 		common.FatalLog(err)

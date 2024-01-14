@@ -106,6 +106,8 @@ var RelayTimeout = GetOrDefault("RELAY_TIMEOUT", 0) // unit is second
 
 var GeminiSafetySetting = GetOrDefaultString("GEMINI_SAFETY_SETTING", "BLOCK_NONE")
 
+var MjTaskMap sync.Map
+
 const (
 	RequestIdKey = "X-Oneapi-Request-Id"
 )
