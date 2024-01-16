@@ -341,6 +341,7 @@ const TokensTable = () => {
         }
         let encodedServerAddress = encodeURIComponent(serverAddress);
         const chatLink = localStorage.getItem('chat_link');
+        const mjLink = localStorage.getItem('chat_link2');
         let defaultUrl;
 
         if (chatLink) {
@@ -352,7 +353,7 @@ const TokensTable = () => {
         let url;
         switch (type) {
             case 'ama':
-                url = `https://mjgpt.grqnas.cn/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
+                url = mjLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
                 break;
 
             case 'opencat':
