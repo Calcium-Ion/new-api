@@ -26,12 +26,12 @@ const {Column} = Table;
 
 const COPY_OPTIONS = [
     {key: 'next', text: 'ChatGPT Next Web', value: 'next'},
-    {key: 'ama', text: 'AMA 问天', value: 'ama'},
+    {key: 'ama', text: 'ChatGPT Web & Midjourney', value: 'ama'},
     {key: 'opencat', text: 'OpenCat', value: 'opencat'},
 ];
 
 const OPEN_LINK_OPTIONS = [
-    {key: 'ama', text: 'AMA 问天', value: 'ama'},
+    {key: 'ama', text: 'ChatGPT Web & Midjourney', value: 'ama'},
     {key: 'opencat', text: 'OpenCat', value: 'opencat'},
 ];
 
@@ -66,7 +66,7 @@ const TokensTable = () => {
 
     const link_menu = [
         {node: 'item', key: 'next', name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next')}},
-        {node: 'item', key: 'ama', name: 'AMA 问天', value: 'ama'},
+        {node: 'item', key: 'ama', name: 'ChatGPT Web & Midjourney', value: 'ama'},
         {node: 'item', key: 'opencat', name: 'OpenCat', value: 'opencat'},
     ];
 
@@ -155,7 +155,7 @@ const TokensTable = () => {
                         <Dropdown trigger="click" position="bottomRight" menu={
                             [
                                 {node: 'item', key: 'next', name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next', record.key)}},
-                                {node: 'item', key: 'ama', name: 'AMA 问天（BotGrem）', onClick: () => {onOpenLink('ama', record.key)}},
+                                {node: 'item', key: 'ama', name: 'ChatGPT Web & Midjourney', onClick: () => {onOpenLink('ama', record.key)}},
                                 {node: 'item', key: 'opencat', name: 'OpenCat', onClick: () => {onOpenLink('opencat', record.key)}},
                             ]
                         }
@@ -289,6 +289,7 @@ const TokensTable = () => {
         }
         let encodedServerAddress = encodeURIComponent(serverAddress);
         const nextLink = localStorage.getItem('chat_link');
+        const mjLink = localStorage.getItem('chat_link2');
         let nextUrl;
 
         if (nextLink) {
@@ -300,7 +301,7 @@ const TokensTable = () => {
         let url;
         switch (type) {
             case 'ama':
-                url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
+                url = mjLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
                 break;
             case 'opencat':
                 url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
@@ -351,7 +352,7 @@ const TokensTable = () => {
         let url;
         switch (type) {
             case 'ama':
-                url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
+                url = `https://mjgpt.grqnas.cn/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
                 break;
 
             case 'opencat':
