@@ -83,7 +83,7 @@ const SiderBar = () => {
             icon: <IconHistogram/>
         },
         {
-            text: '数据看版',
+            text: '数据看板',
             itemKey: 'detail',
             to: '/detail',
             icon: <IconCalendarClock />,
