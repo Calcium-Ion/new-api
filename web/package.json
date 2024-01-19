@@ -4,9 +4,9 @@
   "private": true,
   "dependencies": {
     "@douyinfe/semi-ui": "^2.46.1",
-    "@visactor/vchart": "~1.7.2",
-    "@visactor/react-vchart": "~1.7.2",
-    "@visactor/vchart-semi-theme": "~1.7.2",
+    "@visactor/vchart": "~1.8.8",
+    "@visactor/react-vchart": "~1.8.8",
+    "@visactor/vchart-semi-theme": "~1.8.8",
     "axios": "^0.27.2",
     "history": "^5.3.0",
     "marked": "^4.1.1",
@@ -54,5 +54,5 @@
     "singleQuote": true,
     "jsxSingleQuote": true
   },
-  "proxy": "http://localhost:3000"
+  "proxy": "https://nekoapi.com"
 }

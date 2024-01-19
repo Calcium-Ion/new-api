@@ -397,7 +397,9 @@ const PersonalSetting = () => {
                                         ></Input>
                                     </div>
                                     <div>
-                                        <Button onClick={()=>{setShowEmailBindModal(true)}} disabled={userState.user && userState.user.email !== ''}>绑定邮箱</Button>
+                                        <Button onClick={()=>{setShowEmailBindModal(true)}}>{
+                                            userState.user && userState.user.email !== ''?'修改绑定':'绑定邮箱'
+                                        }</Button>
                                     </div>
                                 </div>
                             </div>
