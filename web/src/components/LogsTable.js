@@ -18,6 +18,7 @@ import {
     IconHome,
     IconMore
 } from '@douyinfe/semi-icons';
+import Paragraph from "@douyinfe/semi-ui/lib/es/typography/paragraph";
 
 const {Sider, Content, Header} = Layout;
 const {Column} = Table;
@@ -222,6 +223,11 @@ const LogsTable = () => {
         {
             title: '详情',
             dataIndex: 'content',
+            render: (text, record, index) => {
+                return <Paragraph ellipsis={{ rows: 2, showTooltip: { type: 'popover', opts: { style: { width: 240 } } } }} style={{ maxWidth: 240}}>
+                    {text}
+                </Paragraph>
+            }
         }
     ];
 
