@@ -20,10 +20,7 @@ import {
 } from '@douyinfe/semi-icons';
 import Paragraph from "@douyinfe/semi-ui/lib/es/typography/paragraph";
 
-const {Sider, Content, Header} = Layout;
-const {Column} = Table;
-
-
+const {Header} = Layout;
 function renderTimestamp(timestamp) {
     return (
         <>

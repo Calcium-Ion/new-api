@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {Link} from 'react-router-dom';
 import {API, copy, isAdmin, showError, showSuccess, showWarning, timestamp2string} from '../helpers';
 
 import {ITEMS_PER_PAGE} from '../constants';
@@ -21,9 +20,6 @@ import {
     IconTreeTriangleDown,
 } from '@douyinfe/semi-icons';
 import EditToken from "../pages/Token/EditToken";
-
-const {Column} = Table;
-
 const COPY_OPTIONS = [
     {key: 'next', text: 'ChatGPT Next Web', value: 'next'},
     {key: 'ama', text: 'AMA 问天', value: 'ama'},

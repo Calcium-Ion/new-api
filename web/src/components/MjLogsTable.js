@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {Label} from 'semantic-ui-react';
 import {API, copy, isAdmin, showError, showSuccess, timestamp2string} from '../helpers';
 
 import {

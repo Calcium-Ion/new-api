@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { Container, Segment } from 'semantic-ui-react';
 import { getFooterHTML, getSystemName } from '../helpers';
 import {Layout} from "@douyinfe/semi-ui";
 

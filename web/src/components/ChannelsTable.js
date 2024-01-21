@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {
     API,
     isMobile,
-    setPromptShown,
     shouldShowPrompt,
     showError,
     showInfo,

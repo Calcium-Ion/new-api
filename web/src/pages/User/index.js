@@ -1,5 +1,4 @@
 import React from 'react';
-import { Segment, Header } from 'semantic-ui-react';
 import UsersTable from '../../components/UsersTable';
 import {Layout} from "@douyinfe/semi-ui";
 

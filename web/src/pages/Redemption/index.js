@@ -1,7 +1,5 @@
 import React from 'react';
-import { Segment, Header } from 'semantic-ui-react';
 import RedemptionsTable from '../../components/RedemptionsTable';
-import TokensTable from "../../components/TokensTable";
 import {Layout} from "@douyinfe/semi-ui";
 
 const Redemption = () => (
