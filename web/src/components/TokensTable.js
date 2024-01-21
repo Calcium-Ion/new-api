@@ -22,12 +22,12 @@ import {
 import EditToken from "../pages/Token/EditToken";
 const COPY_OPTIONS = [
     {key: 'next', text: 'ChatGPT Next Web', value: 'next'},
-    {key: 'ama', text: 'AMA 问天', value: 'ama'},
+    {key: 'ama', text: 'ChatGPT Web & Midjourney', value: 'ama'},
     {key: 'opencat', text: 'OpenCat', value: 'opencat'},
 ];
 
 const OPEN_LINK_OPTIONS = [
-    {key: 'ama', text: 'AMA 问天', value: 'ama'},
+    {key: 'ama', text: 'ChatGPT Web & Midjourney', value: 'ama'},
     {key: 'opencat', text: 'OpenCat', value: 'opencat'},
 ];
 
@@ -63,6 +63,7 @@ const TokensTable = () => {
     const link_menu = [
         {node: 'item', key: 'next', name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next')}},
         {node: 'item', key: 'ama', name: 'AMA 问天', value: 'ama'},
+        {node: 'item', key: 'next-mj', name: 'ChatGPT Web & Midjourney', value: 'next-mj', onClick: () => {onOpenLink('next-mj')}},
         {node: 'item', key: 'opencat', name: 'OpenCat', value: 'opencat'},
     ];
 
@@ -150,7 +151,8 @@ const TokensTable = () => {
                         <Button theme="light" style={{ color: 'rgba(var(--semi-teal-7), 1)' }} onClick={()=>{onOpenLink('next', record.key)}}>聊天</Button>
                         <Dropdown trigger="click" position="bottomRight" menu={
                             [
-                                {node: 'item', key: 'next', name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next', record.key)}},
+                                {node: 'item', key: 'next', disabled: !localStorage.getItem('chat_link'), name: 'ChatGPT Next Web', onClick: () => {onOpenLink('next', record.key)}},
+                                {node: 'item', key: 'next-mj', disabled: !localStorage.getItem('chat_link2'), name: 'ChatGPT Web & Midjourney', onClick: () => {onOpenLink('next-mj', record.key)}},
                                 {node: 'item', key: 'ama', name: 'AMA 问天（BotGrem）', onClick: () => {onOpenLink('ama', record.key)}},
                                 {node: 'item', key: 'opencat', name: 'OpenCat', onClick: () => {onOpenLink('opencat', record.key)}},
                             ]
@@ -285,6 +287,7 @@ const TokensTable = () => {
         }
         let encodedServerAddress = encodeURIComponent(serverAddress);
         const nextLink = localStorage.getItem('chat_link');
+        const mjLink = localStorage.getItem('chat_link2');
         let nextUrl;
 
         if (nextLink) {
@@ -296,7 +299,7 @@ const TokensTable = () => {
         let url;
         switch (type) {
             case 'ama':
-                url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
+                url = mjLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
                 break;
             case 'opencat':
                 url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
@@ -336,25 +339,28 @@ const TokensTable = () => {
         }
         let encodedServerAddress = encodeURIComponent(serverAddress);
         const chatLink = localStorage.getItem('chat_link');
+        const mjLink = localStorage.getItem('chat_link2');
         let defaultUrl;
 
         if (chatLink) {
             defaultUrl = chatLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-        } else {
-            showError('管理员未设置聊天链接')
-            return
         }
         let url;
         switch (type) {
             case 'ama':
                 url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
                 break;
-
             case 'opencat':
                 url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
                 break;
-
+            case 'next-mj':
+                url =  mjLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
+                break;
             default:
+                if (!chatLink) {
+                    showError('管理员未设置聊天链接')
+                    return;
+                }
                 url = defaultUrl;
         }
 

@@ -15,6 +15,7 @@ const OperationSetting = () => {
         GroupRatio: '',
         TopUpLink: '',
         ChatLink: '',
+        ChatLink2: '', // 添加的新状态变量
         QuotaPerUnit: 0,
         AutomaticDisableChannelEnabled: '',
         ChannelDisableThreshold: 0,
@@ -141,6 +142,9 @@ const OperationSetting = () => {
                 if (originInputs['ChatLink'] !== inputs.ChatLink) {
                     await updateOption('ChatLink', inputs.ChatLink);
                 }
+                if (originInputs['ChatLink2'] !== inputs.ChatLink2) {
+                    await updateOption('ChatLink2', inputs.ChatLink2);
+                }
                 if (originInputs['QuotaPerUnit'] !== inputs.QuotaPerUnit) {
                     await updateOption('QuotaPerUnit', inputs.QuotaPerUnit);
                 }
@@ -179,13 +183,22 @@ const OperationSetting = () => {
                             placeholder='例如发卡网站的购买链接'
                         />
                         <Form.Input
-                            label='聊天页面链接'
+                            label='默认聊天页面链接'
                             name='ChatLink'
                             onChange={handleInputChange}
                             autoComplete='new-password'
                             value={inputs.ChatLink}
                             type='link'
                             placeholder='例如 ChatGPT Next Web 的部署地址'
+                        />
+                        <Form.Input
+                            label='聊天页面2链接'
+                            name='ChatLink2'
+                            onChange={handleInputChange}
+                            autoComplete='new-password'
+                            value={inputs.ChatLink2}
+                            type='link'
+                            placeholder='例如 ChatGPT Web & Midjourney 的部署地址'
                         />
                         <Form.Input
                             label='单位美元额度'
