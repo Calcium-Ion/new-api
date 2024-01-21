@@ -474,6 +474,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	defer func(ctx context.Context) {
 		// c.Writer.Flush()
 		go func() {
+			useTimeSeconds := time.Now().Unix() - startTime.Unix()
 			promptTokens = textResponse.Usage.PromptTokens
 			completionTokens = textResponse.Usage.CompletionTokens
 
@@ -489,38 +490,41 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 				quota = int(modelPrice * common.QuotaPerUnit * groupRatio)
 			}
 			totalTokens := promptTokens + completionTokens
-			if totalTokens == 0 {
-				// in this case, must be some error happened
-				// we cannot just return, because we may have to return the pre-consumed quota
-				quota = 0
-			}
-			quotaDelta := quota - preConsumedQuota
-			err := model.PostConsumeTokenQuota(tokenId, userQuota, quotaDelta, preConsumedQuota, true)
-			if err != nil {
-				common.LogError(ctx, "error consuming token remain quota: "+err.Error())
-			}
-			err = model.CacheUpdateUserQuota(userId)
-			if err != nil {
-				common.LogError(ctx, "error update user quota cache: "+err.Error())
-			}
-
-			// record all the consume log even if quota is 0
-			useTimeSeconds := time.Now().Unix() - startTime.Unix()
 			var logContent string
 			if modelPrice == -1 {
 				logContent = fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f", modelRatio, groupRatio)
 			} else {
 				logContent = fmt.Sprintf("模型价格 %.2f，分组倍率 %.2f", modelPrice, groupRatio)
 			}
+
+			// record all the consume log even if quota is 0
+			if totalTokens == 0 {
+				// in this case, must be some error happened
+				// we cannot just return, because we may have to return the pre-consumed quota
+				quota = 0
+				logContent += fmt.Sprintf("（有疑问请联系管理员）")
+				common.LogError(ctx, fmt.Sprintf("total tokens is 0, cannot consume quota, userId %d, channelId %d, tokenId %d, model %s， pre-consumed quota %d", userId, channelId, tokenId, textRequest.Model, preConsumedQuota))
+			} else {
+				quotaDelta := quota - preConsumedQuota
+				err := model.PostConsumeTokenQuota(tokenId, userQuota, quotaDelta, preConsumedQuota, true)
+				if err != nil {
+					common.LogError(ctx, "error consuming token remain quota: "+err.Error())
+				}
+				err = model.CacheUpdateUserQuota(userId)
+				if err != nil {
+					common.LogError(ctx, "error update user quota cache: "+err.Error())
+				}
+				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
+				model.UpdateChannelUsedQuota(channelId, quota)
+			}
+
 			logModel := textRequest.Model
 			if strings.HasPrefix(logModel, "gpt-4-gizmo") {
 				logModel = "gpt-4-gizmo-*"
 				logContent += fmt.Sprintf("，模型 %s", textRequest.Model)
 			}
-
 			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, logModel, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), isStream)
-			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
-			model.UpdateChannelUsedQuota(channelId, quota)
+
 			//if quota != 0 {
 			//
 			//}
