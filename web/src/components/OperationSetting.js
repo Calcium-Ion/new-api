@@ -183,7 +183,7 @@ const OperationSetting = () => {
                             placeholder='例如发卡网站的购买链接'
                         />
                         <Form.Input
-                            label='聊天页面链接'
+                            label='默认聊天页面链接'
                             name='ChatLink'
                             onChange={handleInputChange}
                             autoComplete='new-password'
@@ -198,7 +198,7 @@ const OperationSetting = () => {
                             autoComplete='new-password'
                             value={inputs.ChatLink2}
                             type='link'
-                            placeholder='例如 ChatGPT Next Web 的部署地址'
+                            placeholder='例如 ChatGPT Web & Midjourney 的部署地址'
                         />
                         <Form.Input
                             label='单位美元额度'
