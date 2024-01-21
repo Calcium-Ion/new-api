@@ -20,6 +20,8 @@ type Log struct {
 	Quota            int    `json:"quota" gorm:"default:0"`
 	PromptTokens     int    `json:"prompt_tokens" gorm:"default:0"`
 	CompletionTokens int    `json:"completion_tokens" gorm:"default:0"`
+	UseTime          int    `json:"use_time" gorm:"bigint;default:0"`
+	IsStream         bool   `json:"is_stream" gorm:"default:false"`
 	ChannelId        int    `json:"channel" gorm:"index"`
 	TokenId          int    `json:"token_id" gorm:"default:0;index"`
 }
@@ -55,7 +57,7 @@ func RecordLog(userId int, logType int, content string) {
 	}
 }
 
-func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptTokens int, completionTokens int, modelName string, tokenName string, quota int, content string, tokenId int, userQuota int) {
+func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptTokens int, completionTokens int, modelName string, tokenName string, quota int, content string, tokenId int, userQuota int, useTimeSeconds int, isStream bool) {
 	common.LogInfo(ctx, fmt.Sprintf("record consume log: userId=%d, 用户调用前余额=%d, channelId=%d, promptTokens=%d, completionTokens=%d, modelName=%s, tokenName=%s, quota=%d, content=%s", userId, userQuota, channelId, promptTokens, completionTokens, modelName, tokenName, quota, content))
 	if !common.LogConsumeEnabled {
 		return
@@ -74,6 +76,8 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 		Quota:            quota,
 		ChannelId:        channelId,
 		TokenId:          tokenId,
+		UseTime:          useTimeSeconds,
+		IsStream:         isStream,
 	}
 	err := DB.Create(log).Error
 	if err != nil {

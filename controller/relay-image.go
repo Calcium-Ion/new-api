@@ -12,6 +12,7 @@ import (
 	"one-api/common"
 	"one-api/model"
 	"strings"
+	"time"
 )
 
 func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
@@ -21,6 +22,7 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 	userId := c.GetInt("id")
 	consumeQuota := c.GetBool("consume_quota")
 	group := c.GetString("group")
+	startTime := time.Now()
 
 	var imageRequest ImageRequest
 	if consumeQuota {
@@ -169,6 +171,7 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 
 	var textResponse ImageResponse
 	defer func(ctx context.Context) {
+		useTimeSeconds := time.Now().Unix() - startTime.Unix()
 		if consumeQuota {
 			if resp.StatusCode != http.StatusOK {
 				return
@@ -184,7 +187,7 @@ func relayImageHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode 
 			if quota != 0 {
 				tokenName := c.GetString("token_name")
 				logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f", modelRatio, groupRatio)
-				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageRequest.Model, tokenName, quota, logContent, tokenId, userQuota)
+				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageRequest.Model, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), false)
 				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 				channelId := c.GetInt("channel_id")
 				model.UpdateChannelUsedQuota(channelId, quota)

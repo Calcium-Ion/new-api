@@ -508,9 +508,9 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 			useTimeSeconds := time.Now().Unix() - startTime.Unix()
 			var logContent string
 			if modelPrice == -1 {
-				logContent = fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f，用时 %d秒", modelRatio, groupRatio, useTimeSeconds)
+				logContent = fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f", modelRatio, groupRatio)
 			} else {
-				logContent = fmt.Sprintf("模型价格 %.2f，分组倍率 %.2f，用时 %d秒", modelPrice, groupRatio, useTimeSeconds)
+				logContent = fmt.Sprintf("模型价格 %.2f，分组倍率 %.2f", modelPrice, groupRatio)
 			}
 			logModel := textRequest.Model
 			if strings.HasPrefix(logModel, "gpt-4-gizmo") {
@@ -518,7 +518,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 				logContent += fmt.Sprintf("，模型 %s", textRequest.Model)
 			}
 
-			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, logModel, tokenName, quota, logContent, tokenId, userQuota)
+			model.RecordConsumeLog(ctx, userId, channelId, promptTokens, completionTokens, logModel, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), isStream)
 			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 			model.UpdateChannelUsedQuota(channelId, quota)
 			//if quota != 0 {

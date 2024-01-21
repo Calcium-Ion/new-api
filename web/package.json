@@ -54,5 +54,5 @@
     "singleQuote": true,
     "jsxSingleQuote": true
   },
-  "proxy": "https://nekoapi.com"
+  "proxy": "http://localhost:3000"
 }
