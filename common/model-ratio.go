@@ -103,13 +103,15 @@ func UpdateModelPriceByJSONString(jsonStr string) error {
 	return json.Unmarshal([]byte(jsonStr), &ModelPrice)
 }
 
-func GetModelPrice(name string) float64 {
+func GetModelPrice(name string, printErr bool) float64 {
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
 	price, ok := ModelPrice[name]
 	if !ok {
-		//SysError("model price not found: " + name)
+		if printErr {
+			SysError("model price not found: " + name)
+		}
 		return -1
 	}
 	return price

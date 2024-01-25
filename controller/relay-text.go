@@ -232,7 +232,7 @@ func relayTextHelper(c *gin.Context, relayMode int) *OpenAIErrorWithStatusCode {
 	case RelayModeModerations:
 		promptTokens = countTokenInput(textRequest.Input, textRequest.Model)
 	}
-	modelPrice := common.GetModelPrice(textRequest.Model)
+	modelPrice := common.GetModelPrice(textRequest.Model, false)
 	groupRatio := common.GetGroupRatio(group)
 
 	var preConsumedQuota int

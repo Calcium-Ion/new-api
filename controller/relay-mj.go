@@ -392,7 +392,7 @@ func relayMidjourneySubmit(c *gin.Context, relayMode int) *MidjourneyResponse {
 		requestBody = c.Request.Body
 	}
 	mjAction := "mj_" + strings.ToLower(midjRequest.Action)
-	modelPrice := common.GetModelPrice(mjAction)
+	modelPrice := common.GetModelPrice(mjAction, true)
 	// 如果没有配置价格，则使用默认价格
 	if modelPrice == -1 {
 		defaultPrice, ok := DefaultModelPrice[mjAction]
