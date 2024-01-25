@@ -100,6 +100,16 @@ func GetTokenById(id int) (*Token, error) {
 	return &token, err
 }
 
+func GetTokenByKey(key string) (*Token, error) {
+	keyCol := "`key`"
+	if common.UsingPostgreSQL {
+		keyCol = `"key"`
+	}
+	var token Token
+	err := DB.Where(keyCol+" = ?", key).First(&token).Error
+	return &token, err
+}
+
 func (token *Token) Insert() error {
 	var err error
 	err = DB.Create(token).Error

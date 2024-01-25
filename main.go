@@ -63,6 +63,9 @@ func main() {
 		common.SysError(fmt.Sprintf("sync frequency: %d seconds", common.SyncFrequency))
 		model.InitChannelCache()
 	}
+	if common.RedisEnabled {
+		go model.SyncTokenCache(common.SyncFrequency)
+	}
 	if common.MemoryCacheEnabled {
 		go model.SyncOptions(common.SyncFrequency)
 		go model.SyncChannelCache(common.SyncFrequency)

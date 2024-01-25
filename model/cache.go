@@ -20,34 +20,81 @@ var (
 	UserId2StatusCacheSeconds = common.SyncFrequency
 )
 
-func CacheGetTokenByKey(key string) (*Token, error) {
-	keyCol := "`key`"
-	if common.UsingPostgreSQL {
-		keyCol = `"key"`
-	}
-	var token Token
+// 仅用于定时同步缓存
+var token2UserId = make(map[string]int)
+var token2UserIdLock sync.RWMutex
+
+func cacheSetToken(token *Token) error {
 	if !common.RedisEnabled {
-		err := DB.Where(keyCol+" = ?", key).First(&token).Error
-		return &token, err
+		return token.SelectUpdate()
 	}
-	tokenObjectString, err := common.RedisGet(fmt.Sprintf("token:%s", key))
+	jsonBytes, err := json.Marshal(token)
 	if err != nil {
-		err := DB.Where(keyCol+" = ?", key).First(&token).Error
+		return err
+	}
+	err = common.RedisSet(fmt.Sprintf("token:%s", token.Key), string(jsonBytes), time.Duration(TokenCacheSeconds)*time.Second)
+	if err != nil {
+		common.SysError(fmt.Sprintf("failed to set token %s to redis: %s", token.Key, err.Error()))
+		return err
+	}
+	token2UserIdLock.Lock()
+	defer token2UserIdLock.Unlock()
+	token2UserId[token.Key] = token.UserId
+	return nil
+}
+
+// CacheGetTokenByKey 从缓存中获取 token 并续期时间，如果缓存中不存在，则从数据库中获取
+func CacheGetTokenByKey(key string) (*Token, error) {
+	if !common.RedisEnabled {
+		return GetTokenByKey(key)
+	}
+	var token *Token
+	tokenObjectString, err := common.RedisGetEx(fmt.Sprintf("token:%s", key), time.Duration(TokenCacheSeconds)*time.Second)
+	if err != nil {
+		// 如果缓存中不存在，则从数据库中获取
+		token, err = GetTokenByKey(key)
 		if err != nil {
 			return nil, err
 		}
-		jsonBytes, err := json.Marshal(token)
-		if err != nil {
-			return nil, err
-		}
-		err = common.RedisSet(fmt.Sprintf("token:%s", key), string(jsonBytes), time.Duration(TokenCacheSeconds)*time.Second)
-		if err != nil {
-			common.SysError("Redis set token error: " + err.Error())
-		}
-		return &token, nil
+		err = cacheSetToken(token)
+		return token, nil
 	}
 	err = json.Unmarshal([]byte(tokenObjectString), &token)
-	return &token, err
+	return token, err
+}
+
+func SyncTokenCache(frequency int) {
+	for {
+		time.Sleep(time.Duration(frequency) * time.Second)
+		common.SysLog("syncing tokens from database")
+		token2UserIdLock.Lock()
+		// 从token2UserId中获取所有的key
+		var copyToken2UserId = make(map[string]int)
+		for s, i := range token2UserId {
+			copyToken2UserId[s] = i
+		}
+		token2UserId = make(map[string]int)
+		token2UserIdLock.Unlock()
+
+		for key := range copyToken2UserId {
+			token, err := GetTokenByKey(key)
+			if err != nil {
+				// 如果数据库中不存在，则删除缓存
+				common.SysError(fmt.Sprintf("failed to get token %s from database: %s", key, err.Error()))
+				//delete redis
+				err := common.RedisDel(fmt.Sprintf("token:%s", key))
+				if err != nil {
+					common.SysError(fmt.Sprintf("failed to delete token %s from redis: %s", key, err.Error()))
+				}
+			} else {
+				// 如果数据库中存在，则更新缓存
+				err := cacheSetToken(token)
+				if err != nil {
+					common.SysError(fmt.Sprintf("failed to update token %s to redis: %s", key, err.Error()))
+				}
+			}
+		}
+	}
 }
 
 func CacheGetUserGroup(id int) (group string, err error) {

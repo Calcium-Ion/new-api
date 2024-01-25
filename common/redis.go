@@ -57,6 +57,11 @@ func RedisGet(key string) (string, error) {
 	return RDB.Get(ctx, key).Result()
 }
 
+func RedisGetEx(key string, expiration time.Duration) (string, error) {
+	ctx := context.Background()
+	return RDB.GetSet(ctx, key, expiration).Result()
+}
+
 func RedisDel(key string) error {
 	ctx := context.Background()
 	return RDB.Del(ctx, key).Err()
