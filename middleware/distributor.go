@@ -18,8 +18,6 @@ type ModelRequest struct {
 func Distribute() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userId := c.GetInt("id")
-		userGroup, _ := model.CacheGetUserGroup(userId)
-		c.Set("group", userGroup)
 		var channel *model.Channel
 		channelId, ok := c.Get("channelId")
 		if ok {
@@ -98,6 +96,10 @@ func Distribute() func(c *gin.Context) {
 					return
 				}
 			}
+
+			userGroup, _ := model.CacheGetUserGroup(userId)
+			c.Set("group", userGroup)
+
 			channel, err = model.CacheGetRandomSatisfiedChannel(userGroup, modelRequest.Model)
 			if err != nil {
 				message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", userGroup, modelRequest.Model)
