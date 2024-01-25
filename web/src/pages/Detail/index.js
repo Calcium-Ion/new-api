@@ -90,9 +90,16 @@ const Detail = (props) => {
                     // sort by value
                     array.sort((a, b) => b.value - a.value);
                     // add $
+                    let sum = 0;
                     for (let i = 0; i < array.length; i++) {
+                        sum += parseFloat(array[i].value);
                         array[i].value = renderQuotaNumberWithDigit(parseFloat(array[i].value), 4);
                     }
+                    // add to first
+                    array.unshift({
+                        key: '总计',
+                        value: renderQuotaNumberWithDigit(sum, 4)
+                    });
                     return array;
                 }
             }
