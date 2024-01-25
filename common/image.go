@@ -68,17 +68,29 @@ func DecodeUrlImageData(imageUrl string) (image.Config, string, error) {
 		SysLog(fmt.Sprintf("fail to get image from url: %s", err.Error()))
 		return image.Config{}, "", err
 	}
+	defer response.Body.Close()
 
-	// 限制读取的字节数，防止下载整个图片
-	limitReader := io.LimitReader(response.Body, 1024*20)
-	//data, err := io.ReadAll(limitReader)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//log.Printf("%x", data)
-	config, format, err := getImageConfig(limitReader)
-	response.Body.Close()
-	return config, format, err
+	var readData []byte
+	for _, limit := range []int64{1024 * 8, 1024 * 24, 1024 * 64} {
+		SysLog(fmt.Sprintf("try to decode image config with limit: %d", limit))
+
+		// 从response.Body读取更多的数据直到达到当前的限制
+		additionalData := make([]byte, limit-int64(len(readData)))
+		n, _ := io.ReadFull(response.Body, additionalData)
+		readData = append(readData, additionalData[:n]...)
+
+		// 使用io.MultiReader组合已经读取的数据和response.Body
+		limitReader := io.MultiReader(bytes.NewReader(readData), response.Body)
+
+		var config image.Config
+		var format string
+		config, format, err = getImageConfig(limitReader)
+		if err == nil {
+			return config, format, nil
+		}
+	}
+
+	return image.Config{}, "", err // 返回最后一个错误
 }
 
 func getImageConfig(reader io.Reader) (image.Config, string, error) {
