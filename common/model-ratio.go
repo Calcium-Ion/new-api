@@ -23,6 +23,8 @@ var ModelRatio = map[string]float64{
 	"gpt-4-32k-0314":            30,
 	"gpt-4-32k-0613":            30,
 	"gpt-4-1106-preview":        5,    // $0.01 / 1K tokens
+	"gpt-4-0125-preview":        5,    // $0.01 / 1K tokens
+	"gpt-4-turbo-preview":       5,    // $0.01 / 1K tokens
 	"gpt-4-vision-preview":      5,    // $0.01 / 1K tokens
 	"gpt-4-1106-vision-preview": 5,    // $0.01 / 1K tokens
 	"gpt-3.5-turbo":             0.75, // $0.0015 / 1K tokens
@@ -50,6 +52,8 @@ var ModelRatio = map[string]float64{
 	"curie":                     10,
 	"babbage":                   10,
 	"ada":                       10,
+	"text-embedding-3-small":    0.01,
+	"text-embedding-3-large":    0.065,
 	"text-embedding-ada-002":    0.05,
 	"text-search-ada-doc-001":   10,
 	"text-moderation-stable":    0.1,
