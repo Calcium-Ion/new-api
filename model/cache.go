@@ -49,7 +49,7 @@ func CacheGetTokenByKey(key string) (*Token, error) {
 		return GetTokenByKey(key)
 	}
 	var token *Token
-	tokenObjectString, err := common.RedisGetEx(fmt.Sprintf("token:%s", key), time.Duration(TokenCacheSeconds)*time.Second)
+	tokenObjectString, err := common.RedisGet(fmt.Sprintf("token:%s", key))
 	if err != nil {
 		// 如果缓存中不存在，则从数据库中获取
 		token, err = GetTokenByKey(key)
@@ -59,6 +59,8 @@ func CacheGetTokenByKey(key string) (*Token, error) {
 		err = cacheSetToken(token)
 		return token, nil
 	}
+	// 如果缓存中存在，则续期时间
+	err = common.RedisExpire(fmt.Sprintf("token:%s", key), time.Duration(TokenCacheSeconds)*time.Second)
 	err = json.Unmarshal([]byte(tokenObjectString), &token)
 	return token, err
 }
