@@ -89,8 +89,13 @@ func SyncTokenCache(frequency int) {
 					common.SysError(fmt.Sprintf("failed to delete token %s from redis: %s", key, err.Error()))
 				}
 			} else {
-				// 如果数据库中存在，则更新缓存
-				err := cacheSetToken(token)
+				// 如果数据库中存在，先检查redis
+				_, err := common.RedisGet(fmt.Sprintf("token:%s", key))
+				if err != nil {
+					// 如果redis中不存在，则跳过
+					continue
+				}
+				err = cacheSetToken(token)
 				if err != nil {
 					common.SysError(fmt.Sprintf("failed to update token %s to redis: %s", key, err.Error()))
 				}
