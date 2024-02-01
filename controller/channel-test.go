@@ -34,14 +34,18 @@ func testChannel(channel *model.Channel, request ChatRequest) (err error, openai
 	case common.ChannelTypeXunfei:
 		return errors.New("该渠道类型当前版本不支持测试，请手动测试"), nil
 	case common.ChannelTypeAzure:
-		request.Model = "gpt-35-turbo"
+		if request.Model == "" {
+			request.Model = "gpt-35-turbo"
+		}
 		defer func() {
 			if err != nil {
 				err = errors.New("请确保已在 Azure 上创建了 gpt-35-turbo 模型，并且 apiVersion 已正确填写！")
 			}
 		}()
 	default:
-		request.Model = "gpt-3.5-turbo"
+		if request.Model == "" {
+			request.Model = "gpt-3.5-turbo"
+		}
 	}
 	requestURL := getFullRequestURL(channel.GetBaseURL(), "/v1/chat/completions", channel.Type)
 
@@ -102,6 +106,7 @@ func TestChannel(c *gin.Context) {
 		})
 		return
 	}
+	testModel := c.Param("model")
 	channel, err := model.GetChannelById(id, true)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -111,6 +116,9 @@ func TestChannel(c *gin.Context) {
 		return
 	}
 	testRequest := buildTestRequest()
+	if testModel != "" {
+		testRequest.Model = testModel
+	}
 	tik := time.Now()
 	err, _ = testChannel(channel, *testRequest)
 	tok := time.Now()

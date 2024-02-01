@@ -23,9 +23,10 @@ import {
     Space,
     Tooltip,
     Switch,
-    Typography, InputNumber
+    Typography, InputNumber, Dropdown, SplitButtonGroup
 } from "@douyinfe/semi-ui";
 import EditChannel from "../pages/Channel/EditChannel";
+import {IconTreeTriangleDown} from "@douyinfe/semi-icons";
 
 function renderTimestamp(timestamp) {
     return (
@@ -195,7 +196,14 @@ const ChannelsTable = () => {
             dataIndex: 'operate',
             render: (text, record, index) => (
                 <div>
-                    <Button theme='light' type='primary' style={{marginRight: 1}} onClick={()=>testChannel(record)}>测试</Button>
+                    <SplitButtonGroup style={{marginRight: 1}} aria-label="测试操作项目组">
+                        <Button theme="light" onClick={()=>{testChannel(record, '')}}>测试</Button>
+                        <Dropdown trigger="click" position="bottomRight" menu={record.test_models}
+                        >
+                            <Button style={ { padding: '8px 4px'}} type="primary" icon={<IconTreeTriangleDown />}></Button>
+                        </Dropdown>
+                    </SplitButtonGroup>
+                    {/*<Button theme='light' type='primary' style={{marginRight: 1}} onClick={()=>testChannel(record)}>测试</Button>*/}
                     <Popconfirm
                         title="确定是否要删除此渠道？"
                         content="此修改将不可逆"
@@ -277,6 +285,17 @@ const ChannelsTable = () => {
     const setChannelFormat = (channels) => {
         for (let i = 0; i < channels.length; i++) {
             channels[i].key = '' + channels[i].id;
+            let test_models = []
+            channels[i].models.split(',').forEach((item, index) => {
+                test_models.push({
+                    node: 'item',
+                    name: item,
+                    onClick: () => {
+                        testChannel(channels[i], item)
+                    }
+                })
+            })
+            channels[i].test_models = test_models
         }
         // data.key = '' + data.id
         setChannels(channels);
@@ -440,14 +459,15 @@ const ChannelsTable = () => {
         setSearching(false);
     };
 
-    const testChannel = async (record) => {
-        const res = await API.get(`/api/channel/test/${record.id}/`);
+    const testChannel = async (record, model) => {
+        const res = await API.get(`/api/channel/test/${record.id}?model=${model}`);
         const {success, message, time} = res.data;
         if (success) {
             let newChannels = [...channels];
             record.response_time = time * 1000;
             record.test_time = Date.now() / 1000;
-            setChannels(newChannels);
+
+            setChannelFormat(newChannels)
             showInfo(`通道 ${record.name} 测试成功，耗时 ${time.toFixed(2)} 秒。`);
         } else {
             showError(message);
