@@ -213,6 +213,7 @@ const EditChannel = (props) => {
             handleCancel();
             return;
         }
+        localInputs.auto_ban = autoBan ? 1 : 0;
         localInputs.models = localInputs.models.join(',');
         localInputs.group = localInputs.groups.join(',');
         if (isEdit) {
@@ -528,7 +529,6 @@ const EditChannel = (props) => {
                                 onChange={
                                     () => {
                                         setAutoBan(!autoBan);
-
                                     }
                                 }
                                 // onChange={handleInputChange}
