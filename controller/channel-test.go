@@ -43,14 +43,10 @@ func testChannel(channel *model.Channel, request ChatRequest) (err error, openai
 	default:
 		request.Model = "gpt-3.5-turbo"
 	}
-	requestURL := common.ChannelBaseURLs[channel.Type]
+	requestURL := getFullRequestURL(channel.GetBaseURL(), "/v1/chat/completions", channel.Type)
+
 	if channel.Type == common.ChannelTypeAzure {
 		requestURL = getFullRequestURL(channel.GetBaseURL(), fmt.Sprintf("/openai/deployments/%s/chat/completions?api-version=2023-03-15-preview", request.Model), channel.Type)
-	} else {
-		if channel.GetBaseURL() != "" {
-			requestURL = channel.GetBaseURL()
-		}
-		requestURL += "/v1/chat/completions"
 	}
 
 	jsonData, err := json.Marshal(request)
