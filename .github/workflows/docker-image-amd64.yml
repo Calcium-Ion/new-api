@@ -1,9 +1,10 @@
-name: Publish Docker image (amd64, English)
+name: Publish Docker image (amd64)
 
 on:
   push:
     tags:
       - '*'
+      - '!*-alpha*'
   workflow_dispatch:
     inputs:
       name:
@@ -24,21 +25,26 @@ jobs:
         run: |
           git describe --tags > VERSION 
 
-      - name: Translate
-        run: |
-          python ./i18n/translate.py --repository_path . --json_file_path ./i18n/en.json
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: |
-            justsong/one-api-en
+            calciumion/new-api
+            ghcr.io/${{ github.repository }}
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v3
