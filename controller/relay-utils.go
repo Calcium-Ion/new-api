@@ -258,6 +258,19 @@ func shouldDisableChannel(err *OpenAIError, statusCode int) bool {
 	return false
 }
 
+func shouldEnableChannel(err error, openAIErr *OpenAIError) bool {
+	if !common.AutomaticEnableChannelEnabled {
+		return false
+	}
+	if err != nil {
+		return false
+	}
+	if openAIErr != nil {
+		return false
+	}
+	return true
+}
+
 func setEventStreamHeaders(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")

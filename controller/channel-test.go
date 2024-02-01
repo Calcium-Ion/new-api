@@ -78,6 +78,9 @@ func testChannel(channel *model.Channel, request ChatRequest) (err error, openai
 		return err, nil
 	}
 	if response.Usage.CompletionTokens == 0 {
+		if response.Error.Message == "" {
+			response.Error.Message = "补全 tokens 非预期返回 0"
+		}
 		return errors.New(fmt.Sprintf("type %s, code %v, message %s", response.Error.Type, response.Error.Code, response.Error.Message)), &response.Error
 	}
 	return nil, nil
@@ -146,12 +149,23 @@ var testAllChannelsRunning bool = false
 
 // disable & notify
 func disableChannel(channelId int, channelName string, reason string) {
-	if common.RootUserEmail == "" {
-		common.RootUserEmail = model.GetRootUserEmail()
-	}
 	model.UpdateChannelStatusById(channelId, common.ChannelStatusAutoDisabled)
 	subject := fmt.Sprintf("通道「%s」（#%d）已被禁用", channelName, channelId)
 	content := fmt.Sprintf("通道「%s」（#%d）已被禁用，原因：%s", channelName, channelId, reason)
+	notifyRootUser(subject, content)
+}
+
+func enableChannel(channelId int, channelName string) {
+	model.UpdateChannelStatusById(channelId, common.ChannelStatusEnabled)
+	subject := fmt.Sprintf("通道「%s」（#%d）已被启用", channelName, channelId)
+	content := fmt.Sprintf("通道「%s」（#%d）已被启用", channelName, channelId)
+	notifyRootUser(subject, content)
+}
+
+func notifyRootUser(subject string, content string) {
+	if common.RootUserEmail == "" {
+		common.RootUserEmail = model.GetRootUserEmail()
+	}
 	err := common.SendEmail(subject, common.RootUserEmail, content)
 	if err != nil {
 		common.SysError(fmt.Sprintf("failed to send email: %s", err.Error()))
@@ -180,9 +194,7 @@ func testAllChannels(notify bool) error {
 	}
 	go func() {
 		for _, channel := range channels {
-			if channel.Status != common.ChannelStatusEnabled {
-				continue
-			}
+			isChannelEnabled := channel.Status == common.ChannelStatusEnabled
 			tik := time.Now()
 			err, openaiErr := testChannel(channel, *testRequest)
 			tok := time.Now()
@@ -201,8 +213,11 @@ func testAllChannels(notify bool) error {
 			if channel.AutoBan != nil && *channel.AutoBan == 0 {
 				ban = false
 			}
-			if shouldDisableChannel(openaiErr, -1) && ban {
+			if isChannelEnabled && shouldDisableChannel(openaiErr, -1) && ban {
 				disableChannel(channel.Id, channel.Name, err.Error())
+			}
+			if !isChannelEnabled && shouldEnableChannel(err, openaiErr) {
+				enableChannel(channel.Id, channel.Name)
 			}
 			channel.UpdateResponseTime(milliseconds)
 			time.Sleep(common.RequestInterval)

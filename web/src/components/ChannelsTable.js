@@ -478,7 +478,7 @@ const ChannelsTable = () => {
         const res = await API.get(`/api/channel/test`);
         const {success, message} = res.data;
         if (success) {
-            showInfo('已成功开始测试所有已启用通道，请刷新页面查看结果。');
+            showInfo('已成功开始测试所有通道，请刷新页面查看结果。');
         } else {
             showError(message);
         }
@@ -702,7 +702,7 @@ const ChannelsTable = () => {
                         onConfirm={testAllChannels}
                         position={isMobile()?'top':'top'}
                     >
-                        <Button theme='light' type='warning' style={{marginRight: 8}}>测试所有已启用通道</Button>
+                        <Button theme='light' type='warning' style={{marginRight: 8}}>测试所有通道</Button>
                     </Popconfirm>
                     <Popconfirm
                         title="确定？"
