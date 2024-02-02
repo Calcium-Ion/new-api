@@ -97,7 +97,7 @@ func requestOpenAI2Gemini(textRequest GeneralOpenAIRequest) *GeminiChatRequest {
 			Role: message.Role,
 			Parts: []GeminiPart{
 				{
-					Text: string(message.Content),
+					Text: message.StringContent(),
 				},
 			},
 		}

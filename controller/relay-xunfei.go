@@ -81,7 +81,7 @@ func requestOpenAI2Xunfei(request GeneralOpenAIRequest, xunfeiAppId string, doma
 		if message.Role == "system" {
 			messages = append(messages, XunfeiMessage{
 				Role:    "user",
-				Content: string(message.Content),
+				Content: message.StringContent(),
 			})
 			messages = append(messages, XunfeiMessage{
 				Role:    "assistant",
@@ -90,7 +90,7 @@ func requestOpenAI2Xunfei(request GeneralOpenAIRequest, xunfeiAppId string, doma
 		} else {
 			messages = append(messages, XunfeiMessage{
 				Role:    message.Role,
-				Content: string(message.Content),
+				Content: message.StringContent(),
 			})
 		}
 	}

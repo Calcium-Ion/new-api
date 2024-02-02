@@ -59,7 +59,7 @@ func requestOpenAI2PaLM(textRequest GeneralOpenAIRequest) *PaLMChatRequest {
 	}
 	for _, message := range textRequest.Messages {
 		palmMessage := PaLMChatMessage{
-			Content: string(message.Content),
+			Content: message.StringContent(),
 		}
 		if message.Role == "user" {
 			palmMessage.Author = "0"

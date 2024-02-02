@@ -36,6 +36,14 @@ const (
 	ContentTypeImageURL = "image_url"
 )
 
+func (m Message) StringContent() string {
+	var stringContent string
+	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
+		return stringContent
+	}
+	return string(m.Content)
+}
+
 func (m Message) ParseContent() []MediaMessage {
 	var contentList []MediaMessage
 	var stringContent string
