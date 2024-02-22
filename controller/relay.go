@@ -140,6 +140,8 @@ type GeneralOpenAIRequest struct {
 	Tools            any             `json:"tools,omitempty"`
 	ToolChoice       any             `json:"tool_choice,omitempty"`
 	User             string          `json:"user,omitempty"`
+	LogProbs         bool            `json:"logprobs,omitempty"`
+	TopLogProbs      int             `json:"top_logprobs,omitempty"`
 }
 
 func (r GeneralOpenAIRequest) ParseInput() []string {
