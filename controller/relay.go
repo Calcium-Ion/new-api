@@ -409,12 +409,13 @@ func RelayMidjourney(c *gin.Context) {
 			if err.Code == 30 {
 				err.Result = "当前分组负载已饱和，请稍后再试，或升级账户以提升服务质量。"
 			}
-			c.JSON(400, gin.H{
-				"error": err.Description + " " + err.Result,
+			c.JSON(429, gin.H{
+				"error": fmt.Sprintf("%s %s", err.Description, err.Result),
+				"type":  "upstream_error",
 			})
 		}
 		channelId := c.GetInt("channel_id")
-		common.SysError(fmt.Sprintf("relay error (channel #%d): %s", channelId, err.Result))
+		common.SysError(fmt.Sprintf("relay error (channel #%d): %s", channelId, fmt.Sprintf("%s %s", err.Description, err.Result)))
 		//if shouldDisableChannel(&err.OpenAIError) {
 		//	channelId := c.GetInt("channel_id")
 		//	channelName := c.GetString("channel_name")

@@ -48,7 +48,7 @@ func Distribute() func(c *gin.Context) {
 				err = common.UnmarshalBodyReusable(c, &modelRequest)
 			}
 			if err != nil {
-				abortWithMessage(c, http.StatusBadRequest, "无效的请求: "+err.Error())
+				abortWithMessage(c, http.StatusBadRequest, "无效的请求, "+err.Error())
 				return
 			}
 			if strings.HasPrefix(c.Request.URL.Path, "/v1/moderations") {
