@@ -463,11 +463,8 @@ const ChannelsTable = () => {
         const res = await API.get(`/api/channel/test/${record.id}?model=${model}`);
         const {success, message, time} = res.data;
         if (success) {
-            let newChannels = [...channels];
             record.response_time = time * 1000;
             record.test_time = Date.now() / 1000;
-
-            setChannelFormat(newChannels)
             showInfo(`通道 ${record.name} 测试成功，耗时 ${time.toFixed(2)} 秒。`);
         } else {
             showError(message);

@@ -16,6 +16,7 @@ import (
 )
 
 func testChannel(channel *model.Channel, request ChatRequest) (err error, openaiErr *OpenAIError) {
+	common.SysLog(fmt.Sprintf("testing channel %d with model %s", channel.Id, request.Model))
 	switch channel.Type {
 	case common.ChannelTypePaLM:
 		fallthrough
@@ -113,7 +114,7 @@ func TestChannel(c *gin.Context) {
 		})
 		return
 	}
-	testModel := c.Param("model")
+	testModel := c.Query("model")
 	channel, err := model.GetChannelById(id, true)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
