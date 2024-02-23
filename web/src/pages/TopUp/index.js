@@ -54,6 +54,10 @@ const TopUp = () => {
     };
 
     const preTopUp = async (payment) => {
+        if (!enableOnlineTopUp) {
+            showError('管理员未开启在线充值！');
+            return;
+        }
         if (amount === 0) {
             await getAmount();
         }
@@ -127,6 +131,9 @@ const TopUp = () => {
             status = JSON.parse(status);
             if (status.top_up_link) {
                 setTopUpLink(status.top_up_link);
+            }
+            if (status.enable_online_top_up) {
+                setEnableOnlineTopUp(status.enable_online_topup);
             }
         }
         getUserQuota().then();
@@ -229,6 +236,7 @@ const TopUp = () => {
                                 </Divider>
                                 <Form>
                                     <Form.Input
+                                        disabled={!enableOnlineTopUp}
                                         field={'redemptionCount'}
                                         label={'实付金额：' + renderAmount()}
                                         placeholder='充值数量'
