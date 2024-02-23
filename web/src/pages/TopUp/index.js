@@ -8,8 +8,10 @@ const TopUp = () => {
     const [redemptionCode, setRedemptionCode] = useState('');
     const [topUpCode, setTopUpCode] = useState('');
     const [topUpCount, setTopUpCount] = useState(10);
+    const [minTopupCount, setMinTopUpCount] = useState(1);
     const [amount, setAmount] = useState(0.0);
     const [topUpLink, setTopUpLink] = useState('');
+    const [enableOnlineTopUp, setEnableOnlineTopUp] = useState(false);
     const [userQuota, setUserQuota] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [open, setOpen] = useState(false);
@@ -233,7 +235,16 @@ const TopUp = () => {
                                         name='redemptionCount'
                                         type={'number'}
                                         value={topUpCount}
+                                        suffix={'$'}
+                                        min={1}
+                                        max={100000}
                                         onChange={async (value) => {
+                                            if (value < 1) {
+                                                value = 1;
+                                            }
+                                            if (value > 100000) {
+                                                value = 100000;
+                                            }
                                             setTopUpCount(value);
                                             await getAmount(value);
                                         }}

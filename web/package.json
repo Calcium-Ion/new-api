@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@douyinfe/semi-ui": "^2.46.1",
+    "@douyinfe/semi-icons": "^2.46.1",
     "@visactor/vchart": "~1.8.8",
     "@visactor/react-vchart": "~1.8.8",
     "@visactor/vchart-semi-theme": "~1.8.8",
