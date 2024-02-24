@@ -132,7 +132,7 @@ const TopUp = () => {
             if (status.top_up_link) {
                 setTopUpLink(status.top_up_link);
             }
-            if (status.enable_online_top_up) {
+            if (status.enable_online_topup) {
                 setEnableOnlineTopUp(status.enable_online_topup);
             }
         }
