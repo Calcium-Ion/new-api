@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 

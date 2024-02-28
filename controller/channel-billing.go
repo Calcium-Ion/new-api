@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/model"
+	"one-api/service"
 	"strconv"
 	"time"
 
@@ -92,7 +93,7 @@ func GetResponseBody(method, url string, channel *model.Channel, headers http.He
 	for k := range headers {
 		req.Header.Add(k, headers.Get(k))
 	}
-	res, err := httpClient.Do(req)
+	res, err := service.GetHttpClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +311,7 @@ func updateAllChannelsBalance() error {
 		} else {
 			// err is nil & balance <= 0 means quota is used up
 			if balance <= 0 {
-				disableChannel(channel.Id, channel.Name, "余额不足")
+				service.DisableChannel(channel.Id, channel.Name, "余额不足")
 			}
 		}
 		time.Sleep(common.RequestInterval)

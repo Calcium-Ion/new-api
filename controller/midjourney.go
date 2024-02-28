@@ -10,7 +10,9 @@ import (
 	"log"
 	"net/http"
 	"one-api/common"
+	"one-api/controller/relay"
 	"one-api/model"
+	relay2 "one-api/relay"
 	"strconv"
 	"strings"
 	"time"
@@ -63,7 +65,7 @@ import (
 				req = req.WithContext(ctx)
 
 				req.Header.Set("Content-Type", "application/json")
-				//req.Header.Set("Authorization", "Bearer midjourney-proxy")
+				//req.Header.Set("ApiKey", "Bearer midjourney-proxy")
 				req.Header.Set("mj-api-secret", midjourneyChannel.Key)
 				resp, err := httpClient.Do(req)
 				if err != nil {
@@ -221,7 +223,7 @@ func UpdateMidjourneyTaskBulk() {
 			req = req.WithContext(ctx)
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("mj-api-secret", midjourneyChannel.Key)
-			resp, err := httpClient.Do(req)
+			resp, err := relay.httpClient.Do(req)
 			if err != nil {
 				common.LogError(ctx, fmt.Sprintf("Get Task Do req error: %v", err))
 				continue
@@ -231,7 +233,7 @@ func UpdateMidjourneyTaskBulk() {
 				common.LogError(ctx, fmt.Sprintf("Get Task parse body error: %v", err))
 				continue
 			}
-			var responseItems []Midjourney
+			var responseItems []relay2.Midjourney
 			err = json.Unmarshal(responseBody, &responseItems)
 			if err != nil {
 				common.LogError(ctx, fmt.Sprintf("Get Task parse body error2: %v, body: %s", err, string(responseBody)))
@@ -284,7 +286,7 @@ func UpdateMidjourneyTaskBulk() {
 	}
 }
 
-func checkMjTaskNeedUpdate(oldTask *model.Midjourney, newTask Midjourney) bool {
+func checkMjTaskNeedUpdate(oldTask *model.Midjourney, newTask relay2.Midjourney) bool {
 	if oldTask.Code != 1 {
 		return true
 	}

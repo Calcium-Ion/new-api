@@ -12,6 +12,7 @@ import (
 	"one-api/controller"
 	"one-api/middleware"
 	"one-api/model"
+	"one-api/relay/common"
 	"one-api/router"
 	"os"
 	"strconv"
@@ -105,7 +106,7 @@ func main() {
 		common.SysLog("pprof enabled")
 	}
 
-	controller.InitTokenEncoders()
+	common.InitTokenEncoders()
 
 	// Initialize HTTP server
 	server := gin.New()

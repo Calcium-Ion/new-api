@@ -1,0 +1,52 @@
+package channel
+
+import (
+	"errors"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"io"
+	"net/http"
+	relaycommon "one-api/relay/common"
+	"one-api/service"
+)
+
+func SetupApiRequestHeader(info *relaycommon.RelayInfo, c *gin.Context, req *http.Request) {
+	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
+	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
+	if info.IsStream && c.Request.Header.Get("Accept") == "" {
+		req.Header.Set("Accept", "text/event-stream")
+	}
+}
+
+func DoApiRequest(a Adaptor, c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
+	fullRequestURL, err := a.GetRequestURL(info)
+	if err != nil {
+		return nil, fmt.Errorf("get request url failed: %w", err)
+	}
+	req, err := http.NewRequest(c.Request.Method, fullRequestURL, requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("new request failed: %w", err)
+	}
+	err = a.SetupRequestHeader(c, req, info)
+	if err != nil {
+		return nil, fmt.Errorf("setup request header failed: %w", err)
+	}
+	resp, err := doRequest(c, req)
+	if err != nil {
+		return nil, fmt.Errorf("do request failed: %w", err)
+	}
+	return resp, nil
+}
+
+func doRequest(c *gin.Context, req *http.Request) (*http.Response, error) {
+	resp, err := service.GetHttpClient().Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors.New("resp is nil")
+	}
+	_ = req.Body.Close()
+	_ = c.Request.Body.Close()
+	return resp, nil
+}

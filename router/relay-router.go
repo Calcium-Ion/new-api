@@ -1,10 +1,10 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
 	"one-api/controller"
 	"one-api/middleware"
-
-	"github.com/gin-gonic/gin"
+	"one-api/relay"
 )
 
 func SetRelayRouter(router *gin.Engine) {
@@ -44,7 +44,7 @@ func SetRelayRouter(router *gin.Engine) {
 		relayV1Router.POST("/moderations", controller.Relay)
 	}
 	relayMjRouter := router.Group("/mj")
-	relayMjRouter.GET("/image/:id", controller.RelayMidjourneyImage)
+	relayMjRouter.GET("/image/:id", relay.RelayMidjourneyImage)
 	relayMjRouter.Use(middleware.TokenAuth(), middleware.Distribute())
 	{
 		relayMjRouter.POST("/submit/imagine", controller.RelayMidjourney)
