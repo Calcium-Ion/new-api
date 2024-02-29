@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/dto"
-	relaychannel "one-api/relay/channel"
+	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
 )
 
@@ -26,7 +26,7 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
-	relaychannel.SetupApiRequestHeader(info, c, req)
+	channel.SetupApiRequestHeader(info, c, req)
 	token := getZhipuToken(info.ApiKey)
 	req.Header.Set("Authorization", token)
 	return nil
@@ -40,7 +40,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
-	return relaychannel.DoApiRequest(a, c, info, requestBody)
+	return channel.DoApiRequest(a, c, info, requestBody)
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {

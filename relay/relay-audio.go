@@ -10,9 +10,10 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
-	"one-api/controller"
 	"one-api/dto"
 	"one-api/model"
+	relaycommon "one-api/relay/common"
+	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"strings"
 	"time"
@@ -27,7 +28,7 @@ var availableVoices = []string{
 	"shimmer",
 }
 
-func RelayAudioHelper(c *gin.Context, relayMode int) *controller.OpenAIErrorWithStatusCode {
+func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	tokenId := c.GetInt("token_id")
 	channelType := c.GetInt("channel")
 	channelId := c.GetInt("channel_id")
@@ -35,14 +36,14 @@ func RelayAudioHelper(c *gin.Context, relayMode int) *controller.OpenAIErrorWith
 	group := c.GetString("group")
 	startTime := time.Now()
 
-	var audioRequest AudioRequest
+	var audioRequest dto.TextToSpeechRequest
 	if !strings.HasPrefix(c.Request.URL.Path, "/v1/audio/transcriptions") {
 		err := common.UnmarshalBodyReusable(c, &audioRequest)
 		if err != nil {
 			return service.OpenAIErrorWrapper(err, "bind_request_body_failed", http.StatusBadRequest)
 		}
 	} else {
-		audioRequest = AudioRequest{
+		audioRequest = dto.TextToSpeechRequest{
 			Model: "whisper-1",
 		}
 	}
@@ -109,10 +110,10 @@ func RelayAudioHelper(c *gin.Context, relayMode int) *controller.OpenAIErrorWith
 		baseURL = c.GetString("base_url")
 	}
 
-	fullRequestURL := common.getFullRequestURL(baseURL, requestURL, channelType)
-	if relayMode == RelayModeAudioTranscription && channelType == common.ChannelTypeAzure {
+	fullRequestURL := relaycommon.GetFullRequestURL(baseURL, requestURL, channelType)
+	if relayMode == relayconstant.RelayModeAudioTranscription && channelType == common.ChannelTypeAzure {
 		// https://learn.microsoft.com/en-us/azure/ai-services/openai/whisper-quickstart?tabs=command-line#rest-api
-		apiVersion := common.GetAPIVersion(c)
+		apiVersion := relaycommon.GetAzureAPIVersion(c)
 		fullRequestURL = fmt.Sprintf("%s/openai/deployments/%s/audio/transcriptions?api-version=%s", baseURL, audioRequest.Model, apiVersion)
 	}
 
@@ -123,7 +124,7 @@ func RelayAudioHelper(c *gin.Context, relayMode int) *controller.OpenAIErrorWith
 		return service.OpenAIErrorWrapper(err, "new_request_failed", http.StatusInternalServerError)
 	}
 
-	if relayMode == RelayModeAudioTranscription && channelType == common.ChannelTypeAzure {
+	if relayMode == relayconstant.RelayModeAudioTranscription && channelType == common.ChannelTypeAzure {
 		// https://learn.microsoft.com/en-us/azure/ai-services/openai/whisper-quickstart?tabs=command-line#rest-api
 		apiKey := c.Request.Header.Get("Authorization")
 		apiKey = strings.TrimPrefix(apiKey, "Bearer ")
@@ -136,7 +137,7 @@ func RelayAudioHelper(c *gin.Context, relayMode int) *controller.OpenAIErrorWith
 	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
 	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
 
-	resp, err := controller.httpClient.Do(req)
+	resp, err := service.GetHttpClient().Do(req)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
 	}
@@ -151,7 +152,7 @@ func RelayAudioHelper(c *gin.Context, relayMode int) *controller.OpenAIErrorWith
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return common.relayErrorHandler(resp)
+		return relaycommon.RelayErrorHandler(resp)
 	}
 
 	var audioResponse dto.AudioResponse
@@ -162,10 +163,10 @@ func RelayAudioHelper(c *gin.Context, relayMode int) *controller.OpenAIErrorWith
 			quota := 0
 			var promptTokens = 0
 			if strings.HasPrefix(audioRequest.Model, "tts-1") {
-				quota = service.countAudioToken(audioRequest.Input, audioRequest.Model)
+				quota = service.CountAudioToken(audioRequest.Input, audioRequest.Model)
 				promptTokens = quota
 			} else {
-				quota = service.countAudioToken(audioResponse.Text, audioRequest.Model)
+				quota = service.CountAudioToken(audioResponse.Text, audioRequest.Model)
 			}
 			quota = int(float64(quota) * ratio)
 			if ratio != 0 && quota <= 0 {

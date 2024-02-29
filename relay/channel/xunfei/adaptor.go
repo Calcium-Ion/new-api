@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/dto"
-	relaychannel "one-api/relay/channel"
+	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
@@ -24,7 +24,7 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
-	relaychannel.SetupApiRequestHeader(info, c, req)
+	channel.SetupApiRequestHeader(info, c, req)
 	return nil
 }
 

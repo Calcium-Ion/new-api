@@ -56,9 +56,9 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	if info.BaseUrl == "" {
 		info.BaseUrl = common.ChannelBaseURLs[channelType]
 	}
-	//if info.ChannelType == common.ChannelTypeAzure {
-	//	info.ApiVersion = GetAzureAPIVersion(c)
-	//}
+	if info.ChannelType == common.ChannelTypeAzure {
+		info.ApiVersion = GetAzureAPIVersion(c)
+	}
 	return info
 }
 

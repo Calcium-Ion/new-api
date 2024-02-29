@@ -201,7 +201,7 @@ func CountTokenInput(input any, model string) int {
 	return 0
 }
 
-func countAudioToken(text string, model string) int {
+func CountAudioToken(text string, model string) int {
 	if strings.HasPrefix(model, "tts") {
 		return utf8.RuneCountInString(text)
 	} else {

@@ -26,7 +26,7 @@ func Relay(c *gin.Context) {
 	case relayconstant.RelayModeAudioTranslation:
 		fallthrough
 	case relayconstant.RelayModeAudioTranscription:
-		err = relay.RelayAudioHelper(c, relayMode)
+		err = relay.AudioHelper(c, relayMode)
 	default:
 		err = relay.TextHelper(c)
 	}

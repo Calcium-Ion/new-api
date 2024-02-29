@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/dto"
-	relaychannel "one-api/relay/channel"
+	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
@@ -25,7 +25,7 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
-	relaychannel.SetupApiRequestHeader(info, c, req)
+	channel.SetupApiRequestHeader(info, c, req)
 	req.Header.Set("Authorization", a.Sign)
 	req.Header.Set("X-TC-Action", info.UpstreamModelName)
 	return nil
@@ -50,7 +50,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
-	return relaychannel.DoApiRequest(a, c, info, requestBody)
+	return channel.DoApiRequest(a, c, info, requestBody)
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {

@@ -10,9 +10,9 @@ import (
 	"log"
 	"net/http"
 	"one-api/common"
-	"one-api/controller/relay"
 	"one-api/model"
 	relay2 "one-api/relay"
+	"one-api/service"
 	"strconv"
 	"strings"
 	"time"
@@ -223,7 +223,7 @@ func UpdateMidjourneyTaskBulk() {
 			req = req.WithContext(ctx)
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("mj-api-secret", midjourneyChannel.Key)
-			resp, err := relay.httpClient.Do(req)
+			resp, err := service.GetHttpClient().Do(req)
 			if err != nil {
 				common.LogError(ctx, fmt.Sprintf("Get Task Do req error: %v", err))
 				continue

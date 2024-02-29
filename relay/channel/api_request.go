@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	relaycommon "one-api/relay/common"
+	"one-api/relay/common"
 	"one-api/service"
 )
 
-func SetupApiRequestHeader(info *relaycommon.RelayInfo, c *gin.Context, req *http.Request) {
+func SetupApiRequestHeader(info *common.RelayInfo, c *gin.Context, req *http.Request) {
 	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
 	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
 	if info.IsStream && c.Request.Header.Get("Accept") == "" {
@@ -18,7 +18,7 @@ func SetupApiRequestHeader(info *relaycommon.RelayInfo, c *gin.Context, req *htt
 	}
 }
 
-func DoApiRequest(a Adaptor, c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
+func DoApiRequest(a Adaptor, c *gin.Context, info *common.RelayInfo, requestBody io.Reader) (*http.Response, error) {
 	fullRequestURL, err := a.GetRequestURL(info)
 	if err != nil {
 		return nil, fmt.Errorf("get request url failed: %w", err)

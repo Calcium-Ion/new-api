@@ -12,7 +12,7 @@ import (
 	"one-api/common"
 	"one-api/dto"
 	"one-api/model"
-	relaychannel "one-api/relay/channel"
+	"one-api/relay"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
 	"one-api/service"
@@ -39,7 +39,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	c.Set("base_url", channel.GetBaseURL())
 	meta := relaycommon.GenRelayInfo(c)
 	apiType := constant.ChannelType2APIType(channel.Type)
-	adaptor := relaychannel.GetAdaptor(apiType)
+	adaptor := relay.GetAdaptor(apiType)
 	if adaptor == nil {
 		return fmt.Errorf("invalid api type: %d, adaptor is nil", apiType), nil
 	}

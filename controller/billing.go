@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"one-api/common"
+	"one-api/dto"
 	"one-api/model"
 )
 
@@ -27,7 +28,7 @@ func GetSubscription(c *gin.Context) {
 		expiredTime = 0
 	}
 	if err != nil {
-		openAIError := OpenAIError{
+		openAIError := dto.OpenAIError{
 			Message: err.Error(),
 			Type:    "upstream_error",
 		}
@@ -69,7 +70,7 @@ func GetUsage(c *gin.Context) {
 		quota, err = model.GetUserUsedQuota(userId)
 	}
 	if err != nil {
-		openAIError := OpenAIError{
+		openAIError := dto.OpenAIError{
 			Message: err.Error(),
 			Type:    "new_api_error",
 		}
