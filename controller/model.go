@@ -3,7 +3,9 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"one-api/dto"
+	"one-api/model"
 	"one-api/relay"
 	"one-api/relay/channel/ai360"
 	"one-api/relay/channel/moonshot"
@@ -105,9 +107,25 @@ func init() {
 }
 
 func ListModels(c *gin.Context) {
+	userId := c.GetInt("id")
+	user, err := model.GetUserById(userId, true)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	models := model.GetGroupModels(user.Group)
+	userOpenAiModels := make([]OpenAIModels, 0)
+	for _, s := range models {
+		if _, ok := openAIModelsMap[s]; ok {
+			userOpenAiModels = append(userOpenAiModels, openAIModelsMap[s])
+		}
+	}
 	c.JSON(200, gin.H{
 		"object": "list",
-		"data":   openAIModels,
+		"data":   userOpenAiModels,
 	})
 }
 
