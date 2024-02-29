@@ -9,15 +9,19 @@ import (
 	"one-api/common"
 	"one-api/dto"
 	"one-api/relay/channel"
+	"one-api/relay/channel/ai360"
+	"one-api/relay/channel/moonshot"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
 )
 
 type Adaptor struct {
+	ChannelType int
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
+	a.ChannelType = info.ChannelType
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
@@ -76,7 +80,14 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 }
 
 func (a *Adaptor) GetModelList() []string {
-	return ModelList
+	switch a.ChannelType {
+	case common.ChannelType360:
+		return ai360.ModelList
+	case common.ChannelTypeMoonshot:
+		return moonshot.ModelList
+	default:
+		return ModelList
+	}
 }
 
 func (a *Adaptor) GetChannelName() string {

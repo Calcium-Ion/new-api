@@ -35,9 +35,12 @@ type OpenAIEmbeddingResponse struct {
 
 type ChatCompletionsStreamResponseChoice struct {
 	Delta struct {
-		Content string `json:"content"`
+		Content   string `json:"content"`
+		Role      string `json:"role,omitempty"`
+		ToolCalls any    `json:"tool_calls,omitempty"`
 	} `json:"delta"`
 	FinishReason *string `json:"finish_reason,omitempty"`
+	Index        int     `json:"index,omitempty"`
 }
 
 type ChatCompletionsStreamResponse struct {

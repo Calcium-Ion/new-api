@@ -154,26 +154,29 @@ func CountTokenMessages(messages []dto.Message, model string) (int, error) {
 				for _, m := range arrayContent {
 					if m.Type == "image_url" {
 						var imageTokenNum int
-						if str, ok := m.ImageUrl.(string); ok {
-							imageTokenNum, err = getImageToken(&dto.MessageImageUrl{Url: str, Detail: "auto"})
+						if model == "glm-4v" {
+							imageTokenNum = 1047
 						} else {
-							imageUrlMap := m.ImageUrl.(map[string]interface{})
-							detail, ok := imageUrlMap["detail"]
-							if ok {
-								imageUrlMap["detail"] = detail.(string)
+							if str, ok := m.ImageUrl.(string); ok {
+								imageTokenNum, err = getImageToken(&dto.MessageImageUrl{Url: str, Detail: "auto"})
 							} else {
-								imageUrlMap["detail"] = "auto"
+								imageUrlMap := m.ImageUrl.(map[string]interface{})
+								detail, ok := imageUrlMap["detail"]
+								if ok {
+									imageUrlMap["detail"] = detail.(string)
+								} else {
+									imageUrlMap["detail"] = "auto"
+								}
+								imageUrl := dto.MessageImageUrl{
+									Url:    imageUrlMap["url"].(string),
+									Detail: imageUrlMap["detail"].(string),
+								}
+								imageTokenNum, err = getImageToken(&imageUrl)
 							}
-							imageUrl := dto.MessageImageUrl{
-								Url:    imageUrlMap["url"].(string),
-								Detail: imageUrlMap["detail"].(string),
+							if err != nil {
+								return 0, err
 							}
-							imageTokenNum, err = getImageToken(&imageUrl)
 						}
-						if err != nil {
-							return 0, err
-						}
-
 						tokenNum += imageTokenNum
 						log.Printf("image token num: %d", imageTokenNum)
 					} else {

@@ -199,6 +199,8 @@ const (
 	ChannelTypeFastGPT        = 22
 	ChannelTypeTencent        = 23
 	ChannelTypeGemini         = 24
+	ChannelTypeMoonshot       = 25
+	ChannelTypeZhipu_v4       = 26
 )
 
 var ChannelBaseURLs = []string{
@@ -227,4 +229,6 @@ var ChannelBaseURLs = []string{
 	"https://fastgpt.run/api/openapi",   // 22
 	"https://hunyuan.cloud.tencent.com", //23
 	"",                                  //24
+	"https://api.moonshot.cn",           //25
+	"https://open.bigmodel.cn",          //26
 }
