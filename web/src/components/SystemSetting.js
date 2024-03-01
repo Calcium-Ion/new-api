@@ -34,7 +34,7 @@ const SystemSetting = () => {
         EmailDomainRestrictionEnabled: '',
         EmailDomainWhitelist: '',
         // telegram login
-        TelegramLoginEnabled: '',
+        TelegramOAuthEnabled: '',
         TelegramBotToken: '',
         TelegramBotName: '',
     });
@@ -81,7 +81,7 @@ const SystemSetting = () => {
             case 'EmailVerificationEnabled':
             case 'GitHubOAuthEnabled':
             case 'WeChatAuthEnabled':
-            case 'TelegramLoginEnabled':
+            case 'TelegramOAuthEnabled':
             case 'TurnstileCheckEnabled':
             case 'EmailDomainRestrictionEnabled':
             case 'RegisterEnabled':
@@ -240,7 +240,7 @@ const SystemSetting = () => {
     };
 
     const submitTelegramSettings = async () => {
-        await updateOption('TelegramLoginEnabled', inputs.TelegramLoginEnabled);
+        await updateOption('TelegramOAuthEnabled', inputs.TelegramOAuthEnabled);
         await updateOption('TelegramBotToken', inputs.TelegramBotToken);
         await updateOption('TelegramBotName', inputs.TelegramBotName);
     };
@@ -395,6 +395,12 @@ const SystemSetting = () => {
                             checked={inputs.WeChatAuthEnabled === 'true'}
                             label='允许通过微信登录 & 注册'
                             name='WeChatAuthEnabled'
+                            onChange={handleInputChange}
+                        />
+                        <Form.Checkbox
+                            checked={inputs.TelegramOAuthEnabled === 'true'}
+                            label='允许通过 Telegram 进行登录'
+                            name='TelegramOAuthEnabled'
                             onChange={handleInputChange}
                         />
                     </Form.Group>
@@ -596,25 +602,17 @@ const SystemSetting = () => {
                     <Divider />
                     <Header as='h3'>配置 Telegram 登录</Header>
                     <Form.Group inline>
-                        <Form.Checkbox
-                            checked={inputs.TelegramLoginEnabled === 'true'}
-                            label='允许通过 Telegram 进行登录'
-                            name='TelegramLoginEnabled'
-                            onChange={handleInputChange}
-                        />
                         <Form.Input
                             label='Telegram Bot Token'
                             name='TelegramBotToken'
                             value={inputs.TelegramBotToken}
                             placeholder='输入你的 Telegram Bot Token'
-                            onChange={handleInputChange}
                         />
                         <Form.Input
                             label='Telegram Bot 名称'
                             name='TelegramBotName'
                             value={inputs.TelegramBotName}
                             placeholder='输入你的 Telegram Bot 名称'
-                            onChange={handleInputChange}
                         />
                     </Form.Group>
                     <Form.Button onClick={submitTelegramSettings}>

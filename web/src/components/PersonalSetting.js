@@ -444,6 +444,27 @@ const PersonalSetting = () => {
                             </div>
 
                             <div style={{marginTop: 10}}>
+                                <Typography.Text strong>Telegram</Typography.Text>
+                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                    <div>
+                                        <Input
+                                            value={userState.user && userState.user.telegram_id !== ''?userState.user.telegram_id:'未绑定'}
+                                            readonly={true}
+                                        ></Input>
+                                    </div>
+                                    <div>
+                                        <Button
+                                            disabled={(userState.user && userState.user.telegram_id !== '') || !status.telegram_oauth}
+                                        >
+                                            {
+                                                status.github_oauth?'绑定':'未启用'
+                                            }
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{marginTop: 10}}>
                                 <Space>
                                     <Button onClick={generateAccessToken}>生成系统访问令牌</Button>
                                     <Button onClick={() => {
