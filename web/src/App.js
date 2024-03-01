@@ -29,7 +29,7 @@ const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 function App() {
   const [userState, userDispatch] = useContext(UserContext);
-  const [statusState, statusDispatch] = useContext(StatusContext);
+  // const [statusState, statusDispatch] = useContext(StatusContext);
 
   const loadUser = () => {
     let user = localStorage.getItem('user');
@@ -38,47 +38,9 @@ function App() {
       userDispatch({ type: 'login', payload: data });
     }
   };
-  const loadStatus = async () => {
-    const res = await API.get('/api/status');
-    const { success, data } = res.data;
-    if (success) {
-      localStorage.setItem('status', JSON.stringify(data));
-      statusDispatch({ type: 'set', payload: data });
-      localStorage.setItem('system_name', data.system_name);
-      localStorage.setItem('logo', data.logo);
-      localStorage.setItem('footer_html', data.footer_html);
-      localStorage.setItem('quota_per_unit', data.quota_per_unit);
-      localStorage.setItem('display_in_currency', data.display_in_currency);
-      localStorage.setItem('enable_drawing', data.enable_drawing);
-      localStorage.setItem('enable_data_export', data.enable_data_export);
-      localStorage.setItem('data_export_default_time', data.data_export_default_time);
-      if (data.chat_link) {
-        localStorage.setItem('chat_link', data.chat_link);
-      } else {
-        localStorage.removeItem('chat_link');
-      }
-      if (data.chat_link2) {
-        localStorage.setItem('chat_link2', data.chat_link2);
-      } else {
-        localStorage.removeItem('chat_link2');
-      }
-      // if (
-      //   data.version !== process.env.REACT_APP_VERSION &&
-      //   data.version !== 'v0.0.0' &&
-      //   process.env.REACT_APP_VERSION !== ''
-      // ) {
-      //   showNotice(
-      //     `新版本可用：${data.version}，请使用快捷键 Shift + F5 刷新页面`
-      //   );
-      // }
-    } else {
-      showError('无法正常连接至服务器！');
-    }
-  };
 
   useEffect(() => {
     loadUser();
-    loadStatus().then();
     let systemName = getSystemName();
     if (systemName) {
       document.title = systemName;
