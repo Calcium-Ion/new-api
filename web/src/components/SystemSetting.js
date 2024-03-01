@@ -413,32 +413,6 @@ const SystemSetting = () => {
                         />
                     </Form.Group>
                     <Divider />
-                    <Header as='h3'>配置 Telegram 登录</Header>
-                    <Form.Group inline>
-                        <Form.Checkbox
-                            checked={inputs.TelegramLoginEnabled === 'true'}
-                            label='允许通过 Telegram 进行登录'
-                            name='TelegramLoginEnabled'
-                            onChange={handleInputChange}
-                        />
-                        <Form.Input
-                            label='Telegram Bot Token'
-                            name='TelegramBotToken'
-                            value={inputs.TelegramBotToken}
-                            placeholder='输入你的 Telegram Bot Token'
-                            onChange={handleInputChange}
-                        />
-                        <Form.Input
-                            label='Telegram Bot 名称'
-                            name='TelegramBotName'
-                            value={inputs.TelegramBotName}
-                            placeholder='输入你的 Telegram Bot 名称'
-                            onChange={handleInputChange}
-                        />
-                    </Form.Group>
-                    <Form.Button onClick={submitTelegramSettings}>
-                        保存 Telegram 登录设置
-                    </Form.Button>
                     <Header as='h3'>
                         配置邮箱域名白名单
                         <Header.Subheader>用以防止恶意用户利用临时邮箱批量注册</Header.Subheader>
@@ -618,6 +592,33 @@ const SystemSetting = () => {
                     </Form.Group>
                     <Form.Button onClick={submitWeChat}>
                         保存 WeChat Server 设置
+                    </Form.Button>
+                    <Divider />
+                    <Header as='h3'>配置 Telegram 登录</Header>
+                    <Form.Group inline>
+                        <Form.Checkbox
+                            checked={inputs.TelegramLoginEnabled === 'true'}
+                            label='允许通过 Telegram 进行登录'
+                            name='TelegramLoginEnabled'
+                            onChange={handleInputChange}
+                        />
+                        <Form.Input
+                            label='Telegram Bot Token'
+                            name='TelegramBotToken'
+                            value={inputs.TelegramBotToken}
+                            placeholder='输入你的 Telegram Bot Token'
+                            onChange={handleInputChange}
+                        />
+                        <Form.Input
+                            label='Telegram Bot 名称'
+                            name='TelegramBotName'
+                            value={inputs.TelegramBotName}
+                            placeholder='输入你的 Telegram Bot 名称'
+                            onChange={handleInputChange}
+                        />
+                    </Form.Group>
+                    <Form.Button onClick={submitTelegramSettings}>
+                        保存 Telegram 登录设置
                     </Form.Button>
                     <Divider />
                     <Header as='h3'>

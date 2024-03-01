@@ -5,6 +5,10 @@ BACKEND_DIR = .
 
 all: start-frontend start-backend
 
+build-frontend:
+	@echo "Building frontend..."
+	@cd $(FRONTEND_DIR) && npm install && DISABLE_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat VERSION) npm run build npm run build
+
 # 启动前端开发服务器
 start-frontend:
 	@echo "Starting frontend dev server..."
