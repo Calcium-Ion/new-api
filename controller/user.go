@@ -58,6 +58,23 @@ func Login(c *gin.Context) {
 	setupLogin(&user, c)
 }
 
+// only setup session & cookies
+func setLoginSession(user *model.User, c *gin.Context) {
+	session := sessions.Default(c)
+	session.Set("id", user.Id)
+	session.Set("username", user.Username)
+	session.Set("role", user.Role)
+	session.Set("status", user.Status)
+	err := session.Save()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "无法保存会话信息，请重试",
+			"success": false,
+		})
+		return
+	}
+}
+
 // setup session & cookies and then return user info
 func setupLogin(user *model.User, c *gin.Context) {
 	session := sessions.Default(c)
