@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Divider, Form, Grid, Header, Modal, Message} from 'semantic-ui-react';
-import {API, removeTrailingSlash, showError, verifyJSON} from '../helpers';
+import React, { useEffect, useState } from 'react';
+import { Button, Divider, Form, Grid, Header, Modal, Message } from 'semantic-ui-react';
+import { API, removeTrailingSlash, showError, verifyJSON } from '../helpers';
 
 const SystemSetting = () => {
     let [inputs, setInputs] = useState({
@@ -32,7 +32,11 @@ const SystemSetting = () => {
         TurnstileSecretKey: '',
         RegisterEnabled: '',
         EmailDomainRestrictionEnabled: '',
-        EmailDomainWhitelist: ''
+        EmailDomainWhitelist: '',
+        // telegram login
+        TelegramLoginEnabled: '',
+        TelegramBotToken: '',
+        TelegramBotName: '',
     });
     const [originInputs, setOriginInputs] = useState({});
     let [loading, setLoading] = useState(false);
@@ -42,7 +46,7 @@ const SystemSetting = () => {
 
     const getOptions = async () => {
         const res = await API.get('/api/option/');
-        const {success, message, data} = res.data;
+        const { success, message, data } = res.data;
         if (success) {
             let newInputs = {};
             data.forEach((item) => {
@@ -58,7 +62,7 @@ const SystemSetting = () => {
             setOriginInputs(newInputs);
 
             setEmailDomainWhitelist(newInputs.EmailDomainWhitelist.split(',').map((item) => {
-                return {key: item, text: item, value: item};
+                return { key: item, text: item, value: item };
             }));
         } else {
             showError(message);
@@ -77,6 +81,7 @@ const SystemSetting = () => {
             case 'EmailVerificationEnabled':
             case 'GitHubOAuthEnabled':
             case 'WeChatAuthEnabled':
+            case 'TelegramLoginEnabled':
             case 'TurnstileCheckEnabled':
             case 'EmailDomainRestrictionEnabled':
             case 'RegisterEnabled':
@@ -89,7 +94,7 @@ const SystemSetting = () => {
             key,
             value
         });
-        const {success, message} = res.data;
+        const { success, message } = res.data;
         if (success) {
             if (key === 'EmailDomainWhitelist') {
                 value = value.split(',');
@@ -106,7 +111,7 @@ const SystemSetting = () => {
         setLoading(false);
     };
 
-    const handleInputChange = async (e, {name, value}) => {
+    const handleInputChange = async (e, { name, value }) => {
         if (name === 'PasswordLoginEnabled' && inputs[name] === 'true') {
             // block disabling password login
             setShowPasswordWarningModal(true);
@@ -130,7 +135,7 @@ const SystemSetting = () => {
             name === 'EmailDomainWhitelist' ||
             name === 'TopupGroupRatio'
         ) {
-            setInputs((inputs) => ({...inputs, [name]: value}));
+            setInputs((inputs) => ({ ...inputs, [name]: value }));
         } else {
             await updateOption(name, value);
         }
@@ -234,6 +239,12 @@ const SystemSetting = () => {
         }
     };
 
+    const submitTelegramSettings = async () => {
+        await updateOption('TelegramLoginEnabled', inputs.TelegramLoginEnabled);
+        await updateOption('TelegramBotToken', inputs.TelegramBotToken);
+        await updateOption('TelegramBotName', inputs.TelegramBotName);
+    };
+
     const submitTurnstile = async () => {
         if (originInputs['TurnstileSiteKey'] !== inputs.TurnstileSiteKey) {
             await updateOption('TurnstileSiteKey', inputs.TurnstileSiteKey);
@@ -279,7 +290,7 @@ const SystemSetting = () => {
                     <Form.Button onClick={submitServerAddress}>
                         更新服务器地址
                     </Form.Button>
-                    <Divider/>
+                    <Divider />
                     <Header as='h3'>支付设置（当前仅支持易支付接口，使用上方服务器地址作为回调地址！）</Header>
                     <Form.Group widths='equal'>
                         <Form.Input
@@ -318,7 +329,7 @@ const SystemSetting = () => {
                             label='充值分组倍率'
                             name='TopupGroupRatio'
                             onChange={handleInputChange}
-                            style={{minHeight: 250, fontFamily: 'JetBrains Mono, Consolas'}}
+                            style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
                             autoComplete='new-password'
                             value={inputs.TopupGroupRatio}
                             placeholder='为一个 JSON 文本，键为组名称，值为倍率'
@@ -327,7 +338,7 @@ const SystemSetting = () => {
                     <Form.Button onClick={submitPayAddress}>
                         更新支付设置
                     </Form.Button>
-                    <Divider/>
+                    <Divider />
                     <Header as='h3'>配置登录注册</Header>
                     <Form.Group inline>
                         <Form.Checkbox
@@ -342,7 +353,7 @@ const SystemSetting = () => {
                                 open={showPasswordWarningModal}
                                 onClose={() => setShowPasswordWarningModal(false)}
                                 size={'tiny'}
-                                style={{maxWidth: '450px'}}
+                                style={{ maxWidth: '450px' }}
                             >
                                 <Modal.Header>警告</Modal.Header>
                                 <Modal.Content>
@@ -401,7 +412,33 @@ const SystemSetting = () => {
                             onChange={handleInputChange}
                         />
                     </Form.Group>
-                    <Divider/>
+                    <Divider />
+                    <Header as='h3'>配置 Telegram 登录</Header>
+                    <Form.Group inline>
+                        <Form.Checkbox
+                            checked={inputs.TelegramLoginEnabled === 'true'}
+                            label='允许通过 Telegram 进行登录'
+                            name='TelegramLoginEnabled'
+                            onChange={handleInputChange}
+                        />
+                        <Form.Input
+                            label='Telegram Bot Token'
+                            name='TelegramBotToken'
+                            value={inputs.TelegramBotToken}
+                            placeholder='输入你的 Telegram Bot Token'
+                            onChange={handleInputChange}
+                        />
+                        <Form.Input
+                            label='Telegram Bot 名称'
+                            name='TelegramBotName'
+                            value={inputs.TelegramBotName}
+                            placeholder='输入你的 Telegram Bot 名称'
+                            onChange={handleInputChange}
+                        />
+                    </Form.Group>
+                    <Form.Button onClick={submitTelegramSettings}>
+                        保存 Telegram 登录设置
+                    </Form.Button>
                     <Header as='h3'>
                         配置邮箱域名白名单
                         <Header.Subheader>用以防止恶意用户利用临时邮箱批量注册</Header.Subheader>
@@ -443,13 +480,13 @@ const SystemSetting = () => {
                             autoComplete='new-password'
                             placeholder='输入新的允许的邮箱域名'
                             value={restrictedDomainInput}
-                            onChange={(e, {value}) => {
+                            onChange={(e, { value }) => {
                                 setRestrictedDomainInput(value);
                             }}
                         />
                     </Form.Group>
                     <Form.Button onClick={submitEmailDomainWhitelist}>保存邮箱域名白名单设置</Form.Button>
-                    <Divider/>
+                    <Divider />
                     <Header as='h3'>
                         配置 SMTP
                         <Header.Subheader>用以支持系统的邮件发送</Header.Subheader>
@@ -500,7 +537,7 @@ const SystemSetting = () => {
                         />
                     </Form.Group>
                     <Form.Button onClick={submitSMTP}>保存 SMTP 设置</Form.Button>
-                    <Divider/>
+                    <Divider />
                     <Header as='h3'>
                         配置 GitHub OAuth App
                         <Header.Subheader>
@@ -538,7 +575,7 @@ const SystemSetting = () => {
                     <Form.Button onClick={submitGitHubOAuth}>
                         保存 GitHub OAuth 设置
                     </Form.Button>
-                    <Divider/>
+                    <Divider />
                     <Header as='h3'>
                         配置 WeChat Server
                         <Header.Subheader>
@@ -582,7 +619,7 @@ const SystemSetting = () => {
                     <Form.Button onClick={submitWeChat}>
                         保存 WeChat Server 设置
                     </Form.Button>
-                    <Divider/>
+                    <Divider />
                     <Header as='h3'>
                         配置 Turnstile
                         <Header.Subheader>
