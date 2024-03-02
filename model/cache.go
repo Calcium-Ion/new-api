@@ -291,10 +291,13 @@ func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error
 			}
 		}
 	}
+	// 平滑系数
+	smoothingFactor := 10
+
 	// Calculate the total weight of all channels up to endIdx
 	totalWeight := 0
 	for _, channel := range channels[:endIdx] {
-		totalWeight += channel.GetWeight()
+		totalWeight += channel.GetWeight() + smoothingFactor
 	}
 
 	if totalWeight == 0 {
@@ -307,8 +310,8 @@ func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error
 
 	// Find a channel based on its weight
 	for _, channel := range channels[:endIdx] {
-		randomWeight -= channel.GetWeight()
-		if randomWeight <= 0 {
+		randomWeight -= channel.GetWeight() + smoothingFactor
+		if randomWeight < 0 {
 			return channel, nil
 		}
 	}
