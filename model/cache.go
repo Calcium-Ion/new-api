@@ -291,19 +291,19 @@ func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error
 			}
 		}
 	}
+
 	// 平滑系数
 	smoothingFactor := 10
-
 	// Calculate the total weight of all channels up to endIdx
 	totalWeight := 0
 	for _, channel := range channels[:endIdx] {
 		totalWeight += channel.GetWeight() + smoothingFactor
 	}
 
-	if totalWeight == 0 {
-		// If all weights are 0, select a channel randomly
-		return channels[rand.Intn(endIdx)], nil
-	}
+	//if totalWeight == 0 {
+	//	// If all weights are 0, select a channel randomly
+	//	return channels[rand.Intn(endIdx)], nil
+	//}
 
 	// Generate a random value in the range [0, totalWeight)
 	randomWeight := rand.Intn(totalWeight)
