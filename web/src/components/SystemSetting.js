@@ -133,7 +133,9 @@ const SystemSetting = () => {
             name === 'TurnstileSiteKey' ||
             name === 'TurnstileSecretKey' ||
             name === 'EmailDomainWhitelist' ||
-            name === 'TopupGroupRatio'
+            name === 'TopupGroupRatio' ||
+            name === 'TelegramBotToken' ||
+            name === 'TelegramBotName'
         ) {
             setInputs((inputs) => ({ ...inputs, [name]: value }));
         } else {
@@ -605,12 +607,14 @@ const SystemSetting = () => {
                         <Form.Input
                             label='Telegram Bot Token'
                             name='TelegramBotToken'
+                            onChange={handleInputChange}
                             value={inputs.TelegramBotToken}
                             placeholder='输入你的 Telegram Bot Token'
                         />
                         <Form.Input
                             label='Telegram Bot 名称'
                             name='TelegramBotName'
+                            onChange={handleInputChange}
                             value={inputs.TelegramBotName}
                             placeholder='输入你的 Telegram Bot 名称'
                         />

@@ -21,6 +21,7 @@ import {getQuotaPerUnit, renderQuota, renderQuotaWithPrompt, stringToColor} from
 import EditToken from "../pages/Token/EditToken";
 import EditUser from "../pages/User/EditUser";
 import passwordResetConfirm from "./PasswordResetConfirm";
+import TelegramLoginButton from 'react-telegram-login';
 
 const PersonalSetting = () => {
     const [userState, userDispatch] = useContext(UserContext);
@@ -453,13 +454,11 @@ const PersonalSetting = () => {
                                         ></Input>
                                     </div>
                                     <div>
-                                        <Button
-                                            disabled={(userState.user && userState.user.telegram_id !== '') || !status.telegram_oauth}
-                                        >
-                                            {
-                                                status.github_oauth?'绑定':'未启用'
-                                            }
-                                        </Button>
+                                        {status.telegram_oauth ?
+                                            userState.user.telegram_id !== '' ? <Button disabled={true}>已绑定</Button>
+                                            : <TelegramLoginButton dataAuthUrl="/api/oauth/telegram/bind" botName={status.telegram_bot_name} />
+                                        : <Button disabled={true}>未启用</Button>
+                                        }
                                     </div>
                                 </div>
                             </div>
