@@ -27,6 +27,7 @@ func GetStatus(c *gin.Context) {
 			"wechat_login":             common.WeChatAuthEnabled,
 			"server_address":           common.ServerAddress,
 			"price":                    common.Price,
+			"min_topup":                common.MinTopUp,
 			"turnstile_check":          common.TurnstileCheckEnabled,
 			"turnstile_site_key":       common.TurnstileSiteKey,
 			"top_up_link":              common.TopUpLink,

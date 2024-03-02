@@ -9,14 +9,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// Pay Settings
+
+var PayAddress = ""
+var CustomCallbackAddress = ""
+var EpayId = ""
+var EpayKey = ""
+var Price = 7.3
+var MinTopUp = 1
+
 var StartTime = time.Now().Unix() // unit: second
 var Version = "v0.0.0"            // this hard coding will be replaced automatically when building, no need to manually change
 var SystemName = "New API"
 var ServerAddress = "http://localhost:3000"
-var PayAddress = ""
-var EpayId = ""
-var EpayKey = ""
-var Price = 7.3
 var Footer = ""
 var Logo = ""
 var TopUpLink = ""
