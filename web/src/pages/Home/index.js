@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Card, Grid, Header, Segment } from 'semantic-ui-react';
+import { Card, Col, Row } from '@douyinfe/semi-ui';
 import { API, showError, showNotice, timestamp2string } from '../../helpers';
 import { StatusContext } from '../../context/Status';
 import { marked } from 'marked';
@@ -44,7 +44,7 @@ const Home = () => {
 
     const getStartTimeString = () => {
         const timestamp = statusState?.status?.start_time;
-        return timestamp2string(timestamp);
+        return statusState.status ? timestamp2string(timestamp) : '';
     };
 
     useEffect(() => {
@@ -55,67 +55,63 @@ const Home = () => {
         <>
             {
                 homePageContentLoaded && homePageContent === '' ? <>
-                    <Segment>
-                        <Header as='h3'>系统状况</Header>
-                        <Grid columns={2} stackable>
-                            <Grid.Column>
-                                <Card fluid>
-                                    <Card.Content>
-                                        <Card.Header>系统信息</Card.Header>
-                                        <Card.Meta>系统信息总览</Card.Meta>
-                                        <Card.Description>
-                                            <p>名称：{statusState?.status?.system_name}</p>
-                                            <p>版本：{statusState?.status?.version ? statusState?.status?.version : "unknown"}</p>
-                                            <p>
-                                                源码：
-                                                <a
-                                                    href='https://github.com/songquanpeng/one-api'
-                                                    target='_blank'
-                                                >
-                                                    https://github.com/songquanpeng/one-api
-                                                </a>
-                                            </p>
-                                            <p>启动时间：{getStartTimeString()}</p>
-                                        </Card.Description>
-                                    </Card.Content>
+                   <Card
+                        bordered={false}
+                        headerLine={false}
+                        title='系统状况'
+                        bodyStyle={{padding: '10px 20px'}}
+                        >
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Card
+                                    title='系统信息'
+                                    headerExtraContent={<span style={{ fontSize:'12px', color: 'var(--semi-color-text-1)'}}>系统信息总览</span>}>
+                                      <p>名称：{statusState?.system_name}</p>
+                                      <p>版本：{statusState?.version ? statusState?.version : "unknown"}</p>
+                                      <p>
+                                          源码：
+                                          <a
+                                              href='https://github.com/songquanpeng/one-api'
+                                              target='_blank' rel="noreferrer"
+                                          >
+                                              https://github.com/songquanpeng/one-api
+                                          </a>
+                                      </p>
+                                      <p>启动时间：{getStartTimeString()}</p>
                                 </Card>
-                            </Grid.Column>
-                            <Grid.Column>
-                                <Card fluid>
-                                    <Card.Content>
-                                        <Card.Header>系统配置</Card.Header>
-                                        <Card.Meta>系统配置总览</Card.Meta>
-                                        <Card.Description>
-                                            <p>
-                                                邮箱验证：
-                                                {statusState?.status?.email_verification === true
-                                                    ? '已启用'
-                                                    : '未启用'}
-                                            </p>
-                                            <p>
-                                                GitHub 身份验证：
-                                                {statusState?.status?.github_oauth === true
-                                                    ? '已启用'
-                                                    : '未启用'}
-                                            </p>
-                                            <p>
-                                                微信身份验证：
-                                                {statusState?.status?.wechat_login === true
-                                                    ? '已启用'
-                                                    : '未启用'}
-                                            </p>
-                                            <p>
-                                                Turnstile 用户校验：
-                                                {statusState?.status?.turnstile_check === true
-                                                    ? '已启用'
-                                                    : '未启用'}
-                                            </p>
-                                        </Card.Description>
-                                    </Card.Content>
+                            </Col>
+                            <Col span={12}>
+                                <Card
+                                    title='系统配置'
+                                    headerExtraContent={<span style={{ fontSize:'12px', color: 'var(--semi-color-text-1)'}}>系统配置总览</span>}>
+                                      <p>
+                                          邮箱验证：
+                                          {statusState?.email_verification === true
+                                              ? '已启用'
+                                              : '未启用'}
+                                      </p>
+                                      <p>
+                                          GitHub 身份验证：
+                                          {statusState?.github_oauth === true
+                                              ? '已启用'
+                                              : '未启用'}
+                                      </p>
+                                      <p>
+                                          微信身份验证：
+                                          {statusState?.wechat_login === true
+                                              ? '已启用'
+                                              : '未启用'}
+                                      </p>
+                                      <p>
+                                          Turnstile 用户校验：
+                                          {statusState?.turnstile_check === true
+                                              ? '已启用'
+                                              : '未启用'}
+                                      </p>
                                 </Card>
-                            </Grid.Column>
-                        </Grid>
-                    </Segment>
+                            </Col>
+                        </Row>
+                    </Card>
                 </> : <>
                     {
                         homePageContent.startsWith('https://') ? <iframe
