@@ -7,6 +7,7 @@ import Turnstile from "react-turnstile";
 import { Layout, Card, Image, Form, Button, Divider, Modal } from "@douyinfe/semi-ui";
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
 import Text from "@douyinfe/semi-ui/lib/es/typography/text";
+import TelegramLoginButton from 'react-telegram-login';
 
 import { IconGithubLogo } from '@douyinfe/semi-icons';
 
@@ -101,10 +102,24 @@ const LoginForm = () => {
     }
 
     // 添加Telegram登录处理函数
-    const onTelegramLoginClicked = async () => {
-        // 这里调用后端API进行Telegram登录
-        // 例如: const res = await API.get(`/api/oauth/telegram`);
-        // 根据响应处理登录逻辑
+    const onTelegramLoginClicked = async (response) => {
+        const fields = ["id", "first_name", "last_name", "username", "photo_url", "auth_date", "hash", "lang"];
+        const params = {};
+        fields.forEach((field) => {
+            if (response[field]) {
+                params[field] = response[field];
+            }
+        });
+        const res = await API.get(`/api/oauth/telegram/login`, { params });
+        const { success, message, data } = res.data;
+        if (success) {
+            userDispatch({ type: 'login', payload: data });
+            localStorage.setItem('user', JSON.stringify(data));
+            showSuccess('登录成功！');
+            navigate('/');
+        } else {
+            showError(message);
+        }
     };
 
     return (
@@ -176,13 +191,7 @@ const LoginForm = () => {
                                             {/*)}*/}
 
                                             {status.telegram_oauth ? (
-                                                <Button
-                                                    type='primary'
-                                                    // icon={<IconTelegram/>} // 假设您有Telegram的图标
-                                                    onClick={onTelegramLoginClicked}
-                                                >
-                                                    Telegram登录
-                                                </Button>
+                                                <TelegramLoginButton dataOnauth={onTelegramLoginClicked} botName={status.telegram_bot_name} />
                                             ) : (
                                                 <></>
                                             )}

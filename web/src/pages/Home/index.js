@@ -110,6 +110,12 @@ const Home = () => {
                                                     ? '已启用'
                                                     : '未启用'}
                                             </p>
+                                            <p>
+                                                Telegram 身份验证：
+                                                {statusState?.status?.telegram_oauth === true
+                                                    ? '已启用'
+                                                    : '未启用'}
+                                            </p>
                                         </Card.Description>
                                     </Card.Content>
                                 </Card>

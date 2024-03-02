@@ -288,6 +288,17 @@ func (user *User) FillUserByUsername() error {
 	return nil
 }
 
+func (user *User) FillUserByTelegramId() error {
+	if user.TelegramId == "" {
+		return errors.New("Telegram id 为空！")
+	}
+	err := DB.Where(User{TelegramId: user.TelegramId}).First(user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("该 Telegram 账户未绑定")
+	}
+	return nil
+}
+
 func IsEmailAlreadyTaken(email string) bool {
 	return DB.Where("email = ?", email).Find(&User{}).RowsAffected == 1
 }
@@ -302,6 +313,10 @@ func IsGitHubIdAlreadyTaken(githubId string) bool {
 
 func IsUsernameAlreadyTaken(username string) bool {
 	return DB.Where("username = ?", username).Find(&User{}).RowsAffected == 1
+}
+
+func IsTelegramIdAlreadyTaken(telegramId string) bool {
+	return DB.Where("telegram_id = ?", telegramId).Find(&User{}).RowsAffected == 1
 }
 
 func ResetUserPasswordByEmail(email string, password string) error {
