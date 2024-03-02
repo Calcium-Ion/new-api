@@ -34,7 +34,6 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	userId := c.GetInt("id")
 	group := c.GetString("group")
 	tokenUnlimited := c.GetBool("token_unlimited_quota")
-	upstreamModelName := c.GetString("model_name")
 	startTime := time.Now()
 
 	apiType := constant.ChannelType2APIType(channelType)
@@ -53,7 +52,6 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		ApiType:        apiType,
 		ApiVersion:     c.GetString("api_version"),
 		ApiKey:         strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
-		UpstreamModelName: upstreamModelName,
 	}
 	if info.BaseUrl == "" {
 		info.BaseUrl = common.ChannelBaseURLs[channelType]

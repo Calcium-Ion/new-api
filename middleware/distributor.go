@@ -116,8 +116,6 @@ func Distribute() func(c *gin.Context) {
 				abortWithMessage(c, http.StatusServiceUnavailable, fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道（数据库一致性已被破坏）", userGroup, modelRequest.Model))
 				return
 			}
-
-			c.Set("model_name", modelRequest.Model)
 		}
 		c.Set("channel", channel.Type)
 		c.Set("channel_id", channel.Id)
