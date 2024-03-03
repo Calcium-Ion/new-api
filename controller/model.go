@@ -129,6 +129,13 @@ func ListModels(c *gin.Context) {
 	})
 }
 
+func ChannelListModels(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"object": "list",
+		"data":   openAIModels,
+	})
+}
+
 func RetrieveModel(c *gin.Context) {
 	modelId := c.Param("model")
 	if model, ok := openAIModelsMap[modelId]; ok {

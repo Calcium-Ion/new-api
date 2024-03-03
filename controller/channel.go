@@ -54,8 +54,9 @@ func FixChannelsAbilities(c *gin.Context) {
 func SearchChannels(c *gin.Context) {
 	keyword := c.Query("keyword")
 	group := c.Query("group")
+	modelKeyword := c.Query("model")
 	//idSort, _ := strconv.ParseBool(c.Query("id_sort"))
-	channels, err := model.SearchChannels(keyword, group)
+	channels, err := model.SearchChannels(keyword, group, modelKeyword)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

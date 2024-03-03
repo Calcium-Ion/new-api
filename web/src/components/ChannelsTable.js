@@ -257,6 +257,7 @@ const ChannelsTable = () => {
     const [idSort, setIdSort] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchGroup, setSearchGroup] = useState('');
+    const [searchModel, setSearchModel] = useState('');
     const [searching, setSearching] = useState(false);
     const [updatingBalance, setUpdatingBalance] = useState(false);
     const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
@@ -440,15 +441,15 @@ const ChannelsTable = () => {
         }
     };
 
-    const searchChannels = async (searchKeyword, searchGroup) => {
-        if (searchKeyword === '' && searchGroup === '') {
+    const searchChannels = async (searchKeyword, searchGroup, searchModel) => {
+        if (searchKeyword === '' && searchGroup === '' && searchModel === '') {
             // if keyword is blank, load files instead.
             await loadChannels(0, pageSize, idSort);
             setActivePage(1);
             return;
         }
         setSearching(true);
-        const res = await API.get(`/api/channel/search?keyword=${searchKeyword}&group=${searchGroup}`);
+        const res = await API.get(`/api/channel/search?keyword=${searchKeyword}&group=${searchGroup}&model=${searchModel}`);
         const {success, message, data} = res.data;
         if (success) {
             setChannels(data);
@@ -625,13 +626,12 @@ const ChannelsTable = () => {
     return (
         <>
             <EditChannel refresh={refresh} visible={showEdit} handleClose={closeEdit} editingChannel={editingChannel}/>
-            <Form onSubmit={() => {searchChannels(searchKeyword, searchGroup)}} labelPosition='left'>
-
+            <Form onSubmit={() => {searchChannels(searchKeyword, searchGroup, searchModel)}} labelPosition='left'>
                 <div style={{display: 'flex'}}>
                     <Space>
                         <Form.Input
-                            field='search'
-                            label='关键词'
+                            field='search_keyword'
+                            label='搜索渠道关键词'
                             placeholder='ID，名称和密钥 ...'
                             value={searchKeyword}
                             loading={searching}
@@ -639,10 +639,22 @@ const ChannelsTable = () => {
                                 setSearchKeyword(v.trim())
                             }}
                         />
+                        <Form.Input
+                          field='search_model'
+                          label='模型'
+                          placeholder='模型关键字'
+                          value={searchModel}
+                          loading={searching}
+                          onChange={(v)=>{
+                              setSearchModel(v.trim())
+                          }}
+                        />
                         <Form.Select field="group" label='分组' optionList={groupOptions} onChange={(v) => {
                             setSearchGroup(v)
-                            searchChannels(searchKeyword, v)
+                            searchChannels(searchKeyword, v, searchModel)
                         }}/>
+                        <Button label='查询' type="primary" htmlType="submit" className="btn-margin-right"
+                                style={{marginRight: 8}}>查询</Button>
                     </Space>
                 </div>
             </Form>
