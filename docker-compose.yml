@@ -3,6 +3,7 @@ version: '3.4'
 services:
   new-api:
     image: calciumion/new-api:latest
+    # build: .
     container_name: new-api
     restart: always
     command: --log-dir /app/logs

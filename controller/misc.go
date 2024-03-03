@@ -20,6 +20,8 @@ func GetStatus(c *gin.Context) {
 			"email_verification":       common.EmailVerificationEnabled,
 			"github_oauth":             common.GitHubOAuthEnabled,
 			"github_client_id":         common.GitHubClientId,
+			"telegram_oauth":           common.TelegramOAuthEnabled,
+			"telegram_bot_name":        common.TelegramBotName,
 			"system_name":              common.SystemName,
 			"logo":                     common.Logo,
 			"footer_html":              common.Footer,
