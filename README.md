@@ -37,18 +37,14 @@
 9. 支持渠道**加权随机**
 10. 数据看板
 11. 可设置令牌能调用的模型
+12. 支持Telegram授权登录
 
 ## 模型支持
-此版本支持以下模型：
-1. OpenAI基础模型（gpt-3.5, gpt-4, gpt-4-turbo系列）
-2. dall-e-3
-3. tts-1
-4. 第三方模型 **gps** （gpt-4-gizmo-*）
-5. gemini-pro, gemini-pro-vision
-6. 智谱glm-4, glm-4v识图
+此版本额外支持以下模型：
+1. 第三方模型 **gps** （gpt-4-gizmo-*）
+2. 智谱glm-4v，glm-4v识图
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
-
 
 ## 部署
 ### 基于 Docker 进行部署

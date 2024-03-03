@@ -244,7 +244,7 @@ const SystemSetting = () => {
     };
 
     const submitTelegramSettings = async () => {
-        await updateOption('TelegramOAuthEnabled', inputs.TelegramOAuthEnabled);
+        // await updateOption('TelegramOAuthEnabled', inputs.TelegramOAuthEnabled);
         await updateOption('TelegramBotToken', inputs.TelegramBotToken);
         await updateOption('TelegramBotName', inputs.TelegramBotName);
     };
