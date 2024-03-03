@@ -456,3 +456,9 @@ func GetUsernameById(id int) (username string, err error) {
 	err = DB.Model(&User{}).Where("id = ?", id).Select("username").Find(&username).Error
 	return username, err
 }
+
+func GetUserByEmail(email string) (user *User, err error) {
+	user = &User{}
+	err = DB.Where("email = ?", email).First(user).Error
+	return user, err
+}
