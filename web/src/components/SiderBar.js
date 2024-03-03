@@ -1,8 +1,8 @@
-import React, {useContext, useMemo, useState} from 'react';
+import React, { useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {UserContext} from '../context/User';
 
-import {API, getLogo, getSystemName, isAdmin, isMobile, showSuccess} from '../helpers';
+import { API, getLogo, getSystemName, isAdmin, isMobile, showError, showSuccess } from '../helpers';
 import '../index.css';
 
 import {
@@ -24,11 +24,14 @@ import {Nav, Avatar, Dropdown, Layout} from '@douyinfe/semi-ui';
 
 const SiderBar = () => {
     const [userState, userDispatch] = useContext(UserContext);
+    const defaultIsCollapsed = isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true';
+
     let navigate = useNavigate();
     const [selectedKeys, setSelectedKeys] = useState(['home']);
-    const [showSidebar, setShowSidebar] = useState(false);
     const systemName = getSystemName();
     const logo = getLogo();
+    const [isCollapsed, setIsCollapsed] = useState(defaultIsCollapsed);
+
     const headerButtons = useMemo(() => [
         {
             text: '首页',
@@ -110,15 +113,41 @@ const SiderBar = () => {
         // }
     ], [localStorage.getItem('enable_data_export'), localStorage.getItem('enable_drawing'), localStorage.getItem('chat_link'), isAdmin()]);
 
+    const loadStatus = async () => {
+        const res = await API.get('/api/status');
+        const { success, data } = res.data;
+        if (success) {
+            localStorage.setItem('status', JSON.stringify(data));
+            // statusDispatch({ type: 'set', payload: data });
+            localStorage.setItem('system_name', data.system_name);
+            localStorage.setItem('logo', data.logo);
+            localStorage.setItem('footer_html', data.footer_html);
+            localStorage.setItem('quota_per_unit', data.quota_per_unit);
+            localStorage.setItem('display_in_currency', data.display_in_currency);
+            localStorage.setItem('enable_drawing', data.enable_drawing);
+            localStorage.setItem('enable_data_export', data.enable_data_export);
+            localStorage.setItem('data_export_default_time', data.data_export_default_time);
+            localStorage.setItem('default_collapse_sidebar', data.default_collapse_sidebar);
+            if (data.chat_link) {
+                localStorage.setItem('chat_link', data.chat_link);
+            } else {
+                localStorage.removeItem('chat_link');
+            }
+            if (data.chat_link2) {
+                localStorage.setItem('chat_link2', data.chat_link2);
+            } else {
+                localStorage.removeItem('chat_link2');
+            }
+        } else {
+            showError('无法正常连接至服务器！');
+        }
+    };
 
-    async function logout() {
-        setShowSidebar(false);
-        await API.get('/api/user/logout');
-        showSuccess('注销成功!');
-        userDispatch({type: 'logout'});
-        localStorage.removeItem('user');
-        navigate('/login');
-    }
+    useEffect(() => {
+        loadStatus().then(() => {
+            setIsCollapsed(isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true');
+        });
+    },[])
 
     return (
         <>
@@ -127,7 +156,12 @@ const SiderBar = () => {
                     <Nav
                         // mode={'horizontal'}
                         // bodyStyle={{ height: 100 }}
-                        defaultIsCollapsed={isMobile()}
+                        defaultIsCollapsed={isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true'}
+                        isCollapsed={isCollapsed}
+                        onCollapseChange={collapsed => {
+                            console.log(collapsed);
+                            setIsCollapsed(collapsed);
+                        }}
                         selectedKeys={selectedKeys}
                         renderWrapper={({itemElement, isSubNav, isInSubNav, props}) => {
                             const routerMap = {

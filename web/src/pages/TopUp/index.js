@@ -10,6 +10,7 @@ const TopUp = () => {
     const [topUpCount, setTopUpCount] = useState(10);
     const [minTopupCount, setMinTopUpCount] = useState(1);
     const [amount, setAmount] = useState(0.0);
+    const [minTopUp, setMinTopUp] = useState(1);
     const [topUpLink, setTopUpLink] = useState('');
     const [enableOnlineTopUp, setEnableOnlineTopUp] = useState(false);
     const [userQuota, setUserQuota] = useState(0);
@@ -61,6 +62,10 @@ const TopUp = () => {
         if (amount === 0) {
             await getAmount();
         }
+        if (topUpCount < minTopUp) {
+            showInfo('充值数量不能小于' + minTopUp);
+            return;
+        }
         setPayWay(payment)
         setOpen(true);
     }
@@ -68,6 +73,10 @@ const TopUp = () => {
     const onlineTopUp = async () => {
         if (amount === 0) {
             await getAmount();
+        }
+        if (topUpCount < minTopUp) {
+            showInfo('充值数量不能小于' + minTopUp);
+            return;
         }
         setOpen(false);
         try {
@@ -131,6 +140,9 @@ const TopUp = () => {
             status = JSON.parse(status);
             if (status.top_up_link) {
                 setTopUpLink(status.top_up_link);
+            }
+            if (status.min_topup) {
+                setMinTopUp(status.min_topup);
             }
             if (status.enable_online_topup) {
                 setEnableOnlineTopUp(status.enable_online_topup);
@@ -239,12 +251,13 @@ const TopUp = () => {
                                         disabled={!enableOnlineTopUp}
                                         field={'redemptionCount'}
                                         label={'实付金额：' + renderAmount()}
-                                        placeholder='充值数量'
+                                        placeholder={'充值数量，最低' + minTopUp + '$'}
                                         name='redemptionCount'
                                         type={'number'}
                                         value={topUpCount}
                                         suffix={'$'}
-                                        min={1}
+                                        min={minTopUp}
+                                        defaultValue={minTopUp}
                                         max={100000}
                                         onChange={async (value) => {
                                             if (value < 1) {

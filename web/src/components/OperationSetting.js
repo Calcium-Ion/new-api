@@ -27,6 +27,7 @@ const OperationSetting = () => {
         DataExportEnabled: '',
         DataExportDefaultTime: 'hour',
         DataExportInterval: 5,
+        DefaultCollapseSidebar: '', // 默认折叠侧边栏
         RetryTimes: 0
     });
     const [originInputs, setOriginInputs] = useState({});
@@ -65,6 +66,10 @@ const OperationSetting = () => {
         if (key.endsWith('Enabled')) {
             value = inputs[key] === 'true' ? 'false' : 'true';
         }
+        if (key === 'DefaultCollapseSidebar') {
+            value = inputs[key] === 'true' ? 'false' : 'true';
+        }
+        console.log(key, value)
         const res = await API.put('/api/option/', {
             key,
             value
@@ -79,7 +84,7 @@ const OperationSetting = () => {
     };
 
     const handleInputChange = async (e, {name, value}) => {
-        if (name.endsWith('Enabled') || name === 'DataExportInterval' || name === 'DataExportDefaultTime') {
+        if (name.endsWith('Enabled') || name === 'DataExportInterval' || name === 'DataExportDefaultTime' || name === 'DefaultCollapseSidebar') {
             if (name === 'DataExportDefaultTime') {
                 localStorage.setItem('data_export_default_time', value);
             }
@@ -242,6 +247,12 @@ const OperationSetting = () => {
                             label='启用绘图功能'
                             name='DrawingEnabled'
                             onChange={handleInputChange}
+                        />
+                        <Form.Checkbox
+                          checked={inputs.DefaultCollapseSidebar === 'true'}
+                          label='默认折叠侧边栏'
+                          name='DefaultCollapseSidebar'
+                          onChange={handleInputChange}
                         />
                     </Form.Group>
                     <Form.Button onClick={() => {

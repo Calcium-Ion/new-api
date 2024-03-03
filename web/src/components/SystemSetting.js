@@ -20,8 +20,10 @@ const SystemSetting = () => {
         EpayId: '',
         EpayKey: '',
         Price: 7.3,
+        MinTopUp: 1,
         TopupGroupRatio: '',
         PayAddress: '',
+        CustomCallbackAddress: '',
         Footer: '',
         WeChatAuthEnabled: '',
         WeChatServerAddress: '',
@@ -280,7 +282,7 @@ const SystemSetting = () => {
                         更新服务器地址
                     </Form.Button>
                     <Divider/>
-                    <Header as='h3'>支付设置（当前仅支持易支付接口，使用上方服务器地址作为回调地址！）</Header>
+                    <Header as='h3'>支付设置（当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）</Header>
                     <Form.Group widths='equal'>
                         <Form.Input
                             label='支付地址，不填写则不启用在线支付'
@@ -303,14 +305,31 @@ const SystemSetting = () => {
                             name='EpayKey'
                             onChange={handleInputChange}
                         />
-                        <Form.Input
-                            label='充值价格（x元/美金）'
-                            placeholder='例如：7，就是7元/美金'
-                            value={inputs.Price}
-                            name='Price'
 
-                            min={0}
-                            onChange={handleInputChange}
+                    </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Form.Input
+                          label='回调地址，不填写则使用上方服务器地址作为回调地址'
+                          placeholder='例如：https://yourdomain.com'
+                          value={inputs.CustomCallbackAddress}
+                          name='CustomCallbackAddress'
+                          onChange={handleInputChange}
+                        />
+                        <Form.Input
+                          label='充值价格（x元/美金）'
+                          placeholder='例如：7，就是7元/美金'
+                          value={inputs.Price}
+                          name='Price'
+                          min={0}
+                          onChange={handleInputChange}
+                        />
+                        <Form.Input
+                          label='最低充值数量'
+                          placeholder='例如：2，就是最低充值2$'
+                          value={inputs.MinTopUp}
+                          name='MinTopUp'
+                          min={1}
+                          onChange={handleInputChange}
                         />
                     </Form.Group>
                     <Form.Group widths='equal'>

@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"one-api/common"
 	"one-api/model"
+	"one-api/service"
 	"strconv"
 	"time"
 )
@@ -55,14 +56,14 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": err.Error(), "data": 10})
 		return
 	}
-	if req.Amount < 1 {
-		c.JSON(200, gin.H{"message": "充值金额不能小于1", "data": 10})
+	if req.Amount < common.MinTopUp {
+		c.JSON(200, gin.H{"message": fmt.Sprintf("充值数量不能小于 %d", common.MinTopUp), "data": 10})
 		return
 	}
 
 	id := c.GetInt("id")
 	user, _ := model.GetUserById(id, false)
-	amount := GetAmount(float64(req.Amount), *user)
+	payMoney := GetAmount(float64(req.Amount), *user)
 
 	var payType epay.PurchaseType
 	if req.PaymentMethod == "zfb" {
@@ -72,11 +73,10 @@ func RequestEpay(c *gin.Context) {
 		req.PaymentMethod = "wxpay"
 		payType = epay.WechatPay
 	}
-
+	callBackAddress := service.GetCallbackAddress()
 	returnUrl, _ := url.Parse(common.ServerAddress + "/log")
-	notifyUrl, _ := url.Parse(common.ServerAddress + "/api/user/epay/notify")
+	notifyUrl, _ := url.Parse(callBackAddress + "/api/user/epay/notify")
 	tradeNo := strconv.FormatInt(time.Now().Unix(), 10)
-	payMoney := amount
 	client := GetEpayClient()
 	if client == nil {
 		c.JSON(200, gin.H{"message": "error", "data": "当前管理员未配置支付信息"})
@@ -169,8 +169,8 @@ func RequestAmount(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
 		return
 	}
-	if req.Amount < 1 {
-		c.JSON(200, gin.H{"message": "error", "data": "充值金额不能小于1"})
+	if req.Amount < common.MinTopUp {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", common.MinTopUp)})
 		return
 	}
 	id := c.GetInt("id")

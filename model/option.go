@@ -57,9 +57,11 @@ func InitOptionMap() {
 	common.OptionMap["Logo"] = common.Logo
 	common.OptionMap["ServerAddress"] = ""
 	common.OptionMap["PayAddress"] = ""
+	common.OptionMap["CustomCallbackAddress"] = ""
 	common.OptionMap["EpayId"] = ""
 	common.OptionMap["EpayKey"] = ""
 	common.OptionMap["Price"] = strconv.FormatFloat(common.Price, 'f', -1, 64)
+	common.OptionMap["MinTopUp"] = strconv.Itoa(common.MinTopUp)
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["GitHubClientId"] = ""
 	common.OptionMap["GitHubClientSecret"] = ""
@@ -83,6 +85,7 @@ func InitOptionMap() {
 	common.OptionMap["RetryTimes"] = strconv.Itoa(common.RetryTimes)
 	common.OptionMap["DataExportInterval"] = strconv.Itoa(common.DataExportInterval)
 	common.OptionMap["DataExportDefaultTime"] = common.DataExportDefaultTime
+	common.OptionMap["DefaultCollapseSidebar"] = strconv.FormatBool(common.DefaultCollapseSidebar)
 
 	common.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
@@ -139,7 +142,7 @@ func updateOptionMap(key string, value string) (err error) {
 			common.ImageDownloadPermission = intValue
 		}
 	}
-	if strings.HasSuffix(key, "Enabled") {
+	if strings.HasSuffix(key, "Enabled") || key == "DefaultCollapseSidebar" {
 		boolValue := value == "true"
 		switch key {
 		case "PasswordRegisterEnabled":
@@ -174,6 +177,8 @@ func updateOptionMap(key string, value string) (err error) {
 			common.DrawingEnabled = boolValue
 		case "DataExportEnabled":
 			common.DataExportEnabled = boolValue
+		case "DefaultCollapseSidebar":
+			common.DefaultCollapseSidebar = boolValue
 		}
 	}
 	switch key {
@@ -194,12 +199,16 @@ func updateOptionMap(key string, value string) (err error) {
 		common.ServerAddress = value
 	case "PayAddress":
 		common.PayAddress = value
+	case "CustomCallbackAddress":
+		common.CustomCallbackAddress = value
 	case "EpayId":
 		common.EpayId = value
 	case "EpayKey":
 		common.EpayKey = value
 	case "Price":
 		common.Price, _ = strconv.ParseFloat(value, 64)
+	case "MinTopUp":
+		common.MinTopUp, _ = strconv.Atoi(value)
 	case "TopupGroupRatio":
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":
