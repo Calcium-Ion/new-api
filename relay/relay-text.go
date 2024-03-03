@@ -115,7 +115,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	// pre-consume quota 预消耗配额
 	preConsumedQuota, userQuota, openaiErr := preConsumeQuota(c, preConsumedQuota, relayInfo)
-	if err != nil {
+	if openaiErr != nil {
 		return openaiErr
 	}
 
@@ -183,7 +183,7 @@ func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommo
 	if err != nil {
 		return 0, 0, service.OpenAIErrorWrapper(err, "get_user_quota_failed", http.StatusInternalServerError)
 	}
-	if userQuota < 0 || userQuota-preConsumedQuota < 0 {
+	if userQuota <= 0 || userQuota-preConsumedQuota < 0 {
 		return 0, 0, service.OpenAIErrorWrapper(errors.New("user quota is not enough"), "insufficient_user_quota", http.StatusForbidden)
 	}
 	err = model.CacheDecreaseUserQuota(relayInfo.UserId, preConsumedQuota)
