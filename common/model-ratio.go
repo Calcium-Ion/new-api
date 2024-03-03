@@ -83,6 +83,7 @@ var ModelRatio = map[string]float64{
 	"SparkDesk-v1.1":            1.2858, // ￥0.018 / 1k tokens
 	"SparkDesk-v2.1":            1.2858, // ￥0.018 / 1k tokens
 	"SparkDesk-v3.1":            1.2858, // ￥0.018 / 1k tokens
+	"SparkDesk-v3.5":            1.2858, // ￥0.018 / 1k tokens
 	"360GPT_S2_V9":              0.8572, // ¥0.012 / 1k tokens
 	"embedding-bert-512-v1":     0.0715, // ¥0.001 / 1k tokens
 	"embedding_s1_v1":           0.0715, // ¥0.001 / 1k tokens
