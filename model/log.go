@@ -85,7 +85,7 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 	}
 	if common.DataExportEnabled {
 		common.SafeGoroutine(func() {
-			LogQuotaData(userId, username, modelName, quota, common.GetTimestamp())
+			LogQuotaData(userId, username, modelName, quota, common.GetTimestamp(), promptTokens+completionTokens)
 		})
 	}
 }
