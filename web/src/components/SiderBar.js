@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {UserContext} from '../context/User';
+import { StatusContext } from '../context/Status';
 
 import { API, getLogo, getSystemName, isAdmin, isMobile, showError, showSuccess } from '../helpers';
 import '../index.css';
@@ -24,6 +25,7 @@ import {Nav, Avatar, Dropdown, Layout} from '@douyinfe/semi-ui';
 
 const SiderBar = () => {
     const [userState, userDispatch] = useContext(UserContext);
+    const [statusState, statusDispatch] = useContext(StatusContext);
     const defaultIsCollapsed = isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true';
 
     let navigate = useNavigate();
@@ -118,7 +120,7 @@ const SiderBar = () => {
         const { success, data } = res.data;
         if (success) {
             localStorage.setItem('status', JSON.stringify(data));
-            // statusDispatch({ type: 'set', payload: data });
+            statusDispatch({ type: 'set', payload: data });
             localStorage.setItem('system_name', data.system_name);
             localStorage.setItem('logo', data.logo);
             localStorage.setItem('footer_html', data.footer_html);

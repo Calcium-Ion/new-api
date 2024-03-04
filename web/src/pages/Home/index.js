@@ -5,7 +5,7 @@ import { StatusContext } from '../../context/Status';
 import { marked } from 'marked';
 
 const Home = () => {
-    const [statusState, statusDispatch] = useContext(StatusContext);
+    const [statusState] = useContext(StatusContext);
     const [homePageContentLoaded, setHomePageContentLoaded] = useState(false);
     const [homePageContent, setHomePageContent] = useState('');
 
@@ -66,8 +66,8 @@ const Home = () => {
                                 <Card
                                     title='系统信息'
                                     headerExtraContent={<span style={{ fontSize:'12px', color: 'var(--semi-color-text-1)'}}>系统信息总览</span>}>
-                                      <p>名称：{statusState?.system_name}</p>
-                                      <p>版本：{statusState?.version ? statusState?.version : "unknown"}</p>
+                                      <p>名称：{statusState?.status?.system_name}</p>
+                                      <p>版本：{statusState?.status?.version ? statusState?.status?.version : "unknown"}</p>
                                       <p>
                                           源码：
                                           <a
@@ -86,27 +86,19 @@ const Home = () => {
                                     headerExtraContent={<span style={{ fontSize:'12px', color: 'var(--semi-color-text-1)'}}>系统配置总览</span>}>
                                       <p>
                                           邮箱验证：
-                                          {statusState?.email_verification === true
-                                              ? '已启用'
-                                              : '未启用'}
+                                          {statusState?.status?.email_verification === true ? '已启用': '未启用'}
                                       </p>
                                       <p>
                                           GitHub 身份验证：
-                                          {statusState?.github_oauth === true
-                                              ? '已启用'
-                                              : '未启用'}
+                                          {statusState?.status?.github_oauth === true ? '已启用' : '未启用'}
                                       </p>
                                       <p>
                                           微信身份验证：
-                                          {statusState?.wechat_login === true
-                                              ? '已启用'
-                                              : '未启用'}
+                                          {statusState?.status?.wechat_login === true ? '已启用' : '未启用'}
                                       </p>
                                       <p>
                                           Turnstile 用户校验：
-                                          {statusState?.turnstile_check === true
-                                              ? '已启用'
-                                              : '未启用'}
+                                          {statusState?.status?.turnstile_check === true ? '已启用' : '未启用'}
                                       </p>
                                 </Card>
                             </Col>
