@@ -15,6 +15,7 @@ type QuotaData struct {
 	Username  string `json:"username" gorm:"index:idx_qdt_model_user_name,priority:2;size:64;default:''"`
 	ModelName string `json:"model_name" gorm:"index:idx_qdt_model_user_name,priority:1;size:64;default:''"`
 	CreatedAt int64  `json:"created_at" gorm:"bigint;index:idx_qdt_created_at,priority:2"`
+	TokenUsed int    `json:"token_used" gorm:"default:0"`
 	Count     int    `json:"count" gorm:"default:0"`
 	Quota     int    `json:"quota" gorm:"default:0"`
 }
@@ -38,7 +39,7 @@ func UpdateQuotaData() {
 var CacheQuotaData = make(map[string]*QuotaData)
 var CacheQuotaDataLock = sync.Mutex{}
 
-func logQuotaDataCache(userId int, username string, modelName string, quota int, createdAt int64) {
+func logQuotaDataCache(userId int, username string, modelName string, quota int, createdAt int64, tokenUsed int) {
 	key := fmt.Sprintf("%d-%s-%s-%d", userId, username, modelName, createdAt)
 	quotaData, ok := CacheQuotaData[key]
 	if ok {
@@ -52,18 +53,19 @@ func logQuotaDataCache(userId int, username string, modelName string, quota int,
 			CreatedAt: createdAt,
 			Count:     1,
 			Quota:     quota,
+			TokenUsed: tokenUsed,
 		}
 	}
 	CacheQuotaData[key] = quotaData
 }
 
-func LogQuotaData(userId int, username string, modelName string, quota int, createdAt int64) {
+func LogQuotaData(userId int, username string, modelName string, quota int, createdAt int64, tokenUsed int) {
 	// 只精确到小时
 	createdAt = createdAt - (createdAt % 3600)
 
 	CacheQuotaDataLock.Lock()
 	defer CacheQuotaDataLock.Unlock()
-	logQuotaDataCache(userId, username, modelName, quota, createdAt)
+	logQuotaDataCache(userId, username, modelName, quota, createdAt, tokenUsed)
 }
 
 func SaveQuotaDataCache() {

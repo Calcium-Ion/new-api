@@ -59,6 +59,7 @@ func getAndValidateTextRequest(c *gin.Context, relayInfo *relaycommon.RelayInfo)
 		}
 	}
 	relayInfo.IsStream = textRequest.Stream
+	relayInfo.UpstreamModelName = textRequest.Model
 	return textRequest, nil
 }
 
@@ -114,7 +115,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	// pre-consume quota 预消耗配额
 	preConsumedQuota, userQuota, openaiErr := preConsumeQuota(c, preConsumedQuota, relayInfo)
-	if err != nil {
+	if openaiErr != nil {
 		return openaiErr
 	}
 
@@ -168,6 +169,8 @@ func getPromptTokens(textRequest *dto.GeneralOpenAIRequest, info *relaycommon.Re
 		promptTokens, err = service.CountTokenInput(textRequest.Prompt, textRequest.Model), nil
 	case relayconstant.RelayModeModerations:
 		promptTokens, err = service.CountTokenInput(textRequest.Input, textRequest.Model), nil
+	case relayconstant.RelayModeEmbeddings:
+		promptTokens, err = service.CountTokenInput(textRequest.Input, textRequest.Model), nil
 	default:
 		err = errors.New("unknown relay mode")
 		promptTokens = 0
@@ -182,7 +185,7 @@ func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommo
 	if err != nil {
 		return 0, 0, service.OpenAIErrorWrapper(err, "get_user_quota_failed", http.StatusInternalServerError)
 	}
-	if userQuota < 0 || userQuota-preConsumedQuota < 0 {
+	if userQuota <= 0 || userQuota-preConsumedQuota < 0 {
 		return 0, 0, service.OpenAIErrorWrapper(errors.New("user quota is not enough"), "insufficient_user_quota", http.StatusForbidden)
 	}
 	err = model.CacheDecreaseUserQuota(relayInfo.UserId, preConsumedQuota)

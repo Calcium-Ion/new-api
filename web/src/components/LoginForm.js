@@ -1,14 +1,15 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {Link, useNavigate, useSearchParams} from 'react-router-dom';
-import {UserContext} from '../context/User';
-import {API, getLogo, isMobile, showError, showInfo, showSuccess, showWarning} from '../helpers';
-import {onGitHubOAuthClicked} from './utils';
+import React, { useContext, useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { UserContext } from '../context/User';
+import { API, getLogo, isMobile, showError, showInfo, showSuccess, showWarning } from '../helpers';
+import { onGitHubOAuthClicked } from './utils';
 import Turnstile from "react-turnstile";
-import {Layout, Card, Image, Form, Button, Divider, Modal} from "@douyinfe/semi-ui";
+import { Layout, Card, Image, Form, Button, Divider, Modal } from "@douyinfe/semi-ui";
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
 import Text from "@douyinfe/semi-ui/lib/es/typography/text";
+import TelegramLoginButton from 'react-telegram-login';
 
-import {IconGithubLogo} from '@douyinfe/semi-icons';
+import { IconGithubLogo } from '@douyinfe/semi-icons';
 
 const LoginForm = () => {
     const [inputs, setInputs] = useState({
@@ -18,7 +19,7 @@ const LoginForm = () => {
     });
     const [searchParams, setSearchParams] = useSearchParams();
     const [submitted, setSubmitted] = useState(false);
-    const {username, password} = inputs;
+    const { username, password } = inputs;
     const [userState, userDispatch] = useContext(UserContext);
     const [turnstileEnabled, setTurnstileEnabled] = useState(false);
     const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
@@ -56,9 +57,9 @@ const LoginForm = () => {
         const res = await API.get(
             `/api/oauth/wechat?code=${inputs.wechat_verification_code}`
         );
-        const {success, message, data} = res.data;
+        const { success, message, data } = res.data;
         if (success) {
-            userDispatch({type: 'login', payload: data});
+            userDispatch({ type: 'login', payload: data });
             localStorage.setItem('user', JSON.stringify(data));
             navigate('/');
             showSuccess('登录成功！');
@@ -69,7 +70,7 @@ const LoginForm = () => {
     };
 
     function handleChange(name, value) {
-        setInputs((inputs) => ({...inputs, [name]: value}));
+        setInputs((inputs) => ({ ...inputs, [name]: value }));
     }
 
     async function handleSubmit(e) {
@@ -83,13 +84,13 @@ const LoginForm = () => {
                 username,
                 password
             });
-            const {success, message, data} = res.data;
+            const { success, message, data } = res.data;
             if (success) {
-                userDispatch({type: 'login', payload: data});
+                userDispatch({ type: 'login', payload: data });
                 localStorage.setItem('user', JSON.stringify(data));
                 showSuccess('登录成功！');
                 if (username === 'root' && password === '123456') {
-                    Modal.error({title: '您正在使用默认密码！', content: '请立刻修改默认密码！', centered: true});
+                    Modal.error({ title: '您正在使用默认密码！', content: '请立刻修改默认密码！', centered: true });
                 }
                 navigate('/token');
             } else {
@@ -100,16 +101,37 @@ const LoginForm = () => {
         }
     }
 
+    // 添加Telegram登录处理函数
+    const onTelegramLoginClicked = async (response) => {
+        const fields = ["id", "first_name", "last_name", "username", "photo_url", "auth_date", "hash", "lang"];
+        const params = {};
+        fields.forEach((field) => {
+            if (response[field]) {
+                params[field] = response[field];
+            }
+        });
+        const res = await API.get(`/api/oauth/telegram/login`, { params });
+        const { success, message, data } = res.data;
+        if (success) {
+            userDispatch({ type: 'login', payload: data });
+            localStorage.setItem('user', JSON.stringify(data));
+            showSuccess('登录成功！');
+            navigate('/');
+        } else {
+            showError(message);
+        }
+    };
+
     return (
         <div>
             <Layout>
                 <Layout.Header>
                 </Layout.Header>
                 <Layout.Content>
-                    <div style={{justifyContent: 'center', display: "flex", marginTop: 120}}>
-                        <div style={{width: 500}}>
+                    <div style={{ justifyContent: 'center', display: "flex", marginTop: 120 }}>
+                        <div style={{ width: 500 }}>
                             <Card>
-                                <Title heading={2} style={{textAlign: 'center'}}>
+                                <Title heading={2} style={{ textAlign: 'center' }}>
                                     用户登录
                                 </Title>
                                 <Form>
@@ -129,12 +151,12 @@ const LoginForm = () => {
                                         onChange={(value) => handleChange('password', value)}
                                     />
 
-                                    <Button theme='solid' style={{width: '100%'}} type={'primary'} size='large'
-                                            htmlType={'submit'} onClick={handleSubmit}>
+                                    <Button theme='solid' style={{ width: '100%' }} type={'primary'} size='large'
+                                        htmlType={'submit'} onClick={handleSubmit}>
                                         登录
                                     </Button>
                                 </Form>
-                                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: 20}}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
                                     <Text>
                                         没有账号请先 <Link to='/register'>注册账号</Link>
                                     </Text>
@@ -142,16 +164,16 @@ const LoginForm = () => {
                                         忘记密码 <Link to='/reset'>点击重置</Link>
                                     </Text>
                                 </div>
-                                {status.github_oauth || status.wechat_login ? (
+                                {status.github_oauth || status.wechat_login || status.telegram_oauth ? (
                                     <>
                                         <Divider margin='12px' align='center'>
                                             第三方登录
                                         </Divider>
-                                        <div style={{display: 'flex', justifyContent: 'center', marginTop: 20}}>
+                                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
                                             {status.github_oauth ? (
                                                 <Button
                                                     type='primary'
-                                                    icon={<IconGithubLogo/>}
+                                                    icon={<IconGithubLogo />}
                                                     onClick={() => onGitHubOAuthClicked(status.github_client_id)}
                                                 />
                                             ) : (
@@ -167,6 +189,12 @@ const LoginForm = () => {
                                             {/*) : (*/}
                                             {/*    <></>*/}
                                             {/*)}*/}
+
+                                            {status.telegram_oauth ? (
+                                                <TelegramLoginButton dataOnauth={onTelegramLoginClicked} botName={status.telegram_bot_name} />
+                                            ) : (
+                                                <></>
+                                            )}
                                         </div>
                                     </>
                                 ) : (
@@ -208,7 +236,7 @@ const LoginForm = () => {
                                 {/*</Modal>*/}
                             </Card>
                             {turnstileEnabled ? (
-                                <div style={{display: 'flex', justifyContent: 'center', marginTop: 20}}>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
                                     <Turnstile
                                         sitekey={turnstileSiteKey}
                                         onVerify={(token) => {
