@@ -241,7 +241,7 @@ const EditChannel = (props) => {
 
     const addCustomModel = () => {
         if (customModel.trim() === '') return;
-        if (inputs.models.includes(customModel)) return;
+        if (inputs.models.includes(customModel)) return showError("该模型已存在！");
         let localModels = [...inputs.models];
         localModels.push(customModel);
         let localModelOptions = [];
