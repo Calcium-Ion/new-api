@@ -454,7 +454,7 @@ const EditChannel = (props) => {
                             placeholder='输入自定义模型名称'
                             value={customModel}
                             onChange={(value) => {
-                                setCustomModel(value);
+                                setCustomModel(value.trim());
                             }}
                         />
                     </div>
