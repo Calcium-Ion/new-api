@@ -244,7 +244,7 @@ func zhipuHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStat
 	}
 	if !zhipuResponse.Success {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: zhipuResponse.Msg,
 				Type:    "zhipu_error",
 				Param:   "",

@@ -127,8 +127,8 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	}
 	if textResponse.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: textResponse.Error,
-			StatusCode:  resp.StatusCode,
+			Error:      textResponse.Error,
+			StatusCode: resp.StatusCode,
 		}, nil
 	}
 	// Reset response body

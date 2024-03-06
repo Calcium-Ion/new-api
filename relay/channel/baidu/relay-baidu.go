@@ -173,7 +173,7 @@ func baiduHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStat
 	}
 	if baiduResponse.ErrorMsg != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: baiduResponse.ErrorMsg,
 				Type:    "baidu_error",
 				Param:   "",
@@ -209,7 +209,7 @@ func baiduEmbeddingHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErro
 	}
 	if baiduResponse.ErrorMsg != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: baiduResponse.ErrorMsg,
 				Type:    "baidu_error",
 				Param:   "",

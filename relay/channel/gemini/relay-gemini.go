@@ -246,7 +246,7 @@ func geminiChatHandler(c *gin.Context, resp *http.Response, promptTokens int, mo
 	}
 	if len(geminiResponse.Candidates) == 0 {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: "No candidates returned",
 				Type:    "server_error",
 				Param:   "",

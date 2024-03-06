@@ -38,24 +38,24 @@ func Relay(c *gin.Context) {
 			retryTimes = common.RetryTimes
 		}
 		if retryTimes > 0 {
-			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s?retry=%d&error=%s", c.Request.URL.Path, retryTimes-1, err.Message))
+			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s?retry=%d&error=%s", c.Request.URL.Path, retryTimes-1, err.Error.Message))
 		} else {
 			if err.StatusCode == http.StatusTooManyRequests {
-				//err.OpenAIError.Message = "当前分组上游负载已饱和，请稍后再试"
+				//err.Error.Message = "当前分组上游负载已饱和，请稍后再试"
 			}
-			err.OpenAIError.Message = common.MessageWithRequestId(err.OpenAIError.Message, requestId)
+			err.Error.Message = common.MessageWithRequestId(err.Error.Message, requestId)
 			c.JSON(err.StatusCode, gin.H{
-				"error": err.OpenAIError,
+				"error": err.Error,
 			})
 		}
 		channelId := c.GetInt("channel_id")
 		autoBan := c.GetBool("auto_ban")
-		common.LogError(c.Request.Context(), fmt.Sprintf("relay error (channel #%d): %s", channelId, err.Message))
+		common.LogError(c.Request.Context(), fmt.Sprintf("relay error (channel #%d): %s", channelId, err.Error.Message))
 		// https://platform.openai.com/docs/guides/error-codes/api-errors
-		if service.ShouldDisableChannel(&err.OpenAIError, err.StatusCode) && autoBan {
+		if service.ShouldDisableChannel(&err.Error, err.StatusCode) && autoBan {
 			channelId := c.GetInt("channel_id")
 			channelName := c.GetString("channel_name")
-			service.DisableChannel(channelId, channelName, err.Message)
+			service.DisableChannel(channelId, channelName, err.Error.Message)
 		}
 	}
 }
@@ -110,7 +110,7 @@ func RelayMidjourney(c *gin.Context) {
 		}
 		channelId := c.GetInt("channel_id")
 		common.SysError(fmt.Sprintf("relay error (channel #%d): %s", channelId, fmt.Sprintf("%s %s", err.Description, err.Result)))
-		//if shouldDisableChannel(&err.OpenAIError) {
+		//if shouldDisableChannel(&err.Error) {
 		//	channelId := c.GetInt("channel_id")
 		//	channelName := c.GetString("channel_name")
 		//	disableChannel(channelId, channelName, err.Result)

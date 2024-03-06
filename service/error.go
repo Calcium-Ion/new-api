@@ -1,9 +1,13 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"one-api/common"
 	"one-api/dto"
+	"strconv"
 	"strings"
 )
 
@@ -23,7 +27,42 @@ func OpenAIErrorWrapper(err error, code string, statusCode int) *dto.OpenAIError
 		Code:    code,
 	}
 	return &dto.OpenAIErrorWithStatusCode{
-		OpenAIError: openAIError,
-		StatusCode:  statusCode,
+		Error:      openAIError,
+		StatusCode: statusCode,
 	}
+}
+
+func RelayErrorHandler(resp *http.Response) (errWithStatusCode *dto.OpenAIErrorWithStatusCode) {
+	errWithStatusCode = &dto.OpenAIErrorWithStatusCode{
+		StatusCode: resp.StatusCode,
+		Error: dto.OpenAIError{
+			Message: "",
+			Type:    "upstream_error",
+			Code:    "bad_response_status_code",
+			Param:   strconv.Itoa(resp.StatusCode),
+		},
+	}
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return
+	}
+	var errResponse dto.GeneralErrorResponse
+	err = json.Unmarshal(responseBody, &errResponse)
+	if err != nil {
+		return
+	}
+	if errResponse.Error.Message != "" {
+		// OpenAI format error, so we override the default one
+		errWithStatusCode.Error = errResponse.Error
+	} else {
+		errWithStatusCode.Error.Message = errResponse.ToMessage()
+	}
+	if errWithStatusCode.Error.Message == "" {
+		errWithStatusCode.Error.Message = fmt.Sprintf("bad response status code %d", resp.StatusCode)
+	}
+	return
 }

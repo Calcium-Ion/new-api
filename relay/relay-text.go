@@ -2,6 +2,7 @@ package relay
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -148,10 +149,19 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	}
 
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
+	}
 	relayInfo.IsStream = relayInfo.IsStream || strings.HasPrefix(resp.Header.Get("Content-Type"), "text/event-stream")
+
+	if resp.StatusCode != http.StatusOK {
+		returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
+		return service.RelayErrorHandler(resp)
+	}
 
 	usage, openaiErr := adaptor.DoResponse(c, resp, relayInfo)
 	if openaiErr != nil {
+		returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
 		return openaiErr
 	}
 	postConsumeQuota(c, relayInfo, *textRequest, usage, ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, modelPrice)
@@ -216,6 +226,18 @@ func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommo
 		}
 	}
 	return preConsumedQuota, userQuota, nil
+}
+
+func returnPreConsumedQuota(c *gin.Context, tokenId int, userQuota int, preConsumedQuota int) {
+	if preConsumedQuota != 0 {
+		go func(ctx context.Context) {
+			// return pre-consumed quota
+			err := model.PostConsumeTokenQuota(tokenId, userQuota, -preConsumedQuota, 0, false)
+			if err != nil {
+				common.SysError("error return pre-consumed quota: " + err.Error())
+			}
+		}(c)
+	}
 }
 
 func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, textRequest dto.GeneralOpenAIRequest, usage *dto.Usage, ratio float64, preConsumedQuota int, userQuota int, modelRatio float64, groupRatio float64, modelPrice float64) {

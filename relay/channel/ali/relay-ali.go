@@ -71,7 +71,7 @@ func aliEmbeddingHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorW
 
 	if aliResponse.Code != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: aliResponse.Message,
 				Type:    aliResponse.Code,
 				Param:   aliResponse.RequestId,
@@ -236,7 +236,7 @@ func aliHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatus
 	}
 	if aliResponse.Code != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: aliResponse.Message,
 				Type:    aliResponse.Code,
 				Param:   aliResponse.RequestId,

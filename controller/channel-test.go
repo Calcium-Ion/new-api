@@ -24,6 +24,9 @@ import (
 )
 
 func testChannel(channel *model.Channel, testModel string) (err error, openaiErr *dto.OpenAIError) {
+	if channel.Type == common.ChannelTypeMidjourney {
+		return errors.New("midjourney channel test is not supported"), nil
+	}
 	common.SysLog(fmt.Sprintf("testing channel %d with model %s", channel.Id, testModel))
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -68,11 +71,11 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	}
 	if resp.StatusCode != http.StatusOK {
 		err := relaycommon.RelayErrorHandler(resp)
-		return fmt.Errorf("status code %d: %s", resp.StatusCode, err.OpenAIError.Message), &err.OpenAIError
+		return fmt.Errorf("status code %d: %s", resp.StatusCode, err.Error.Message), &err.Error
 	}
 	usage, respErr := adaptor.DoResponse(c, resp, meta)
 	if respErr != nil {
-		return fmt.Errorf("%s", respErr.OpenAIError.Message), &respErr.OpenAIError
+		return fmt.Errorf("%s", respErr.Error.Message), &respErr.Error
 	}
 	if usage == nil {
 		return errors.New("usage is nil"), nil

@@ -24,7 +24,7 @@ func stopReasonClaude2OpenAI(reason string) string {
 	}
 }
 
-func requestOpenAI2Claude(textRequest dto.GeneralOpenAIRequest) *ClaudeRequest {
+func requestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeRequest {
 	claudeRequest := ClaudeRequest{
 		Model:             textRequest.Model,
 		Prompt:            "",
@@ -44,13 +44,19 @@ func requestOpenAI2Claude(textRequest dto.GeneralOpenAIRequest) *ClaudeRequest {
 		} else if message.Role == "assistant" {
 			prompt += fmt.Sprintf("\n\nAssistant: %s", message.Content)
 		} else if message.Role == "system" {
-			prompt += fmt.Sprintf("\n\nSystem: %s", message.Content)
+			if prompt == "" {
+				prompt = message.StringContent()
+			}
 		}
 	}
 	prompt += "\n\nAssistant:"
 	claudeRequest.Prompt = prompt
 	return &claudeRequest
 }
+
+//func requestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) *dto.GeneralOpenAIRequest {
+//
+//}
 
 func streamResponseClaude2OpenAI(claudeResponse *ClaudeResponse) *dto.ChatCompletionsStreamResponse {
 	var choice dto.ChatCompletionsStreamResponseChoice
@@ -167,7 +173,7 @@ func claudeHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	}
 	if claudeResponse.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: claudeResponse.Error.Message,
 				Type:    claudeResponse.Error.Type,
 				Param:   "",

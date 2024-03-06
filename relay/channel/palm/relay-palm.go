@@ -146,7 +146,7 @@ func palmHandler(c *gin.Context, resp *http.Response, promptTokens int, model st
 	}
 	if palmResponse.Error.Code != 0 || len(palmResponse.Candidates) == 0 {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: palmResponse.Error.Message,
 				Type:    palmResponse.Error.Status,
 				Param:   "",

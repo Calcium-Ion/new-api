@@ -17,10 +17,10 @@ import (
 
 var StopFinishReason = "stop"
 
-func RelayErrorHandler(resp *http.Response) (openAIErrorWithStatusCode *dto.OpenAIErrorWithStatusCode) {
-	openAIErrorWithStatusCode = &dto.OpenAIErrorWithStatusCode{
+func RelayErrorHandler(resp *http.Response) (OpenAIErrorWithStatusCode *dto.OpenAIErrorWithStatusCode) {
+	OpenAIErrorWithStatusCode = &dto.OpenAIErrorWithStatusCode{
 		StatusCode: resp.StatusCode,
-		OpenAIError: dto.OpenAIError{
+		Error: dto.OpenAIError{
 			Message: fmt.Sprintf("bad response status code %d", resp.StatusCode),
 			Type:    "upstream_error",
 			Code:    "bad_response_status_code",
@@ -40,7 +40,7 @@ func RelayErrorHandler(resp *http.Response) (openAIErrorWithStatusCode *dto.Open
 	if err != nil {
 		return
 	}
-	openAIErrorWithStatusCode.OpenAIError = textResponse.Error
+	OpenAIErrorWithStatusCode.Error = textResponse.Error
 	return
 }
 

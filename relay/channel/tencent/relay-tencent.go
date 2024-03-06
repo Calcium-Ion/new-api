@@ -175,7 +175,7 @@ func tencentHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithSt
 	}
 	if TencentResponse.Error.Code != 0 {
 		return &dto.OpenAIErrorWithStatusCode{
-			OpenAIError: dto.OpenAIError{
+			Error: dto.OpenAIError{
 				Message: TencentResponse.Error.Message,
 				Code:    TencentResponse.Error.Code,
 			},
