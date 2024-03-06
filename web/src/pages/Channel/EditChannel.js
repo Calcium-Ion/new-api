@@ -72,13 +72,13 @@ const EditChannel = (props) => {
                     localModels = ['ERNIE-Bot', 'ERNIE-Bot-turbo', 'ERNIE-Bot-4', 'Embedding-V1'];
                     break;
                 case 17:
-                    localModels = ['qwen-turbo', 'qwen-plus', 'text-embedding-v1'];
+                    localModels = ["qwen-turbo", "qwen-plus", "qwen-max", "qwen-max-longcontext", 'text-embedding-v1'];
                     break;
                 case 16:
                     localModels = ['chatglm_pro', 'chatglm_std', 'chatglm_lite'];
                     break;
                 case 18:
-                    localModels = ['SparkDesk'];
+                    localModels = ['SparkDesk', 'SparkDesk-v1.1', 'SparkDesk-v2.1', 'SparkDesk-v3.1', 'SparkDesk-v3.5'];
                     break;
                 case 19:
                     localModels = ['360GPT_S2_V9', 'embedding-bert-512-v1', 'embedding_s1_v1', 'semantic_similarity_s1_v1'];
@@ -87,7 +87,10 @@ const EditChannel = (props) => {
                     localModels = ['hunyuan'];
                     break;
                 case 24:
-                    localModels = ['gemini-pro'];
+                    localModels = ['gemini-pro', 'gemini-pro-vision'];
+                    break;
+                case 25:
+                    localModels = ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'];
                     break;
                 case 26:
                     localModels = ['glm-4', 'glm-4v', 'glm-3-turbo'];

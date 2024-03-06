@@ -24,21 +24,10 @@ var baiduTokenStore sync.Map
 func requestOpenAI2Baidu(request dto.GeneralOpenAIRequest) *BaiduChatRequest {
 	messages := make([]BaiduMessage, 0, len(request.Messages))
 	for _, message := range request.Messages {
-		if message.Role == "system" {
-			messages = append(messages, BaiduMessage{
-				Role:    "user",
-				Content: message.StringContent(),
-			})
-			messages = append(messages, BaiduMessage{
-				Role:    "assistant",
-				Content: "Okay",
-			})
-		} else {
-			messages = append(messages, BaiduMessage{
-				Role:    message.Role,
-				Content: message.StringContent(),
-			})
-		}
+		messages = append(messages, BaiduMessage{
+			Role:    message.Role,
+			Content: message.StringContent(),
+		})
 	}
 	return &BaiduChatRequest{
 		Messages: messages,

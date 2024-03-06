@@ -50,10 +50,10 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *re
 		return nil
 	}
 	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
-	if info.ChannelType == common.ChannelTypeOpenRouter {
-		req.Header.Set("HTTP-Referer", "https://github.com/songquanpeng/one-api")
-		req.Header.Set("X-Title", "One API")
-	}
+	//if info.ChannelType == common.ChannelTypeOpenRouter {
+	//	req.Header.Set("HTTP-Referer", "https://github.com/songquanpeng/one-api")
+	//	req.Header.Set("X-Title", "One API")
+	//}
 	return nil
 }
 
