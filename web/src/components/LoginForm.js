@@ -4,12 +4,13 @@ import { UserContext } from '../context/User';
 import { API, getLogo, isMobile, showError, showInfo, showSuccess, showWarning } from '../helpers';
 import { onGitHubOAuthClicked } from './utils';
 import Turnstile from "react-turnstile";
-import { Layout, Card, Image, Form, Button, Divider, Modal } from "@douyinfe/semi-ui";
+import { Layout, Card, Image, Form, Button, Divider, Modal, Icon } from '@douyinfe/semi-ui';
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
 import Text from "@douyinfe/semi-ui/lib/es/typography/text";
 import TelegramLoginButton from 'react-telegram-login';
 
 import { IconGithubLogo } from '@douyinfe/semi-icons';
+import WeChatIcon from './WeChatIcon';
 
 const LoginForm = () => {
     const [inputs, setInputs] = useState({
@@ -179,16 +180,16 @@ const LoginForm = () => {
                                             ) : (
                                                 <></>
                                             )}
-                                            {/*{status.wechat_login ? (*/}
-                                            {/*    <Button*/}
-                                            {/*        circular*/}
-                                            {/*        color='green'*/}
-                                            {/*        icon='wechat'*/}
-                                            {/*        onClick={onWeChatLoginClicked}*/}
-                                            {/*    />*/}
-                                            {/*) : (*/}
-                                            {/*    <></>*/}
-                                            {/*)}*/}
+                                            {status.wechat_login ? (
+                                                <Button
+                                                    type='primary'
+                                                    style={{color: 'rgba(var(--semi-green-5), 1)'}}
+                                                    icon={<Icon svg={<WeChatIcon />} />}
+                                                    onClick={onWeChatLoginClicked}
+                                                />
+                                            ) : (
+                                                <></>
+                                            )}
 
                                             {status.telegram_oauth ? (
                                                 <TelegramLoginButton dataOnauth={onTelegramLoginClicked} botName={status.telegram_bot_name} />
@@ -200,40 +201,34 @@ const LoginForm = () => {
                                 ) : (
                                     <></>
                                 )}
-                                {/*<Modal*/}
-                                {/*    onClose={() => setShowWeChatLoginModal(false)}*/}
-                                {/*    onOpen={() => setShowWeChatLoginModal(true)}*/}
-                                {/*    open={showWeChatLoginModal}*/}
-                                {/*    size={'mini'}*/}
-                                {/*>*/}
-                                {/*    <Modal.Content>*/}
-                                {/*        <Modal.Description>*/}
-                                {/*            <Image src={status.wechat_qrcode} fluid/>*/}
-                                {/*            <div style={{textAlign: 'center'}}>*/}
-                                {/*                <p>*/}
-                                {/*                    微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）*/}
-                                {/*                </p>*/}
-                                {/*            </div>*/}
-                                {/*            <Form size='large'>*/}
-                                {/*                <Form.Input*/}
-                                {/*                    field={'wechat_verification_code'}*/}
-                                {/*                    placeholder='验证码'*/}
-                                {/*                    name='wechat_verification_code'*/}
-                                {/*                    value={inputs.wechat_verification_code}*/}
-                                {/*                    onChange={handleChange}*/}
-                                {/*                />*/}
-                                {/*                <Button*/}
-                                {/*                    color=''*/}
-                                {/*                    fluid*/}
-                                {/*                    size='large'*/}
-                                {/*                    onClick={onSubmitWeChatVerificationCode}*/}
-                                {/*                >*/}
-                                {/*                    登录*/}
-                                {/*                </Button>*/}
-                                {/*            </Form>*/}
-                                {/*        </Modal.Description>*/}
-                                {/*    </Modal.Content>*/}
-                                {/*</Modal>*/}
+                                <Modal
+                                  title="微信扫码登录"
+                                  visible={showWeChatLoginModal}
+                                  maskClosable={true}
+                                  onOk={onSubmitWeChatVerificationCode}
+                                  onCancel={() => setShowWeChatLoginModal(false)}
+                                  okText={'登录'}
+                                  size={'small'}
+                                  centered={true}
+                                >
+                                    <div style={{ display: 'flex', alignItem: 'center', flexDirection: 'column' }}>
+                                        <img src={status.wechat_qrcode}/>
+                                    </div>
+                                    <div style={{textAlign: 'center'}}>
+                                        <p>
+                                            微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）
+                                        </p>
+                                    </div>
+                                    <Form size='large'>
+                                        <Form.Input
+                                          field={'wechat_verification_code'}
+                                          placeholder='验证码'
+                                          label={'验证码'}
+                                          value={inputs.wechat_verification_code}
+                                          onChange={(value) => handleChange('wechat_verification_code', value)}
+                                        />
+                                    </Form>
+                                </Modal>
                             </Card>
                             {turnstileEnabled ? (
                                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
