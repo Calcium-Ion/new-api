@@ -52,48 +52,84 @@ const OtherSetting = () => {
   const formAPISettingGeneral = useRef();
   // 通用设置 - Notice
   const submitNotice = async () => {
-    setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: true }));
-    await updateOption('Notice', inputs.Notice);
-    showSuccess('公告已更新');
-    setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: false }));
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: true }));
+      await updateOption('Notice', inputs.Notice);
+      showSuccess('公告已更新');
+    } catch (error) {
+      console.error("公告更新失败", error);
+      showError("公告更新失败")
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: false }));
+    }
   };
   // 个性化设置
   const formAPIPersonalization = useRef();
   //  个性化设置 - SystemName
   const submitSystemName = async () => {
-    setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: true }));
-    await updateOption('SystemName', inputs.SystemName);
-    showSuccess('系统名称已更新');
-    setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: false }));
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: true }));
+      await updateOption('SystemName', inputs.SystemName);
+      showSuccess('系统名称已更新');
+    } catch (error) {
+      console.error("系统名称更新失败", error);
+      showError("系统名称更新失败")
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: false }));
+    }
   };
 
-  // Logo
+  // 个性化设置 - Logo
   const submitLogo = async () => {
-    setLoadingInput((loadingInput) => ({ ...loadingInput, Logo: true }));
-    await updateOption('Logo', inputs.Logo);
-    showSuccess('Logo 已更新');
-    setLoadingInput((loadingInput) => ({ ...loadingInput, Logo: false }));
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Logo: true }));
+      await updateOption('Logo', inputs.Logo);
+      showSuccess('Logo 已更新');
+    } catch (error) {
+      console.error("Logo 更新失败", error);
+      showError("Logo 更新失败")
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Logo: false }));
+    }
   };
-  // 首页内容
+  // 个性化设置 - 首页内容
   const submitOption = async (key) => {
-    setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: true }));
-    await updateOption(key, inputs[key]);
-    showSuccess('首页内容已更新');
-    setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: false }));
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: true }));
+      await updateOption(key, inputs[key]);
+      showSuccess('首页内容已更新');
+    } catch (error) {
+      console.error("首页内容更新失败", error);
+      showError("首页内容更新失败")
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: false }));
+    }
   };
-  // 关于
+  // 个性化设置 - 关于
   const submitAbout = async () => {
-    setLoadingInput((loadingInput) => ({ ...loadingInput, About: true }));
-    await updateOption('About', inputs.About);
-    showSuccess('关于内容已更新');
-    setLoadingInput((loadingInput) => ({ ...loadingInput, About: false }));
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, About: true }));
+      await updateOption('About', inputs.About);
+      showSuccess('关于内容已更新');
+    } catch (error) {
+      console.error("关于内容更新失败", error);
+      showError("关于内容更新失败");
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, About: false }));
+    }
   };
-  // 页脚
+  // 个性化设置 - 页脚
   const submitFooter = async () => {
-    setLoadingInput((loadingInput) => ({ ...loadingInput, Footer: true }));
-    await updateOption('Footer', inputs.Footer);
-    showSuccess('页脚内容已更新');
-    setLoadingInput((loadingInput) => ({ ...loadingInput, Footer: false }));
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Footer: true }));
+      await updateOption('Footer', inputs.Footer);
+      showSuccess('页脚内容已更新');
+    } catch (error) {
+      console.error("页脚内容更新失败", error);
+      showError("页脚内容更新失败");
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, Footer: false }));
+    }
   };
 
 
