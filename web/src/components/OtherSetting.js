@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Divider, Form, Grid, Header, Message, Modal } from 'semantic-ui-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Col, Row , Form, Button, Banner } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess } from '../helpers';
 import { marked } from 'marked';
 
 const OtherSetting = () => {
   let [inputs, setInputs] = useState({
-    Footer: '',
     Notice: '',
-    About: '',
     SystemName: '',
     Logo: '',
+    Footer: '',
+    About: '',
     HomePageContent: ''
   });
   let [loading, setLoading] = useState(false);
@@ -19,25 +19,6 @@ const OtherSetting = () => {
     content: ''
   });
 
-  const getOptions = async () => {
-    const res = await API.get('/api/option/');
-    const { success, message, data } = res.data;
-    if (success) {
-      let newInputs = {};
-      data.forEach((item) => {
-        if (item.key in inputs) {
-          newInputs[item.key] = item.value;
-        }
-      });
-      setInputs(newInputs);
-    } else {
-      showError(message);
-    }
-  };
-
-  useEffect(() => {
-    getOptions().then();
-  }, []);
 
   const updateOption = async (key, value) => {
     setLoading(true);
@@ -54,33 +35,69 @@ const OtherSetting = () => {
     setLoading(false);
   };
 
-  const handleInputChange = async (e, { name, value }) => {
+  const [loadingInput, setLoadingInput] = useState({
+    Notice: false,
+    SystemName: false,
+    Logo: false,
+    HomePageContent: false,
+    About: false,
+    Footer: false
+  });
+  const handleInputChange = async (value, e) => {
+    const name = e.target.id;
     setInputs((inputs) => ({ ...inputs, [name]: value }));
   };
 
+  // 通用设置
+  const formAPISettingGeneral = useRef();
+  // 通用设置 - Notice
   const submitNotice = async () => {
+    setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: true }));
     await updateOption('Notice', inputs.Notice);
+    showSuccess('公告已更新');
+    setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: false }));
   };
-
-  const submitFooter = async () => {
-    await updateOption('Footer', inputs.Footer);
-  };
-
+  // 个性化设置
+  const formAPIPersonalization = useRef();
+  //  个性化设置 - SystemName
   const submitSystemName = async () => {
+    setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: true }));
     await updateOption('SystemName', inputs.SystemName);
+    showSuccess('系统名称已更新');
+    setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: false }));
   };
 
+  // Logo
   const submitLogo = async () => {
+    setLoadingInput((loadingInput) => ({ ...loadingInput, Logo: true }));
     await updateOption('Logo', inputs.Logo);
+    showSuccess('Logo 已更新');
+    setLoadingInput((loadingInput) => ({ ...loadingInput, Logo: false }));
   };
-
-  const submitAbout = async () => {
-    await updateOption('About', inputs.About);
-  };
-
+  // 首页内容
   const submitOption = async (key) => {
+    setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: true }));
     await updateOption(key, inputs[key]);
+    showSuccess('首页内容已更新');
+    setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: false }));
   };
+  // 关于
+  const submitAbout = async () => {
+    setLoadingInput((loadingInput) => ({ ...loadingInput, About: true }));
+    await updateOption('About', inputs.About);
+    showSuccess('关于内容已更新');
+    setLoadingInput((loadingInput) => ({ ...loadingInput, About: false }));
+  };
+  // 页脚
+  const submitFooter = async () => {
+    setLoadingInput((loadingInput) => ({ ...loadingInput, Footer: true }));
+    await updateOption('Footer', inputs.Footer);
+    showSuccess('页脚内容已更新');
+    setLoadingInput((loadingInput) => ({ ...loadingInput, Footer: false }));
+  };
+
+
+
 
   const openGitHubRelease = () => {
     window.location =
@@ -102,82 +119,96 @@ const OtherSetting = () => {
       setShowUpdateModal(true);
     }
   };
+  const getOptions = async () => {
+    const res = await API.get('/api/option/');
+    const { success, message, data } = res.data;
+    if (success) {
+      let newInputs = {};
+      data.forEach((item) => {
+        if (item.key in inputs) {
+          newInputs[item.key] = item.value;
+        }
+      });
+      setInputs(newInputs);
+      formAPISettingGeneral.current.setValues(newInputs);
+      formAPIPersonalization.current.setValues(newInputs);
+    } else {
+      showError(message);
+    }
+  };
+
+  useEffect( () => {
+    getOptions();
+  }, []);
+
 
   return (
-    <Grid columns={1}>
-      <Grid.Column>
-        <Form loading={loading}>
-          <Header as='h3'>通用设置</Header>
-          {/*<Form.Button onClick={checkUpdate}>检查更新</Form.Button>*/}
-          <Form.Group widths='equal'>
+    <Row >
+      <Col span={24}>
+        {/* 通用设置 */}
+        <Form values={inputs} getFormApi={formAPI => formAPISettingGeneral.current = formAPI} style={{marginBottom: 15}}>
+          <Form.Section text={'通用设置'}>
             <Form.TextArea
-              label='公告'
-              placeholder='在此输入新的公告内容，支持 Markdown & HTML 代码'
-              value={inputs.Notice}
-              name='Notice'
+              label={'公告'}
+              placeholder={'在此输入新的公告内容，支持 Markdown & HTML 代码'}
+              field={'Notice'}
               onChange={handleInputChange}
               style={{ minHeight: 150, fontFamily: 'JetBrains Mono, Consolas' }}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitNotice}>保存公告</Form.Button>
-          <Divider />
-          <Header as='h3'>个性化设置</Header>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='系统名称'
-              placeholder='在此输入系统名称'
-              value={inputs.SystemName}
-              name='SystemName'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitSystemName}>设置系统名称</Form.Button>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='Logo 图片地址'
-              placeholder='在此输入 Logo 图片地址'
-              value={inputs.Logo}
-              name='Logo'
-              type='url'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitLogo}>设置 Logo</Form.Button>
-          <Form.Group widths='equal'>
-            <Form.TextArea
-              label='首页内容'
-              placeholder='在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页。'
-              value={inputs.HomePageContent}
-              name='HomePageContent'
-              onChange={handleInputChange}
-              style={{ minHeight: 150, fontFamily: 'JetBrains Mono, Consolas' }}
-            />
-          </Form.Group>
-          <Form.Button onClick={() => submitOption('HomePageContent')}>保存首页内容</Form.Button>
-          <Form.Group widths='equal'>
-            <Form.TextArea
-              label='关于'
-              placeholder='在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面。'
-              value={inputs.About}
-              name='About'
-              onChange={handleInputChange}
-              style={{ minHeight: 150, fontFamily: 'JetBrains Mono, Consolas' }}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitAbout}>保存关于</Form.Button>
-          <Message>移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。</Message>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='页脚'
-              placeholder='在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码'
-              value={inputs.Footer}
-              name='Footer'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitFooter}>设置页脚</Form.Button>
+              />
+            <Button onClick={submitNotice} loading={loadingInput['Notice']}>设置公告</Button>
+          </Form.Section>
         </Form>
-      </Grid.Column>
+        {/* 个性化设置 */}
+        <Form values={inputs} getFormApi={formAPI => formAPIPersonalization.current = formAPI} style={{marginBottom: 15}}>
+          <Form.Section text={'个性化设置'}>
+            <Form.Input
+              label={'系统名称'}
+              placeholder={'在此输入系统名称'}
+              field={'SystemName'}
+              onChange={handleInputChange}
+              />
+            <Button onClick={submitSystemName} loading={loadingInput['SystemName']}>设置系统名称</Button>
+            <Form.Input
+              label={'Logo 图片地址'}
+              placeholder={'在此输入 Logo 图片地址'}
+              field={'Logo'}
+              onChange={handleInputChange}
+              />
+            <Button onClick={submitLogo} loading={loadingInput['Logo']}>设置 Logo</Button>
+            <Form.TextArea
+              label={'首页内容'}
+              placeholder={'在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页。'}
+              field={'HomePageContent'}
+              onChange={handleInputChange}
+              style={{ minHeight: 150, fontFamily: 'JetBrains Mono, Consolas' }}
+              />
+            <Button onClick={() => submitOption('HomePageContent')} loading={loadingInput['HomePageContent']}>设置首页内容</Button>
+            <Form.TextArea
+              label={'关于'}
+              placeholder={'在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面。'}
+              field={'About'}
+              onChange={handleInputChange}
+              style={{ minHeight: 150, fontFamily: 'JetBrains Mono, Consolas' }}
+              />
+            <Button onClick={submitAbout} loading={loadingInput['About']}>设置关于</Button>
+            {/*  */}
+            <Banner
+              fullMode={false}
+              type="info"
+              description="移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。"
+              closeIcon={null}
+              style={{  marginTop: 15 }}
+            />
+            <Form.Input
+              label={'页脚'}
+              placeholder={'在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码'}
+              field={'Footer'}
+              onChange={handleInputChange}
+              />
+            <Button onClick={submitFooter} loading={loadingInput['Footer']}>设置页脚</Button>
+          </Form.Section>
+        </Form>
+      </Col>
       {/*<Modal*/}
       {/*  onClose={() => setShowUpdateModal(false)}*/}
       {/*  onOpen={() => setShowUpdateModal(true)}*/}
@@ -200,7 +231,7 @@ const OtherSetting = () => {
       {/*    />*/}
       {/*  </Modal.Actions>*/}
       {/*</Modal>*/}
-    </Grid>
+   </Row>
   );
 };
 
