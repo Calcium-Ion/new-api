@@ -20,6 +20,9 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIReq
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	version := "v1"
+	if info.ApiVersion != "" {
+		version = info.ApiVersion
+	}
 	action := "generateContent"
 	if info.IsStream {
 		action = "streamGenerateContent"
