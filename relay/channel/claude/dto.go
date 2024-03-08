@@ -5,9 +5,11 @@ type ClaudeMetadata struct {
 }
 
 type ClaudeMediaMessage struct {
-	Type   string               `json:"type"`
-	Text   string               `json:"text,omitempty"`
-	Source *ClaudeMessageSource `json:"source,omitempty"`
+	Type       string               `json:"type"`
+	Text       string               `json:"text,omitempty"`
+	Source     *ClaudeMessageSource `json:"source,omitempty"`
+	Usage      *ClaudeUsage         `json:"usage,omitempty"`
+	StopReason *string              `json:"stop_reason,omitempty"`
 }
 
 type ClaudeMessageSource struct {
@@ -50,7 +52,15 @@ type ClaudeResponse struct {
 	Model      string               `json:"model"`
 	Error      ClaudeError          `json:"error"`
 	Usage      ClaudeUsage          `json:"usage"`
+	Index      int                  `json:"index"`   // stream only
+	Delta      *ClaudeMediaMessage  `json:"delta"`   // stream only
+	Message    *ClaudeResponse      `json:"message"` // stream only: message_start
 }
+
+//type ClaudeResponseChoice struct {
+//	Index   int                `json:"index"`
+//	Type    string             `json:"type"`
+//}
 
 type ClaudeUsage struct {
 	InputTokens  int `json:"input_tokens"`

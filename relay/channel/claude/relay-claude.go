@@ -17,6 +17,8 @@ func stopReasonClaude2OpenAI(reason string) string {
 	switch reason {
 	case "stop_sequence":
 		return "stop"
+	case "end_turn":
+		return "stop"
 	case "max_tokens":
 		return "length"
 	default:
@@ -111,24 +113,41 @@ func requestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	}
 	claudeRequest.Prompt = ""
 	claudeRequest.Messages = claudeMessages
-	reqJson, _ := json.Marshal(claudeRequest)
-	common.SysLog(fmt.Sprintf("claude request: %s", reqJson))
 
 	return &claudeRequest, nil
 }
 
-func streamResponseClaude2OpenAI(claudeResponse *ClaudeResponse) *dto.ChatCompletionsStreamResponse {
-	var choice dto.ChatCompletionsStreamResponseChoice
-	choice.Delta.Content = claudeResponse.Completion
-	finishReason := stopReasonClaude2OpenAI(claudeResponse.StopReason)
-	if finishReason != "null" {
-		choice.FinishReason = &finishReason
-	}
+func streamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*dto.ChatCompletionsStreamResponse, *ClaudeUsage) {
 	var response dto.ChatCompletionsStreamResponse
+	var claudeUsage *ClaudeUsage
 	response.Object = "chat.completion.chunk"
 	response.Model = claudeResponse.Model
-	response.Choices = []dto.ChatCompletionsStreamResponseChoice{choice}
-	return &response
+	response.Choices = make([]dto.ChatCompletionsStreamResponseChoice, 0)
+	var choice dto.ChatCompletionsStreamResponseChoice
+	if reqMode == RequestModeCompletion {
+		choice.Delta.Content = claudeResponse.Completion
+		finishReason := stopReasonClaude2OpenAI(claudeResponse.StopReason)
+		if finishReason != "null" {
+			choice.FinishReason = &finishReason
+		}
+	} else {
+		if claudeResponse.Type == "message_start" {
+			response.Id = claudeResponse.Message.Id
+			response.Model = claudeResponse.Message.Model
+			claudeUsage = &claudeResponse.Message.Usage
+		} else if claudeResponse.Type == "content_block_delta" {
+			choice.Index = claudeResponse.Index
+			choice.Delta.Content = claudeResponse.Delta.Text
+		} else if claudeResponse.Type == "message_delta" {
+			finishReason := stopReasonClaude2OpenAI(*claudeResponse.Delta.StopReason)
+			if finishReason != "null" {
+				choice.FinishReason = &finishReason
+			}
+			claudeUsage = &claudeResponse.Usage
+		}
+	}
+	response.Choices = append(response.Choices, choice)
+	return &response, claudeUsage
 }
 
 func responseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.OpenAITextResponse {
@@ -170,17 +189,18 @@ func responseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	return &fullTextResponse
 }
 
-func claudeStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatusCode, string) {
-	responseText := ""
+func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	responseId := fmt.Sprintf("chatcmpl-%s", common.GetUUID())
+	var usage dto.Usage
+	responseText := ""
 	createdTime := common.GetTimestamp()
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		if atEOF && len(data) == 0 {
 			return 0, nil, nil
 		}
-		if i := strings.Index(string(data), "\r\n\r\n"); i >= 0 {
-			return i + 4, data[0:i], nil
+		if i := strings.Index(string(data), "\n"); i >= 0 {
+			return i + 1, data[0:i], nil
 		}
 		if atEOF {
 			return len(data), data, nil
@@ -192,10 +212,10 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorW
 	go func() {
 		for scanner.Scan() {
 			data := scanner.Text()
-			if !strings.HasPrefix(data, "event: completion") {
+			if !strings.HasPrefix(data, "data: ") {
 				continue
 			}
-			data = strings.TrimPrefix(data, "event: completion\r\ndata: ")
+			data = strings.TrimPrefix(data, "data: ")
 			dataChan <- data
 		}
 		stopChan <- true
@@ -212,10 +232,31 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorW
 				common.SysError("error unmarshalling stream response: " + err.Error())
 				return true
 			}
-			responseText += claudeResponse.Completion
-			response := streamResponseClaude2OpenAI(&claudeResponse)
+
+			response, claudeUsage := streamResponseClaude2OpenAI(requestMode, &claudeResponse)
+			if requestMode == RequestModeCompletion {
+				responseText += claudeResponse.Completion
+				responseId = response.Id
+			} else {
+				if claudeResponse.Type == "message_start" {
+					// message_start, 获取usage
+					responseId = claudeResponse.Message.Id
+					modelName = claudeResponse.Message.Model
+					usage.PromptTokens = claudeUsage.InputTokens
+				} else if claudeResponse.Type == "content_block_delta" {
+					responseText += claudeResponse.Delta.Text
+				} else if claudeResponse.Type == "message_delta" {
+					usage.CompletionTokens = claudeUsage.OutputTokens
+					usage.TotalTokens = claudeUsage.InputTokens + claudeUsage.OutputTokens
+				} else {
+					return true
+				}
+			}
+			//response.Id = responseId
 			response.Id = responseId
 			response.Created = createdTime
+			response.Model = modelName
+
 			jsonStr, err := json.Marshal(response)
 			if err != nil {
 				common.SysError("error marshalling stream response: " + err.Error())
@@ -230,9 +271,12 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorW
 	})
 	err := resp.Body.Close()
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), ""
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
-	return nil, responseText
+	if requestMode == RequestModeCompletion {
+		usage = *service.ResponseText2Usage(responseText, modelName, promptTokens)
+	}
+	return nil, &usage
 }
 
 func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
@@ -245,13 +289,10 @@ func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptT
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
 	var claudeResponse ClaudeResponse
-	common.SysLog(fmt.Sprintf("claude response: %s", responseBody))
 	err = json.Unmarshal(responseBody, &claudeResponse)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
-	respJson, _ := json.Marshal(claudeResponse)
-	common.SysLog(fmt.Sprintf("claude response json: %s", respJson))
 	if claudeResponse.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
 			Error: dto.OpenAIError{
