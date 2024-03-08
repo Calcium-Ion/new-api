@@ -40,6 +40,18 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	c.Request.Header.Set("Content-Type", "application/json")
 	c.Set("channel", channel.Type)
 	c.Set("base_url", channel.GetBaseURL())
+	switch channel.Type {
+	case common.ChannelTypeAzure:
+		c.Set("api_version", channel.Other)
+	case common.ChannelTypeXunfei:
+		c.Set("api_version", channel.Other)
+	//case common.ChannelTypeAIProxyLibrary:
+	//	c.Set("library_id", channel.Other)
+	case common.ChannelTypeGemini:
+		c.Set("api_version", channel.Other)
+	case common.ChannelTypeAli:
+		c.Set("plugin", channel.Other)
+	}
 	meta := relaycommon.GenRelayInfo(c)
 	apiType := constant.ChannelType2APIType(channel.Type)
 	adaptor := relay.GetAdaptor(apiType)
