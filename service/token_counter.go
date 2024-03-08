@@ -74,7 +74,7 @@ func getImageToken(imageUrl *dto.MessageImageUrl) (int, error) {
 		config, format, err = common.DecodeUrlImageData(imageUrl.Url)
 	} else {
 		common.SysLog(fmt.Sprintf("decoding image"))
-		config, format, err = common.DecodeBase64ImageData(imageUrl.Url)
+		config, format, _, err = common.DecodeBase64ImageData(imageUrl.Url)
 	}
 	if err != nil {
 		return 0, err

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+	"one-api/common"
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
@@ -50,15 +51,15 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *re
 }
 
 func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.GeneralOpenAIRequest) (any, error) {
+	common.SysLog(fmt.Sprintf("Request mode: %d", a.RequestMode))
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	//if a.RequestMode == RequestModeCompletion {
-	//	return requestOpenAI2ClaudeComplete(*request), nil
-	//} else {
-	//	return requestOpenAI2ClaudeMessage(*request), nil
-	//}
-	return request, nil
+	if a.RequestMode == RequestModeCompletion {
+		return requestOpenAI2ClaudeComplete(*request), nil
+	} else {
+		return requestOpenAI2ClaudeMessage(*request)
+	}
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
@@ -71,7 +72,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		err, responseText = claudeStreamHandler(c, resp)
 		usage = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 	} else {
-		err, usage = claudeHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+		err, usage = claudeHandler(a.RequestMode, c, resp, info.PromptTokens, info.UpstreamModelName)
 	}
 	return
 }
