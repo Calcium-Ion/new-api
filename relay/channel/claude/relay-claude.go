@@ -65,6 +65,9 @@ func requestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		TopP:          textRequest.TopP,
 		Stream:        textRequest.Stream,
 	}
+	if claudeRequest.MaxTokens == 0 {
+		claudeRequest.MaxTokens = 4096
+	}
 	claudeMessages := make([]ClaudeMessage, 0)
 	for _, message := range textRequest.Messages {
 		if message.Role == "system" {
