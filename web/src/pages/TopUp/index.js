@@ -292,15 +292,15 @@ const TopUp = () => {
                                     </Space>
                                 </Form>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'right' }}>
-                                <Text>
-                                    <Link onClick={
-                                        async () => {
-                                            window.location.href = '/topup/history'
-                                        }
-                                    }>充值记录</Link>
-                                </Text>
-                            </div>
+                            {/*<div style={{ display: 'flex', justifyContent: 'right' }}>*/}
+                            {/*    <Text>*/}
+                            {/*        <Link onClick={*/}
+                            {/*            async () => {*/}
+                            {/*                window.location.href = '/topup/history'*/}
+                            {/*            }*/}
+                            {/*        }>充值记录</Link>*/}
+                            {/*    </Text>*/}
+                            {/*</div>*/}
                         </Card>
                     </div>
 
