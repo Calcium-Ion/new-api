@@ -52,6 +52,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	case common.ChannelTypeAli:
 		c.Set("plugin", channel.Other)
 	}
+
 	meta := relaycommon.GenRelayInfo(c)
 	apiType := constant.ChannelType2APIType(channel.Type)
 	adaptor := relay.GetAdaptor(apiType)
@@ -60,13 +61,14 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	}
 	if testModel == "" {
 		testModel = adaptor.GetModelList()[0]
+		meta.UpstreamModelName = testModel
 	}
 	request := buildTestRequest()
+	request.Model = testModel
+	meta.UpstreamModelName = testModel
 
 	adaptor.Init(meta, *request)
 
-	request.Model = testModel
-	meta.UpstreamModelName = testModel
 	convertedRequest, err := adaptor.ConvertRequest(c, constant.RelayModeChatCompletions, request)
 	if err != nil {
 		return err, nil
