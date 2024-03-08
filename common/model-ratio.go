@@ -61,8 +61,11 @@ var ModelRatio = map[string]float64{
 	"text-moderation-latest":    0.1,
 	"dall-e-2":                  8,
 	"dall-e-3":                  16,
-	"claude-instant-1":          0.815,  // $1.63 / 1M tokens
-	"claude-2":                  5.51,   // $11.02 / 1M tokens
+	"claude-instant-1":          0.4,    // $0.8 / 1M tokens
+	"claude-2.0":                4,      // $8 / 1M tokens
+	"claude-2.1":                4,      // $8 / 1M tokens
+	"claude-3-sonnet-20240229":  1.5,    // $3 / 1M tokens
+	"claude-3-opus-20240229":    7.5,    // $15 / 1M tokens
 	"ERNIE-Bot":                 0.8572, // ￥0.012 / 1k tokens
 	"ERNIE-Bot-turbo":           0.5715, // ￥0.008 / 1k tokens
 	"ERNIE-Bot-4":               8.572,  // ￥0.12 / 1k tokens
@@ -179,10 +182,11 @@ func GetCompletionRatio(name string) float64 {
 		return 2
 	}
 	if strings.HasPrefix(name, "claude-instant-1") {
-		return 3.38
-	}
-	if strings.HasPrefix(name, "claude-2") {
-		return 2.965517
+		return 3
+	} else if strings.HasPrefix(name, "claude-2") {
+		return 3
+	} else if strings.HasPrefix(name, "claude-3") {
+		return 5
 	}
 	return 1
 }
