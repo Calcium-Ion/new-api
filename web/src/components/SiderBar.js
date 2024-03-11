@@ -156,12 +156,11 @@ const SiderBar = () => {
             <Layout>
                 <div style={{height: '100%'}}>
                     <Nav
-                        // mode={'horizontal'}
-                        // bodyStyle={{ height: 100 }}
+                        // bodyStyle={{ maxWidth: 200 }}
+                        style={{ maxWidth: 200 }}
                         defaultIsCollapsed={isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true'}
                         isCollapsed={isCollapsed}
                         onCollapseChange={collapsed => {
-                            console.log(collapsed);
                             setIsCollapsed(collapsed);
                         }}
                         selectedKeys={selectedKeys}
@@ -191,7 +190,6 @@ const SiderBar = () => {
                         }}
                         items={headerButtons}
                         onSelect={key => {
-                            console.log(key);
                             setSelectedKeys([key.itemKey]);
                         }}
                         header={{

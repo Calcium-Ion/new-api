@@ -32,6 +32,16 @@ body {
     }
 }
 
+.semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+    padding: 16px 14px;
+}
+
+.channel-table {
+    .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+        padding: 16px 8px;
+    }
+}
+
 .semi-layout {
     height: 100%;
 }

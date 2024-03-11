@@ -675,7 +675,7 @@ const ChannelsTable = () => {
                 </Space>
             </div>
 
-            <Table style={{marginTop: 15}} columns={columns} dataSource={pageData} pagination={{
+            <Table className={'channel-table'} style={{marginTop: 15}} columns={columns} dataSource={pageData} pagination={{
                 currentPage: activePage,
                 pageSize: pageSize,
                 total: channelCount,
