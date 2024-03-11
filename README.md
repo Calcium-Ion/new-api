@@ -39,8 +39,9 @@
 11. 可设置令牌能调用的模型
 12. 支持Telegram授权登录。
     1. 系统设置-配置登录注册-允许通过Telegram登录
-    2. 找botfather /setdomain 输入https://your.new-api.domain/login
-    3. Telegram Bot 名称是bot username 去掉@后的字符串
+    2. 对[@Botfather](https://t.me/botfather)输入指令/setdomain
+    3. 选择你的bot，然后输入http(s)://你的网站地址/login
+    4. Telegram Bot 名称是bot username 去掉@后的字符串
 
 ## 模型支持
 此版本额外支持以下模型：
