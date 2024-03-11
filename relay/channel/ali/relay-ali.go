@@ -18,7 +18,7 @@ const EnableSearchModelSuffix = "-internet"
 
 func requestOpenAI2Ali(request dto.GeneralOpenAIRequest) *AliChatRequest {
 	messages := make([]AliMessage, 0, len(request.Messages))
-	prompt := ""
+	//prompt := ""
 	for i := 0; i < len(request.Messages); i++ {
 		message := request.Messages[i]
 		messages = append(messages, AliMessage{
@@ -35,8 +35,8 @@ func requestOpenAI2Ali(request dto.GeneralOpenAIRequest) *AliChatRequest {
 	return &AliChatRequest{
 		Model: request.Model,
 		Input: AliInput{
-			Prompt:  prompt,
-			History: messages,
+			//Prompt:  prompt,
+			Messages: messages,
 		},
 		Parameters: AliParameters{
 			IncrementalOutput: request.Stream,

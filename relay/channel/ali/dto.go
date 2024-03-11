@@ -6,8 +6,9 @@ type AliMessage struct {
 }
 
 type AliInput struct {
-	Prompt  string       `json:"prompt"`
-	History []AliMessage `json:"history"`
+	Prompt string `json:"prompt,omitempty"`
+	//History []AliMessage `json:"history,omitempty"`
+	Messages []AliMessage `json:"messages"`
 }
 
 type AliParameters struct {
@@ -20,7 +21,7 @@ type AliParameters struct {
 
 type AliChatRequest struct {
 	Model      string        `json:"model"`
-	Input      AliInput      `json:"input"`
+	Input      AliInput      `json:"input,omitempty"`
 	Parameters AliParameters `json:"parameters,omitempty"`
 }
 

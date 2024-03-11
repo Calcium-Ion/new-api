@@ -60,7 +60,6 @@ func getAndValidateTextRequest(c *gin.Context, relayInfo *relaycommon.RelayInfo)
 		}
 	}
 	relayInfo.IsStream = textRequest.Stream
-	relayInfo.UpstreamModelName = textRequest.Model
 	return textRequest, nil
 }
 
@@ -86,9 +85,11 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		}
 		if modelMap[textRequest.Model] != "" {
 			textRequest.Model = modelMap[textRequest.Model]
+			// set upstream model name
 			isModelMapped = true
 		}
 	}
+	relayInfo.UpstreamModelName = textRequest.Model
 	modelPrice := common.GetModelPrice(textRequest.Model, false)
 	groupRatio := common.GetGroupRatio(relayInfo.Group)
 

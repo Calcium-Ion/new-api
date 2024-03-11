@@ -278,6 +278,10 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 	}
 	if requestMode == RequestModeCompletion {
 		usage = *service.ResponseText2Usage(responseText, modelName, promptTokens)
+	} else {
+		if usage.CompletionTokens == 0 {
+			usage = *service.ResponseText2Usage(responseText, modelName, usage.PromptTokens)
+		}
 	}
 	return nil, &usage
 }

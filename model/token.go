@@ -10,19 +10,20 @@ import (
 )
 
 type Token struct {
-	Id                 int    `json:"id"`
-	UserId             int    `json:"user_id"`
-	Key                string `json:"key" gorm:"type:char(48);uniqueIndex"`
-	Status             int    `json:"status" gorm:"default:1"`
-	Name               string `json:"name" gorm:"index" `
-	CreatedTime        int64  `json:"created_time" gorm:"bigint"`
-	AccessedTime       int64  `json:"accessed_time" gorm:"bigint"`
-	ExpiredTime        int64  `json:"expired_time" gorm:"bigint;default:-1"` // -1 means never expired
-	RemainQuota        int    `json:"remain_quota" gorm:"default:0"`
-	UnlimitedQuota     bool   `json:"unlimited_quota" gorm:"default:false"`
-	ModelLimitsEnabled bool   `json:"model_limits_enabled" gorm:"default:false"`
-	ModelLimits        string `json:"model_limits" gorm:"type:varchar(1024);default:''"`
-	UsedQuota          int    `json:"used_quota" gorm:"default:0"` // used quota
+	Id                 int            `json:"id"`
+	UserId             int            `json:"user_id"`
+	Key                string         `json:"key" gorm:"type:char(48);uniqueIndex"`
+	Status             int            `json:"status" gorm:"default:1"`
+	Name               string         `json:"name" gorm:"index" `
+	CreatedTime        int64          `json:"created_time" gorm:"bigint"`
+	AccessedTime       int64          `json:"accessed_time" gorm:"bigint"`
+	ExpiredTime        int64          `json:"expired_time" gorm:"bigint;default:-1"` // -1 means never expired
+	RemainQuota        int            `json:"remain_quota" gorm:"default:0"`
+	UnlimitedQuota     bool           `json:"unlimited_quota" gorm:"default:false"`
+	ModelLimitsEnabled bool           `json:"model_limits_enabled" gorm:"default:false"`
+	ModelLimits        string         `json:"model_limits" gorm:"type:varchar(1024);default:''"`
+	UsedQuota          int            `json:"used_quota" gorm:"default:0"` // used quota
+	DeletedAt          gorm.DeletedAt `gorm:"index"`
 }
 
 func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {
