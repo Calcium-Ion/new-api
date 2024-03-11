@@ -43,6 +43,7 @@
 此版本额外支持以下模型：
 1. 第三方模型 **gps** （gpt-4-gizmo-*）
 2. 智谱glm-4v，glm-4v识图
+3. Anthropic Claude 3 (claude-3-opus-20240229, claude-3-sonnet-20240229)
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 

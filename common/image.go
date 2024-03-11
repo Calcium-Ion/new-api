@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func DecodeBase64ImageData(base64String string) (image.Config, string, error) {
+func DecodeBase64ImageData(base64String string) (image.Config, string, string, error) {
 	// 去除base64数据的URL前缀（如果有）
 	if idx := strings.Index(base64String, ","); idx != -1 {
 		base64String = base64String[idx+1:]
@@ -22,13 +22,13 @@ func DecodeBase64ImageData(base64String string) (image.Config, string, error) {
 	decodedData, err := base64.StdEncoding.DecodeString(base64String)
 	if err != nil {
 		fmt.Println("Error: Failed to decode base64 string")
-		return image.Config{}, "", err
+		return image.Config{}, "", "", err
 	}
 
 	// 创建一个bytes.Buffer用于存储解码后的数据
 	reader := bytes.NewReader(decodedData)
 	config, format, err := getImageConfig(reader)
-	return config, format, err
+	return config, format, base64String, err
 }
 
 func IsImageUrl(url string) (bool, error) {
@@ -42,6 +42,7 @@ func IsImageUrl(url string) (bool, error) {
 	return true, nil
 }
 
+// GetImageFromUrl 获取图片的类型和base64编码的数据
 func GetImageFromUrl(url string) (mimeType string, data string, err error) {
 	isImage, err := IsImageUrl(url)
 	if !isImage {

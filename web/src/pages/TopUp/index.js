@@ -3,6 +3,8 @@ import {API, isMobile, showError, showInfo, showSuccess} from '../../helpers';
 import {renderNumber, renderQuota} from '../../helpers/render';
 import {Col, Layout, Row, Typography, Card, Button, Form, Divider, Space, Modal} from "@douyinfe/semi-ui";
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
+import Text from '@douyinfe/semi-ui/lib/es/typography/text';
+import { Link } from 'react-router-dom';
 
 const TopUp = () => {
     const [redemptionCode, setRedemptionCode] = useState('');
@@ -290,6 +292,15 @@ const TopUp = () => {
                                     </Space>
                                 </Form>
                             </div>
+                            {/*<div style={{ display: 'flex', justifyContent: 'right' }}>*/}
+                            {/*    <Text>*/}
+                            {/*        <Link onClick={*/}
+                            {/*            async () => {*/}
+                            {/*                window.location.href = '/topup/history'*/}
+                            {/*            }*/}
+                            {/*        }>充值记录</Link>*/}
+                            {/*    </Text>*/}
+                            {/*</div>*/}
                         </Card>
                     </div>
 

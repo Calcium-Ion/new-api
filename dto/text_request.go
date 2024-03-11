@@ -82,6 +82,14 @@ func (m Message) StringContent() string {
 	return string(m.Content)
 }
 
+func (m Message) IsStringContent() bool {
+	var stringContent string
+	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
+		return true
+	}
+	return false
+}
+
 func (m Message) ParseContent() []MediaMessage {
 	var contentList []MediaMessage
 	var stringContent string
@@ -129,10 +137,4 @@ func (m Message) ParseContent() []MediaMessage {
 	}
 
 	return nil
-}
-
-type Usage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
 }

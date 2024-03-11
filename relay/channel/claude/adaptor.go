@@ -9,7 +9,6 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
-	"one-api/service"
 	"strings"
 )
 
@@ -53,12 +52,11 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	//if a.RequestMode == RequestModeCompletion {
-	//	return requestOpenAI2ClaudeComplete(*request), nil
-	//} else {
-	//	return requestOpenAI2ClaudeMessage(*request), nil
-	//}
-	return request, nil
+	if a.RequestMode == RequestModeCompletion {
+		return requestOpenAI2ClaudeComplete(*request), nil
+	} else {
+		return requestOpenAI2ClaudeMessage(*request)
+	}
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
@@ -67,11 +65,9 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
-		var responseText string
-		err, responseText = claudeStreamHandler(c, resp)
-		usage = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
+		err, usage = claudeStreamHandler(a.RequestMode, info.UpstreamModelName, info.PromptTokens, c, resp)
 	} else {
-		err, usage = claudeHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+		err, usage = claudeHandler(a.RequestMode, c, resp, info.PromptTokens, info.UpstreamModelName)
 	}
 	return
 }
