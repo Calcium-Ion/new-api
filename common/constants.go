@@ -188,7 +188,7 @@ const (
 	ChannelTypeOpenAI         = 1
 	ChannelTypeMidjourney     = 2
 	ChannelTypeAzure          = 3
-	ChannelTypeCloseAI        = 4
+	ChannelTypeOllama         = 4
 	ChannelTypeOpenAISB       = 5
 	ChannelTypeOpenAIMax      = 6
 	ChannelTypeOhMyGPT        = 7
@@ -218,7 +218,7 @@ var ChannelBaseURLs = []string{
 	"https://api.openai.com",            // 1
 	"https://oa.api2d.net",              // 2
 	"",                                  // 3
-	"https://api.closeai-proxy.xyz",     // 4
+	"http://localhost:11434",            // 4
 	"https://api.openai-sb.com",         // 5
 	"https://api.openaimax.com",         // 6
 	"https://api.ohmygpt.com",           // 7
