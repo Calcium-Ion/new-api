@@ -37,7 +37,10 @@
 9. 支持渠道**加权随机**
 10. 数据看板
 11. 可设置令牌能调用的模型
-12. 支持Telegram授权登录
+12. 支持Telegram授权登录。
+    1. 系统设置-配置登录注册-允许通过Telegram登录
+    2. 找botfather /setdomain 输入https://your.new-api.domain/login
+    3. Telegram Bot 名称是bot username 去掉@后的字符串
 
 ## 模型支持
 此版本额外支持以下模型：
