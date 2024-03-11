@@ -683,7 +683,7 @@ func ManageUser(c *gin.Context) {
 			})
 			return
 		}
-		if err := user.HardDelete(); err != nil {
+		if err := user.Delete(); err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": err.Error(),
