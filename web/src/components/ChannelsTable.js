@@ -696,7 +696,7 @@ const ChannelsTable = () => {
                 } : null
             }/>
             <div style={{display: isMobile()?'':'flex', marginTop: isMobile()?0:-45, zIndex: 999, position: 'relative', pointerEvents: 'none'}}>
-                <Space style={{pointerEvents: 'auto'}}>
+                <Space style={{pointerEvents: 'auto', marginTop: isMobile() ? 0 : 45}}>
                     <Button theme='light' type='primary' style={{marginRight: 8}} onClick={
                         () => {
                             setEditingChannel({
