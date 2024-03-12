@@ -25,6 +25,7 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
 			Temperature: request.Temperature,
 			Seed:        request.Seed,
 			Topp:        request.TopP,
+			TopK:        request.TopK,
 			Stop:        Stop,
 		},
 	}
