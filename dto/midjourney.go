@@ -25,6 +25,7 @@ type MidjourneyDto struct {
 	MjId        string `json:"id"`
 	Action      string `json:"action"`
 	CustomId    string `json:"customId"`
+	BotType     string `json:"botType"`
 	Prompt      string `json:"prompt"`
 	PromptEn    string `json:"promptEn"`
 	Description string `json:"description"`

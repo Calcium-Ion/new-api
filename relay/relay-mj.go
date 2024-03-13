@@ -112,7 +112,7 @@ func RelayMidjourneyNotify(c *gin.Context) *dto.MidjourneyResponse {
 	return nil
 }
 
-func getMidjourneyTaskDto(c *gin.Context, originTask *model.Midjourney) (midjourneyTask dto.MidjourneyDto) {
+func coverMidjourneyTaskDto(c *gin.Context, originTask *model.Midjourney) (midjourneyTask dto.MidjourneyDto) {
 	midjourneyTask.MjId = originTask.MjId
 	midjourneyTask.Progress = originTask.Progress
 	midjourneyTask.PromptEn = originTask.PromptEn
@@ -181,7 +181,7 @@ func RelayMidjourneyTask(c *gin.Context, relayMode int) *dto.MidjourneyResponse 
 				Description: "task_no_found",
 			}
 		}
-		midjourneyTask := getMidjourneyTaskDto(c, originTask)
+		midjourneyTask := coverMidjourneyTaskDto(c, originTask)
 		respBody, err = json.Marshal(midjourneyTask)
 		if err != nil {
 			return &dto.MidjourneyResponse{
@@ -204,7 +204,7 @@ func RelayMidjourneyTask(c *gin.Context, relayMode int) *dto.MidjourneyResponse 
 		if len(condition.IDs) != 0 {
 			originTasks := model.GetByMJIds(userId, condition.IDs)
 			for _, originTask := range originTasks {
-				midjourneyTask := getMidjourneyTaskDto(c, originTask)
+				midjourneyTask := coverMidjourneyTaskDto(c, originTask)
 				tasks = append(tasks, midjourneyTask)
 			}
 		}
@@ -403,23 +403,22 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 		}
 	}
 	//req.Header.Set("ApiKey", c.Request.Header.Get("ApiKey"))
-
+	timeout := time.Second * 30
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	// 使用带有超时的 context 创建新的请求
+	req = req.WithContext(ctx)
 	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
 	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
-	//mjToken := ""
-	//if c.Request.Header.Get("ApiKey") != "" {
-	//	mjToken = strings.Split(c.Request.Header.Get("ApiKey"), " ")[1]
-	//}
-	//req.Header.Set("ApiKey", "Bearer midjourney-proxy")
 	req.Header.Set("mj-api-secret", strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
 	// print request header
-	log.Printf("request header: %s", req.Header)
-	log.Printf("request body: %s", midjRequest.Prompt)
+	//log.Printf("request header: %s", req.Header)
+	//log.Printf("request body: %s", midjRequest.Prompt)
 
+	defer cancel()
 	resp, err := service.GetHttpClient().Do(req)
 	if err != nil {
 		return &dto.MidjourneyResponse{
-			Code:        4,
+			Code:        5,
 			Description: "do_request_failed",
 		}
 	}
@@ -427,14 +426,14 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	err = req.Body.Close()
 	if err != nil {
 		return &dto.MidjourneyResponse{
-			Code:        4,
+			Code:        5,
 			Description: "close_request_body_failed",
 		}
 	}
 	err = c.Request.Body.Close()
 	if err != nil {
 		return &dto.MidjourneyResponse{
-			Code:        4,
+			Code:        5,
 			Description: "close_request_body_failed",
 		}
 	}
