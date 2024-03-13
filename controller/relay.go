@@ -12,7 +12,6 @@ import (
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"strconv"
-	"strings"
 )
 
 func Relay(c *gin.Context) {
@@ -61,42 +60,13 @@ func Relay(c *gin.Context) {
 }
 
 func RelayMidjourney(c *gin.Context) {
-	relayMode := relayconstant.RelayModeUnknown
-	if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/action") {
-		// midjourney plus
-		relayMode = relayconstant.RelayModeMidjourneyAction
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/modal") {
-		// midjourney plus
-		relayMode = relayconstant.RelayModeMidjourneyModal
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/shorten") {
-		// midjourney plus
-		relayMode = relayconstant.RelayModeMidjourneyShorten
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/imagine") {
-		relayMode = relayconstant.RelayModeMidjourneyImagine
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/blend") {
-		relayMode = relayconstant.RelayModeMidjourneyBlend
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/describe") {
-		relayMode = relayconstant.RelayModeMidjourneyDescribe
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/notify") {
-		relayMode = relayconstant.RelayModeMidjourneyNotify
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/change") {
-		relayMode = relayconstant.RelayModeMidjourneyChange
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/simple-change") {
-		relayMode = relayconstant.RelayModeMidjourneyChange
-	} else if strings.HasSuffix(c.Request.URL.Path, "/fetch") {
-		relayMode = relayconstant.RelayModeMidjourneyTaskFetch
-	} else if strings.HasSuffix(c.Request.URL.Path, "/list-by-condition") {
-		relayMode = relayconstant.RelayModeMidjourneyTaskFetchByCondition
-	}
-
+	relayMode := constant.Path2RelayModeMidjourney(c.Request.URL.Path)
 	var err *dto.MidjourneyResponse
 	switch relayMode {
 	case relayconstant.RelayModeMidjourneyNotify:
 		err = relay.RelayMidjourneyNotify(c)
 	case relayconstant.RelayModeMidjourneyTaskFetch, relayconstant.RelayModeMidjourneyTaskFetchByCondition:
 		err = relay.RelayMidjourneyTask(c, relayMode)
-	//case relayconstant.RelayModeMidjourneyModal:
-	//	err = relay.RelayMidjournneyModal(c)
 	default:
 		err = relay.RelayMidjourneySubmit(c, relayMode)
 	}

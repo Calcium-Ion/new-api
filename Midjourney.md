@@ -4,31 +4,62 @@
 
 ## 模型价格设置（在设置-运营设置-模型固定价格设置中设置）
 
+### 模型列表
+
+### midjourney-proxy支持
+
+- mj_imagine (绘图)
+- mj_variation (变换)
+- mj_reroll (重绘)
+- mj_blend (混合)
+- mj_upscale (放大)
+- mj_describe (图生文)
+
+### 仅midjourney-proxy-plus支持
+
+- mj_zoom (比例变焦)
+- mj_shorten (提示词缩短)
+- mj_inpaint_pre (发起局部重绘，必须和mj_inpaint一同添加)
+- mj_inpaint (局部重绘提交，必须和mj_inpaint_pre一同添加)
+- mj_high_variation (强变换)
+- mj_low_variation (弱变换)
+- mj_pan (平移)
+- swap_face (换脸)
+
 ```json
 {
-  "gpt-4-gizmo-*": 0.1,
-  "mj_imagine":     0.1,
-  "mj_variation":   0.1,
-  "mj_reroll":      0.1,
-  "mj_blend":       0.1,
-  "mj_inpaint":     0.1,
-  "mj_zoom":        0.1,
+  "mj_imagine": 0.1,
+  "mj_variation": 0.1,
+  "mj_reroll": 0.1,
+  "mj_blend": 0.1,
+  "mj_inpaint": 0.1,
+  "mj_zoom": 0.1,
+  "mj_shorten": 0.1,
+  "mj_high_variation": 0.1,
+  "mj_low_variation": 0.1,
+  "mj_pan": 0.1,
   "mj_inpaint_pre": 0,
-  "mj_describe":    0.05,
-  "mj_upscale":     0.05,
-  "swap_face":     0.05
+  "mj_describe": 0.05,
+  "mj_upscale": 0.05,
+  "swap_face": 0.05
 }
 ```
 
 ## 渠道设置
 
 ### 对接 midjourney-proxy(plus)
-1. 部署Midjourney-Proxy，并配置好midjourney账号等（强烈建议设置密钥），[项目地址](https://github.com/novicezk/midjourney-proxy)
-2. 在渠道管理中添加渠道，渠道类型选择**Midjourney Proxy**，如果是plus版本选择**Midjourney Proxy Plus**，模型选择midjourney，如果有换脸模型，可以选择swap_face
+
+1.
+
+部署Midjourney-Proxy，并配置好midjourney账号等（强烈建议设置密钥），[项目地址](https://github.com/novicezk/midjourney-proxy)
+
+2. 在渠道管理中添加渠道，渠道类型选择**Midjourney Proxy**，如果是plus版本选择**Midjourney Proxy Plus**
+   ，模型选择midjourney，如果有换脸模型，可以选择swap_face
 3. 地址填写midjourney-proxy部署的地址，例如：http://localhost:8080
 4. 密钥填写midjourney-proxy的密钥，如果没有设置密钥，可以随便填
 
 ### 对接上游new api
+
 1. 在渠道管理中添加渠道，渠道类型选择**Midjourney Proxy Plus**，模型选择midjourney，如果有换脸模型，可以选择swap_face
 2. 地址填写上游new api的地址，例如：http://localhost:3000
 3. 密钥填写上游new api的密钥

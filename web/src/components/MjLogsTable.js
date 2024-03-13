@@ -31,6 +31,12 @@ function renderType(type) {
             return <Tag color="orange" size='large'>放大</Tag>;
         case 'VARIATION':
             return <Tag color="purple" size='large'>变换</Tag>;
+        case 'HIGH_VARIATION':
+            return <Tag color="purple" size='large'>强变换</Tag>;
+        case 'LOW_VARIATION':
+            return <Tag color="purple" size='large'>弱变换</Tag>;
+        case 'PAN':
+            return <Tag color="cyan" size='large'>平移</Tag>;
         case 'DESCRIBE':
             return <Tag color="yellow" size='large'>图生文</Tag>;
         case 'BLEAND':

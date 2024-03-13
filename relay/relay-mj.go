@@ -22,16 +22,20 @@ import (
 )
 
 var DefaultModelPrice = map[string]float64{
-	"mj_imagine":     0.1,
-	"mj_variation":   0.1,
-	"mj_reroll":      0.1,
-	"mj_blend":       0.1,
-	"mj_inpaint":     0.1,
-	"mj_zoom":        0.1,
-	"mj_inpaint_pre": 0,
-	"mj_describe":    0.05,
-	"mj_upscale":     0.05,
-	"swap_face":      0.05,
+	"mj_imagine":        0.1,
+	"mj_variation":      0.1,
+	"mj_reroll":         0.1,
+	"mj_blend":          0.1,
+	"mj_inpaint":        0.1,
+	"mj_zoom":           0.1,
+	"mj_shorten":        0.1,
+	"mj_high_variation": 0.1,
+	"mj_low_variation":  0.1,
+	"mj_pan":            0.1,
+	"mj_inpaint_pre":    0,
+	"mj_describe":       0.05,
+	"mj_upscale":        0.05,
+	"swap_face":         0.05,
 }
 
 func RelayMidjourneyImage(c *gin.Context) {
@@ -151,31 +155,6 @@ func coverMidjourneyTaskDto(c *gin.Context, originTask *model.Midjourney) (midjo
 	return
 }
 
-func RelayMidjournneyModal(c *gin.Context) *dto.MidjourneyResponse {
-	userId := c.GetInt("id")
-	var midjRequest dto.MidjourneyRequest
-	err := common.UnmarshalBodyReusable(c, &midjRequest)
-	if err != nil {
-		return service.MidjourneyErrorWrapper(constant.MjRequestError, "bind_request_body_failed")
-	}
-	originTask := model.GetByMJId(userId, midjRequest.TaskId)
-	if originTask == nil {
-		return service.MidjourneyErrorWrapper(constant.MjRequestError, "task_no_found")
-	}
-
-	respBody, err := json.Marshal(midjRequest)
-	if err != nil {
-		return service.MidjourneyErrorWrapper(constant.MjRequestError, "unmarshal_response_body_failed")
-	}
-	c.Writer.Header().Set("Content-Type", "application/json")
-	_, err = io.Copy(c.Writer, bytes.NewBuffer(respBody))
-	if err != nil {
-		return service.MidjourneyErrorWrapper(constant.MjRequestError, "copy_response_body_failed")
-	}
-	return nil
-
-}
-
 func RelayMidjourneyTask(c *gin.Context, relayMode int) *dto.MidjourneyResponse {
 	userId := c.GetInt("id")
 	var err error
@@ -274,7 +253,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	} else if relayMode == relayconstant.RelayModeMidjourneyShorten { //缩短任务，此类任务可重复，plus only
 		midjRequest.Action = constant.MjActionShorten
 	} else if relayMode == relayconstant.RelayModeMidjourneyBlend { //绘画任务，此类任务可重复
-		midjRequest.Action = "BLEND"
+		midjRequest.Action = constant.MjActionBlend
 	} else if midjRequest.TaskId != "" { //放大、变换任务，此类任务，如果重复且已有结果，远端api会直接返回最终结果
 		mjId := ""
 		if relayMode == relayconstant.RelayModeMidjourneyChange {
@@ -634,10 +613,21 @@ func coverPlusActionToNormalAction(midjRequest *dto.MidjourneyRequest) *dto.Midj
 		midjRequest.Index = index
 		midjRequest.Action = constant.MjActionUpscale
 	} else if strings.Contains(action, "variation") {
-		midjRequest.Action = constant.MjActionVariation
 		midjRequest.Index = 1
+		if action == "variation" {
+			index, err := strconv.Atoi(splits[3])
+			if err != nil {
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "index_parse_failed")
+			}
+			midjRequest.Index = index
+			midjRequest.Action = constant.MjActionVariation
+		} else if action == "low_variation" {
+			midjRequest.Action = constant.MjActionLowVariation
+		} else if action == "high_variation" {
+			midjRequest.Action = constant.MjActionHighVariation
+		}
 	} else if strings.Contains(action, "pan") {
-		midjRequest.Action = constant.MjActionVariation
+		midjRequest.Action = constant.MjActionPan
 		midjRequest.Index = 1
 	} else if action == "Outpaint" || action == "CustomZoom" {
 		midjRequest.Action = constant.MjActionZoom
