@@ -494,8 +494,10 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 			}
 		}
 		//修改返回值
-		newBody := strings.Replace(string(responseBody), `"code":21`, `"code":1`, -1)
-		responseBody = []byte(newBody)
+		if midjRequest.Action != constant.MjActionInPaintPre {
+			newBody := strings.Replace(string(responseBody), `"code":21`, `"code":1`, -1)
+			responseBody = []byte(newBody)
+		}
 	}
 
 	err = midjourneyTask.Insert()
