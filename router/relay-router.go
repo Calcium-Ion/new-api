@@ -48,6 +48,7 @@ func SetRelayRouter(router *gin.Engine) {
 	relayMjRouter.Use(middleware.TokenAuth(), middleware.Distribute())
 	{
 		relayMjRouter.POST("/submit/action", controller.RelayMidjourney)
+		relayMjRouter.POST("/submit/shorten", controller.RelayMidjourney)
 		relayMjRouter.POST("/submit/modal", controller.RelayMidjourney)
 		relayMjRouter.POST("/submit/imagine", controller.RelayMidjourney)
 		relayMjRouter.POST("/submit/change", controller.RelayMidjourney)

@@ -68,6 +68,9 @@ func RelayMidjourney(c *gin.Context) {
 	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/modal") {
 		// midjourney plus
 		relayMode = relayconstant.RelayModeMidjourneyModal
+	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/shorten") {
+		// midjourney plus
+		relayMode = relayconstant.RelayModeMidjourneyShorten
 	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/imagine") {
 		relayMode = relayconstant.RelayModeMidjourneyImagine
 	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/blend") {

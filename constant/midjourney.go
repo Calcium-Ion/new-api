@@ -14,4 +14,5 @@ const (
 	MjActionInPaint    = "INPAINT"
 	MjActionInPaintPre = "INPAINT_PRE"
 	MjActionZoom       = "ZOOM"
+	MjActionShorten    = "SHORTEN"
 )

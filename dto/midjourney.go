@@ -22,23 +22,24 @@ type MidjourneyResponse struct {
 }
 
 type MidjourneyDto struct {
-	MjId        string `json:"id"`
-	Action      string `json:"action"`
-	CustomId    string `json:"customId"`
-	BotType     string `json:"botType"`
-	Prompt      string `json:"prompt"`
-	PromptEn    string `json:"promptEn"`
-	Description string `json:"description"`
-	State       string `json:"state"`
-	SubmitTime  int64  `json:"submitTime"`
-	StartTime   int64  `json:"startTime"`
-	FinishTime  int64  `json:"finishTime"`
-	ImageUrl    string `json:"imageUrl"`
-	Status      string `json:"status"`
-	Progress    string `json:"progress"`
-	FailReason  string `json:"failReason"`
-	Buttons     any    `json:"buttons"`
-	MaskBase64  string `json:"maskBase64"`
+	MjId        string      `json:"id"`
+	Action      string      `json:"action"`
+	CustomId    string      `json:"customId"`
+	BotType     string      `json:"botType"`
+	Prompt      string      `json:"prompt"`
+	PromptEn    string      `json:"promptEn"`
+	Description string      `json:"description"`
+	State       string      `json:"state"`
+	SubmitTime  int64       `json:"submitTime"`
+	StartTime   int64       `json:"startTime"`
+	FinishTime  int64       `json:"finishTime"`
+	ImageUrl    string      `json:"imageUrl"`
+	Status      string      `json:"status"`
+	Progress    string      `json:"progress"`
+	FailReason  string      `json:"failReason"`
+	Buttons     any         `json:"buttons"`
+	MaskBase64  string      `json:"maskBase64"`
+	Properties  *Properties `json:"properties"`
 }
 
 type MidjourneyStatus struct {
@@ -69,4 +70,9 @@ type ActionButton struct {
 	Label    any `json:"label"`
 	Type     any `json:"type"`
 	Style    any `json:"style"`
+}
+
+type Properties struct {
+	FinalPrompt   string `json:"finalPrompt"`
+	FinalZhPrompt string `json:"finalZhPrompt"`
 }

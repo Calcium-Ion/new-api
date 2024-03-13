@@ -35,6 +35,8 @@ function renderType(type) {
             return <Tag color="yellow" size='large'>图生文</Tag>;
         case 'BLEAND':
             return <Tag color="lime" size='large'>图混合</Tag>;
+        case 'SHORTEN':
+            return <Tag color="pink" size='large'>缩词</Tag>;
         case 'REROLL':
             return <Tag color="indigo" size='large'>重绘</Tag>;
         case 'INPAINT':

@@ -263,6 +263,10 @@ func UpdateMidjourneyTaskBulk() {
 				task.ImageUrl = responseItem.ImageUrl
 				task.Status = responseItem.Status
 				task.FailReason = responseItem.FailReason
+				if responseItem.Properties != nil {
+					propertiesStr, _ := json.Marshal(responseItem.Properties)
+					task.Properties = string(propertiesStr)
+				}
 				if responseItem.Buttons != nil {
 					buttonStr, _ := json.Marshal(responseItem.Buttons)
 					task.Buttons = string(buttonStr)

@@ -31,6 +31,7 @@ var DefaultModelPrice = map[string]float64{
 	"mj_inpaint_pre": 0,
 	"mj_describe":    0.05,
 	"mj_upscale":     0.05,
+	"swap_face":      0.05,
 }
 
 func RelayMidjourneyImage(c *gin.Context) {
@@ -138,6 +139,13 @@ func coverMidjourneyTaskDto(c *gin.Context, originTask *model.Midjourney) (midjo
 		err := json.Unmarshal([]byte(originTask.Buttons), &buttons)
 		if err == nil {
 			midjourneyTask.Buttons = buttons
+		}
+	}
+	if originTask.Properties != "" {
+		var properties dto.Properties
+		err := json.Unmarshal([]byte(originTask.Properties), &properties)
+		if err == nil {
+			midjourneyTask.Properties = &properties
 		}
 	}
 	return
@@ -260,9 +268,11 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 		if midjRequest.Prompt == "" {
 			return service.MidjourneyErrorWrapper(constant.MjRequestError, "prompt_is_required")
 		}
-		midjRequest.Action = "IMAGINE"
+		midjRequest.Action = constant.MjActionImagine
 	} else if relayMode == relayconstant.RelayModeMidjourneyDescribe { //按图生文任务，此类任务可重复
-		midjRequest.Action = "DESCRIBE"
+		midjRequest.Action = constant.MjActionDescribe
+	} else if relayMode == relayconstant.RelayModeMidjourneyShorten { //缩短任务，此类任务可重复，plus only
+		midjRequest.Action = constant.MjActionShorten
 	} else if relayMode == relayconstant.RelayModeMidjourneyBlend { //绘画任务，此类任务可重复
 		midjRequest.Action = "BLEND"
 	} else if midjRequest.TaskId != "" { //放大、变换任务，此类任务，如果重复且已有结果，远端api会直接返回最终结果
@@ -292,7 +302,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 				return service.MidjourneyErrorWrapper(constant.MjRequestError, "mask_base64_is_required")
 			}
 			mjId = midjRequest.TaskId
-			midjRequest.Action = "INPAINT"
+			midjRequest.Action = constant.MjActionInPaint
 		}
 
 		originTask := model.GetByMJId(userId, mjId)
@@ -418,25 +428,16 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	defer cancel()
 	resp, err := service.GetHttpClient().Do(req)
 	if err != nil {
-		return &dto.MidjourneyResponse{
-			Code:        5,
-			Description: "do_request_failed",
-		}
+		return service.MidjourneyErrorWrapper(constant.MjErrorUnknown, "do_request_failed")
 	}
 
 	err = req.Body.Close()
 	if err != nil {
-		return &dto.MidjourneyResponse{
-			Code:        5,
-			Description: "close_request_body_failed",
-		}
+		return service.MidjourneyErrorWrapper(constant.MjErrorUnknown, "close_request_body_failed")
 	}
 	err = c.Request.Body.Close()
 	if err != nil {
-		return &dto.MidjourneyResponse{
-			Code:        5,
-			Description: "close_request_body_failed",
-		}
+		return service.MidjourneyErrorWrapper(constant.MjErrorUnknown, "close_request_body_failed")
 	}
 	var midjResponse dto.MidjourneyResponse
 
@@ -464,33 +465,20 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	responseBody, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		return &dto.MidjourneyResponse{
-			Code:        4,
-			Description: "read_response_body_failed",
-		}
+		return service.MidjourneyErrorWrapper(constant.MjErrorUnknown, "read_response_body_failed")
 	}
 	err = resp.Body.Close()
 	if err != nil {
-		return &dto.MidjourneyResponse{
-			Code:        4,
-			Description: "close_response_body_failed",
-		}
+		return service.MidjourneyErrorWrapper(constant.MjErrorUnknown, "close_response_body_failed")
 	}
-
+	if resp.StatusCode != 200 {
+		return service.MidjourneyErrorWrapper(constant.MjErrorUnknown, "unexpected_response_status")
+	}
 	err = json.Unmarshal(responseBody, &midjResponse)
 	log.Printf("responseBody: %s", string(responseBody))
 	log.Printf("midjResponse: %v", midjResponse)
-	if resp.StatusCode != 200 {
-		return &dto.MidjourneyResponse{
-			Code:        4,
-			Description: "fail_to_fetch_midjourney status_code: " + strconv.Itoa(resp.StatusCode),
-		}
-	}
 	if err != nil {
-		return &dto.MidjourneyResponse{
-			Code:        4,
-			Description: "unmarshal_response_body_failed",
-		}
+		return service.MidjourneyErrorWrapper(constant.MjErrorUnknown, "unmarshal_response_body_failed")
 	}
 
 	// 文档：https://github.com/novicezk/midjourney-proxy/blob/main/docs/api.md
@@ -651,7 +639,7 @@ func coverPlusActionToNormalAction(midjRequest *dto.MidjourneyRequest) *dto.Midj
 	} else if strings.Contains(action, "pan") {
 		midjRequest.Action = constant.MjActionVariation
 		midjRequest.Index = 1
-	} else if action == "Outpaint" || strings.Contains(action, "CustomZoom") {
+	} else if action == "Outpaint" || action == "CustomZoom" {
 		midjRequest.Action = constant.MjActionZoom
 		midjRequest.Index = 1
 	} else if action == "Inpaint" {
