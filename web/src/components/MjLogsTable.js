@@ -39,7 +39,7 @@ function renderType(type) {
             return <Tag color="cyan" size='large'>平移</Tag>;
         case 'DESCRIBE':
             return <Tag color="yellow" size='large'>图生文</Tag>;
-        case 'BLEAND':
+        case 'BLEND':
             return <Tag color="lime" size='large'>图混合</Tag>;
         case 'SHORTEN':
             return <Tag color="pink" size='large'>缩词</Tag>;
