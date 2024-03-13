@@ -45,7 +45,7 @@ func GetMjRequestModel(relayMode int, midjRequest *dto.MidjourneyRequest) (strin
 		case relayconstant.RelayModeMidjourneyTaskFetch, relayconstant.RelayModeMidjourneyTaskFetchByCondition, relayconstant.RelayModeMidjourneyNotify:
 			return "", nil, true
 		default:
-			return "", MidjourneyErrorWrapper(constant.MjRequestError, "unknown_action"), false
+			return "", MidjourneyErrorWrapper(constant.MjRequestError, "unknown_relay_action"), false
 		}
 	}
 	modelName := CoverActionToModelName(action)
@@ -93,6 +93,9 @@ func CoverPlusActionToNormalAction(midjRequest *dto.MidjourneyRequest) *dto.Midj
 	} else if strings.Contains(action, "pan") {
 		midjRequest.Action = constant.MjActionPan
 		midjRequest.Index = 1
+	} else if strings.Contains(action, "reroll") {
+		midjRequest.Action = constant.MjActionReRoll
+		midjRequest.Index = 1
 	} else if action == "Outpaint" || action == "CustomZoom" {
 		midjRequest.Action = constant.MjActionZoom
 		midjRequest.Index = 1
@@ -100,7 +103,7 @@ func CoverPlusActionToNormalAction(midjRequest *dto.MidjourneyRequest) *dto.Midj
 		midjRequest.Action = constant.MjActionInPaintPre
 		midjRequest.Index = 1
 	} else {
-		return MidjourneyErrorWrapper(constant.MjRequestError, "unknown_action")
+		return MidjourneyErrorWrapper(constant.MjRequestError, "unknown_action:"+customId)
 	}
 	return nil
 }

@@ -110,7 +110,7 @@ const EditChannel = (props) => {
                         'mj_zoom',
                         'mj_shorten',
                         'mj_inpaint_pre',
-                        'mj_inpaint_pre',
+                        'mj_inpaint',
                         'mj_high_variation',
                         'mj_low_variation',
                         'mj_pan',

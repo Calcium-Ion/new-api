@@ -147,7 +147,12 @@ func FixAbility() (int, error) {
 		return 0, err
 	}
 	var channels []Channel
-	err = DB.Where("id NOT IN (?)", abilityChannelIds).Find(&channels).Error
+
+	if len(abilityChannelIds) == 0 {
+		err = DB.Find(&channels).Error
+	} else {
+		err = DB.Where("id NOT IN (?)", abilityChannelIds).Find(&channels).Error
+	}
 	if err != nil {
 		return 0, err
 	}
