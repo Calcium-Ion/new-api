@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	relayconstant "one-api/relay/constant"
@@ -20,51 +21,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Midjourney struct {
-	MjId        string `json:"id"`
-	Action      string `json:"action"`
-	Prompt      string `json:"prompt"`
-	PromptEn    string `json:"promptEn"`
-	Description string `json:"description"`
-	State       string `json:"state"`
-	SubmitTime  int64  `json:"submitTime"`
-	StartTime   int64  `json:"startTime"`
-	FinishTime  int64  `json:"finishTime"`
-	ImageUrl    string `json:"imageUrl"`
-	Status      string `json:"status"`
-	Progress    string `json:"progress"`
-	FailReason  string `json:"failReason"`
-}
-
-type MidjourneyStatus struct {
-	Status int `json:"status"`
-}
-type MidjourneyWithoutStatus struct {
-	Id          int    `json:"id"`
-	Code        int    `json:"code"`
-	UserId      int    `json:"user_id" gorm:"index"`
-	Action      string `json:"action"`
-	MjId        string `json:"mj_id" gorm:"index"`
-	Prompt      string `json:"prompt"`
-	PromptEn    string `json:"prompt_en"`
-	Description string `json:"description"`
-	State       string `json:"state"`
-	SubmitTime  int64  `json:"submit_time"`
-	StartTime   int64  `json:"start_time"`
-	FinishTime  int64  `json:"finish_time"`
-	ImageUrl    string `json:"image_url"`
-	Progress    string `json:"progress"`
-	FailReason  string `json:"fail_reason"`
-	ChannelId   int    `json:"channel_id"`
-}
-
 var DefaultModelPrice = map[string]float64{
-	"mj_imagine":   0.1,
-	"mj_variation": 0.1,
-	"mj_reroll":    0.1,
-	"mj_blend":     0.1,
-	"mj_describe":  0.05,
-	"mj_upscale":   0.05,
+	"mj_imagine":     0.1,
+	"mj_variation":   0.1,
+	"mj_reroll":      0.1,
+	"mj_blend":       0.1,
+	"mj_inpaint":     0.1,
+	"mj_inpaint_pre": 0,
+	"mj_describe":    0.05,
+	"mj_upscale":     0.05,
 }
 
 func RelayMidjourneyImage(c *gin.Context) {
@@ -108,7 +73,7 @@ func RelayMidjourneyImage(c *gin.Context) {
 }
 
 func RelayMidjourneyNotify(c *gin.Context) *dto.MidjourneyResponse {
-	var midjRequest Midjourney
+	var midjRequest dto.MidjourneyDto
 	err := common.UnmarshalBodyReusable(c, &midjRequest)
 	if err != nil {
 		return &dto.MidjourneyResponse{
@@ -147,7 +112,7 @@ func RelayMidjourneyNotify(c *gin.Context) *dto.MidjourneyResponse {
 	return nil
 }
 
-func getMidjourneyTaskModel(c *gin.Context, originTask *model.Midjourney) (midjourneyTask Midjourney) {
+func getMidjourneyTaskDto(c *gin.Context, originTask *model.Midjourney) (midjourneyTask dto.MidjourneyDto) {
 	midjourneyTask.MjId = originTask.MjId
 	midjourneyTask.Progress = originTask.Progress
 	midjourneyTask.PromptEn = originTask.PromptEn
@@ -167,7 +132,39 @@ func getMidjourneyTaskModel(c *gin.Context, originTask *model.Midjourney) (midjo
 	midjourneyTask.Action = originTask.Action
 	midjourneyTask.Description = originTask.Description
 	midjourneyTask.Prompt = originTask.Prompt
+	if originTask.Buttons != "" {
+		var buttons []dto.ActionButton
+		err := json.Unmarshal([]byte(originTask.Buttons), &buttons)
+		if err == nil {
+			midjourneyTask.Buttons = buttons
+		}
+	}
 	return
+}
+
+func RelayMidjournneyModal(c *gin.Context) *dto.MidjourneyResponse {
+	userId := c.GetInt("id")
+	var midjRequest dto.MidjourneyRequest
+	err := common.UnmarshalBodyReusable(c, &midjRequest)
+	if err != nil {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "bind_request_body_failed")
+	}
+	originTask := model.GetByMJId(userId, midjRequest.TaskId)
+	if originTask == nil {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "task_no_found")
+	}
+
+	respBody, err := json.Marshal(midjRequest)
+	if err != nil {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "unmarshal_response_body_failed")
+	}
+	c.Writer.Header().Set("Content-Type", "application/json")
+	_, err = io.Copy(c.Writer, bytes.NewBuffer(respBody))
+	if err != nil {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "copy_response_body_failed")
+	}
+	return nil
+
 }
 
 func RelayMidjourneyTask(c *gin.Context, relayMode int) *dto.MidjourneyResponse {
@@ -184,7 +181,7 @@ func RelayMidjourneyTask(c *gin.Context, relayMode int) *dto.MidjourneyResponse 
 				Description: "task_no_found",
 			}
 		}
-		midjourneyTask := getMidjourneyTaskModel(c, originTask)
+		midjourneyTask := getMidjourneyTaskDto(c, originTask)
 		respBody, err = json.Marshal(midjourneyTask)
 		if err != nil {
 			return &dto.MidjourneyResponse{
@@ -203,16 +200,16 @@ func RelayMidjourneyTask(c *gin.Context, relayMode int) *dto.MidjourneyResponse 
 				Description: "do_request_failed",
 			}
 		}
-		var tasks []Midjourney
+		var tasks []dto.MidjourneyDto
 		if len(condition.IDs) != 0 {
 			originTasks := model.GetByMJIds(userId, condition.IDs)
 			for _, originTask := range originTasks {
-				midjourneyTask := getMidjourneyTaskModel(c, originTask)
+				midjourneyTask := getMidjourneyTaskDto(c, originTask)
 				tasks = append(tasks, midjourneyTask)
 			}
 		}
 		if tasks == nil {
-			tasks = make([]Midjourney, 0)
+			tasks = make([]dto.MidjourneyDto, 0)
 		}
 		respBody, err = json.Marshal(tasks)
 		if err != nil {
@@ -235,44 +232,32 @@ func RelayMidjourneyTask(c *gin.Context, relayMode int) *dto.MidjourneyResponse 
 	return nil
 }
 
-const (
-	// type 1 根据 mode 价格不同
-	MJSubmitActionImagine   = "IMAGINE"
-	MJSubmitActionVariation = "VARIATION" //变换
-	MJSubmitActionBlend     = "BLEND"     //混图
-
-	MJSubmitActionReroll = "REROLL" //重新生成
-	// type 2 固定价格
-	MJSubmitActionDescribe = "DESCRIBE"
-	MJSubmitActionUpscale  = "UPSCALE" // 放大
-)
-
 func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyResponse {
 	imageModel := "midjourney"
 
 	tokenId := c.GetInt("token_id")
 	channelType := c.GetInt("channel")
 	userId := c.GetInt("id")
-	consumeQuota := c.GetBool("consume_quota")
 	group := c.GetString("group")
 	channelId := c.GetInt("channel_id")
+	consumeQuota := true
 	var midjRequest dto.MidjourneyRequest
-	if consumeQuota {
-		err := common.UnmarshalBodyReusable(c, &midjRequest)
-		if err != nil {
-			return &dto.MidjourneyResponse{
-				Code:        4,
-				Description: "bind_request_body_failed",
-			}
+	err := common.UnmarshalBodyReusable(c, &midjRequest)
+	if err != nil {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "bind_request_body_failed")
+	}
+
+	if relayMode == relayconstant.RelayModeMidjourneyAction { // midjourney plus，需要从customId中获取任务信息
+		mjErr := coverPlusActionToNormalAction(&midjRequest)
+		if mjErr != nil {
+			return mjErr
 		}
+		relayMode = relayconstant.RelayModeMidjourneyChange
 	}
 
 	if relayMode == relayconstant.RelayModeMidjourneyImagine { //绘画任务，此类任务可重复
 		if midjRequest.Prompt == "" {
-			return &dto.MidjourneyResponse{
-				Code:        4,
-				Description: "prompt_is_required",
-			}
+			return service.MidjourneyErrorWrapper(constant.MjRequestError, "prompt_is_required")
 		}
 		midjRequest.Action = "IMAGINE"
 	} else if relayMode == relayconstant.RelayModeMidjourneyDescribe { //按图生文任务，此类任务可重复
@@ -283,71 +268,58 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 		mjId := ""
 		if relayMode == relayconstant.RelayModeMidjourneyChange {
 			if midjRequest.TaskId == "" {
-				return &dto.MidjourneyResponse{
-					Code:        4,
-					Description: "taskId_is_required",
-				}
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "task_id_is_required")
 			} else if midjRequest.Action == "" {
-				return &dto.MidjourneyResponse{
-					Code:        4,
-					Description: "action_is_required",
-				}
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "action_is_required")
 			} else if midjRequest.Index == 0 {
-				return &dto.MidjourneyResponse{
-					Code:        4,
-					Description: "index_can_only_be_1_2_3_4",
-				}
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "index_is_required")
 			}
 			//action = midjRequest.Action
 			mjId = midjRequest.TaskId
 		} else if relayMode == relayconstant.RelayModeMidjourneySimpleChange {
 			if midjRequest.Content == "" {
-				return &dto.MidjourneyResponse{
-					Code:        4,
-					Description: "content_is_required",
-				}
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "content_is_required")
 			}
 			params := convertSimpleChangeParams(midjRequest.Content)
 			if params == nil {
-				return &dto.MidjourneyResponse{
-					Code:        4,
-					Description: "content_parse_failed",
-				}
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "content_parse_failed")
 			}
 			mjId = params.ID
 			midjRequest.Action = params.Action
+		} else if relayMode == relayconstant.RelayModeMidjourneyModal {
+			if midjRequest.MaskBase64 == "" {
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "mask_base64_is_required")
+			}
+			mjId = midjRequest.TaskId
+			midjRequest.Action = "INPAINT"
 		}
 
 		originTask := model.GetByMJId(userId, mjId)
 		if originTask == nil {
-			return &dto.MidjourneyResponse{
-				Code:        4,
-				Description: "task_no_found",
-			}
-		} else if originTask.Action == "UPSCALE" {
-			//return errorWrapper(errors.New("upscale task can not be change"), "request_params_error", http.StatusBadRequest).
-			return &dto.MidjourneyResponse{
-				Code:        4,
-				Description: "upscale_task_can_not_be_change",
-			}
-		} else if originTask.Status != "SUCCESS" {
-			return &dto.MidjourneyResponse{
-				Code:        4,
-				Description: "task_status_is_not_success",
-			}
+			return service.MidjourneyErrorWrapper(constant.MjRequestError, "task_not_found")
+		} else if originTask.Status != "SUCCESS" && relayMode != relayconstant.RelayModeMidjourneyModal {
+			return service.MidjourneyErrorWrapper(constant.MjRequestError, "task_status_not_success")
 		} else { //原任务的Status=SUCCESS，则可以做放大UPSCALE、变换VARIATION等动作，此时必须使用原来的请求地址才能正确处理
 			channel, err := model.GetChannelById(originTask.ChannelId, false)
 			if err != nil {
-				return &dto.MidjourneyResponse{
-					Code:        4,
-					Description: "channel_not_found",
-				}
+				return service.MidjourneyErrorWrapper(constant.MjRequestError, "get_channel_info_failed")
 			}
 			c.Set("base_url", channel.GetBaseURL())
 			c.Set("channel_id", originTask.ChannelId)
-			log.Printf("检测到此操作为放大、变换，获取原channel信息: %s,%s", strconv.Itoa(originTask.ChannelId), channel.GetBaseURL())
+			log.Printf("检测到此操作为放大、变换、重绘，获取原channel信息: %s,%s", strconv.Itoa(originTask.ChannelId), channel.GetBaseURL())
 		}
 		midjRequest.Prompt = originTask.Prompt
+
+		if channelType == common.ChannelTypeMidjourneyPlus {
+			// plus
+		} else {
+			// 普通版渠道
+
+		}
+	}
+
+	if midjRequest.Action == constant.MjActionInPaintPre {
+		consumeQuota = false
 	}
 
 	// map model name
@@ -379,7 +351,6 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	//midjRequest.NotifyHook = "http://127.0.0.1:3000/mj/notify"
 
 	fullRequestURL := fmt.Sprintf("%s%s", baseURL, requestURL)
-	log.Printf("fullRequestURL: %s", fullRequestURL)
 
 	var requestBody io.Reader
 	if isModelMapped {
@@ -394,6 +365,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	} else {
 		requestBody = c.Request.Body
 	}
+
 	mjAction := "mj_" + strings.ToLower(midjRequest.Action)
 	modelPrice := common.GetModelPrice(mjAction, true)
 	// 如果没有配置价格，则使用默认价格
@@ -489,9 +461,6 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 		}
 	}(c.Request.Context())
 
-	//if consumeQuota {
-	//
-	//}
 	responseBody, err := io.ReadAll(resp.Body)
 
 	if err != nil {
@@ -650,4 +619,44 @@ func convertSimpleChangeParams(content string) *taskChangeParams {
 	}
 	changeParams.Index = index
 	return changeParams
+}
+
+func coverPlusActionToNormalAction(midjRequest *dto.MidjourneyRequest) *dto.MidjourneyResponse {
+	// "customId": "MJ::JOB::upsample::2::3dbbd469-36af-4a0f-8f02-df6c579e7011"
+	customId := midjRequest.CustomId
+	if customId == "" {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "custom_id_is_required")
+	}
+	splits := strings.Split(customId, "::")
+	var action string
+	if splits[1] == "JOB" {
+		action = splits[2]
+	} else {
+		action = splits[1]
+	}
+
+	if action == "" {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "unknown_action")
+	}
+	if strings.Contains(action, "upsample") {
+		index, err := strconv.Atoi(splits[3])
+		if err != nil {
+			return service.MidjourneyErrorWrapper(constant.MjRequestError, "index_parse_failed")
+		}
+		midjRequest.Index = index
+		midjRequest.Action = constant.MjActionUpscale
+	} else if strings.Contains(action, "variation") {
+		midjRequest.Action = constant.MjActionVariation
+	} else if strings.Contains(action, "pan") {
+		midjRequest.Action = constant.MjActionVariation
+		midjRequest.Index = 1
+	} else if action == "Outpaint" || strings.Contains(action, "CustomZoom") {
+		midjRequest.Action = constant.MjActionInPaintPre
+	} else if action == "Inpaint" {
+		midjRequest.Action = constant.MjActionInPaintPre
+		midjRequest.Index = 1
+	} else {
+		return service.MidjourneyErrorWrapper(constant.MjRequestError, "unknown_action")
+	}
+	return nil
 }

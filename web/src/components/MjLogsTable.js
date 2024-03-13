@@ -35,6 +35,10 @@ function renderType(type) {
             return <Tag color="yellow" size='large'>图生文</Tag>;
         case 'BLEAND':
             return <Tag color="lime" size='large'>图混合</Tag>;
+        case 'INPAINT':
+            return <Tag color="violet" size='large'>局部重绘</Tag>;
+        case 'INPAINT_PRE':
+            return <Tag color="violet" size='large'>局部重绘-预处理</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }
@@ -68,6 +72,8 @@ function renderStatus(type) {
             return <Tag color="blue" size='large'>执行中</Tag>;
         case 'FAILURE':
             return <Tag color="red" size='large'>失败</Tag>;
+        case 'MODAL':
+            return <Tag color="yellow" size='large'>窗口等待</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }

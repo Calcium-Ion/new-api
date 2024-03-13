@@ -10,8 +10,8 @@ import (
 	"log"
 	"net/http"
 	"one-api/common"
+	"one-api/dto"
 	"one-api/model"
-	relay2 "one-api/relay"
 	"one-api/service"
 	"strconv"
 	"strings"
@@ -75,11 +75,11 @@ import (
 				responseBody, err := io.ReadAll(resp.Body)
 				resp.Body.Close()
 				log.Printf("responseBody: %s", string(responseBody))
-				var responseItem Midjourney
+				var responseItem MidjourneyDto
 				// err = json.NewDecoder(resp.Body).Decode(&responseItem)
 				err = json.Unmarshal(responseBody, &responseItem)
 				if err != nil {
-					if strings.Contains(err.Error(), "cannot unmarshal number into Go struct field Midjourney.status of type string") {
+					if strings.Contains(err.Error(), "cannot unmarshal number into Go struct field MidjourneyDto.status of type string") {
 						var responseWithoutStatus MidjourneyWithoutStatus
 						var responseStatus MidjourneyStatus
 						err1 := json.Unmarshal(responseBody, &responseWithoutStatus)
@@ -228,12 +228,16 @@ func UpdateMidjourneyTaskBulk() {
 				common.LogError(ctx, fmt.Sprintf("Get Task Do req error: %v", err))
 				continue
 			}
+			if resp.StatusCode != http.StatusOK {
+				common.LogError(ctx, fmt.Sprintf("Get Task status code: %d", resp.StatusCode))
+				continue
+			}
 			responseBody, err := io.ReadAll(resp.Body)
 			if err != nil {
 				common.LogError(ctx, fmt.Sprintf("Get Task parse body error: %v", err))
 				continue
 			}
-			var responseItems []relay2.Midjourney
+			var responseItems []dto.MidjourneyDto
 			err = json.Unmarshal(responseBody, &responseItems)
 			if err != nil {
 				common.LogError(ctx, fmt.Sprintf("Get Task parse body error2: %v, body: %s", err, string(responseBody)))
@@ -259,6 +263,10 @@ func UpdateMidjourneyTaskBulk() {
 				task.ImageUrl = responseItem.ImageUrl
 				task.Status = responseItem.Status
 				task.FailReason = responseItem.FailReason
+				if responseItem.Buttons != nil {
+					buttonStr, _ := json.Marshal(responseItem.Buttons)
+					task.Buttons = string(buttonStr)
+				}
 				if task.Progress != "100%" && responseItem.FailReason != "" {
 					common.LogInfo(ctx, task.MjId+" 构建失败，"+task.FailReason)
 					task.Progress = "100%"
@@ -286,7 +294,7 @@ func UpdateMidjourneyTaskBulk() {
 	}
 }
 
-func checkMjTaskNeedUpdate(oldTask *model.Midjourney, newTask relay2.Midjourney) bool {
+func checkMjTaskNeedUpdate(oldTask *model.Midjourney, newTask dto.MidjourneyDto) bool {
 	if oldTask.Code != 1 {
 		return true
 	}

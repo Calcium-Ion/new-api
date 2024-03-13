@@ -62,7 +62,13 @@ func Relay(c *gin.Context) {
 
 func RelayMidjourney(c *gin.Context) {
 	relayMode := relayconstant.RelayModeUnknown
-	if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/imagine") {
+	if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/action") {
+		// midjourney plus
+		relayMode = relayconstant.RelayModeMidjourneyAction
+	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/modal") {
+		// midjourney plus
+		relayMode = relayconstant.RelayModeMidjourneyModal
+	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/imagine") {
 		relayMode = relayconstant.RelayModeMidjourneyImagine
 	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/blend") {
 		relayMode = relayconstant.RelayModeMidjourneyBlend
@@ -86,35 +92,24 @@ func RelayMidjourney(c *gin.Context) {
 		err = relay.RelayMidjourneyNotify(c)
 	case relayconstant.RelayModeMidjourneyTaskFetch, relayconstant.RelayModeMidjourneyTaskFetchByCondition:
 		err = relay.RelayMidjourneyTask(c, relayMode)
+	//case relayconstant.RelayModeMidjourneyModal:
+	//	err = relay.RelayMidjournneyModal(c)
 	default:
 		err = relay.RelayMidjourneySubmit(c, relayMode)
 	}
 	//err = relayMidjourneySubmit(c, relayMode)
 	log.Println(err)
 	if err != nil {
-		retryTimesStr := c.Query("retry")
-		retryTimes, _ := strconv.Atoi(retryTimesStr)
-		if retryTimesStr == "" {
-			retryTimes = common.RetryTimes
+		if err.Code == 30 {
+			err.Result = "当前分组负载已饱和，请稍后再试，或升级账户以提升服务质量。"
 		}
-		if retryTimes > 0 {
-			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s?retry=%d", c.Request.URL.Path, retryTimes-1))
-		} else {
-			if err.Code == 30 {
-				err.Result = "当前分组负载已饱和，请稍后再试，或升级账户以提升服务质量。"
-			}
-			c.JSON(429, gin.H{
-				"error": fmt.Sprintf("%s %s", err.Description, err.Result),
-				"type":  "upstream_error",
-			})
-		}
+		c.JSON(429, gin.H{
+			"error": fmt.Sprintf("%s %s", err.Description, err.Result),
+			"type":  "upstream_error",
+			"code":  err.Code,
+		})
 		channelId := c.GetInt("channel_id")
 		common.SysError(fmt.Sprintf("relay error (channel #%d): %s", channelId, fmt.Sprintf("%s %s", err.Description, err.Result)))
-		//if shouldDisableChannel(&err.Error) {
-		//	channelId := c.GetInt("channel_id")
-		//	channelName := c.GetString("channel_name")
-		//	disableChannel(channelId, channelName, err.Result)
-		//};''''''''''''''''''''''''''''''''
 	}
 }
 

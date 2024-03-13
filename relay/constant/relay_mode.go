@@ -21,6 +21,8 @@ const (
 	RelayModeAudioSpeech
 	RelayModeAudioTranscription
 	RelayModeAudioTranslation
+	RelayModeMidjourneyAction
+	RelayModeMidjourneyModal
 )
 
 func Path2RelayMode(path string) int {

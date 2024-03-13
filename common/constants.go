@@ -189,7 +189,7 @@ const (
 	ChannelTypeMidjourney     = 2
 	ChannelTypeAzure          = 3
 	ChannelTypeOllama         = 4
-	ChannelTypeOpenAISB       = 5
+	ChannelTypeMidjourneyPlus = 5
 	ChannelTypeOpenAIMax      = 6
 	ChannelTypeOhMyGPT        = 7
 	ChannelTypeCustom         = 8

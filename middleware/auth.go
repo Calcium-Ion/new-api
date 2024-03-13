@@ -125,12 +125,6 @@ func TokenAuth() func(c *gin.Context) {
 		} else {
 			c.Set("token_model_limit_enabled", false)
 		}
-		requestURL := c.Request.URL.String()
-		consumeQuota := true
-		if strings.HasPrefix(requestURL, "/v1/models") {
-			consumeQuota = false
-		}
-		c.Set("consume_quota", consumeQuota)
 		if len(parts) > 1 {
 			if model.IsAdmin(token.UserId) {
 				c.Set("channelId", parts[1])
