@@ -100,16 +100,16 @@ func TokenAuth() func(c *gin.Context) {
 		}
 		token, err := model.ValidateUserToken(key)
 		if err != nil {
-			abortWithMessage(c, http.StatusUnauthorized, err.Error())
+			abortWithOpenAiMessage(c, http.StatusUnauthorized, err.Error())
 			return
 		}
 		userEnabled, err := model.CacheIsUserEnabled(token.UserId)
 		if err != nil {
-			abortWithMessage(c, http.StatusInternalServerError, err.Error())
+			abortWithOpenAiMessage(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 		if !userEnabled {
-			abortWithMessage(c, http.StatusForbidden, "用户已被封禁")
+			abortWithOpenAiMessage(c, http.StatusForbidden, "用户已被封禁")
 			return
 		}
 		c.Set("id", token.UserId)
@@ -129,7 +129,7 @@ func TokenAuth() func(c *gin.Context) {
 			if model.IsAdmin(token.UserId) {
 				c.Set("channelId", parts[1])
 			} else {
-				abortWithMessage(c, http.StatusForbidden, "普通用户不支持指定渠道")
+				abortWithOpenAiMessage(c, http.StatusForbidden, "普通用户不支持指定渠道")
 				return
 			}
 		}

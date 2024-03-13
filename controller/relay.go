@@ -60,7 +60,7 @@ func Relay(c *gin.Context) {
 }
 
 func RelayMidjourney(c *gin.Context) {
-	relayMode := constant.Path2RelayModeMidjourney(c.Request.URL.Path)
+	relayMode := c.GetInt("relay_mode")
 	var err *dto.MidjourneyResponse
 	switch relayMode {
 	case relayconstant.RelayModeMidjourneyNotify:
@@ -73,13 +73,15 @@ func RelayMidjourney(c *gin.Context) {
 	//err = relayMidjourneySubmit(c, relayMode)
 	log.Println(err)
 	if err != nil {
+		statusCode := http.StatusBadRequest
 		if err.Code == 30 {
 			err.Result = "当前分组负载已饱和，请稍后再试，或升级账户以提升服务质量。"
+			statusCode = http.StatusTooManyRequests
 		}
-		c.JSON(429, gin.H{
-			"error": fmt.Sprintf("%s %s", err.Description, err.Result),
-			"type":  "upstream_error",
-			"code":  err.Code,
+		c.JSON(statusCode, gin.H{
+			"description": fmt.Sprintf("%s %s", err.Description, err.Result),
+			"type":        "upstream_error",
+			"code":        err.Code,
 		})
 		channelId := c.GetInt("channel_id")
 		common.SysError(fmt.Sprintf("relay error (channel #%d): %s", channelId, fmt.Sprintf("%s %s", err.Description, err.Result)))

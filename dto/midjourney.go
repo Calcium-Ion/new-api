@@ -1,5 +1,12 @@
 package dto
 
+//type SimpleMjRequest struct {
+//	Prompt   string `json:"prompt"`
+//	CustomId string `json:"customId"`
+//	Action   string `json:"action"`
+//	Content  string `json:"content"`
+//}
+
 type MidjourneyRequest struct {
 	Prompt      string   `json:"prompt"`
 	CustomId    string   `json:"customId"`
