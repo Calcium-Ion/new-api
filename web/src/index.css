@@ -28,7 +28,22 @@ body {
         border-bottom: 1px solid rgba(0,0,0,.1);
     }
     .semi-space {
-        display: block!important;
+        /*display: block!important;*/
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        row-gap: 3px;
+        column-gap: 10px;
+    }
+}
+
+.semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+    padding: 16px 14px;
+}
+
+.channel-table {
+    .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+        padding: 16px 8px;
     }
 }
 
