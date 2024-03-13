@@ -39,6 +39,8 @@ function renderType(type) {
             return <Tag color="indigo" size='large'>重绘</Tag>;
         case 'INPAINT':
             return <Tag color="violet" size='large'>局部重绘</Tag>;
+        case 'ZOOM':
+            return <Tag color="teal" size='large'>变焦</Tag>;
         case 'INPAINT_PRE':
             return <Tag color="violet" size='large'>局部重绘-预处理</Tag>;
         default:

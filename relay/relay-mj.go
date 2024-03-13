@@ -27,6 +27,7 @@ var DefaultModelPrice = map[string]float64{
 	"mj_reroll":      0.1,
 	"mj_blend":       0.1,
 	"mj_inpaint":     0.1,
+	"mj_zoom":        0.1,
 	"mj_inpaint_pre": 0,
 	"mj_describe":    0.05,
 	"mj_upscale":     0.05,
@@ -646,11 +647,13 @@ func coverPlusActionToNormalAction(midjRequest *dto.MidjourneyRequest) *dto.Midj
 		midjRequest.Action = constant.MjActionUpscale
 	} else if strings.Contains(action, "variation") {
 		midjRequest.Action = constant.MjActionVariation
+		midjRequest.Index = 1
 	} else if strings.Contains(action, "pan") {
 		midjRequest.Action = constant.MjActionVariation
 		midjRequest.Index = 1
 	} else if action == "Outpaint" || strings.Contains(action, "CustomZoom") {
-		midjRequest.Action = constant.MjActionInPaintPre
+		midjRequest.Action = constant.MjActionZoom
+		midjRequest.Index = 1
 	} else if action == "Inpaint" {
 		midjRequest.Action = constant.MjActionInPaintPre
 		midjRequest.Index = 1
