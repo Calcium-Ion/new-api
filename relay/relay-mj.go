@@ -183,7 +183,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 	requestURL := c.Request.URL.String()
 	baseURL := c.GetString("base_url")
 	fullRequestURL := fmt.Sprintf("%s%s", baseURL, requestURL)
-	mjResp, _, err := service.DoMidjourneyHttpRequest(c, time.Second*120, fullRequestURL)
+	mjResp, _, err := service.DoMidjourneyHttpRequest(c, time.Second*60, fullRequestURL)
 	if err != nil {
 		return &mjResp.Response
 	}
@@ -213,7 +213,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 		Code:        midjResponse.Code,
 		Action:      constant.MjActionSwapFace,
 		MjId:        midjResponse.Result,
-		Prompt:      "swap_face",
+		Prompt:      "InsightFace",
 		PromptEn:    "",
 		Description: midjResponse.Description,
 		State:       "",
@@ -495,7 +495,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 		}
 	}
 
-	midjResponseWithStatus, responseBody, err := service.DoMidjourneyHttpRequest(c, time.Second*30, fullRequestURL)
+	midjResponseWithStatus, responseBody, err := service.DoMidjourneyHttpRequest(c, time.Second*60, fullRequestURL)
 	if err != nil {
 		return &midjResponseWithStatus.Response
 	}
