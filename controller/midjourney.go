@@ -118,10 +118,16 @@ func UpdateMidjourneyTaskBulk() {
 
 			for _, responseItem := range responseItems {
 				task := taskM[responseItem.MjId]
+
+				useTime := (time.Now().UnixNano() / int64(time.Millisecond)) - task.SubmitTime
+				// 如果时间超过一小时，且进度不是100%，则认为任务失败
+				if useTime > 3600000 && task.Progress != "100%" {
+					responseItem.FailReason = "上游任务超时（超过1小时）"
+					responseItem.Status = "FAILURE"
+				}
 				if !checkMjTaskNeedUpdate(task, responseItem) {
 					continue
 				}
-
 				task.Code = 1
 				task.Progress = responseItem.Progress
 				task.PromptEn = responseItem.PromptEn
@@ -140,6 +146,7 @@ func UpdateMidjourneyTaskBulk() {
 					buttonStr, _ := json.Marshal(responseItem.Buttons)
 					task.Buttons = string(buttonStr)
 				}
+
 				if task.Progress != "100%" && responseItem.FailReason != "" {
 					common.LogInfo(ctx, task.MjId+" 构建失败，"+task.FailReason)
 					task.Progress = "100%"
