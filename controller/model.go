@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	"one-api/relay"
 	"one-api/relay/channel/ai360"
 	"one-api/relay/channel/moonshot"
-	"one-api/relay/constant"
+	relayconstant "one-api/relay/constant"
 )
 
 // https://platform.openai.com/docs/api-reference/models/list
@@ -59,8 +60,8 @@ func init() {
 		IsBlocking:         false,
 	})
 	// https://platform.openai.com/docs/models/model-endpoint-compatibility
-	for i := 0; i < constant.APITypeDummy; i++ {
-		if i == constant.APITypeAIProxyLibrary {
+	for i := 0; i < relayconstant.APITypeDummy; i++ {
+		if i == relayconstant.APITypeAIProxyLibrary {
 			continue
 		}
 		adaptor := relay.GetAdaptor(i)
@@ -95,6 +96,17 @@ func init() {
 			Object:     "model",
 			Created:    1626777600,
 			OwnedBy:    "moonshot",
+			Permission: permission,
+			Root:       modelName,
+			Parent:     nil,
+		})
+	}
+	for modelName, _ := range constant.MidjourneyModel2Action {
+		openAIModels = append(openAIModels, OpenAIModels{
+			Id:         modelName,
+			Object:     "model",
+			Created:    1626777600,
+			OwnedBy:    "midjourney",
 			Permission: permission,
 			Root:       modelName,
 			Parent:     nil,

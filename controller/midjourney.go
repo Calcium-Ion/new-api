@@ -10,144 +10,13 @@ import (
 	"log"
 	"net/http"
 	"one-api/common"
+	"one-api/dto"
 	"one-api/model"
-	relay2 "one-api/relay"
 	"one-api/service"
 	"strconv"
 	"strings"
 	"time"
 )
-
-/*func UpdateMidjourneyTask() {
-	//revocer
-	//imageModel := "midjourney"
-	ctx := context.TODO()
-	imageModel := "midjourney"
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("UpdateMidjourneyTask panic: %v", err)
-		}
-	}()
-	for {
-		time.Sleep(time.Duration(15) * time.Second)
-		tasks := model.GetAllUnFinishTasks()
-		if len(tasks) != 0 {
-			common.LogInfo(ctx, fmt.Sprintf("检测到未完成的任务数有: %v", len(tasks)))
-			for _, task := range tasks {
-				common.LogInfo(ctx, fmt.Sprintf("未完成的任务信息: %v", task))
-				midjourneyChannel, err := model.GetChannelById(task.ChannelId, true)
-				if err != nil {
-					common.LogError(ctx, fmt.Sprintf("UpdateMidjourneyTask: %v", err))
-					task.FailReason = fmt.Sprintf("获取渠道信息失败，请联系管理员，渠道ID：%d", task.ChannelId)
-					task.Status = "FAILURE"
-					task.Progress = "100%"
-					err := task.Update()
-					if err != nil {
-						common.LogInfo(ctx, fmt.Sprintf("UpdateMidjourneyTask error: %v", err))
-						continue
-					}
-					continue
-				}
-				requestUrl := fmt.Sprintf("%s/mj/task/%s/fetch", *midjourneyChannel.BaseURL, task.MjId)
-				common.LogInfo(ctx, fmt.Sprintf("requestUrl: %s", requestUrl))
-
-				req, err := http.NewRequest("GET", requestUrl, bytes.NewBuffer([]byte("")))
-				if err != nil {
-					common.LogInfo(ctx, fmt.Sprintf("Get Task error: %v", err))
-					continue
-				}
-
-				// 设置超时时间
-				timeout := time.Second * 5
-				ctx, cancel := context.WithTimeout(context.Background(), timeout)
-
-				// 使用带有超时的 context 创建新的请求
-				req = req.WithContext(ctx)
-
-				req.Header.Set("Content-Type", "application/json")
-				//req.Header.Set("ApiKey", "Bearer midjourney-proxy")
-				req.Header.Set("mj-api-secret", midjourneyChannel.Key)
-				resp, err := httpClient.Do(req)
-				if err != nil {
-					log.Printf("UpdateMidjourneyTask error: %v", err)
-					continue
-				}
-				responseBody, err := io.ReadAll(resp.Body)
-				resp.Body.Close()
-				log.Printf("responseBody: %s", string(responseBody))
-				var responseItem Midjourney
-				// err = json.NewDecoder(resp.Body).Decode(&responseItem)
-				err = json.Unmarshal(responseBody, &responseItem)
-				if err != nil {
-					if strings.Contains(err.Error(), "cannot unmarshal number into Go struct field Midjourney.status of type string") {
-						var responseWithoutStatus MidjourneyWithoutStatus
-						var responseStatus MidjourneyStatus
-						err1 := json.Unmarshal(responseBody, &responseWithoutStatus)
-						err2 := json.Unmarshal(responseBody, &responseStatus)
-						if err1 == nil && err2 == nil {
-							jsonData, err3 := json.Marshal(responseWithoutStatus)
-							if err3 != nil {
-								log.Printf("UpdateMidjourneyTask error1: %v", err3)
-								continue
-							}
-							err4 := json.Unmarshal(jsonData, &responseStatus)
-							if err4 != nil {
-								log.Printf("UpdateMidjourneyTask error2: %v", err4)
-								continue
-							}
-							responseItem.Status = strconv.Itoa(responseStatus.Status)
-						} else {
-							log.Printf("UpdateMidjourneyTask error3: %v", err)
-							continue
-						}
-					} else {
-						log.Printf("UpdateMidjourneyTask error4: %v", err)
-						continue
-					}
-				}
-				task.Code = 1
-				task.Progress = responseItem.Progress
-				task.PromptEn = responseItem.PromptEn
-				task.State = responseItem.State
-				task.SubmitTime = responseItem.SubmitTime
-				task.StartTime = responseItem.StartTime
-				task.FinishTime = responseItem.FinishTime
-				task.ImageUrl = responseItem.ImageUrl
-				task.Status = responseItem.Status
-				task.FailReason = responseItem.FailReason
-				if task.Progress != "100%" && responseItem.FailReason != "" {
-					common.LogWarn(task.MjId + " 构建失败，" + task.FailReason)
-					task.Progress = "100%"
-					err = model.CacheUpdateUserQuota(task.UserId)
-					if err != nil {
-						log.Println("error update user quota cache: " + err.Error())
-					} else {
-						modelRatio := common.GetModelRatio(imageModel)
-						groupRatio := common.GetGroupRatio("default")
-						ratio := modelRatio * groupRatio
-						quota := int(ratio * 1 * 1000)
-						if quota != 0 {
-							err := model.IncreaseUserQuota(task.UserId, quota)
-							if err != nil {
-								log.Println("fail to increase user quota")
-							}
-							logContent := fmt.Sprintf("构图失败 %s，补偿 %s", task.MjId, common.LogQuota(quota))
-							model.RecordLog(task.UserId, model.LogTypeSystem, logContent)
-						}
-					}
-				}
-
-				err = task.Update()
-				if err != nil {
-					log.Printf("UpdateMidjourneyTask error5: %v", err)
-				}
-				log.Printf("UpdateMidjourneyTask success: %v", task)
-				cancel()
-			}
-		}
-	}
-}
-*/
 
 func UpdateMidjourneyTaskBulk() {
 	//imageModel := "midjourney"
@@ -228,12 +97,16 @@ func UpdateMidjourneyTaskBulk() {
 				common.LogError(ctx, fmt.Sprintf("Get Task Do req error: %v", err))
 				continue
 			}
+			if resp.StatusCode != http.StatusOK {
+				common.LogError(ctx, fmt.Sprintf("Get Task status code: %d", resp.StatusCode))
+				continue
+			}
 			responseBody, err := io.ReadAll(resp.Body)
 			if err != nil {
 				common.LogError(ctx, fmt.Sprintf("Get Task parse body error: %v", err))
 				continue
 			}
-			var responseItems []relay2.Midjourney
+			var responseItems []dto.MidjourneyDto
 			err = json.Unmarshal(responseBody, &responseItems)
 			if err != nil {
 				common.LogError(ctx, fmt.Sprintf("Get Task parse body error2: %v, body: %s", err, string(responseBody)))
@@ -245,10 +118,16 @@ func UpdateMidjourneyTaskBulk() {
 
 			for _, responseItem := range responseItems {
 				task := taskM[responseItem.MjId]
+
+				useTime := (time.Now().UnixNano() / int64(time.Millisecond)) - task.SubmitTime
+				// 如果时间超过一小时，且进度不是100%，则认为任务失败
+				if useTime > 3600000 && task.Progress != "100%" {
+					responseItem.FailReason = "上游任务超时（超过1小时）"
+					responseItem.Status = "FAILURE"
+				}
 				if !checkMjTaskNeedUpdate(task, responseItem) {
 					continue
 				}
-
 				task.Code = 1
 				task.Progress = responseItem.Progress
 				task.PromptEn = responseItem.PromptEn
@@ -259,6 +138,15 @@ func UpdateMidjourneyTaskBulk() {
 				task.ImageUrl = responseItem.ImageUrl
 				task.Status = responseItem.Status
 				task.FailReason = responseItem.FailReason
+				if responseItem.Properties != nil {
+					propertiesStr, _ := json.Marshal(responseItem.Properties)
+					task.Properties = string(propertiesStr)
+				}
+				if responseItem.Buttons != nil {
+					buttonStr, _ := json.Marshal(responseItem.Buttons)
+					task.Buttons = string(buttonStr)
+				}
+
 				if task.Progress != "100%" && responseItem.FailReason != "" {
 					common.LogInfo(ctx, task.MjId+" 构建失败，"+task.FailReason)
 					task.Progress = "100%"
@@ -286,7 +174,7 @@ func UpdateMidjourneyTaskBulk() {
 	}
 }
 
-func checkMjTaskNeedUpdate(oldTask *model.Midjourney, newTask relay2.Midjourney) bool {
+func checkMjTaskNeedUpdate(oldTask *model.Midjourney, newTask dto.MidjourneyDto) bool {
 	if oldTask.Code != 1 {
 		return true
 	}

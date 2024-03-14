@@ -18,7 +18,7 @@
 此分叉版本的主要变更如下：
 
 1. 全新的UI界面（部分界面还待更新）
-2. 添加[Midjourney-Proxy](https://github.com/novicezk/midjourney-proxy)接口的支持
+2. 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口的支持
    + [x] /mj/submit/imagine
    + [x] /mj/submit/change
    + [x] /mj/submit/blend
@@ -26,6 +26,11 @@
    + [x] /mj/image/{id} （通过此接口获取图片，**请必须在系统设置中填写服务器地址！！**）
    + [x] /mj/task/{id}/fetch （此接口返回的图片地址为经过One API转发的地址）
    + [x] /task/list-by-condition
+   + [x] /mj/submit/action （仅midjourney-proxy-plus支持，下同）
+   + [x] /mj/submit/modal
+   + [x] /mj/submit/shorten
+   + [x] /mj/task/{id}/image-seed
+   + [x] /mj/insight-face/swap （InsightFace）
 3. 支持在线充值功能，可在系统设置中设置，当前支持的支付接口：
    + [x] 易支付
 4. 支持用key查询使用额度:
@@ -49,6 +54,7 @@
 2. 智谱glm-4v，glm-4v识图
 3. Anthropic Claude 3 (claude-3-opus-20240229, claude-3-sonnet-20240229)
 4. [Ollama](https://github.com/ollama/ollama?tab=readme-ov-file)，添加渠道时，密钥可以随便填写，默认的请求地址是[http://localhost:11434](http://localhost:11434)，如果需要修改请在渠道中修改
+5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 

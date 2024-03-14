@@ -19,6 +19,8 @@ type Midjourney struct {
 	FailReason  string `json:"fail_reason"`
 	ChannelId   int    `json:"channel_id"`
 	Quota       int    `json:"quota"`
+	Buttons     string `json:"buttons"`
+	Properties  string `json:"properties"`
 }
 
 // TaskQueryParams 用于包含所有搜索条件的结构体，可以根据需求添加更多字段

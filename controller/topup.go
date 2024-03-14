@@ -11,6 +11,7 @@ import (
 	"one-api/model"
 	"one-api/service"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -111,6 +112,33 @@ func RequestEpay(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "success", "data": params, "url": uri})
 }
 
+// tradeNo lock
+var orderLocks sync.Map
+var createLock sync.Mutex
+
+// LockOrder 尝试对给定订单号加锁
+func LockOrder(tradeNo string) {
+	lock, ok := orderLocks.Load(tradeNo)
+	if !ok {
+		createLock.Lock()
+		defer createLock.Unlock()
+		lock, ok = orderLocks.Load(tradeNo)
+		if !ok {
+			lock = new(sync.Mutex)
+			orderLocks.Store(tradeNo, lock)
+		}
+	}
+	lock.(*sync.Mutex).Lock()
+}
+
+// UnlockOrder 释放给定订单号的锁
+func UnlockOrder(tradeNo string) {
+	lock, ok := orderLocks.Load(tradeNo)
+	if ok {
+		lock.(*sync.Mutex).Unlock()
+	}
+}
+
 func EpayNotify(c *gin.Context) {
 	params := lo.Reduce(lo.Keys(c.Request.URL.Query()), func(r map[string]string, t string, i int) map[string]string {
 		r[t] = c.Request.URL.Query().Get(t)
@@ -122,6 +150,7 @@ func EpayNotify(c *gin.Context) {
 		_, err := c.Writer.Write([]byte("fail"))
 		if err != nil {
 			log.Println("易支付回调写入失败")
+			return
 		}
 	}
 	verifyInfo, err := client.Verify(params)
@@ -135,11 +164,19 @@ func EpayNotify(c *gin.Context) {
 		if err != nil {
 			log.Println("易支付回调写入失败")
 		}
+		log.Println("易支付回调签名验证失败")
+		return
 	}
 
 	if verifyInfo.TradeStatus == epay.StatusTradeSuccess {
 		log.Println(verifyInfo)
+		LockOrder(verifyInfo.ServiceTradeNo)
+		defer UnlockOrder(verifyInfo.ServiceTradeNo)
 		topUp := model.GetTopUpByTradeNo(verifyInfo.ServiceTradeNo)
+		if topUp == nil {
+			log.Printf("易支付回调未找到订单: %v", verifyInfo)
+			return
+		}
 		if topUp.Status == "pending" {
 			topUp.Status = "success"
 			err := topUp.Update()

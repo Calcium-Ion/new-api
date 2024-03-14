@@ -12,7 +12,6 @@ import (
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"strconv"
-	"strings"
 )
 
 func Relay(c *gin.Context) {
@@ -61,60 +60,35 @@ func Relay(c *gin.Context) {
 }
 
 func RelayMidjourney(c *gin.Context) {
-	relayMode := relayconstant.RelayModeUnknown
-	if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/imagine") {
-		relayMode = relayconstant.RelayModeMidjourneyImagine
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/blend") {
-		relayMode = relayconstant.RelayModeMidjourneyBlend
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/describe") {
-		relayMode = relayconstant.RelayModeMidjourneyDescribe
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/notify") {
-		relayMode = relayconstant.RelayModeMidjourneyNotify
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/change") {
-		relayMode = relayconstant.RelayModeMidjourneyChange
-	} else if strings.HasPrefix(c.Request.URL.Path, "/mj/submit/simple-change") {
-		relayMode = relayconstant.RelayModeMidjourneyChange
-	} else if strings.HasSuffix(c.Request.URL.Path, "/fetch") {
-		relayMode = relayconstant.RelayModeMidjourneyTaskFetch
-	} else if strings.HasSuffix(c.Request.URL.Path, "/list-by-condition") {
-		relayMode = relayconstant.RelayModeMidjourneyTaskFetchByCondition
-	}
-
+	relayMode := c.GetInt("relay_mode")
 	var err *dto.MidjourneyResponse
 	switch relayMode {
 	case relayconstant.RelayModeMidjourneyNotify:
 		err = relay.RelayMidjourneyNotify(c)
 	case relayconstant.RelayModeMidjourneyTaskFetch, relayconstant.RelayModeMidjourneyTaskFetchByCondition:
 		err = relay.RelayMidjourneyTask(c, relayMode)
+	case relayconstant.RelayModeMidjourneyTaskImageSeed:
+		err = relay.RelayMidjourneyTaskImageSeed(c)
+	case relayconstant.RelayModeSwapFace:
+		err = relay.RelaySwapFace(c)
 	default:
 		err = relay.RelayMidjourneySubmit(c, relayMode)
 	}
 	//err = relayMidjourneySubmit(c, relayMode)
 	log.Println(err)
 	if err != nil {
-		retryTimesStr := c.Query("retry")
-		retryTimes, _ := strconv.Atoi(retryTimesStr)
-		if retryTimesStr == "" {
-			retryTimes = common.RetryTimes
+		statusCode := http.StatusBadRequest
+		if err.Code == 30 {
+			err.Result = "当前分组负载已饱和，请稍后再试，或升级账户以提升服务质量。"
+			statusCode = http.StatusTooManyRequests
 		}
-		if retryTimes > 0 {
-			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s?retry=%d", c.Request.URL.Path, retryTimes-1))
-		} else {
-			if err.Code == 30 {
-				err.Result = "当前分组负载已饱和，请稍后再试，或升级账户以提升服务质量。"
-			}
-			c.JSON(429, gin.H{
-				"error": fmt.Sprintf("%s %s", err.Description, err.Result),
-				"type":  "upstream_error",
-			})
-		}
+		c.JSON(statusCode, gin.H{
+			"description": fmt.Sprintf("%s %s", err.Description, err.Result),
+			"type":        "upstream_error",
+			"code":        err.Code,
+		})
 		channelId := c.GetInt("channel_id")
 		common.SysError(fmt.Sprintf("relay error (channel #%d): %s", channelId, fmt.Sprintf("%s %s", err.Description, err.Result)))
-		//if shouldDisableChannel(&err.Error) {
-		//	channelId := c.GetInt("channel_id")
-		//	channelName := c.GetString("channel_name")
-		//	disableChannel(channelId, channelName, err.Result)
-		//};''''''''''''''''''''''''''''''''
 	}
 }
 

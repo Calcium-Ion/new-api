@@ -31,10 +31,30 @@ function renderType(type) {
             return <Tag color="orange" size='large'>放大</Tag>;
         case 'VARIATION':
             return <Tag color="purple" size='large'>变换</Tag>;
+        case 'HIGH_VARIATION':
+            return <Tag color="purple" size='large'>强变换</Tag>;
+        case 'LOW_VARIATION':
+            return <Tag color="purple" size='large'>弱变换</Tag>;
+        case 'PAN':
+            return <Tag color="cyan" size='large'>平移</Tag>;
         case 'DESCRIBE':
             return <Tag color="yellow" size='large'>图生文</Tag>;
-        case 'BLEAND':
+        case 'BLEND':
             return <Tag color="lime" size='large'>图混合</Tag>;
+        case 'SHORTEN':
+            return <Tag color="pink" size='large'>缩词</Tag>;
+        case 'REROLL':
+            return <Tag color="indigo" size='large'>重绘</Tag>;
+        case 'INPAINT':
+            return <Tag color="violet" size='large'>局部重绘-提交</Tag>;
+        case 'ZOOM':
+            return <Tag color="teal" size='large'>变焦</Tag>;
+        case 'CUSTOM_ZOOM':
+            return <Tag color="teal" size='large'>自定义变焦-提交</Tag>;
+        case 'MODAL':
+            return <Tag color="green" size='large'>窗口处理</Tag>;
+        case 'SWAP_FACE':
+            return <Tag color="light-green" size='large'>换脸</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }
@@ -46,9 +66,11 @@ function renderCode(code) {
         case 1:
             return <Tag color="green" size='large'>已提交</Tag>;
         case 21:
-            return <Tag color="lime" size='large'>排队中</Tag>;
+            return <Tag color="lime" size='large'>等待中</Tag>;
         case 22:
             return <Tag color="orange" size='large'>重复提交</Tag>;
+        case 0:
+            return <Tag color="yellow" size='large'>未提交</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }
@@ -68,6 +90,8 @@ function renderStatus(type) {
             return <Tag color="blue" size='large'>执行中</Tag>;
         case 'FAILURE':
             return <Tag color="red" size='large'>失败</Tag>;
+        case 'MODAL':
+            return <Tag color="yellow" size='large'>窗口等待</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }

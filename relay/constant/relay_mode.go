@@ -17,10 +17,15 @@ const (
 	RelayModeMidjourneySimpleChange
 	RelayModeMidjourneyNotify
 	RelayModeMidjourneyTaskFetch
+	RelayModeMidjourneyTaskImageSeed
 	RelayModeMidjourneyTaskFetchByCondition
 	RelayModeAudioSpeech
 	RelayModeAudioTranscription
 	RelayModeAudioTranslation
+	RelayModeMidjourneyAction
+	RelayModeMidjourneyModal
+	RelayModeMidjourneyShorten
+	RelayModeSwapFace
 )
 
 func Path2RelayMode(path string) int {
@@ -45,6 +50,42 @@ func Path2RelayMode(path string) int {
 		relayMode = RelayModeAudioTranscription
 	} else if strings.HasPrefix(path, "/v1/audio/translations") {
 		relayMode = RelayModeAudioTranslation
+	}
+	return relayMode
+}
+
+func Path2RelayModeMidjourney(path string) int {
+	relayMode := RelayModeUnknown
+	if strings.HasPrefix(path, "/mj/submit/action") {
+		// midjourney plus
+		relayMode = RelayModeMidjourneyAction
+	} else if strings.HasPrefix(path, "/mj/submit/modal") {
+		// midjourney plus
+		relayMode = RelayModeMidjourneyModal
+	} else if strings.HasPrefix(path, "/mj/submit/shorten") {
+		// midjourney plus
+		relayMode = RelayModeMidjourneyShorten
+	} else if strings.HasPrefix(path, "/mj/insight-face/swap") {
+		// midjourney plus
+		relayMode = RelayModeSwapFace
+	} else if strings.HasPrefix(path, "/mj/submit/imagine") {
+		relayMode = RelayModeMidjourneyImagine
+	} else if strings.HasPrefix(path, "/mj/submit/blend") {
+		relayMode = RelayModeMidjourneyBlend
+	} else if strings.HasPrefix(path, "/mj/submit/describe") {
+		relayMode = RelayModeMidjourneyDescribe
+	} else if strings.HasPrefix(path, "/mj/notify") {
+		relayMode = RelayModeMidjourneyNotify
+	} else if strings.HasPrefix(path, "/mj/submit/change") {
+		relayMode = RelayModeMidjourneyChange
+	} else if strings.HasPrefix(path, "/mj/submit/simple-change") {
+		relayMode = RelayModeMidjourneyChange
+	} else if strings.HasSuffix(path, "/fetch") {
+		relayMode = RelayModeMidjourneyTaskFetch
+	} else if strings.HasSuffix(path, "/image-seed") {
+		relayMode = RelayModeMidjourneyTaskImageSeed
+	} else if strings.HasSuffix(path, "/list-by-condition") {
+		relayMode = RelayModeMidjourneyTaskFetchByCondition
 	}
 	return relayMode
 }
