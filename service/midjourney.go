@@ -163,7 +163,9 @@ func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestU
 		return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "read_request_body_failed", http.StatusInternalServerError), nullBytes, err
 	}
 	delete(mapResult, "accountFilter")
-	delete(mapResult, "notifyHook")
+	if !constant.MjNotifyEnabled {
+		delete(mapResult, "notifyHook")
+	}
 	//req, err := http.NewRequest(c.Request.Method, fullRequestURL, requestBody)
 	// make new request with mapResult
 	reqBody, err := json.Marshal(mapResult)

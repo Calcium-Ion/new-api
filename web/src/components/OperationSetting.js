@@ -23,6 +23,7 @@ const OperationSetting = () => {
         LogConsumeEnabled: '',
         DisplayInCurrencyEnabled: '',
         DisplayTokenStatEnabled: '',
+        MjNotifyEnabled: '',
         DrawingEnabled: '',
         DataExportEnabled: '',
         DataExportDefaultTime: 'hour',
@@ -229,7 +230,6 @@ const OperationSetting = () => {
                         />
                     </Form.Group>
                     <Form.Group inline>
-
                         <Form.Checkbox
                             checked={inputs.DisplayInCurrencyEnabled === 'true'}
                             label='以货币形式显示额度'
@@ -243,12 +243,6 @@ const OperationSetting = () => {
                             onChange={handleInputChange}
                         />
                         <Form.Checkbox
-                            checked={inputs.DrawingEnabled === 'true'}
-                            label='启用绘图功能'
-                            name='DrawingEnabled'
-                            onChange={handleInputChange}
-                        />
-                        <Form.Checkbox
                           checked={inputs.DefaultCollapseSidebar === 'true'}
                           label='默认折叠侧边栏'
                           name='DefaultCollapseSidebar'
@@ -257,7 +251,26 @@ const OperationSetting = () => {
                     </Form.Group>
                     <Form.Button onClick={() => {
                         submitConfig('general').then();
-                    }}>保存通用设置</Form.Button><Divider/>
+                    }}>保存通用设置</Form.Button>
+                    <Divider/>
+                    <Header as='h3'>
+                        绘图设置
+                    </Header>
+                    <Form.Group inline>
+                        <Form.Checkbox
+                            checked={inputs.DrawingEnabled === 'true'}
+                            label='启用绘图功能'
+                            name='DrawingEnabled'
+                            onChange={handleInputChange}
+                        />
+                        <Form.Checkbox
+                            checked={inputs.MjNotifyEnabled === 'true'}
+                            label='允许回调（会泄露服务器ip地址）'
+                            name='MjNotifyEnabled'
+                            onChange={handleInputChange}
+                        />
+                    </Form.Group>
+                    <Divider/>
                     <Header as='h3'>
                         日志设置
                     </Header>
