@@ -25,6 +25,7 @@ const (
 	RelayModeMidjourneyAction
 	RelayModeMidjourneyModal
 	RelayModeMidjourneyShorten
+	RelayModeSwapFace
 )
 
 func Path2RelayMode(path string) int {
@@ -64,6 +65,9 @@ func Path2RelayModeMidjourney(path string) int {
 	} else if strings.HasPrefix(path, "/mj/submit/shorten") {
 		// midjourney plus
 		relayMode = RelayModeMidjourneyShorten
+	} else if strings.HasPrefix(path, "/mj/insight-face/swap") {
+		// midjourney plus
+		relayMode = RelayModeSwapFace
 	} else if strings.HasPrefix(path, "/mj/submit/imagine") {
 		relayMode = RelayModeMidjourneyImagine
 	} else if strings.HasPrefix(path, "/mj/submit/blend") {

@@ -17,6 +17,9 @@ import (
 
 func CoverActionToModelName(mjAction string) string {
 	modelName := "mj_" + strings.ToLower(mjAction)
+	if mjAction == constant.MjActionSwapFace {
+		modelName = "swap_face"
+	}
 	return modelName
 }
 
@@ -43,6 +46,8 @@ func GetMjRequestModel(relayMode int, midjRequest *dto.MidjourneyRequest) (strin
 			action = midjRequest.Action
 		case relayconstant.RelayModeMidjourneyModal:
 			action = constant.MjActionModal
+		case relayconstant.RelayModeSwapFace:
+			action = constant.MjActionSwapFace
 		case relayconstant.RelayModeMidjourneySimpleChange:
 			params := ConvertSimpleChangeParams(midjRequest.Content)
 			if params == nil {
@@ -147,11 +152,25 @@ func ConvertSimpleChangeParams(content string) *dto.MidjourneyRequest {
 	return changeParams
 }
 
-func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestURL string, midjRequest *dto.MidjourneyRequest) (*dto.MidjourneyResponseWithStatusCode, []byte, error) {
+func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestURL string) (*dto.MidjourneyResponseWithStatusCode, []byte, error) {
 	var nullBytes []byte
-	var requestBody io.Reader
-	requestBody = c.Request.Body
-	req, err := http.NewRequest(c.Request.Method, fullRequestURL, requestBody)
+	//var requestBody io.Reader
+	//requestBody = c.Request.Body
+	// read request body to json, delete accountFilter and notifyHook
+	var mapResult map[string]interface{}
+	err := json.NewDecoder(c.Request.Body).Decode(&mapResult)
+	if err != nil {
+		return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "read_request_body_failed", http.StatusInternalServerError), nullBytes, err
+	}
+	delete(mapResult, "accountFilter")
+	delete(mapResult, "notifyHook")
+	//req, err := http.NewRequest(c.Request.Method, fullRequestURL, requestBody)
+	// make new request with mapResult
+	reqBody, err := json.Marshal(mapResult)
+	if err != nil {
+		return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "marshal_request_body_failed", http.StatusInternalServerError), nullBytes, err
+	}
+	req, err := http.NewRequest(c.Request.Method, fullRequestURL, strings.NewReader(string(reqBody)))
 	if err != nil {
 		return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "create_request_failed", http.StatusInternalServerError), nullBytes, err
 	}

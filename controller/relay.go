@@ -69,6 +69,8 @@ func RelayMidjourney(c *gin.Context) {
 		err = relay.RelayMidjourneyTask(c, relayMode)
 	case relayconstant.RelayModeMidjourneyTaskImageSeed:
 		err = relay.RelayMidjourneyTaskImageSeed(c)
+	case relayconstant.RelayModeSwapFace:
+		err = relay.RelaySwapFace(c)
 	default:
 		err = relay.RelayMidjourneySubmit(c, relayMode)
 	}

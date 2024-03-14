@@ -20,7 +20,7 @@ const (
 	MjActionHighVariation = "HIGH_VARIATION"
 	MjActionLowVariation  = "LOW_VARIATION"
 	MjActionPan           = "PAN"
-	SwapFace              = "SWAP_FACE"
+	MjActionSwapFace      = "SWAP_FACE"
 )
 
 var MidjourneyModel2Action = map[string]string{
@@ -38,5 +38,5 @@ var MidjourneyModel2Action = map[string]string{
 	"mj_high_variation": MjActionHighVariation,
 	"mj_low_variation":  MjActionLowVariation,
 	"mj_pan":            MjActionPan,
-	"swap_face":         SwapFace,
+	"swap_face":         MjActionSwapFace,
 }

@@ -19,8 +19,9 @@
 
 - mj_zoom (比例变焦)
 - mj_shorten (提示词缩短)
-- mj_inpaint_pre (发起局部重绘，必须和mj_inpaint一同添加)
-- mj_inpaint (局部重绘提交，必须和mj_inpaint_pre一同添加)
+- mj_modal (窗口提交，局部重绘和自定义比例变焦必须和mj_modal一同添加)
+- mj_inpaint (局部重绘提交，必须和mj_modal一同添加)
+- mj_custom_zoom (自定义比例变焦，必须和mj_modal一同添加)
 - mj_high_variation (强变换)
 - mj_low_variation (弱变换)
 - mj_pan (平移)
@@ -32,13 +33,14 @@
   "mj_variation": 0.1,
   "mj_reroll": 0.1,
   "mj_blend": 0.1,
-  "mj_inpaint": 0.1,
+  "mj_modal": 0.1,
   "mj_zoom": 0.1,
   "mj_shorten": 0.1,
   "mj_high_variation": 0.1,
   "mj_low_variation": 0.1,
   "mj_pan": 0.1,
-  "mj_inpaint_pre": 0,
+  "mj_inpaint": 0,
+  "mj_custom_zoom": 0,
   "mj_describe": 0.05,
   "mj_upscale": 0.05,
   "swap_face": 0.05

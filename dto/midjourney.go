@@ -7,6 +7,11 @@ package dto
 //	Content  string `json:"content"`
 //}
 
+type SwapFaceRequest struct {
+	SourceBase64 string `json:"sourceBase64"`
+	TargetBase64 string `json:"targetBase64"`
+}
+
 type MidjourneyRequest struct {
 	Prompt      string   `json:"prompt"`
 	CustomId    string   `json:"customId"`

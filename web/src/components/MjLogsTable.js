@@ -53,6 +53,8 @@ function renderType(type) {
             return <Tag color="teal" size='large'>自定义变焦-提交</Tag>;
         case 'MODAL':
             return <Tag color="green" size='large'>窗口处理</Tag>;
+        case 'SWAP_FACE':
+            return <Tag color="light-green" size='large'>换脸</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }
@@ -67,6 +69,8 @@ function renderCode(code) {
             return <Tag color="lime" size='large'>等待中</Tag>;
         case 22:
             return <Tag color="orange" size='large'>重复提交</Tag>;
+        case 0:
+            return <Tag color="yellow" size='large'>未提交</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }
