@@ -57,6 +57,7 @@ func SetRelayRouter(router *gin.Engine) {
 		relayMjRouter.POST("/submit/blend", controller.RelayMidjourney)
 		relayMjRouter.POST("/notify", controller.RelayMidjourney)
 		relayMjRouter.GET("/task/:id/fetch", controller.RelayMidjourney)
+		relayMjRouter.GET("/task/:id/image-seed", controller.RelayMidjourney)
 		relayMjRouter.POST("/task/list-by-condition", controller.RelayMidjourney)
 	}
 	//relayMjRouter.Use()

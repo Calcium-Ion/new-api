@@ -17,6 +17,7 @@ const (
 	RelayModeMidjourneySimpleChange
 	RelayModeMidjourneyNotify
 	RelayModeMidjourneyTaskFetch
+	RelayModeMidjourneyTaskImageSeed
 	RelayModeMidjourneyTaskFetchByCondition
 	RelayModeAudioSpeech
 	RelayModeAudioTranscription
@@ -77,6 +78,8 @@ func Path2RelayModeMidjourney(path string) int {
 		relayMode = RelayModeMidjourneyChange
 	} else if strings.HasSuffix(path, "/fetch") {
 		relayMode = RelayModeMidjourneyTaskFetch
+	} else if strings.HasSuffix(path, "/image-seed") {
+		relayMode = RelayModeMidjourneyTaskImageSeed
 	} else if strings.HasSuffix(path, "/list-by-condition") {
 		relayMode = RelayModeMidjourneyTaskFetchByCondition
 	}

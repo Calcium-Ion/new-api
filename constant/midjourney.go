@@ -13,8 +13,9 @@ const (
 	MjActionVariation     = "VARIATION"
 	MjActionReRoll        = "REROLL"
 	MjActionInPaint       = "INPAINT"
-	MjActionInPaintPre    = "INPAINT_PRE"
+	MjActionModal         = "MODAL"
 	MjActionZoom          = "ZOOM"
+	MjActionCustomZoom    = "CUSTOM_ZOOM"
 	MjActionShorten       = "SHORTEN"
 	MjActionHighVariation = "HIGH_VARIATION"
 	MjActionLowVariation  = "LOW_VARIATION"
@@ -29,9 +30,10 @@ var MidjourneyModel2Action = map[string]string{
 	"mj_upscale":        MjActionUpscale,
 	"mj_variation":      MjActionVariation,
 	"mj_reroll":         MjActionReRoll,
+	"mj_modal":          MjActionModal,
 	"mj_inpaint":        MjActionInPaint,
-	"mj_inpaint_pre":    MjActionInPaintPre,
 	"mj_zoom":           MjActionZoom,
+	"mj_custom_zoom":    MjActionCustomZoom,
 	"mj_shorten":        MjActionShorten,
 	"mj_high_variation": MjActionHighVariation,
 	"mj_low_variation":  MjActionLowVariation,

@@ -48,7 +48,8 @@ func Distribute() func(c *gin.Context) {
 				relayMode := relayconstant.Path2RelayModeMidjourney(c.Request.URL.Path)
 				if relayMode == relayconstant.RelayModeMidjourneyTaskFetch ||
 					relayMode == relayconstant.RelayModeMidjourneyTaskFetchByCondition ||
-					relayMode == relayconstant.RelayModeMidjourneyNotify {
+					relayMode == relayconstant.RelayModeMidjourneyNotify ||
+					relayMode == relayconstant.RelayModeMidjourneyTaskImageSeed {
 					shouldSelectChannel = false
 				} else {
 					midjourneyRequest := dto.MidjourneyRequest{}

@@ -46,11 +46,13 @@ function renderType(type) {
         case 'REROLL':
             return <Tag color="indigo" size='large'>重绘</Tag>;
         case 'INPAINT':
-            return <Tag color="violet" size='large'>局部重绘</Tag>;
+            return <Tag color="violet" size='large'>局部重绘-提交</Tag>;
         case 'ZOOM':
             return <Tag color="teal" size='large'>变焦</Tag>;
-        case 'INPAINT_PRE':
-            return <Tag color="violet" size='large'>局部重绘-预处理</Tag>;
+        case 'CUSTOM_ZOOM':
+            return <Tag color="teal" size='large'>自定义变焦-提交</Tag>;
+        case 'MODAL':
+            return <Tag color="green" size='large'>窗口处理</Tag>;
         default:
             return <Tag color="white" size='large'>未知</Tag>;
     }
@@ -62,7 +64,7 @@ function renderCode(code) {
         case 1:
             return <Tag color="green" size='large'>已提交</Tag>;
         case 21:
-            return <Tag color="lime" size='large'>排队中</Tag>;
+            return <Tag color="lime" size='large'>等待中</Tag>;
         case 22:
             return <Tag color="orange" size='large'>重复提交</Tag>;
         default:

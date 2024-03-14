@@ -28,6 +28,11 @@ type MidjourneyResponse struct {
 	Result      string      `json:"result"`
 }
 
+type MidjourneyResponseWithStatusCode struct {
+	StatusCode int `json:"statusCode"`
+	Response   MidjourneyResponse
+}
+
 type MidjourneyDto struct {
 	MjId        string      `json:"id"`
 	Action      string      `json:"action"`
