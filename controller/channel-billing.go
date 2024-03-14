@@ -214,8 +214,8 @@ func updateChannelBalance(channel *model.Channel) (float64, error) {
 		return 0, errors.New("尚未实现")
 	case common.ChannelTypeCustom:
 		baseURL = channel.GetBaseURL()
-	case common.ChannelTypeOpenAISB:
-		return updateChannelOpenAISBBalance(channel)
+	//case common.ChannelTypeOpenAISB:
+	//	return updateChannelOpenAISBBalance(channel)
 	case common.ChannelTypeAIProxy:
 		return updateChannelAIProxyBalance(channel)
 	case common.ChannelTypeAPI2GPT:

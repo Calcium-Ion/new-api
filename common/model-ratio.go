@@ -95,17 +95,31 @@ var ModelRatio = map[string]float64{
 	"hunyuan":                   7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
 }
 
-var ModelPrice = map[string]float64{
-	"gpt-4-gizmo-*": 0.1,
-	"mj_imagine":    0.1,
-	"mj_variation":  0.1,
-	"mj_reroll":     0.1,
-	"mj_blend":      0.1,
-	"mj_describe":   0.05,
-	"mj_upscale":    0.05,
+var DefaultModelPrice = map[string]float64{
+	"gpt-4-gizmo-*":     0.1,
+	"mj_imagine":        0.1,
+	"mj_variation":      0.1,
+	"mj_reroll":         0.1,
+	"mj_blend":          0.1,
+	"mj_modal":          0.1,
+	"mj_zoom":           0.1,
+	"mj_shorten":        0.1,
+	"mj_high_variation": 0.1,
+	"mj_low_variation":  0.1,
+	"mj_pan":            0.1,
+	"mj_inpaint":        0,
+	"mj_custom_zoom":    0,
+	"mj_describe":       0.05,
+	"mj_upscale":        0.05,
+	"swap_face":         0.05,
 }
 
+var ModelPrice = map[string]float64{}
+
 func ModelPrice2JSONString() string {
+	if len(ModelPrice) == 0 {
+		ModelPrice = DefaultModelPrice
+	}
 	jsonBytes, err := json.Marshal(ModelPrice)
 	if err != nil {
 		SysError("error marshalling model price: " + err.Error())
@@ -119,6 +133,9 @@ func UpdateModelPriceByJSONString(jsonStr string) error {
 }
 
 func GetModelPrice(name string, printErr bool) float64 {
+	if len(ModelPrice) == 0 {
+		ModelPrice = DefaultModelPrice
+	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}

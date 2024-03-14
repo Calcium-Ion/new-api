@@ -95,6 +95,28 @@ const EditChannel = (props) => {
                 case 26:
                     localModels = ['glm-4', 'glm-4v', 'glm-3-turbo'];
                     break;
+                case 2:
+                    localModels = ['mj_imagine', 'mj_variation', 'mj_reroll', 'mj_blend', 'mj_upscale', 'mj_describe'];
+                    break;
+                case 5:
+                    localModels = [
+                        'swap_face',
+                        'mj_imagine',
+                        'mj_variation',
+                        'mj_reroll',
+                        'mj_blend',
+                        'mj_upscale',
+                        'mj_describe',
+                        'mj_zoom',
+                        'mj_shorten',
+                        'mj_modal',
+                        'mj_inpaint',
+                        'mj_custom_zoom',
+                        'mj_high_variation',
+                        'mj_low_variation',
+                        'mj_pan',
+                    ];
+                    break;
             }
             setInputs((inputs) => ({...inputs, models: localModels}));
         }

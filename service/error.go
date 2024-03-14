@@ -11,6 +11,20 @@ import (
 	"strings"
 )
 
+func MidjourneyErrorWrapper(code int, desc string) *dto.MidjourneyResponse {
+	return &dto.MidjourneyResponse{
+		Code:        code,
+		Description: desc,
+	}
+}
+
+func MidjourneyErrorWithStatusCodeWrapper(code int, desc string, statusCode int) *dto.MidjourneyResponseWithStatusCode {
+	return &dto.MidjourneyResponseWithStatusCode{
+		StatusCode: statusCode,
+		Response:   *MidjourneyErrorWrapper(code, desc),
+	}
+}
+
 // OpenAIErrorWrapper wraps an error into an OpenAIErrorWithStatusCode
 func OpenAIErrorWrapper(err error, code string, statusCode int) *dto.OpenAIErrorWithStatusCode {
 	text := err.Error()
