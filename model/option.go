@@ -2,6 +2,7 @@ package model
 
 import (
 	"one-api/common"
+	"one-api/constant"
 	"strconv"
 	"strings"
 	"time"
@@ -88,6 +89,7 @@ func InitOptionMap() {
 	common.OptionMap["DataExportInterval"] = strconv.Itoa(common.DataExportInterval)
 	common.OptionMap["DataExportDefaultTime"] = common.DataExportDefaultTime
 	common.OptionMap["DefaultCollapseSidebar"] = strconv.FormatBool(common.DefaultCollapseSidebar)
+	common.OptionMap["MjNotifyEnabled"] = strconv.FormatBool(constant.MjNotifyEnabled)
 
 	common.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
@@ -181,6 +183,8 @@ func updateOptionMap(key string, value string) (err error) {
 			common.DataExportEnabled = boolValue
 		case "DefaultCollapseSidebar":
 			common.DefaultCollapseSidebar = boolValue
+		case "MjNotifyEnabled":
+			constant.MjNotifyEnabled = boolValue
 		}
 	}
 	switch key {
