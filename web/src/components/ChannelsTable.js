@@ -141,9 +141,11 @@ const ChannelsTable = () => {
                         <InputNumber
                             style={{width: 70}}
                             name='priority'
-                            onChange={value => {
-                                manageChannel(record.id, 'priority', record, value);
+                            onBlur={e => {
+                                manageChannel(record.id, 'priority', record, e.target.value);
                             }}
+                            keepFocus={true}
+                            innerButtons
                             defaultValue={record.priority}
                             min={-999}
                         />
@@ -160,9 +162,11 @@ const ChannelsTable = () => {
                         <InputNumber
                             style={{width: 70}}
                             name='weight'
-                            onChange={value => {
-                                manageChannel(record.id, 'weight', record, value);
+                            onBlur={e => {
+                                manageChannel(record.id, 'weight', record, e.target.value);
                             }}
+                            keepFocus={true}
+                            innerButtons
                             defaultValue={record.weight}
                             min={0}
                         />
