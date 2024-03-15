@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/model"
 	"strings"
 
@@ -59,6 +60,7 @@ func GetStatus(c *gin.Context) {
 			"data_export_default_time": common.DataExportDefaultTime,
 			"default_collapse_sidebar": common.DefaultCollapseSidebar,
 			"enable_online_topup":      common.PayAddress != "" && common.EpayId != "" && common.EpayKey != "",
+			"mj_notify_enabled":        constant.MjNotifyEnabled,
 		},
 	})
 	return

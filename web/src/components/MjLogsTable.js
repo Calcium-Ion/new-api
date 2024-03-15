@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { API, copy, isAdmin, showError, showSuccess, timestamp2string } from '../helpers';
 
-import { Button, Form, ImagePreview, Layout, Modal, Progress, Table, Tag, Typography } from '@douyinfe/semi-ui';
+import { Banner, Button, Form, ImagePreview, Layout, Modal, Progress, Table, Tag, Typography } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 
 
@@ -289,6 +289,7 @@ const LogsTable = () => {
   const [logType, setLogType] = useState(0);
   const isAdminUser = isAdmin();
   const [isModalOpenurl, setIsModalOpenurl] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
 
   // 定义模态框图片URL的状态和更新函数
   const [modalImageUrl, setModalImageUrl] = useState('');
@@ -380,11 +381,22 @@ const LogsTable = () => {
     refresh().then();
   }, [logType]);
 
+  useEffect(() => {
+    const mjNotifyEnabled = localStorage.getItem('mj_notify_enabled');
+    if (mjNotifyEnabled !== 'true') {
+      setShowBanner(true);
+    }
+  }, []);
 
   return (
     <>
 
       <Layout>
+        {isAdminUser && showBanner ? <Banner
+          type="info"
+          description="当前未开启Midjourney回调，部分项目可能无法获得绘图结果，可在运营设置中开启。"
+        /> : <></>
+        }
         <Form layout="horizontal" style={{ marginTop: 10 }}>
           <>
             <Form.Input field="channel_id" label="渠道 ID" style={{ width: 176 }} value={channel_id}

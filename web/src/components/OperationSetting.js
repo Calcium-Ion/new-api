@@ -88,6 +88,8 @@ const OperationSetting = () => {
     if (name.endsWith('Enabled') || name === 'DataExportInterval' || name === 'DataExportDefaultTime' || name === 'DefaultCollapseSidebar') {
       if (name === 'DataExportDefaultTime') {
         localStorage.setItem('data_export_default_time', value);
+      } else if (name === 'MjNotifyEnabled') {
+        localStorage.setItem('mj_notify_enabled', value);
       }
       await updateOption(name, value);
     } else {

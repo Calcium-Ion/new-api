@@ -130,6 +130,7 @@ const SiderBar = () => {
       localStorage.setItem('enable_data_export', data.enable_data_export);
       localStorage.setItem('data_export_default_time', data.data_export_default_time);
       localStorage.setItem('default_collapse_sidebar', data.default_collapse_sidebar);
+      localStorage.setItem('mj_notify_enabled', data.mj_notify_enabled);
       if (data.chat_link) {
         localStorage.setItem('chat_link', data.chat_link);
       } else {
