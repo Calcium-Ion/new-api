@@ -49,27 +49,6 @@ function renderType(type) {
     return <Tag size='large' color={type2label[type]?.color}>{type2label[type]?.text}</Tag>;
 }
 
-function renderBalance(type, balance) {
-    switch (type) {
-        case 1: // OpenAI
-            return <span>${balance.toFixed(2)}</span>;
-        case 4: // CloseAI
-            return <span>¥{balance.toFixed(2)}</span>;
-        case 8: // 自定义
-            return <span>${balance.toFixed(2)}</span>;
-        case 5: // OpenAI-SB
-            return <span>¥{(balance / 10000).toFixed(2)}</span>;
-        case 10: // AI Proxy
-            return <span>{renderNumber(balance)}</span>;
-        case 12: // API2GPT
-            return <span>¥{balance.toFixed(2)}</span>;
-        case 13: // AIGC2D
-            return <span>{renderNumber(balance)}</span>;
-        default:
-            return <span>不支持</span>;
-    }
-}
-
 const ChannelsTable = () => {
     const columns = [
         // {
@@ -332,24 +311,16 @@ const ChannelsTable = () => {
     useEffect(() => {
         // console.log('default effect')
         const localIdSort = localStorage.getItem('id-sort') === 'true';
+        const localPageSize = parseInt(localStorage.getItem('page-size')) || ITEMS_PER_PAGE;
         setIdSort(localIdSort)
-        loadChannels(0, pageSize, localIdSort)
+        setPageSize(localPageSize)
+        loadChannels(0, localPageSize, localIdSort)
             .then()
             .catch((reason) => {
                 showError(reason);
             });
         fetchGroups().then();
     }, []);
-
-    // useEffect(() => {
-    //     console.log('search effect')
-    //     searchChannels()
-    // }, [searchGroup]);
-
-    // useEffect(() => {
-    //     localStorage.setItem('id-sort', idSort + '');
-    //     refresh()
-    // }, [idSort]);
 
     const manageChannel = async (id, action, record, value) => {
         let data = {id};
@@ -549,28 +520,6 @@ const ChannelsTable = () => {
         }
     }
 
-    const sortChannel = (key) => {
-        if (channels.length === 0) return;
-        setLoading(true);
-        let sortedChannels = [...channels];
-        if (typeof sortedChannels[0][key] === 'string') {
-            sortedChannels.sort((a, b) => {
-                return ('' + a[key]).localeCompare(b[key]);
-            });
-        } else {
-            sortedChannels.sort((a, b) => {
-                if (a[key] === b[key]) return 0;
-                if (a[key] > b[key]) return -1;
-                if (a[key] < b[key]) return 1;
-            });
-        }
-        if (sortedChannels[0].id === channels[0].id) {
-            sortedChannels.reverse();
-        }
-        setChannels(sortedChannels);
-        setLoading(false);
-    };
-
     let pageData = channels.slice((activePage - 1) * pageSize, activePage * pageSize);
 
     const handlePageChange = page => {
@@ -583,6 +532,7 @@ const ChannelsTable = () => {
     };
 
     const handlePageSizeChange = async(size) => {
+        localStorage.setItem('page-size', size + '')
         setPageSize(size)
         setActivePage(1)
         loadChannels(0, size, idSort)
