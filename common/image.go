@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/chai2010/webp"
+	"golang.org/x/image/webp"
 	"image"
 	"io"
 	"net/http"
