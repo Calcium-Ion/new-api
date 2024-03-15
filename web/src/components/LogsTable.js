@@ -1,26 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {Label} from 'semantic-ui-react';
 import {API, copy, isAdmin, showError, showSuccess, timestamp2string} from '../helpers';
 
 import {Table, Avatar, Tag, Form, Button, Layout, Select, Popover, Modal, Spin, Space} from '@douyinfe/semi-ui';
 import {ITEMS_PER_PAGE} from '../constants';
 import {renderNumber, renderQuota, stringToColor} from '../helpers/render';
-import {
-    IconAt,
-    IconHistogram,
-    IconGift,
-    IconKey,
-    IconUser,
-    IconLayers,
-    IconSetting,
-    IconCreditCard,
-    IconSemiLogo,
-    IconHome,
-    IconMore
-} from '@douyinfe/semi-icons';
 import Paragraph from "@douyinfe/semi-ui/lib/es/typography/paragraph";
 
 const {Header} = Layout;
+
 function renderTimestamp(timestamp) {
     return (
         <>
@@ -221,7 +208,8 @@ const LogsTable = () => {
             title: '详情',
             dataIndex: 'content',
             render: (text, record, index) => {
-                return <Paragraph ellipsis={{ rows: 2, showTooltip: { type: 'popover', opts: { style: { width: 240 } } } }} style={{ maxWidth: 240}}>
+                return <Paragraph ellipsis={{rows: 2, showTooltip: {type: 'popover', opts: {style: {width: 240}}}}}
+                                  style={{maxWidth: 240}}>
                     {text}
                 </Paragraph>
             }
@@ -234,6 +222,7 @@ const LogsTable = () => {
     const [loadingStat, setLoadingStat] = useState(false);
     const [activePage, setActivePage] = useState(1);
     const [logCount, setLogCount] = useState(ITEMS_PER_PAGE);
+    const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searching, setSearching] = useState(false);
     const [logType, setLogType] = useState(0);
@@ -327,16 +316,16 @@ const LogsTable = () => {
         // console.log(logCount);
     }
 
-    const loadLogs = async (startIdx) => {
+    const loadLogs = async (startIdx, pageSize) => {
         setLoading(true);
 
         let url = '';
         let localStartTimestamp = Date.parse(start_timestamp) / 1000;
         let localEndTimestamp = Date.parse(end_timestamp) / 1000;
         if (isAdminUser) {
-            url = `/api/log/?p=${startIdx}&type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}`;
+            url = `/api/log/?p=${startIdx}&page_size=${pageSize}&type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}`;
         } else {
-            url = `/api/log/self/?p=${startIdx}&type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+            url = `/api/log/self/?p=${startIdx}&page_size=${pageSize}&type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
         }
         const res = await API.get(url);
         const {success, message, data} = res.data;
@@ -345,7 +334,7 @@ const LogsTable = () => {
                 setLogsFormat(data);
             } else {
                 let newLogs = [...logs];
-                newLogs.splice(startIdx * ITEMS_PER_PAGE, data.length, ...data);
+                newLogs.splice(startIdx * pageSize, data.length, ...data);
                 setLogsFormat(newLogs);
             }
         } else {
@@ -354,21 +343,32 @@ const LogsTable = () => {
         setLoading(false);
     };
 
-    const pageData = logs.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+    const pageData = logs.slice((activePage - 1) * pageSize, activePage * pageSize);
 
     const handlePageChange = page => {
         setActivePage(page);
-        if (page === Math.ceil(logs.length / ITEMS_PER_PAGE) + 1) {
+        if (page === Math.ceil(logs.length / pageSize) + 1) {
             // In this case we have to load more data and then append them.
-            loadLogs(page - 1).then(r => {
+            loadLogs(page - 1, pageSize).then(r => {
             });
         }
+    };
+
+    const handlePageSizeChange = async (size) => {
+        localStorage.setItem('page-size', size + '')
+        setPageSize(size)
+        setActivePage(1)
+        loadLogs(0, size)
+            .then()
+            .catch((reason) => {
+                showError(reason);
+            })
     };
 
     const refresh = async () => {
         // setLoading(true);
         setActivePage(1);
-        await loadLogs(0);
+        await loadLogs(0, pageSize);
     };
 
     const copyText = async (text) => {
@@ -380,14 +380,25 @@ const LogsTable = () => {
         }
     }
 
+    // useEffect(() => {
+    //     refresh().then();
+    // }, [logType]);
+
     useEffect(() => {
-        refresh().then();
-    }, [logType]);
+        // console.log('default effect')
+        const localPageSize = parseInt(localStorage.getItem('page-size')) || ITEMS_PER_PAGE;
+        setPageSize(localPageSize)
+        loadLogs(0, localPageSize)
+            .then()
+            .catch((reason) => {
+                showError(reason);
+            });
+    }, []);
 
     const searchLogs = async () => {
         if (searchKeyword === '') {
             // if keyword is blank, load files instead.
-            await loadLogs(0);
+            await loadLogs(0, pageSize);
             setActivePage(1);
             return;
         }
@@ -403,39 +414,16 @@ const LogsTable = () => {
         setSearching(false);
     };
 
-    const handleKeywordChange = async (e, {value}) => {
-        setSearchKeyword(value.trim());
-    };
-
-    const sortLog = (key) => {
-        if (logs.length === 0) return;
-        setLoading(true);
-        let sortedLogs = [...logs];
-        if (typeof sortedLogs[0][key] === 'string') {
-            sortedLogs.sort((a, b) => {
-                return ('' + a[key]).localeCompare(b[key]);
-            });
-        } else {
-            sortedLogs.sort((a, b) => {
-                if (a[key] === b[key]) return 0;
-                if (a[key] > b[key]) return -1;
-                if (a[key] < b[key]) return 1;
-            });
-        }
-        if (sortedLogs[0].id === logs[0].id) {
-            sortedLogs.reverse();
-        }
-        setLogs(sortedLogs);
-        setLoading(false);
-    };
-
     return (
         <>
             <Layout>
                 <Header>
                     <Spin spinning={loadingStat}>
                         <h3>使用明细（总消耗额度：
-                            <span onClick={handleEyeClick} style={{cursor: 'pointer', color: 'gray'}}>{showStat?renderQuota(stat.quota):"点击查看"}</span>
+                            <span onClick={handleEyeClick} style={{
+                                cursor: 'pointer',
+                                color: 'gray'
+                            }}>{showStat ? renderQuota(stat.quota) : "点击查看"}</span>
                             ）
                         </h3>
                     </Spin>
@@ -477,9 +465,13 @@ const LogsTable = () => {
                 </Form>
                 <Table style={{marginTop: 5}} columns={columns} dataSource={pageData} pagination={{
                     currentPage: activePage,
-                    pageSize: ITEMS_PER_PAGE,
+                    pageSize: pageSize,
                     total: logCount,
                     pageSizeOpts: [10, 20, 50, 100],
+                    showSizeChanger: true,
+                    onPageSizeChange: (size) => {
+                        handlePageSizeChange(size).then()
+                    },
                     onPageChange: handlePageChange,
                 }}/>
                 <Select defaultValue="0" style={{width: 120}} onChange={
