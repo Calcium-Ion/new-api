@@ -98,49 +98,49 @@ const RegisterForm = () => {
   };
 
   return (
-    <Grid textAlign='center' style={{ marginTop: '48px' }}>
+    <Grid textAlign="center" style={{ marginTop: '48px' }}>
       <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as='h2' color='' textAlign='center'>
+        <Header as="h2" color="" textAlign="center">
           <Image src={logo} /> 新用户注册
         </Header>
-        <Form size='large'>
+        <Form size="large">
           <Segment>
             <Form.Input
               fluid
-              icon='user'
-              iconPosition='left'
-              placeholder='输入用户名，最长 12 位'
+              icon="user"
+              iconPosition="left"
+              placeholder="输入用户名，最长 12 位"
               onChange={handleChange}
-              name='username'
+              name="username"
             />
             <Form.Input
               fluid
-              icon='lock'
-              iconPosition='left'
-              placeholder='输入密码，最短 8 位，最长 20 位'
+              icon="lock"
+              iconPosition="left"
+              placeholder="输入密码，最短 8 位，最长 20 位"
               onChange={handleChange}
-              name='password'
-              type='password'
+              name="password"
+              type="password"
             />
             <Form.Input
               fluid
-              icon='lock'
-              iconPosition='left'
-              placeholder='输入密码，最短 8 位，最长 20 位'
+              icon="lock"
+              iconPosition="left"
+              placeholder="输入密码，最短 8 位，最长 20 位"
               onChange={handleChange}
-              name='password2'
-              type='password'
+              name="password2"
+              type="password"
             />
             {showEmailVerification ? (
               <>
                 <Form.Input
                   fluid
-                  icon='mail'
-                  iconPosition='left'
-                  placeholder='输入邮箱地址'
+                  icon="mail"
+                  iconPosition="left"
+                  placeholder="输入邮箱地址"
                   onChange={handleChange}
-                  name='email'
-                  type='email'
+                  name="email"
+                  type="email"
                   action={
                     <Button onClick={sendVerificationCode} disabled={loading}>
                       获取验证码
@@ -149,11 +149,11 @@ const RegisterForm = () => {
                 />
                 <Form.Input
                   fluid
-                  icon='lock'
-                  iconPosition='left'
-                  placeholder='输入验证码'
+                  icon="lock"
+                  iconPosition="left"
+                  placeholder="输入验证码"
                   onChange={handleChange}
-                  name='verification_code'
+                  name="verification_code"
                 />
               </>
             ) : (
@@ -170,9 +170,9 @@ const RegisterForm = () => {
               <></>
             )}
             <Button
-              color='green'
+              color="green"
               fluid
-              size='large'
+              size="large"
               onClick={handleSubmit}
               loading={loading}
             >
@@ -182,7 +182,7 @@ const RegisterForm = () => {
         </Form>
         <Message>
           已有账户？
-          <Link to='/login' className='btn btn-link'>
+          <Link to="/login" className="btn btn-link">
             点击登录
           </Link>
         </Message>

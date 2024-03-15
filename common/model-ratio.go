@@ -13,7 +13,7 @@ import (
 // TODO: when a new api is enabled, check the pricing here
 // 1 === $0.002 / 1K tokens
 // 1 === ￥0.014 / 1k tokens
-var ModelRatio = map[string]float64{
+var DefaultModelRatio = map[string]float64{
 	//"midjourney":                50,
 	"gpt-4-gizmo-*":             15,
 	"gpt-4":                     15,
@@ -115,6 +115,7 @@ var DefaultModelPrice = map[string]float64{
 }
 
 var ModelPrice = map[string]float64{}
+var ModelRatio = map[string]float64{}
 
 func ModelPrice2JSONString() string {
 	if len(ModelPrice) == 0 {
@@ -150,6 +151,9 @@ func GetModelPrice(name string, printErr bool) float64 {
 }
 
 func ModelRatio2JSONString() string {
+	if len(ModelRatio) == 0 {
+		ModelRatio = DefaultModelRatio
+	}
 	jsonBytes, err := json.Marshal(ModelRatio)
 	if err != nil {
 		SysError("error marshalling model ratio: " + err.Error())
@@ -163,6 +167,9 @@ func UpdateModelRatioByJSONString(jsonStr string) error {
 }
 
 func GetModelRatio(name string) float64 {
+	if len(ModelRatio) == 0 {
+		ModelRatio = DefaultModelRatio
+	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
