@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"one-api/common"
 	"one-api/constant"
 	"one-api/dto"
 	relayconstant "one-api/relay/constant"
@@ -188,6 +189,7 @@ func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestU
 	defer cancel()
 	resp, err := GetHttpClient().Do(req)
 	if err != nil {
+		common.SysError("do request failed: " + err.Error())
 		return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "do_request_failed", http.StatusInternalServerError), nullBytes, err
 	}
 	statusCode := resp.StatusCode
