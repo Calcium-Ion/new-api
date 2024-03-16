@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Grid, Header, Image, Segment } from 'semantic-ui-react';
-import { API, copy, showError, showInfo, showNotice, showSuccess } from '../helpers';
+import { API, copy, showError, showNotice } from '../helpers';
 import { useSearchParams } from 'react-router-dom';
 
 const PasswordResetConfirm = () => {
   const [inputs, setInputs] = useState({
     email: '',
-    token: '',
+    token: ''
   });
   const { email, token } = inputs;
 
@@ -23,7 +23,7 @@ const PasswordResetConfirm = () => {
     let email = searchParams.get('email');
     setInputs({
       token,
-      email,
+      email
     });
   }, []);
 
@@ -37,7 +37,7 @@ const PasswordResetConfirm = () => {
       setDisableButton(false);
       setCountdown(30);
     }
-    return () => clearInterval(countdownInterval); 
+    return () => clearInterval(countdownInterval);
   }, [disableButton, countdown]);
 
   async function handleSubmit(e) {
@@ -46,7 +46,7 @@ const PasswordResetConfirm = () => {
     setLoading(true);
     const res = await API.post(`/api/user/reset`, {
       email,
-      token,
+      token
     });
     const { success, message } = res.data;
     if (success) {
@@ -59,44 +59,44 @@ const PasswordResetConfirm = () => {
     }
     setLoading(false);
   }
-  
+
   return (
-    <Grid textAlign='center' style={{ marginTop: '48px' }}>
+    <Grid textAlign="center" style={{ marginTop: '48px' }}>
       <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as='h2' color='' textAlign='center'>
-          <Image src='/logo.png' /> 密码重置确认
+        <Header as="h2" color="" textAlign="center">
+          <Image src="/logo.png" /> 密码重置确认
         </Header>
-        <Form size='large'>
+        <Form size="large">
           <Segment>
             <Form.Input
               fluid
-              icon='mail'
-              iconPosition='left'
-              placeholder='邮箱地址'
-              name='email'
+              icon="mail"
+              iconPosition="left"
+              placeholder="邮箱地址"
+              name="email"
               value={email}
               readOnly
             />
             {newPassword && (
               <Form.Input
-              fluid
-              icon='lock'
-              iconPosition='left'
-              placeholder='新密码'
-              name='newPassword'
-              value={newPassword}
-              readOnly
-              onClick={(e) => {
-                e.target.select();
-                navigator.clipboard.writeText(newPassword);
-                showNotice(`密码已复制到剪贴板：${newPassword}`);
-              }}
-            />            
+                fluid
+                icon="lock"
+                iconPosition="left"
+                placeholder="新密码"
+                name="newPassword"
+                value={newPassword}
+                readOnly
+                onClick={(e) => {
+                  e.target.select();
+                  navigator.clipboard.writeText(newPassword);
+                  showNotice(`密码已复制到剪贴板：${newPassword}`);
+                }}
+              />
             )}
             <Button
-              color='green'
+              color="green"
               fluid
-              size='large'
+              size="large"
               onClick={handleSubmit}
               loading={loading}
               disabled={disableButton}
@@ -107,7 +107,7 @@ const PasswordResetConfirm = () => {
         </Form>
       </Grid.Column>
     </Grid>
-  );  
+  );
 };
 
 export default PasswordResetConfirm;

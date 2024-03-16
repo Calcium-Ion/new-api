@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { API, isMobile, showError, showSuccess } from '../../helpers';
-import { renderQuota, renderQuotaWithPrompt } from '../../helpers/render';
-import Title from "@douyinfe/semi-ui/lib/es/typography/title";
-import { SideSheet, Space, Button, Spin, Input, Typography, Select, Divider } from "@douyinfe/semi-ui";
+import { renderQuotaWithPrompt } from '../../helpers/render';
+import Title from '@douyinfe/semi-ui/lib/es/typography/title';
+import { Button, Divider, Input, Select, SideSheet, Space, Spin, Typography } from '@douyinfe/semi-ui';
 
 const EditUser = (props) => {
   const userId = props.editingUser.id;
@@ -29,7 +29,7 @@ const EditUser = (props) => {
       let res = await API.get(`/api/group/`);
       setGroupOptions(res.data.data.map((group) => ({
         label: group,
-        value: group,
+        value: group
       })));
     } catch (error) {
       showError(error.message);
@@ -38,7 +38,7 @@ const EditUser = (props) => {
   const navigate = useNavigate();
   const handleCancel = () => {
     props.handleClose();
-  }
+  };
   const loadUser = async () => {
     setLoading(true);
     let res = undefined;
@@ -98,8 +98,8 @@ const EditUser = (props) => {
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Space>
-              <Button theme='solid' size={'large'} onClick={submit}>提交</Button>
-              <Button theme='solid' size={'large'} type={'tertiary'} onClick={handleCancel}>取消</Button>
+              <Button theme="solid" size={'large'} onClick={submit}>提交</Button>
+              <Button theme="solid" size={'large'} type={'tertiary'} onClick={handleCancel}>取消</Button>
             </Space>
           </div>
         }
@@ -112,35 +112,35 @@ const EditUser = (props) => {
             <Typography.Text>用户名</Typography.Text>
           </div>
           <Input
-            label='用户名'
-            name='username'
+            label="用户名"
+            name="username"
             placeholder={'请输入新的用户名'}
             onChange={value => handleInputChange('username', value)}
             value={username}
-            autoComplete='new-password'
+            autoComplete="new-password"
           />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>密码</Typography.Text>
           </div>
           <Input
-            label='密码'
-            name='password'
+            label="密码"
+            name="password"
             type={'password'}
             placeholder={'请输入新的密码，最短 8 位'}
             onChange={value => handleInputChange('password', value)}
             value={password}
-            autoComplete='new-password'
+            autoComplete="new-password"
           />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>显示名称</Typography.Text>
           </div>
           <Input
-            label='显示名称'
-            name='display_name'
+            label="显示名称"
+            name="display_name"
             placeholder={'请输入新的显示名称'}
             onChange={value => handleInputChange('display_name', value)}
             value={display_name}
-            autoComplete='new-password'
+            autoComplete="new-password"
           />
           {
             userId && <>
@@ -149,7 +149,7 @@ const EditUser = (props) => {
               </div>
               <Select
                 placeholder={'请选择分组'}
-                name='group'
+                name="group"
                 fluid
                 search
                 selection
@@ -157,19 +157,19 @@ const EditUser = (props) => {
                 additionLabel={'请在系统设置页面编辑分组倍率以添加新的分组：'}
                 onChange={value => handleInputChange('group', value)}
                 value={inputs.group}
-                autoComplete='new-password'
+                autoComplete="new-password"
                 optionList={groupOptions}
               />
               <div style={{ marginTop: 20 }}>
                 <Typography.Text>{`剩余额度${renderQuotaWithPrompt(quota)}`}</Typography.Text>
               </div>
               <Input
-                name='quota'
+                name="quota"
                 placeholder={'请输入新的剩余额度'}
                 onChange={value => handleInputChange('quota', value)}
                 value={quota}
                 type={'number'}
-                autoComplete='new-password'
+                autoComplete="new-password"
               />
             </>
           }
@@ -178,37 +178,37 @@ const EditUser = (props) => {
             <Typography.Text>已绑定的 GitHub 账户</Typography.Text>
           </div>
           <Input
-            name='github_id'
+            name="github_id"
             value={github_id}
-            autoComplete='new-password'
-            placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
+            autoComplete="new-password"
+            placeholder="此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改"
             readonly
           />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>已绑定的微信账户</Typography.Text>
           </div>
           <Input
-            name='wechat_id'
+            name="wechat_id"
             value={wechat_id}
-            autoComplete='new-password'
-            placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
+            autoComplete="new-password"
+            placeholder="此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改"
             readonly
           />
           <Input
-            name='telegram_id'
+            name="telegram_id"
             value={telegram_id}
-            autoComplete='new-password'
-            placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
+            autoComplete="new-password"
+            placeholder="此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改"
             readonly
           />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>已绑定的邮箱账户</Typography.Text>
           </div>
           <Input
-            name='email'
+            name="email"
             value={email}
-            autoComplete='new-password'
-            placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
+            autoComplete="new-password"
+            placeholder="此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改"
             readonly
           />
         </Spin>

@@ -49,7 +49,7 @@ const GitHubOAuth = () => {
   return (
     <Segment style={{ minHeight: '300px' }}>
       <Dimmer active inverted>
-        <Loader size='large'>{prompt}</Loader>
+        <Loader size="large">{prompt}</Loader>
       </Dimmer>
     </Segment>
   );
