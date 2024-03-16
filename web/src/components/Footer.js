@@ -38,14 +38,14 @@ const Footer = () => {
         ) : (
           <div className="custom-footer">
             <a
-              href="https://github.com/Calcium-Ion/new-api"
+              href="https://github.com/xinghanxu666/new-api"
               target="_blank" rel="noreferrer"
             >
-              New API {process.env.REACT_APP_VERSION}{' '}
+              天絮 API {process.env.REACT_APP_VERSION}{' '}
             </a>
             由{' '}
-            <a href="https://github.com/Calcium-Ion" target="_blank" rel="noreferrer">
-              Calcium-Ion
+            <a href="https://github.com/xinghanxu666" target="_blank" rel="noreferrer">
+              xinghanxu(星涵煦)
             </a>{' '}
             开发，基于{' '}
             <a href="https://github.com/songquanpeng/one-api" target="_blank" rel="noreferrer">
