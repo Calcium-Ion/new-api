@@ -195,7 +195,7 @@ const SiderBar = () => {
             }}
             header={{
               logo: <img src={logo} alt="logo" style={{ marginRight: '0.75em' }} />,
-              text: systemName
+              text: 天絮API
             }}
             // footer={{
             //   text: '© 2021 NekoAPI',
