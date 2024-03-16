@@ -1,5 +1,5 @@
 
-# New API
+# 天絮 API
 
 > [!NOTE]
 > 本项目为开源项目，在[One API](https://github.com/songquanpeng/one-api)的基础上进行二次开发，感谢原作者的无私奉献。 
