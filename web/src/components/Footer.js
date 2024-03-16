@@ -48,8 +48,8 @@ const Footer = () => {
               xinghanxu(星涵煦)
             </a>{' '}
             开发，基于{' '}
-            <a href="https://github.com/songquanpeng/one-api" target="_blank" rel="noreferrer">
-              One API v0.5.4
+            <a href="https://github.com/Calcium-Ion/new-api" target="_blank" rel="noreferrer">
+              New API v0.2.0.3-alpha
             </a>{' '}
             ，本项目根据{' '}
             <a href="https://opensource.org/licenses/mit-license.php">
