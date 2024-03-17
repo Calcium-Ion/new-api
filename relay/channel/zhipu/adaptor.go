@@ -36,6 +36,9 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
+	if request.TopP >= 1 {
+		request.TopP = 0.99
+	}
 	return requestOpenAI2Zhipu(*request), nil
 }
 
