@@ -34,6 +34,21 @@ const SiderBar = () => {
   const logo = getLogo();
   const [isCollapsed, setIsCollapsed] = useState(defaultIsCollapsed);
 
+  const routerMap = {
+    home: '/',
+    channel: '/channel',
+    token: '/token',
+    redemption: '/redemption',
+    topup: '/topup',
+    user: '/user',
+    log: '/log',
+    midjourney: '/midjourney',
+    setting: '/setting',
+    about: '/about',
+    chat: '/chat',
+    detail: '/detail'
+  };
+
   const headerButtons = useMemo(() => [
     {
       text: '首页',
@@ -150,6 +165,11 @@ const SiderBar = () => {
     loadStatus().then(() => {
       setIsCollapsed(isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true');
     });
+    let localKey = window.location.pathname.split('/')[1]
+    if (localKey === '') {
+      localKey = 'home'
+    }
+    setSelectedKeys([localKey]);
   }, []);
 
   return (
@@ -166,20 +186,6 @@ const SiderBar = () => {
             }}
             selectedKeys={selectedKeys}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
-              const routerMap = {
-                home: '/',
-                channel: '/channel',
-                token: '/token',
-                redemption: '/redemption',
-                topup: '/topup',
-                user: '/user',
-                log: '/log',
-                midjourney: '/midjourney',
-                setting: '/setting',
-                about: '/about',
-                chat: '/chat',
-                detail: '/detail'
-              };
               return (
                 <Link
                   style={{ textDecoration: 'none' }}
