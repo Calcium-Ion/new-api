@@ -241,5 +241,6 @@ var ChannelBaseURLs = []string{
 	"https://hunyuan.cloud.tencent.com", //23
 	"https://generativelanguage.googleapis.com", //24
 	"https://api.moonshot.cn",                   //25
-	"https://api.perplexity.ai",                 //26
+	"https://open.bigmodel.cn",                  //26
+	"https://api.perplexity.ai",                 //27
 }
