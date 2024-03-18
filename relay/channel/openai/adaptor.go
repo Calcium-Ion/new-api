@@ -49,11 +49,8 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *re
 		req.Header.Set("api-key", info.ApiKey)
 		return nil
 	}
-	if info.ChannelType == common.ChannelTypeOpenAI {
-		orgId := c.GetHeader("OpenAI-Organization")
-		if "" != orgId {
-			req.Header.Set("OpenAI-Organization", orgId)
-		}
+	if info.ChannelType == common.ChannelTypeOpenAI && "" != info.Organization {
+		req.Header.Set("OpenAI-Organization", info.Organization)
 	}
 	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
 	//if info.ChannelType == common.ChannelTypeOpenRouter {
