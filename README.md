@@ -98,6 +98,12 @@ docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 ![image](https://github.com/Calcium-Ion/new-api/assets/61247483/5b3228e8-2556-44f7-97d6-4f8d8ee6effa)  
 ![image](https://github.com/Calcium-Ion/new-api/assets/61247483/af9a07ee-5101-4b3d-8bd9-ae21a4fd7e9e)
 
+## 相关项目
+- [One API](https://github.com/songquanpeng/one-api)：原版项目
+- [Midjourney-Proxy](https://github.com/novicezk/midjourney-proxy)：Midjourney接口支持
+- [chatnio](https://github.com/Deeptrain-Community/chatnio)：下一代 AI 一站式 B/C 端解决方案
+- [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)：用key查询使用额度
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Calcium-Ion/new-api&type=Date)](https://star-history.com/#Calcium-Ion/new-api&Date)
