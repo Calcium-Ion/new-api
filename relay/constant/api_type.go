@@ -16,6 +16,7 @@ const (
 	APITypeTencent
 	APITypeGemini
 	APITypeZhipu_v4
+	APITypePerplexity
 
 	APITypeDummy // this one is only for count, do not add any channel after this
 )
@@ -43,6 +44,8 @@ func ChannelType2APIType(channelType int) int {
 		apiType = APITypeGemini
 	case common.ChannelTypeZhipu_v4:
 		apiType = APITypeZhipu_v4
+	case common.ChannelTypePerplexity:
+		apiType = APITypePerplexity
 	}
 	return apiType
 }

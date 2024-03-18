@@ -211,6 +211,7 @@ const (
 	ChannelTypeGemini         = 24
 	ChannelTypeMoonshot       = 25
 	ChannelTypeZhipu_v4       = 26
+	ChannelTypePerplexity     = 27
 )
 
 var ChannelBaseURLs = []string{
@@ -240,5 +241,5 @@ var ChannelBaseURLs = []string{
 	"https://hunyuan.cloud.tencent.com", //23
 	"https://generativelanguage.googleapis.com", //24
 	"https://api.moonshot.cn",                   //25
-	"https://open.bigmodel.cn",                  //26
+	"https://api.perplexity.ai",                 //26
 }
