@@ -265,7 +265,7 @@ const LogsTable = () => {
     setActivePage(page);
     if (page === Math.ceil(logs.length / pageSize) + 1) {
       // In this case we have to load more data and then append them.
-      loadLogs(page - 1, pageSize).then(r => {
+      loadLogs(page - 1, pageSize, logType).then(r => {
       });
     }
   };
