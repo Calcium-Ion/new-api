@@ -6,8 +6,10 @@ import (
 	"one-api/relay/channel/baidu"
 	"one-api/relay/channel/claude"
 	"one-api/relay/channel/gemini"
+	"one-api/relay/channel/ollama"
 	"one-api/relay/channel/openai"
 	"one-api/relay/channel/palm"
+	"one-api/relay/channel/perplexity"
 	"one-api/relay/channel/tencent"
 	"one-api/relay/channel/xunfei"
 	"one-api/relay/channel/zhipu"
@@ -39,6 +41,10 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &zhipu.Adaptor{}
 	case constant.APITypeZhipu_v4:
 		return &zhipu_4v.Adaptor{}
+	case constant.APITypeOllama:
+		return &ollama.Adaptor{}
+	case constant.APITypePerplexity:
+		return &perplexity.Adaptor{}
 	}
 	return nil
 }
