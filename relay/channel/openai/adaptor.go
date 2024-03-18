@@ -49,6 +49,12 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *re
 		req.Header.Set("api-key", info.ApiKey)
 		return nil
 	}
+	if info.ChannelType == common.ChannelTypeOpenAI {
+		orgId := c.GetHeader("OpenAI-Organization")
+		if "" != orgId {
+			req.Header.Set("OpenAI-Organization", orgId)
+		}
+	}
 	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
 	//if info.ChannelType == common.ChannelTypeOpenRouter {
 	//	req.Header.Set("HTTP-Referer", "https://github.com/songquanpeng/one-api")
