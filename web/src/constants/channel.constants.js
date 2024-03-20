@@ -15,6 +15,7 @@ export const CHANNEL_OPTIONS = [
     {key: 16, text: 'Moonshot', value: 25, color: 'green', label: 'Moonshot'},
     {key: 19, text: '360 智脑', value: 19, color: 'blue', label: '360 智脑'},
     {key: 23, text: '腾讯混元', value: 23, color: 'teal', label: '腾讯混元'},
+    {key: 31, text: '零一万物', value: 31, color: 'green', label: '零一万物'},
     {key: 8, text: '自定义渠道', value: 8, color: 'pink', label: '自定义渠道'},
     {key: 22, text: '知识库：FastGPT', value: 22, color: 'blue', label: '知识库：FastGPT'},
     {key: 21, text: '知识库：AI Proxy', value: 21, color: 'purple', label: '知识库：AI Proxy'},

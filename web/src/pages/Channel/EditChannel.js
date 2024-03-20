@@ -95,6 +95,9 @@ const EditChannel = (props) => {
                 case 26:
                     localModels = ['glm-4', 'glm-4v', 'glm-3-turbo'];
                     break;
+                case 31:
+                    localModels = ['yi-34b-chat-0205', 'yi-34b-chat-200k', 'yi-vl-plus'];
+                    break;
                 case 2:
                     localModels = ['mj_imagine', 'mj_variation', 'mj_reroll', 'mj_blend', 'mj_upscale', 'mj_describe'];
                     break;

@@ -93,6 +93,11 @@ var DefaultModelRatio = map[string]float64{
 	"embedding_s1_v1":           0.0715, // ¥0.001 / 1k tokens
 	"semantic_similarity_s1_v1": 0.0715, // ¥0.001 / 1k tokens
 	"hunyuan":                   7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
+	// https://platform.lingyiwanwu.com/docs#-计费单元
+	// 已经按照 7.2 来换算美元价格
+	"yi-34b-chat-0205": 0.018,
+	"yi-34b-chat-200k": 0.0864,
+	"yi-vl-plus":       0.0432,
 }
 
 var DefaultModelPrice = map[string]float64{

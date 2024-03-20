@@ -212,6 +212,7 @@ const (
 	ChannelTypeMoonshot       = 25
 	ChannelTypeZhipu_v4       = 26
 	ChannelTypePerplexity     = 27
+	ChannelTypeLingYiWanWu    = 31
 )
 
 var ChannelBaseURLs = []string{
@@ -243,4 +244,5 @@ var ChannelBaseURLs = []string{
 	"https://api.moonshot.cn",                   //25
 	"https://open.bigmodel.cn",                  //26
 	"https://api.perplexity.ai",                 //27
+	"https://api.lingyiwanwu.com",               //31
 }
