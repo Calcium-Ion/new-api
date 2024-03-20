@@ -95,6 +95,7 @@ func InitOptionMap() {
 	common.OptionMap["CheckSensitiveOnCompletionEnabled"] = strconv.FormatBool(constant.CheckSensitiveOnCompletionEnabled)
 	common.OptionMap["StopOnSensitiveEnabled"] = strconv.FormatBool(constant.StopOnSensitiveEnabled)
 	common.OptionMap["SensitiveWords"] = constant.SensitiveWordsToString()
+	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(constant.StreamCacheQueueLength)
 
 	common.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
@@ -288,6 +289,8 @@ func updateOptionMap(key string, value string) (err error) {
 		common.QuotaPerUnit, _ = strconv.ParseFloat(value, 64)
 	case "SensitiveWords":
 		constant.SensitiveWordsFromString(value)
+	case "StreamCacheQueueLength":
+		constant.StreamCacheQueueLength, _ = strconv.Atoi(value)
 	}
 	return err
 }

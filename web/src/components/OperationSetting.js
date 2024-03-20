@@ -10,6 +10,7 @@ const OperationSetting = () => {
     QuotaForInvitee: 0,
     QuotaRemindThreshold: 0,
     PreConsumedQuota: 0,
+    StreamCacheQueueLength: 0,
     ModelRatio: '',
     ModelPrice: '',
     GroupRatio: '',
@@ -307,6 +308,8 @@ const OperationSetting = () => {
               name="CheckSensitiveOnCompletionEnabled"
               onChange={handleInputChange}
             />
+          </Form.Group>
+          <Form.Group inline>
             <Form.Checkbox
               checked={inputs.StopOnSensitiveEnabled === 'true'}
               label="在检测到屏蔽词时，立刻停止生成，否则替换屏蔽词"
@@ -314,6 +317,17 @@ const OperationSetting = () => {
               onChange={handleInputChange}
             />
           </Form.Group>
+          {/*<Form.Group>*/}
+          {/*  <Form.Input*/}
+          {/*    label="流模式下缓存队列，默认不缓存，设置越大检测越准确，但是回复会有卡顿感"*/}
+          {/*    name="StreamCacheTextLength"*/}
+          {/*    onChange={handleInputChange}*/}
+          {/*    value={inputs.StreamCacheQueueLength}*/}
+          {/*    type="number"*/}
+          {/*    min="0"*/}
+          {/*    placeholder="例如：10"*/}
+          {/*  />*/}
+          {/*</Form.Group>*/}
           <Form.Group widths="equal">
             <Form.TextArea
               label="屏蔽词列表，一行一个屏蔽词，不需要符号分割"
