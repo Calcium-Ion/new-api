@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
@@ -153,7 +154,8 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if textResponse.Usage.TotalTokens == 0 {
 		completionTokens := 0
 		for _, choice := range textResponse.Choices {
-			completionTokens += service.CountTokenText(string(choice.Message.Content), model)
+			ctkm, _ := service.CountTokenText(string(choice.Message.Content), model, constant.ShouldCheckCompletionSensitive())
+			completionTokens += ctkm
 		}
 		textResponse.Usage = dto.Usage{
 			PromptTokens:     promptTokens,

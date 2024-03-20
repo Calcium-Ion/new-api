@@ -75,7 +75,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	if info.IsStream {
 		var responseText string
 		err, responseText = OpenaiStreamHandler(c, resp, info.RelayMode)
-		usage = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
+		usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 	} else {
 		err, usage = OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
 	}
