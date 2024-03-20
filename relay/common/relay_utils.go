@@ -40,7 +40,7 @@ func RelayErrorHandler(resp *http.Response) (OpenAIErrorWithStatusCode *dto.Open
 	if err != nil {
 		return
 	}
-	OpenAIErrorWithStatusCode.Error = textResponse.Error
+	OpenAIErrorWithStatusCode.Error = *textResponse.Error
 	return
 }
 

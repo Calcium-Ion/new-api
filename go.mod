@@ -4,6 +4,7 @@ module one-api
 go 1.18
 
 require (
+	github.com/anknown/ahocorasick v0.0.0-20190904063843-d75dbd5169c0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/sessions v0.0.5
@@ -27,6 +28,7 @@ require (
 )
 
 require (
+	github.com/anknown/darts v0.0.0-20151216065714-83ff685239e6 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect

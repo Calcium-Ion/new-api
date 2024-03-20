@@ -4,10 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
+	"log"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
@@ -17,6 +21,7 @@ import (
 )
 
 func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*dto.OpenAIErrorWithStatusCode, string) {
+	checkSensitive := constant.ShouldCheckCompletionSensitive()
 	var responseTextBuilder strings.Builder
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
@@ -36,11 +41,10 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 	defer close(stopChan)
 	defer close(dataChan)
 	var wg sync.WaitGroup
-
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		var streamItems []string
+		var streamItems []string // store stream items
 		for scanner.Scan() {
 			data := scanner.Text()
 			if len(data) < 6 { // ignore blank line or wrong format
@@ -49,10 +53,19 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 			if data[:6] != "data: " && data[:6] != "[DONE]" {
 				continue
 			}
+			sensitive := false
+			if checkSensitive {
+				// check sensitive
+				sensitive, _, data = service.SensitiveWordReplace(data, false)
+			}
 			dataChan <- data
 			data = data[6:]
 			if !strings.HasPrefix(data, "[DONE]") {
 				streamItems = append(streamItems, data)
+			}
+			if sensitive && constant.StopOnSensitiveEnabled {
+				dataChan <- "data: [DONE]"
+				break
 			}
 		}
 		streamResp := "[" + strings.Join(streamItems, ",") + "]"
@@ -111,49 +124,48 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 	return nil, responseTextBuilder.String()
 }
 
-func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage, *dto.SensitiveResponse) {
 	var textResponse dto.TextResponse
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil, nil
 	}
 	err = resp.Body.Close()
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil, nil
 	}
 	err = json.Unmarshal(responseBody, &textResponse)
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil, nil
 	}
-	if textResponse.Error.Type != "" {
+	log.Printf("textResponse: %+v", textResponse)
+	if textResponse.Error != nil {
 		return &dto.OpenAIErrorWithStatusCode{
-			Error:      textResponse.Error,
+			Error:      *textResponse.Error,
 			StatusCode: resp.StatusCode,
-		}, nil
-	}
-	// Reset response body
-	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
-	// We shouldn't set the header before we parse the response body, because the parse part may fail.
-	// And then we will have to send an error response, but in this case, the header has already been set.
-	// So the httpClient will be confused by the response.
-	// For example, Postman will report error, and we cannot check the response at all.
-	for k, v := range resp.Header {
-		c.Writer.Header().Set(k, v[0])
-	}
-	c.Writer.WriteHeader(resp.StatusCode)
-	_, err = io.Copy(c.Writer, resp.Body)
-	if err != nil {
-		return service.OpenAIErrorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
-	}
-	err = resp.Body.Close()
-	if err != nil {
-		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+		}, nil, nil
 	}
 
-	if textResponse.Usage.TotalTokens == 0 {
+	checkSensitive := constant.ShouldCheckCompletionSensitive()
+	sensitiveWords := make([]string, 0)
+	triggerSensitive := false
+
+	if textResponse.Usage.TotalTokens == 0 || checkSensitive {
 		completionTokens := 0
 		for _, choice := range textResponse.Choices {
-			completionTokens += service.CountTokenText(string(choice.Message.Content), model)
+			stringContent := string(choice.Message.Content)
+			ctkm, _, _ := service.CountTokenText(stringContent, model, false)
+			completionTokens += ctkm
+			if checkSensitive {
+				sensitive, words, stringContent := service.SensitiveWordReplace(stringContent, false)
+				if sensitive {
+					triggerSensitive = true
+					msg := choice.Message
+					msg.Content = common.StringToByteSlice(stringContent)
+					choice.Message = msg
+					sensitiveWords = append(sensitiveWords, words...)
+				}
+			}
 		}
 		textResponse.Usage = dto.Usage{
 			PromptTokens:     promptTokens,
@@ -161,5 +173,36 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 			TotalTokens:      promptTokens + completionTokens,
 		}
 	}
-	return nil, &textResponse.Usage
+
+	if constant.StopOnSensitiveEnabled {
+
+	} else {
+		responseBody, err = json.Marshal(textResponse)
+		// Reset response body
+		resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+		// We shouldn't set the header before we parse the response body, because the parse part may fail.
+		// And then we will have to send an error response, but in this case, the header has already been set.
+		// So the httpClient will be confused by the response.
+		// For example, Postman will report error, and we cannot check the response at all.
+		for k, v := range resp.Header {
+			c.Writer.Header().Set(k, v[0])
+		}
+		c.Writer.WriteHeader(resp.StatusCode)
+		_, err = io.Copy(c.Writer, resp.Body)
+		if err != nil {
+			return service.OpenAIErrorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil, nil
+		}
+		err = resp.Body.Close()
+		if err != nil {
+			return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil, nil
+		}
+	}
+
+	if checkSensitive && triggerSensitive {
+		sensitiveWords = common.RemoveDuplicate(sensitiveWords)
+		return service.OpenAIErrorWrapper(errors.New(fmt.Sprintf("sensitive words detected: %s", strings.Join(sensitiveWords, ", "))), "sensitive_words_detected", http.StatusBadRequest), &textResponse.Usage, &dto.SensitiveResponse{
+			SensitiveWords: sensitiveWords,
+		}
+	}
+	return nil, &textResponse.Usage, nil
 }
