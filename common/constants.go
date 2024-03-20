@@ -244,5 +244,8 @@ var ChannelBaseURLs = []string{
 	"https://api.moonshot.cn",                   //25
 	"https://open.bigmodel.cn",                  //26
 	"https://api.perplexity.ai",                 //27
+	"",                                          //28
+	"",                                          //29
+	"",                                          //30
 	"https://api.lingyiwanwu.com",               //31
 }
