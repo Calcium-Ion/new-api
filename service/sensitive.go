@@ -24,18 +24,21 @@ func SensitiveWordContains(text string) (bool, []string) {
 }
 
 // SensitiveWordReplace 敏感词替换，返回是否包含敏感词和替换后的文本
-func SensitiveWordReplace(text string) (bool, string) {
+func SensitiveWordReplace(text string, returnImmediately bool) (bool, []string, string) {
+	text = strings.ToLower(text)
 	m := initAc()
-	hits := m.MultiPatternSearch([]rune(text), false)
+	hits := m.MultiPatternSearch([]rune(text), returnImmediately)
 	if len(hits) > 0 {
+		words := make([]string, 0)
 		for _, hit := range hits {
 			pos := hit.Pos
 			word := string(hit.Word)
-			text = text[:pos] + strings.Repeat("*", len(word)) + text[pos+len(word):]
+			text = text[:pos] + " *###* " + text[pos+len(word):]
+			words = append(words, word)
 		}
-		return true, text
+		return true, words, text
 	}
-	return false, text
+	return false, nil, text
 }
 
 func initAc() *goahocorasick.Machine {
@@ -52,6 +55,7 @@ func readRunes() [][]rune {
 	var dict [][]rune
 
 	for _, word := range constant.SensitiveWords {
+		word = strings.ToLower(word)
 		l := bytes.TrimSpace([]byte(word))
 		dict = append(dict, bytes.Runes(l))
 	}

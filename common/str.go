@@ -36,3 +36,15 @@ func SundaySearch(text string, pattern string) bool {
 	}
 	return false // 如果没有找到匹配，返回-1
 }
+
+func RemoveDuplicate(s []string) []string {
+	result := make([]string, 0, len(s))
+	temp := map[string]struct{}{}
+	for _, item := range s {
+		if _, ok := temp[item]; !ok {
+			temp[item] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
+}
