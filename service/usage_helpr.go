@@ -19,7 +19,7 @@ import (
 func ResponseText2Usage(responseText string, modeName string, promptTokens int) (*dto.Usage, error) {
 	usage := &dto.Usage{}
 	usage.PromptTokens = promptTokens
-	ctkm, err := CountTokenText(responseText, modeName, false)
+	ctkm, err, _ := CountTokenText(responseText, modeName, false)
 	usage.CompletionTokens = ctkm
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
 	return usage, err

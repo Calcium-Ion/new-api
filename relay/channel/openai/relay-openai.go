@@ -154,7 +154,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 		completionTokens := 0
 		for _, choice := range textResponse.Choices {
 			stringContent := string(choice.Message.Content)
-			ctkm, _ := service.CountTokenText(stringContent, model, false)
+			ctkm, _, _ := service.CountTokenText(stringContent, model, false)
 			completionTokens += ctkm
 			if checkSensitive {
 				sensitive, words, stringContent := service.SensitiveWordReplace(stringContent, false)

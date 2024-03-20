@@ -98,10 +98,13 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	var ratio float64
 	var modelRatio float64
 	//err := service.SensitiveWordsCheck(textRequest)
-	promptTokens, err := getPromptTokens(textRequest, relayInfo)
+	promptTokens, err, sensitiveTrigger := getPromptTokens(textRequest, relayInfo)
 
 	// count messages token error 计算promptTokens错误
 	if err != nil {
+		if sensitiveTrigger {
+			return service.OpenAIErrorWrapper(err, "sensitive_words_detected", http.StatusBadRequest)
+		}
 		return service.OpenAIErrorWrapper(err, "count_token_messages_failed", http.StatusInternalServerError)
 	}
 
@@ -180,25 +183,26 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	return nil
 }
 
-func getPromptTokens(textRequest *dto.GeneralOpenAIRequest, info *relaycommon.RelayInfo) (int, error) {
+func getPromptTokens(textRequest *dto.GeneralOpenAIRequest, info *relaycommon.RelayInfo) (int, error, bool) {
 	var promptTokens int
 	var err error
+	var sensitiveTrigger bool
 	checkSensitive := constant.ShouldCheckPromptSensitive()
 	switch info.RelayMode {
 	case relayconstant.RelayModeChatCompletions:
-		promptTokens, err = service.CountTokenMessages(textRequest.Messages, textRequest.Model, checkSensitive)
+		promptTokens, err, sensitiveTrigger = service.CountTokenMessages(textRequest.Messages, textRequest.Model, checkSensitive)
 	case relayconstant.RelayModeCompletions:
-		promptTokens, err = service.CountTokenInput(textRequest.Prompt, textRequest.Model, checkSensitive)
+		promptTokens, err, sensitiveTrigger = service.CountTokenInput(textRequest.Prompt, textRequest.Model, checkSensitive)
 	case relayconstant.RelayModeModerations:
-		promptTokens, err = service.CountTokenInput(textRequest.Input, textRequest.Model, checkSensitive)
+		promptTokens, err, sensitiveTrigger = service.CountTokenInput(textRequest.Input, textRequest.Model, checkSensitive)
 	case relayconstant.RelayModeEmbeddings:
-		promptTokens, err = service.CountTokenInput(textRequest.Input, textRequest.Model, checkSensitive)
+		promptTokens, err, sensitiveTrigger = service.CountTokenInput(textRequest.Input, textRequest.Model, checkSensitive)
 	default:
 		err = errors.New("unknown relay mode")
 		promptTokens = 0
 	}
 	info.PromptTokens = promptTokens
-	return promptTokens, err
+	return promptTokens, err, sensitiveTrigger
 }
 
 // 预扣费并返回用户剩余配额
