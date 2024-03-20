@@ -23,6 +23,7 @@ func SensitiveWordsToString() string {
 }
 
 func SensitiveWordsFromString(s string) {
+	SensitiveWords = []string{}
 	sw := strings.Split(s, "\n")
 	for _, w := range sw {
 		w = strings.TrimSpace(w)
