@@ -1,9 +1,9 @@
 package dto
 
 type TextResponse struct {
-	Choices []OpenAITextResponseChoice `json:"choices"`
+	Choices []*OpenAITextResponseChoice `json:"choices"`
 	Usage   `json:"usage"`
-	Error   OpenAIError `json:"error"`
+	Error   *OpenAIError `json:"error,omitempty"`
 }
 
 type OpenAITextResponseChoice struct {

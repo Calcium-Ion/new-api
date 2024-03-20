@@ -90,6 +90,12 @@ func InitOptionMap() {
 	common.OptionMap["DataExportDefaultTime"] = common.DataExportDefaultTime
 	common.OptionMap["DefaultCollapseSidebar"] = strconv.FormatBool(common.DefaultCollapseSidebar)
 	common.OptionMap["MjNotifyEnabled"] = strconv.FormatBool(constant.MjNotifyEnabled)
+	common.OptionMap["CheckSensitiveEnabled"] = strconv.FormatBool(constant.CheckSensitiveEnabled)
+	common.OptionMap["CheckSensitiveOnPromptEnabled"] = strconv.FormatBool(constant.CheckSensitiveOnPromptEnabled)
+	common.OptionMap["CheckSensitiveOnCompletionEnabled"] = strconv.FormatBool(constant.CheckSensitiveOnCompletionEnabled)
+	common.OptionMap["StopOnSensitiveEnabled"] = strconv.FormatBool(constant.StopOnSensitiveEnabled)
+	common.OptionMap["SensitiveWords"] = constant.SensitiveWordsToString()
+	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(constant.StreamCacheQueueLength)
 
 	common.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
@@ -185,6 +191,14 @@ func updateOptionMap(key string, value string) (err error) {
 			common.DefaultCollapseSidebar = boolValue
 		case "MjNotifyEnabled":
 			constant.MjNotifyEnabled = boolValue
+		case "CheckSensitiveEnabled":
+			constant.CheckSensitiveEnabled = boolValue
+		case "CheckSensitiveOnPromptEnabled":
+			constant.CheckSensitiveOnPromptEnabled = boolValue
+		case "CheckSensitiveOnCompletionEnabled":
+			constant.CheckSensitiveOnCompletionEnabled = boolValue
+		case "StopOnSensitiveEnabled":
+			constant.StopOnSensitiveEnabled = boolValue
 		}
 	}
 	switch key {
@@ -273,6 +287,10 @@ func updateOptionMap(key string, value string) (err error) {
 		common.ChannelDisableThreshold, _ = strconv.ParseFloat(value, 64)
 	case "QuotaPerUnit":
 		common.QuotaPerUnit, _ = strconv.ParseFloat(value, 64)
+	case "SensitiveWords":
+		constant.SensitiveWordsFromString(value)
+	case "StreamCacheQueueLength":
+		constant.StreamCacheQueueLength, _ = strconv.Atoi(value)
 	}
 	return err
 }

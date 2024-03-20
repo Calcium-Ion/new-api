@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"one-api/service"
 	"strings"
@@ -149,6 +150,9 @@ func streamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			claudeUsage = &claudeResponse.Usage
 		}
 	}
+	if claudeUsage == nil {
+		claudeUsage = &ClaudeUsage{}
+	}
 	response.Choices = append(response.Choices, choice)
 	return &response, claudeUsage
 }
@@ -194,7 +198,8 @@ func responseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 
 func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	responseId := fmt.Sprintf("chatcmpl-%s", common.GetUUID())
-	var usage dto.Usage
+	var usage *dto.Usage
+	usage = &dto.Usage{}
 	responseText := ""
 	createdTime := common.GetTimestamp()
 	scanner := bufio.NewScanner(resp.Body)
@@ -277,13 +282,13 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
 	if requestMode == RequestModeCompletion {
-		usage = *service.ResponseText2Usage(responseText, modelName, promptTokens)
+		usage, _ = service.ResponseText2Usage(responseText, modelName, promptTokens)
 	} else {
 		if usage.CompletionTokens == 0 {
-			usage = *service.ResponseText2Usage(responseText, modelName, usage.PromptTokens)
+			usage, _ = service.ResponseText2Usage(responseText, modelName, usage.PromptTokens)
 		}
 	}
-	return nil, &usage
+	return nil, usage
 }
 
 func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
@@ -312,7 +317,10 @@ func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptT
 		}, nil
 	}
 	fullTextResponse := responseClaude2OpenAI(requestMode, &claudeResponse)
-	completionTokens := service.CountTokenText(claudeResponse.Completion, model)
+	completionTokens, err, _ := service.CountTokenText(claudeResponse.Completion, model, constant.ShouldCheckCompletionSensitive())
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "count_token_text_failed", http.StatusInternalServerError), nil
+	}
 	usage := dto.Usage{}
 	if requestMode == RequestModeCompletion {
 		usage.PromptTokens = promptTokens
