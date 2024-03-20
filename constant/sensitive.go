@@ -23,7 +23,13 @@ func SensitiveWordsToString() string {
 }
 
 func SensitiveWordsFromString(s string) {
-	SensitiveWords = strings.Split(s, "\n")
+	sw := strings.Split(s, "\n")
+	for _, w := range sw {
+		w = strings.TrimSpace(w)
+		if w != "" {
+			SensitiveWords = append(SensitiveWords, w)
+		}
+	}
 }
 
 func ShouldCheckPromptSensitive() bool {
