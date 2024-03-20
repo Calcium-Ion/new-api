@@ -56,7 +56,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 			sensitive := false
 			if checkSensitive {
 				// check sensitive
-				sensitive, _, data = service.SensitiveWordReplace(data, constant.StopOnSensitiveEnabled)
+				sensitive, _, data = service.SensitiveWordReplace(data, false)
 			}
 			dataChan <- data
 			data = data[6:]

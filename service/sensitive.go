@@ -25,15 +25,15 @@ func SensitiveWordContains(text string) (bool, []string) {
 
 // SensitiveWordReplace 敏感词替换，返回是否包含敏感词和替换后的文本
 func SensitiveWordReplace(text string, returnImmediately bool) (bool, []string, string) {
-	text = strings.ToLower(text)
+	checkText := strings.ToLower(text)
 	m := initAc()
-	hits := m.MultiPatternSearch([]rune(text), returnImmediately)
+	hits := m.MultiPatternSearch([]rune(checkText), returnImmediately)
 	if len(hits) > 0 {
 		words := make([]string, 0)
 		for _, hit := range hits {
 			pos := hit.Pos
 			word := string(hit.Word)
-			text = text[:pos] + " *###* " + text[pos+len(word):]
+			text = text[:pos] + "*###*" + text[pos+len(word):]
 			words = append(words, word)
 		}
 		return true, words, text
