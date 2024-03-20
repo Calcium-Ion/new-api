@@ -10,9 +10,10 @@ import (
 
 // SensitiveWordContains 是否包含敏感词，返回是否包含敏感词和敏感词列表
 func SensitiveWordContains(text string) (bool, []string) {
+	checkText := strings.ToLower(text)
 	// 构建一个AC自动机
 	m := initAc()
-	hits := m.MultiPatternSearch([]rune(text), false)
+	hits := m.MultiPatternSearch([]rune(checkText), false)
 	if len(hits) > 0 {
 		words := make([]string, 0)
 		for _, hit := range hits {
