@@ -1,12 +1,16 @@
 package dto
 
 type TextResponseWithError struct {
-	Choices []OpenAITextResponseChoice `json:"choices"`
+	Choices []OpenAITextResponseChoice    `json:"choices"`
+	Object  string                        `json:"object"`
+	Data    []OpenAIEmbeddingResponseItem `json:"data"`
+	Model   string                        `json:"model"`
 	Usage   `json:"usage"`
 	Error   OpenAIError `json:"error"`
 }
 
 type TextResponse struct {
+	Model   string                     `json:"model"`
 	Choices []OpenAITextResponseChoice `json:"choices"`
 	Usage   `json:"usage"`
 }
