@@ -40,7 +40,7 @@ func SensitiveWordReplace(text string, returnImmediately bool) (bool, []string, 
 		for _, hit := range hits {
 			pos := hit.Pos
 			word := string(hit.Word)
-			text = text[:pos] + "*###*" + text[pos+len(word):]
+			text = text[:pos] + "**###**" + text[pos+len(word):]
 			words = append(words, word)
 		}
 		return true, words, text
