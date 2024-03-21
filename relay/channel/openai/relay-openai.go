@@ -193,6 +193,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 		}
 		textResponse := &dto.TextResponse{
 			Id:      responseWithError.Id,
+			Created: responseWithError.Created,
 			Object:  responseWithError.Object,
 			Choices: responseWithError.Choices,
 			Model:   responseWithError.Model,
