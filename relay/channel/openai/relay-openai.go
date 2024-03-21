@@ -125,7 +125,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 }
 
 func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage, *dto.SensitiveResponse) {
-	var textResponse dto.TextResponse
+	var textResponseWithError dto.TextResponseWithError
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil, nil
@@ -134,16 +134,21 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil, nil
 	}
-	err = json.Unmarshal(responseBody, &textResponse)
+	err = json.Unmarshal(responseBody, &textResponseWithError)
 	if err != nil {
+		log.Printf("unmarshal_response_body_failed: body: %s, err: %v", string(responseBody), err)
 		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil, nil
 	}
-	log.Printf("textResponse: %+v", textResponse)
-	if textResponse.Error != nil {
+	if textResponseWithError.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			Error:      *textResponse.Error,
+			Error:      textResponseWithError.Error,
 			StatusCode: resp.StatusCode,
 		}, nil, nil
+	}
+
+	textResponse := &dto.TextResponse{
+		Choices: textResponseWithError.Choices,
+		Usage:   textResponseWithError.Usage,
 	}
 
 	checkSensitive := constant.ShouldCheckCompletionSensitive()
@@ -174,7 +179,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 		}
 	}
 
-	if constant.StopOnSensitiveEnabled {
+	if checkSensitive && constant.StopOnSensitiveEnabled && triggerSensitive {
 
 	} else {
 		responseBody, err = json.Marshal(textResponse)
@@ -200,7 +205,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 
 	if checkSensitive && triggerSensitive {
 		sensitiveWords = common.RemoveDuplicate(sensitiveWords)
-		return service.OpenAIErrorWrapper(errors.New(fmt.Sprintf("sensitive words detected: %s", strings.Join(sensitiveWords, ", "))), "sensitive_words_detected", http.StatusBadRequest), &textResponse.Usage, &dto.SensitiveResponse{
+		return service.OpenAIErrorWrapper(errors.New(fmt.Sprintf("sensitive words detected on response: %s", strings.Join(sensitiveWords, ", "))), "sensitive_words_detected", http.StatusBadRequest), &textResponse.Usage, &dto.SensitiveResponse{
 			SensitiveWords: sensitiveWords,
 		}
 	}
