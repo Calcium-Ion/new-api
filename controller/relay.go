@@ -95,7 +95,7 @@ func RelayMidjourney(c *gin.Context) {
 func RelayNotImplemented(c *gin.Context) {
 	err := dto.OpenAIError{
 		Message: "API not implemented",
-		Type:    "new_api_error",
+		Type:    "tx_api_error",
 		Param:   "",
 		Code:    "api_not_implemented",
 	}
