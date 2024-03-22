@@ -185,7 +185,11 @@ func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestU
 	req = req.WithContext(ctx)
 	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
 	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
-	req.Header.Set("mj-api-secret", strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
+	auth := c.Request.Header.Get("Authorization")
+	if auth != "" {
+		auth = strings.TrimPrefix(auth, "Bearer ")
+		req.Header.Set("mj-api-secret", auth)
+	}
 	defer cancel()
 	resp, err := GetHttpClient().Do(req)
 	if err != nil {
