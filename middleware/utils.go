@@ -9,7 +9,7 @@ func abortWithOpenAiMessage(c *gin.Context, statusCode int, message string) {
 	c.JSON(statusCode, gin.H{
 		"error": gin.H{
 			"message": common.MessageWithRequestId(message, c.GetString(common.RequestIdKey)),
-			"type":    "new_api_error",
+			"type":    "tx_api_error",
 		},
 	})
 	c.Abort()
