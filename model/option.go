@@ -271,11 +271,11 @@ func updateOptionMap(key string, value string) (err error) {
 		common.DataExportInterval, _ = strconv.Atoi(value)
 	case "DataExportDefaultTime":
 		common.DataExportDefaultTime = value
-	case "modelRatio":
+	case "ModelRatio":
 		err = common.UpdateModelRatioByJSONString(value)
 	case "GroupRatio":
 		err = common.UpdateGroupRatioByJSONString(value)
-	case "modelPrice":
+	case "ModelPrice":
 		err = common.UpdateModelPriceByJSONString(value)
 	case "TopUpLink":
 		common.TopUpLink = value
