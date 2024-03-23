@@ -1,4 +1,4 @@
-package ali
+package perplexity
 
 import (
 	"errors"
@@ -8,34 +8,24 @@ import (
 	"net/http"
 	"one-api/dto"
 	"one-api/relay/channel"
+	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
-	"one-api/relay/constant"
+	"one-api/service"
 )
 
 type Adaptor struct {
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
-
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	fullRequestURL := fmt.Sprintf("%s/api/v1/services/aigc/text-generation/generation", info.BaseUrl)
-	if info.RelayMode == constant.RelayModeEmbeddings {
-		fullRequestURL = fmt.Sprintf("%s/api/v1/services/embeddings/text-embedding/text-embedding", info.BaseUrl)
-	}
-	return fullRequestURL, nil
+	return fmt.Sprintf("%s/chat/completions", info.BaseUrl), nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
 	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
-	if info.IsStream {
-		req.Header.Set("X-DashScope-SSE", "enable")
-	}
-	if c.GetString("plugin") != "" {
-		req.Header.Set("X-DashScope-Plugin", c.GetString("plugin"))
-	}
 	return nil
 }
 
@@ -43,14 +33,10 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	switch relayMode {
-	case constant.RelayModeEmbeddings:
-		baiduEmbeddingRequest := embeddingRequestOpenAI2Ali(*request)
-		return baiduEmbeddingRequest, nil
-	default:
-		baiduRequest := requestOpenAI2Ali(*request)
-		return baiduRequest, nil
+	if request.TopP >= 1 {
+		request.TopP = 0.99
 	}
+	return requestOpenAI2Perplexity(*request), nil
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
@@ -59,14 +45,11 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode, sensitiveResp *dto.SensitiveResponse) {
 	if info.IsStream {
-		err, usage = aliStreamHandler(c, resp)
+		var responseText string
+		err, responseText = openai.OpenaiStreamHandler(c, resp, info.RelayMode)
+		usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 	} else {
-		switch info.RelayMode {
-		case constant.RelayModeEmbeddings:
-			err, usage = aliEmbeddingHandler(c, resp)
-		default:
-			err, usage = aliHandler(c, resp)
-		}
+		err, usage, sensitiveResp = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName, info.RelayMode)
 	}
 	return
 }

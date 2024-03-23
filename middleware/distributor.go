@@ -155,6 +155,9 @@ func Distribute() func(c *gin.Context) {
 				if channel.AutoBan != nil && *channel.AutoBan == 0 {
 					ban = false
 				}
+				if nil != channel.OpenAIOrganization {
+					c.Set("channel_organization", *channel.OpenAIOrganization)
+				}
 				c.Set("auto_ban", ban)
 				c.Set("model_mapping", channel.GetModelMapping())
 				c.Request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", channel.Key))

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"one-api/common"
 	"one-api/constant"
 	"one-api/dto"
 	relayconstant "one-api/relay/constant"
@@ -184,14 +185,19 @@ func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestU
 	req = req.WithContext(ctx)
 	req.Header.Set("Content-Type", c.Request.Header.Get("Content-Type"))
 	req.Header.Set("Accept", c.Request.Header.Get("Accept"))
-	req.Header.Set("mj-api-secret", strings.Split(c.Request.Header.Get("Authorization"), " ")[1])
+	auth := c.Request.Header.Get("Authorization")
+	if auth != "" {
+		auth = strings.TrimPrefix(auth, "Bearer ")
+		req.Header.Set("mj-api-secret", auth)
+	}
 	defer cancel()
 	resp, err := GetHttpClient().Do(req)
 	if err != nil {
+		common.SysError("do request failed: " + err.Error())
 		return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "do_request_failed", http.StatusInternalServerError), nullBytes, err
 	}
 	statusCode := resp.StatusCode
-	//if statusCode != 200 {
+	//if statusCode != 200  {
 	//	return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "bad_response_status_code", statusCode), nullBytes, nil
 	//}
 	err = req.Body.Close()

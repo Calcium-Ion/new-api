@@ -10,6 +10,7 @@ const OperationSetting = () => {
     QuotaForInvitee: 0,
     QuotaRemindThreshold: 0,
     PreConsumedQuota: 0,
+    StreamCacheQueueLength: 0,
     ModelRatio: '',
     ModelPrice: '',
     GroupRatio: '',
@@ -23,6 +24,11 @@ const OperationSetting = () => {
     LogConsumeEnabled: '',
     DisplayInCurrencyEnabled: '',
     DisplayTokenStatEnabled: '',
+    CheckSensitiveEnabled: '',
+    CheckSensitiveOnPromptEnabled: '',
+    CheckSensitiveOnCompletionEnabled: '',
+    StopOnSensitiveEnabled: '',
+    SensitiveWords: '',
     MjNotifyEnabled: '',
     DrawingEnabled: '',
     DataExportEnabled: '',
@@ -128,6 +134,11 @@ const OperationSetting = () => {
             return;
           }
           await updateOption('ModelPrice', inputs.ModelPrice);
+        }
+        break;
+      case 'words':
+        if (originInputs['SensitiveWords'] !== inputs.SensitiveWords) {
+          await updateOption('SensitiveWords', inputs.SensitiveWords);
         }
         break;
       case 'quota':
@@ -272,6 +283,64 @@ const OperationSetting = () => {
               onChange={handleInputChange}
             />
           </Form.Group>
+          <Divider />
+          <Header as="h3">
+            屏蔽词过滤设置
+          </Header>
+          <Form.Group inline>
+            <Form.Checkbox
+              checked={inputs.CheckSensitiveEnabled === 'true'}
+              label="启用屏蔽词过滤功能"
+              name="CheckSensitiveEnabled"
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group inline>
+            <Form.Checkbox
+              checked={inputs.CheckSensitiveOnPromptEnabled === 'true'}
+              label="启用prompt检查"
+              name="CheckSensitiveOnPromptEnabled"
+              onChange={handleInputChange}
+            />
+            <Form.Checkbox
+              checked={inputs.CheckSensitiveOnCompletionEnabled === 'true'}
+              label="启用生成内容检查"
+              name="CheckSensitiveOnCompletionEnabled"
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group inline>
+            <Form.Checkbox
+              checked={inputs.StopOnSensitiveEnabled === 'true'}
+              label="在检测到屏蔽词时，立刻停止生成，否则替换屏蔽词"
+              name="StopOnSensitiveEnabled"
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          {/*<Form.Group>*/}
+          {/*  <Form.Input*/}
+          {/*    label="流模式下缓存队列，默认不缓存，设置越大检测越准确，但是回复会有卡顿感"*/}
+          {/*    name="StreamCacheTextLength"*/}
+          {/*    onChange={handleInputChange}*/}
+          {/*    value={inputs.StreamCacheQueueLength}*/}
+          {/*    type="number"*/}
+          {/*    min="0"*/}
+          {/*    placeholder="例如：10"*/}
+          {/*  />*/}
+          {/*</Form.Group>*/}
+          <Form.Group widths="equal">
+            <Form.TextArea
+              label="屏蔽词列表，一行一个屏蔽词，不需要符号分割"
+              name="SensitiveWords"
+              onChange={handleInputChange}
+              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
+              value={inputs.SensitiveWords}
+              placeholder="一行一个屏蔽词"
+            />
+          </Form.Group>
+          <Form.Button onClick={() => {
+            submitConfig('words').then();
+          }}>保存屏蔽词设置</Form.Button>
           <Divider />
           <Header as="h3">
             日志设置

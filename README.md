@@ -20,7 +20,7 @@
 此分叉版本的主要变更如下：
 
 1. 全新的UI界面（部分界面还待更新）
-2. 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口的支持
+2. 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口的支持，[对接文档](Midjourney.md)，支持的接口如下：
    + [x] /mj/submit/imagine
    + [x] /mj/submit/change
    + [x] /mj/submit/blend
@@ -56,7 +56,7 @@
 2. 智谱glm-4v，glm-4v识图
 3. Anthropic Claude 3 (claude-3-opus-20240229, claude-3-sonnet-20240229)
 4. [Ollama](https://github.com/ollama/ollama?tab=readme-ov-file)，添加渠道时，密钥可以随便填写，默认的请求地址是[http://localhost:11434](http://localhost:11434)，如果需要修改请在渠道中修改
-5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口
+5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
@@ -98,6 +98,12 @@ docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 
 ![image](https://github.com/Calcium-Ion/new-api/assets/61247483/5b3228e8-2556-44f7-97d6-4f8d8ee6effa)  
 ![image](https://github.com/Calcium-Ion/new-api/assets/61247483/af9a07ee-5101-4b3d-8bd9-ae21a4fd7e9e)
+
+## 相关项目
+- [One API](https://github.com/songquanpeng/one-api)：原版项目
+- [Midjourney-Proxy](https://github.com/novicezk/midjourney-proxy)：Midjourney接口支持
+- [chatnio](https://github.com/Deeptrain-Community/chatnio)：下一代 AI 一站式 B/C 端解决方案
+- [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)：用key查询使用额度
 
 ## Star History
 

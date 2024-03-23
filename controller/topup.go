@@ -77,7 +77,7 @@ func RequestEpay(c *gin.Context) {
 	callBackAddress := service.GetCallbackAddress()
 	returnUrl, _ := url.Parse(common.ServerAddress + "/log")
 	notifyUrl, _ := url.Parse(callBackAddress + "/api/user/epay/notify")
-	tradeNo := strconv.FormatInt(time.Now().Unix(), 10)
+	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
 	client := GetEpayClient()
 	if client == nil {
 		c.JSON(200, gin.H{"message": "error", "data": "当前管理员未配置支付信息"})
