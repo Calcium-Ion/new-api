@@ -4,7 +4,7 @@ import {BrowserRouter} from 'react-router-dom';
 import App from './App';
 import HeaderBar from './components/HeaderBar';
 import Footer from './components/Footer';
-import 'semantic-ui-css/semantic.min.css';
+import 'semantic-ui-offline/semantic.min.css';
 import './index.css';
 import {UserProvider} from './context/User';
 import {ToastContainer} from 'react-toastify';

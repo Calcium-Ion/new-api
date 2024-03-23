@@ -33,7 +33,7 @@ export default defineConfig({
         manualChunks: {
           'react-core': ['react', 'react-dom', 'react-router-dom'],
           'semi-ui': ['@douyinfe/semi-icons', '@douyinfe/semi-ui'],
-          'semantic': ['semantic-ui-css', 'semantic-ui-react'],
+          'semantic': ['semantic-ui-offline', 'semantic-ui-react'],
           'visactor': ['@visactor/react-vchart', '@visactor/vchart'],
           'tools': ['axios', 'history', 'marked'],
           'react-components': ['react-dropzone', 'react-fireworks', 'react-telegram-login', 'react-toastify', 'react-turnstile'],

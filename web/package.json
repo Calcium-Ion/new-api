@@ -20,7 +20,7 @@
     "react-telegram-login": "^1.1.2",
     "react-toastify": "^9.0.8",
     "react-turnstile": "^1.0.5",
-    "semantic-ui-css": "^2.5.0",
+    "semantic-ui-offline": "^2.5.0",
     "semantic-ui-react": "^2.1.3"
   },
   "scripts": {
@@ -48,10 +48,10 @@
     ]
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
     "prettier": "2.8.8",
     "typescript": "4.4.2",
-    "vite": "^5.2.0",
-    "@vitejs/plugin-react": "^4.2.1"
+    "vite": "^5.2.0"
   },
   "prettier": {
     "singleQuote": true,
