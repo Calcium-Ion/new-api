@@ -11,6 +11,7 @@ import (
 	"one-api/relay/channel"
 	"one-api/relay/channel/ai360"
 	"one-api/relay/channel/moonshot"
+	"one-api/relay/channel/lingyiwanwu"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
@@ -88,6 +89,8 @@ func (a *Adaptor) GetModelList() []string {
 		return ai360.ModelList
 	case common.ChannelTypeMoonshot:
 		return moonshot.ModelList
+	case common.ChannelTypeLingYiWanWu:
+		return lingyiwanwu.ModelList
 	default:
 		return ModelList
 	}

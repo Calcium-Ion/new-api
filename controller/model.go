@@ -10,6 +10,7 @@ import (
 	"one-api/relay"
 	"one-api/relay/channel/ai360"
 	"one-api/relay/channel/moonshot"
+	"one-api/relay/channel/lingyiwanwu"
 	relayconstant "one-api/relay/constant"
 )
 
@@ -96,6 +97,17 @@ func init() {
 			Object:     "model",
 			Created:    1626777600,
 			OwnedBy:    "moonshot",
+			Permission: permission,
+			Root:       modelName,
+			Parent:     nil,
+		})
+	}
+	for _, modelName := range lingyiwanwu.ModelList {
+		openAIModels = append(openAIModels, OpenAIModels{
+			Id:         modelName,
+			Object:     "model",
+			Created:    1626777600,
+			OwnedBy:    "lingyiwanwu",
 			Permission: permission,
 			Root:       modelName,
 			Parent:     nil,
