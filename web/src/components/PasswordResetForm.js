@@ -5,7 +5,7 @@ import Turnstile from 'react-turnstile';
 
 const PasswordResetForm = () => {
   const [inputs, setInputs] = useState({
-    email: ''
+    email: '',
   });
   const { email } = inputs;
 
@@ -31,7 +31,7 @@ const PasswordResetForm = () => {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setInputs(inputs => ({ ...inputs, [name]: value }));
+    setInputs((inputs) => ({ ...inputs, [name]: value }));
   }
 
   async function handleSubmit(e) {
@@ -43,7 +43,7 @@ const PasswordResetForm = () => {
     }
     setLoading(true);
     const res = await API.get(
-      `/api/reset_password?email=${email}&turnstile=${turnstileToken}`
+      `/api/reset_password?email=${email}&turnstile=${turnstileToken}`,
     );
     const { success, message } = res.data;
     if (success) {
@@ -56,19 +56,19 @@ const PasswordResetForm = () => {
   }
 
   return (
-    <Grid textAlign="center" style={{ marginTop: '48px' }}>
+    <Grid textAlign='center' style={{ marginTop: '48px' }}>
       <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as="h2" color="" textAlign="center">
-          <Image src="/logo.png" /> 密码重置
+        <Header as='h2' color='' textAlign='center'>
+          <Image src='/logo.png' /> 密码重置
         </Header>
-        <Form size="large">
+        <Form size='large'>
           <Segment>
             <Form.Input
               fluid
-              icon="mail"
-              iconPosition="left"
-              placeholder="邮箱地址"
-              name="email"
+              icon='mail'
+              iconPosition='left'
+              placeholder='邮箱地址'
+              name='email'
               value={email}
               onChange={handleChange}
             />
@@ -83,9 +83,9 @@ const PasswordResetForm = () => {
               <></>
             )}
             <Button
-              color="green"
+              color='green'
               fluid
-              size="large"
+              size='large'
               onClick={handleSubmit}
               loading={loading}
               disabled={disableButton}

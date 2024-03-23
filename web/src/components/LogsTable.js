@@ -1,7 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { API, copy, isAdmin, showError, showSuccess, timestamp2string } from '../helpers';
+import {
+  API,
+  copy,
+  isAdmin,
+  showError,
+  showSuccess,
+  timestamp2string,
+} from '../helpers';
 
-import { Avatar, Button, Form, Layout, Modal, Select, Space, Spin, Table, Tag } from '@douyinfe/semi-ui';
+import {
+  Avatar,
+  Button,
+  Form,
+  Layout,
+  Modal,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tag,
+} from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import { renderNumber, renderQuota, stringToColor } from '../helpers/render';
 import Paragraph from '@douyinfe/semi-ui/lib/es/typography/paragraph';
@@ -9,131 +27,285 @@ import Paragraph from '@douyinfe/semi-ui/lib/es/typography/paragraph';
 const { Header } = Layout;
 
 function renderTimestamp(timestamp) {
-  return (<>
-    {timestamp2string(timestamp)}
-  </>);
+  return <>{timestamp2string(timestamp)}</>;
 }
 
-const MODE_OPTIONS = [{ key: 'all', text: '全部用户', value: 'all' }, { key: 'self', text: '当前用户', value: 'self' }];
+const MODE_OPTIONS = [
+  { key: 'all', text: '全部用户', value: 'all' },
+  { key: 'self', text: '当前用户', value: 'self' },
+];
 
-const colors = ['amber', 'blue', 'cyan', 'green', 'grey', 'indigo', 'light-blue', 'lime', 'orange', 'pink', 'purple', 'red', 'teal', 'violet', 'yellow'];
+const colors = [
+  'amber',
+  'blue',
+  'cyan',
+  'green',
+  'grey',
+  'indigo',
+  'light-blue',
+  'lime',
+  'orange',
+  'pink',
+  'purple',
+  'red',
+  'teal',
+  'violet',
+  'yellow',
+];
 
 function renderType(type) {
   switch (type) {
     case 1:
-      return <Tag color="cyan" size="large"> 充值 </Tag>;
+      return (
+        <Tag color='cyan' size='large'>
+          {' '}
+          充值{' '}
+        </Tag>
+      );
     case 2:
-      return <Tag color="lime" size="large"> 消费 </Tag>;
+      return (
+        <Tag color='lime' size='large'>
+          {' '}
+          消费{' '}
+        </Tag>
+      );
     case 3:
-      return <Tag color="orange" size="large"> 管理 </Tag>;
+      return (
+        <Tag color='orange' size='large'>
+          {' '}
+          管理{' '}
+        </Tag>
+      );
     case 4:
-      return <Tag color="purple" size="large"> 系统 </Tag>;
+      return (
+        <Tag color='purple' size='large'>
+          {' '}
+          系统{' '}
+        </Tag>
+      );
     default:
-      return <Tag color="black" size="large"> 未知 </Tag>;
+      return (
+        <Tag color='black' size='large'>
+          {' '}
+          未知{' '}
+        </Tag>
+      );
   }
 }
 
 function renderIsStream(bool) {
   if (bool) {
-    return <Tag color="blue" size="large">流</Tag>;
+    return (
+      <Tag color='blue' size='large'>
+        流
+      </Tag>
+    );
   } else {
-    return <Tag color="purple" size="large">非流</Tag>;
+    return (
+      <Tag color='purple' size='large'>
+        非流
+      </Tag>
+    );
   }
 }
 
 function renderUseTime(type) {
   const time = parseInt(type);
   if (time < 101) {
-    return <Tag color="green" size="large"> {time} s </Tag>;
+    return (
+      <Tag color='green' size='large'>
+        {' '}
+        {time} s{' '}
+      </Tag>
+    );
   } else if (time < 300) {
-    return <Tag color="orange" size="large"> {time} s </Tag>;
+    return (
+      <Tag color='orange' size='large'>
+        {' '}
+        {time} s{' '}
+      </Tag>
+    );
   } else {
-    return <Tag color="red" size="large"> {time} s </Tag>;
+    return (
+      <Tag color='red' size='large'>
+        {' '}
+        {time} s{' '}
+      </Tag>
+    );
   }
 }
 
 const LogsTable = () => {
-  const columns = [{
-    title: '时间', dataIndex: 'timestamp2string'
-  }, {
-    title: '渠道',
-    dataIndex: 'channel',
-    className: isAdmin() ? 'tableShow' : 'tableHiddle',
-    render: (text, record, index) => {
-      return (isAdminUser ? record.type === 0 || record.type === 2 ? <div>
-        {<Tag color={colors[parseInt(text) % colors.length]} size="large"> {text} </Tag>}
-      </div> : <></> : <></>);
-    }
-  }, {
-    title: '用户',
-    dataIndex: 'username',
-    className: isAdmin() ? 'tableShow' : 'tableHiddle',
-    render: (text, record, index) => {
-      return (isAdminUser ? <div>
-        <Avatar size="small" color={stringToColor(text)} style={{ marginRight: 4 }}
-                onClick={() => showUserInfo(record.user_id)}>
-          {typeof text === 'string' && text.slice(0, 1)}
-        </Avatar>
-        {text}
-      </div> : <></>);
-    }
-  }, {
-    title: '令牌', dataIndex: 'token_name', render: (text, record, index) => {
-      return (record.type === 0 || record.type === 2 ? <div>
-        <Tag color="grey" size="large" onClick={() => {
-          copyText(text);
-        }}> {text} </Tag>
-      </div> : <></>);
-    }
-  }, {
-    title: '类型', dataIndex: 'type', render: (text, record, index) => {
-      return (<div>
-        {renderType(text)}
-      </div>);
-    }
-  }, {
-    title: '模型', dataIndex: 'model_name', render: (text, record, index) => {
-      return (record.type === 0 || record.type === 2 ? <div>
-        <Tag color={stringToColor(text)} size="large" onClick={() => {
-          copyText(text);
-        }}> {text} </Tag>
-      </div> : <></>);
-    }
-  }, {
-    title: '用时', dataIndex: 'use_time', render: (text, record, index) => {
-      return (<div>
-        <Space>
-          {renderUseTime(text)}
-          {renderIsStream(record.is_stream)}
-        </Space>
-      </div>);
-    }
-  }, {
-    title: '提示', dataIndex: 'prompt_tokens', render: (text, record, index) => {
-      return (record.type === 0 || record.type === 2 ? <div>
-        {<span> {text} </span>}
-      </div> : <></>);
-    }
-  }, {
-    title: '补全', dataIndex: 'completion_tokens', render: (text, record, index) => {
-      return (parseInt(text) > 0 && (record.type === 0 || record.type === 2) ? <div>
-        {<span> {text} </span>}
-      </div> : <></>);
-    }
-  }, {
-    title: '花费', dataIndex: 'quota', render: (text, record, index) => {
-      return (record.type === 0 || record.type === 2 ? <div>
-        {renderQuota(text, 6)}
-      </div> : <></>);
-    }
-  }, {
-    title: '详情', dataIndex: 'content', render: (text, record, index) => {
-      return <Paragraph ellipsis={{ rows: 2, showTooltip: { type: 'popover', opts: { style: { width: 240 } } } }}
-                        style={{ maxWidth: 240 }}>
-        {text}
-      </Paragraph>;
-    }
-  }];
+  const columns = [
+    {
+      title: '时间',
+      dataIndex: 'timestamp2string',
+    },
+    {
+      title: '渠道',
+      dataIndex: 'channel',
+      className: isAdmin() ? 'tableShow' : 'tableHiddle',
+      render: (text, record, index) => {
+        return isAdminUser ? (
+          record.type === 0 || record.type === 2 ? (
+            <div>
+              {
+                <Tag
+                  color={colors[parseInt(text) % colors.length]}
+                  size='large'
+                >
+                  {' '}
+                  {text}{' '}
+                </Tag>
+              }
+            </div>
+          ) : (
+            <></>
+          )
+        ) : (
+          <></>
+        );
+      },
+    },
+    {
+      title: '用户',
+      dataIndex: 'username',
+      className: isAdmin() ? 'tableShow' : 'tableHiddle',
+      render: (text, record, index) => {
+        return isAdminUser ? (
+          <div>
+            <Avatar
+              size='small'
+              color={stringToColor(text)}
+              style={{ marginRight: 4 }}
+              onClick={() => showUserInfo(record.user_id)}
+            >
+              {typeof text === 'string' && text.slice(0, 1)}
+            </Avatar>
+            {text}
+          </div>
+        ) : (
+          <></>
+        );
+      },
+    },
+    {
+      title: '令牌',
+      dataIndex: 'token_name',
+      render: (text, record, index) => {
+        return record.type === 0 || record.type === 2 ? (
+          <div>
+            <Tag
+              color='grey'
+              size='large'
+              onClick={() => {
+                copyText(text);
+              }}
+            >
+              {' '}
+              {text}{' '}
+            </Tag>
+          </div>
+        ) : (
+          <></>
+        );
+      },
+    },
+    {
+      title: '类型',
+      dataIndex: 'type',
+      render: (text, record, index) => {
+        return <div>{renderType(text)}</div>;
+      },
+    },
+    {
+      title: '模型',
+      dataIndex: 'model_name',
+      render: (text, record, index) => {
+        return record.type === 0 || record.type === 2 ? (
+          <div>
+            <Tag
+              color={stringToColor(text)}
+              size='large'
+              onClick={() => {
+                copyText(text);
+              }}
+            >
+              {' '}
+              {text}{' '}
+            </Tag>
+          </div>
+        ) : (
+          <></>
+        );
+      },
+    },
+    {
+      title: '用时',
+      dataIndex: 'use_time',
+      render: (text, record, index) => {
+        return (
+          <div>
+            <Space>
+              {renderUseTime(text)}
+              {renderIsStream(record.is_stream)}
+            </Space>
+          </div>
+        );
+      },
+    },
+    {
+      title: '提示',
+      dataIndex: 'prompt_tokens',
+      render: (text, record, index) => {
+        return record.type === 0 || record.type === 2 ? (
+          <div>{<span> {text} </span>}</div>
+        ) : (
+          <></>
+        );
+      },
+    },
+    {
+      title: '补全',
+      dataIndex: 'completion_tokens',
+      render: (text, record, index) => {
+        return parseInt(text) > 0 &&
+          (record.type === 0 || record.type === 2) ? (
+          <div>{<span> {text} </span>}</div>
+        ) : (
+          <></>
+        );
+      },
+    },
+    {
+      title: '花费',
+      dataIndex: 'quota',
+      render: (text, record, index) => {
+        return record.type === 0 || record.type === 2 ? (
+          <div>{renderQuota(text, 6)}</div>
+        ) : (
+          <></>
+        );
+      },
+    },
+    {
+      title: '详情',
+      dataIndex: 'content',
+      render: (text, record, index) => {
+        return (
+          <Paragraph
+            ellipsis={{
+              rows: 2,
+              showTooltip: { type: 'popover', opts: { style: { width: 240 } } },
+            }}
+            style={{ maxWidth: 240 }}
+          >
+            {text}
+          </Paragraph>
+        );
+      },
+    },
+  ];
 
   const [logs, setLogs] = useState([]);
   const [showStat, setShowStat] = useState(false);
@@ -154,12 +326,20 @@ const LogsTable = () => {
     model_name: '',
     start_timestamp: timestamp2string(now.getTime() / 1000 - 86400),
     end_timestamp: timestamp2string(now.getTime() / 1000 + 3600),
-    channel: ''
+    channel: '',
   });
-  const { username, token_name, model_name, start_timestamp, end_timestamp, channel } = inputs;
+  const {
+    username,
+    token_name,
+    model_name,
+    start_timestamp,
+    end_timestamp,
+    channel,
+  } = inputs;
 
   const [stat, setStat] = useState({
-    quota: 0, token: 0
+    quota: 0,
+    token: 0,
   });
 
   const handleInputChange = (value, name) => {
@@ -169,7 +349,9 @@ const LogsTable = () => {
   const getLogSelfStat = async () => {
     let localStartTimestamp = Date.parse(start_timestamp) / 1000;
     let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    let res = await API.get(`/api/log/self/stat?type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`);
+    let res = await API.get(
+      `/api/log/self/stat?type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`,
+    );
     const { success, message, data } = res.data;
     if (success) {
       setStat(data);
@@ -181,7 +363,9 @@ const LogsTable = () => {
   const getLogStat = async () => {
     let localStartTimestamp = Date.parse(start_timestamp) / 1000;
     let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    let res = await API.get(`/api/log/stat?type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}`);
+    let res = await API.get(
+      `/api/log/stat?type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}`,
+    );
     const { success, message, data } = res.data;
     if (success) {
       setStat(data);
@@ -209,12 +393,16 @@ const LogsTable = () => {
     const { success, message, data } = res.data;
     if (success) {
       Modal.info({
-        title: '用户信息', content: <div style={{ padding: 12 }}>
-          <p>用户名: {data.username}</p>
-          <p>余额: {renderQuota(data.quota)}</p>
-          <p>已用额度：{renderQuota(data.used_quota)}</p>
-          <p>请求次数：{renderNumber(data.request_count)}</p>
-        </div>, centered: true
+        title: '用户信息',
+        content: (
+          <div style={{ padding: 12 }}>
+            <p>用户名: {data.username}</p>
+            <p>余额: {renderQuota(data.quota)}</p>
+            <p>已用额度：{renderQuota(data.used_quota)}</p>
+            <p>请求次数：{renderNumber(data.request_count)}</p>
+          </div>
+        ),
+        centered: true,
       });
     } else {
       showError(message);
@@ -259,14 +447,16 @@ const LogsTable = () => {
     setLoading(false);
   };
 
-  const pageData = logs.slice((activePage - 1) * pageSize, activePage * pageSize);
+  const pageData = logs.slice(
+    (activePage - 1) * pageSize,
+    activePage * pageSize,
+  );
 
-  const handlePageChange = page => {
+  const handlePageChange = (page) => {
     setActivePage(page);
     if (page === Math.ceil(logs.length / pageSize) + 1) {
       // In this case we have to load more data and then append them.
-      loadLogs(page - 1, pageSize, logType).then(r => {
-      });
+      loadLogs(page - 1, pageSize, logType).then((r) => {});
     }
   };
 
@@ -298,7 +488,8 @@ const LogsTable = () => {
 
   useEffect(() => {
     // console.log('default effect')
-    const localPageSize = parseInt(localStorage.getItem('page-size')) || ITEMS_PER_PAGE;
+    const localPageSize =
+      parseInt(localStorage.getItem('page-size')) || ITEMS_PER_PAGE;
     setPageSize(localPageSize);
     loadLogs(0, localPageSize)
       .then()
@@ -326,74 +517,136 @@ const LogsTable = () => {
     setSearching(false);
   };
 
-  return (<>
-    <Layout>
-      <Header>
-        <Spin spinning={loadingStat}>
-          <h3>使用明细（总消耗额度：
-            <span onClick={handleEyeClick} style={{
-              cursor: 'pointer', color: 'gray'
-            }}>{showStat ? renderQuota(stat.quota) : '点击查看'}</span>
-            ）
-          </h3>
-        </Spin>
-      </Header>
-      <Form layout="horizontal" style={{ marginTop: 10 }}>
-        <>
-          <Form.Input field="token_name" label="令牌名称" style={{ width: 176 }} value={token_name}
-                      placeholder={'可选值'} name="token_name"
-                      onChange={value => handleInputChange(value, 'token_name')} />
-          <Form.Input field="model_name" label="模型名称" style={{ width: 176 }} value={model_name}
-                      placeholder="可选值"
-                      name="model_name"
-                      onChange={value => handleInputChange(value, 'model_name')} />
-          <Form.DatePicker field="start_timestamp" label="起始时间" style={{ width: 272 }}
-                           initValue={start_timestamp}
-                           value={start_timestamp} type="dateTime"
-                           name="start_timestamp"
-                           onChange={value => handleInputChange(value, 'start_timestamp')} />
-          <Form.DatePicker field="end_timestamp" fluid label="结束时间" style={{ width: 272 }}
-                           initValue={end_timestamp}
-                           value={end_timestamp} type="dateTime"
-                           name="end_timestamp"
-                           onChange={value => handleInputChange(value, 'end_timestamp')} />
-          {isAdminUser && <>
-            <Form.Input field="channel" label="渠道 ID" style={{ width: 176 }} value={channel}
-                        placeholder="可选值" name="channel"
-                        onChange={value => handleInputChange(value, 'channel')} />
-            <Form.Input field="username" label="用户名称" style={{ width: 176 }} value={username}
-                        placeholder={'可选值'} name="username"
-                        onChange={value => handleInputChange(value, 'username')} />
-          </>}
-          <Form.Section>
-            <Button label="查询" type="primary" htmlType="submit" className="btn-margin-right"
-                    onClick={refresh} loading={loading}>查询</Button>
-          </Form.Section>
-        </>
-      </Form>
-      <Table style={{ marginTop: 5 }} columns={columns} dataSource={pageData} pagination={{
-        currentPage: activePage,
-        pageSize: pageSize,
-        total: logCount,
-        pageSizeOpts: [10, 20, 50, 100],
-        showSizeChanger: true,
-        onPageSizeChange: (size) => {
-          handlePageSizeChange(size).then();
-        },
-        onPageChange: handlePageChange
-      }} />
-      <Select defaultValue="0" style={{ width: 120 }} onChange={(value) => {
-        setLogType(parseInt(value));
-        refresh(parseInt(value)).then();
-      }}>
-        <Select.Option value="0">全部</Select.Option>
-        <Select.Option value="1">充值</Select.Option>
-        <Select.Option value="2">消费</Select.Option>
-        <Select.Option value="3">管理</Select.Option>
-        <Select.Option value="4">系统</Select.Option>
-      </Select>
-    </Layout>
-  </>);
+  return (
+    <>
+      <Layout>
+        <Header>
+          <Spin spinning={loadingStat}>
+            <h3>
+              使用明细（总消耗额度：
+              <span
+                onClick={handleEyeClick}
+                style={{
+                  cursor: 'pointer',
+                  color: 'gray',
+                }}
+              >
+                {showStat ? renderQuota(stat.quota) : '点击查看'}
+              </span>
+              ）
+            </h3>
+          </Spin>
+        </Header>
+        <Form layout='horizontal' style={{ marginTop: 10 }}>
+          <>
+            <Form.Input
+              field='token_name'
+              label='令牌名称'
+              style={{ width: 176 }}
+              value={token_name}
+              placeholder={'可选值'}
+              name='token_name'
+              onChange={(value) => handleInputChange(value, 'token_name')}
+            />
+            <Form.Input
+              field='model_name'
+              label='模型名称'
+              style={{ width: 176 }}
+              value={model_name}
+              placeholder='可选值'
+              name='model_name'
+              onChange={(value) => handleInputChange(value, 'model_name')}
+            />
+            <Form.DatePicker
+              field='start_timestamp'
+              label='起始时间'
+              style={{ width: 272 }}
+              initValue={start_timestamp}
+              value={start_timestamp}
+              type='dateTime'
+              name='start_timestamp'
+              onChange={(value) => handleInputChange(value, 'start_timestamp')}
+            />
+            <Form.DatePicker
+              field='end_timestamp'
+              fluid
+              label='结束时间'
+              style={{ width: 272 }}
+              initValue={end_timestamp}
+              value={end_timestamp}
+              type='dateTime'
+              name='end_timestamp'
+              onChange={(value) => handleInputChange(value, 'end_timestamp')}
+            />
+            {isAdminUser && (
+              <>
+                <Form.Input
+                  field='channel'
+                  label='渠道 ID'
+                  style={{ width: 176 }}
+                  value={channel}
+                  placeholder='可选值'
+                  name='channel'
+                  onChange={(value) => handleInputChange(value, 'channel')}
+                />
+                <Form.Input
+                  field='username'
+                  label='用户名称'
+                  style={{ width: 176 }}
+                  value={username}
+                  placeholder={'可选值'}
+                  name='username'
+                  onChange={(value) => handleInputChange(value, 'username')}
+                />
+              </>
+            )}
+            <Form.Section>
+              <Button
+                label='查询'
+                type='primary'
+                htmlType='submit'
+                className='btn-margin-right'
+                onClick={refresh}
+                loading={loading}
+              >
+                查询
+              </Button>
+            </Form.Section>
+          </>
+        </Form>
+        <Table
+          style={{ marginTop: 5 }}
+          columns={columns}
+          dataSource={pageData}
+          pagination={{
+            currentPage: activePage,
+            pageSize: pageSize,
+            total: logCount,
+            pageSizeOpts: [10, 20, 50, 100],
+            showSizeChanger: true,
+            onPageSizeChange: (size) => {
+              handlePageSizeChange(size).then();
+            },
+            onPageChange: handlePageChange,
+          }}
+        />
+        <Select
+          defaultValue='0'
+          style={{ width: 120 }}
+          onChange={(value) => {
+            setLogType(parseInt(value));
+            refresh(parseInt(value)).then();
+          }}
+        >
+          <Select.Option value='0'>全部</Select.Option>
+          <Select.Option value='1'>充值</Select.Option>
+          <Select.Option value='2'>消费</Select.Option>
+          <Select.Option value='3'>管理</Select.Option>
+          <Select.Option value='4'>系统</Select.Option>
+        </Select>
+      </Layout>
+    </>
+  );
 };
 
 export default LogsTable;

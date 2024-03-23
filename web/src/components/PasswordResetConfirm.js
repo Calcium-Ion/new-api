@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 const PasswordResetConfirm = () => {
   const [inputs, setInputs] = useState({
     email: '',
-    token: ''
+    token: '',
   });
   const { email, token } = inputs;
 
@@ -23,7 +23,7 @@ const PasswordResetConfirm = () => {
     let email = searchParams.get('email');
     setInputs({
       token,
-      email
+      email,
     });
   }, []);
 
@@ -46,7 +46,7 @@ const PasswordResetConfirm = () => {
     setLoading(true);
     const res = await API.post(`/api/user/reset`, {
       email,
-      token
+      token,
     });
     const { success, message } = res.data;
     if (success) {
@@ -61,29 +61,29 @@ const PasswordResetConfirm = () => {
   }
 
   return (
-    <Grid textAlign="center" style={{ marginTop: '48px' }}>
+    <Grid textAlign='center' style={{ marginTop: '48px' }}>
       <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as="h2" color="" textAlign="center">
-          <Image src="/logo.png" /> 密码重置确认
+        <Header as='h2' color='' textAlign='center'>
+          <Image src='/logo.png' /> 密码重置确认
         </Header>
-        <Form size="large">
+        <Form size='large'>
           <Segment>
             <Form.Input
               fluid
-              icon="mail"
-              iconPosition="left"
-              placeholder="邮箱地址"
-              name="email"
+              icon='mail'
+              iconPosition='left'
+              placeholder='邮箱地址'
+              name='email'
               value={email}
               readOnly
             />
             {newPassword && (
               <Form.Input
                 fluid
-                icon="lock"
-                iconPosition="left"
-                placeholder="新密码"
-                name="newPassword"
+                icon='lock'
+                iconPosition='left'
+                placeholder='新密码'
+                name='newPassword'
                 value={newPassword}
                 readOnly
                 onClick={(e) => {
@@ -94,9 +94,9 @@ const PasswordResetConfirm = () => {
               />
             )}
             <Button
-              color="green"
+              color='green'
               fluid
-              size="large"
+              size='large'
               onClick={handleSubmit}
               loading={loading}
               disabled={disableButton}
