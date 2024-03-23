@@ -15,6 +15,6 @@ export async function onGitHubOAuthClicked(github_client_id) {
   const state = await getOAuthState();
   if (!state) return;
   window.open(
-    `https://github.com/login/oauth/authorize?client_id=${github_client_id}&state=${state}&scope=user:email`
+    `https://github.com/login/oauth/authorize?client_id=${github_client_id}&state=${state}&scope=user:email`,
   );
 }

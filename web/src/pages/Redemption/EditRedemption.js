@@ -1,8 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { API, downloadTextAsFile, isMobile, showError, showSuccess } from '../../helpers';
+import {
+  API,
+  downloadTextAsFile,
+  isMobile,
+  showError,
+  showSuccess,
+} from '../../helpers';
 import { renderQuotaWithPrompt } from '../../helpers/render';
-import { AutoComplete, Button, Input, Modal, SideSheet, Space, Spin, Typography } from '@douyinfe/semi-ui';
+import {
+  AutoComplete,
+  Button,
+  Input,
+  Modal,
+  SideSheet,
+  Space,
+  Spin,
+  Typography,
+} from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import { Divider } from 'semantic-ui-react';
 
@@ -15,7 +30,7 @@ const EditRedemption = (props) => {
   const originInputs = {
     name: '',
     quota: 100000,
-    count: 1
+    count: 1,
   };
   const [inputs, setInputs] = useState(originInputs);
   const { name, quota, count } = inputs;
@@ -42,11 +57,9 @@ const EditRedemption = (props) => {
 
   useEffect(() => {
     if (isEdit) {
-      loadRedemption().then(
-        () => {
-          // console.log(inputs);
-        }
-      );
+      loadRedemption().then(() => {
+        // console.log(inputs);
+      });
     } else {
       setInputs(originInputs);
     }
@@ -60,10 +73,13 @@ const EditRedemption = (props) => {
     localInputs.quota = parseInt(localInputs.quota);
     let res;
     if (isEdit) {
-      res = await API.put(`/api/redemption/`, { ...localInputs, id: parseInt(props.editingRedemption.id) });
+      res = await API.put(`/api/redemption/`, {
+        ...localInputs,
+        id: parseInt(props.editingRedemption.id),
+      });
     } else {
       res = await API.post(`/api/redemption/`, {
-        ...localInputs
+        ...localInputs,
       });
     }
     const { success, message, data } = res.data;
@@ -97,7 +113,7 @@ const EditRedemption = (props) => {
         ),
         onOk: () => {
           downloadTextAsFile(text, `${inputs.name}.txt`);
-        }
+        },
       });
     }
     setLoading(false);
@@ -107,15 +123,28 @@ const EditRedemption = (props) => {
     <>
       <SideSheet
         placement={isEdit ? 'right' : 'left'}
-        title={<Title level={3}>{isEdit ? '更新兑换码信息' : '创建新的兑换码'}</Title>}
+        title={
+          <Title level={3}>
+            {isEdit ? '更新兑换码信息' : '创建新的兑换码'}
+          </Title>
+        }
         headerStyle={{ borderBottom: '1px solid var(--semi-color-border)' }}
         bodyStyle={{ borderBottom: '1px solid var(--semi-color-border)' }}
         visible={props.visiable}
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Space>
-              <Button theme="solid" size={'large'} onClick={submit}>提交</Button>
-              <Button theme="solid" size={'large'} type={'tertiary'} onClick={handleCancel}>取消</Button>
+              <Button theme='solid' size={'large'} onClick={submit}>
+                提交
+              </Button>
+              <Button
+                theme='solid'
+                size={'large'}
+                type={'tertiary'}
+                onClick={handleCancel}
+              >
+                取消
+              </Button>
             </Space>
           </div>
         }
@@ -126,12 +155,12 @@ const EditRedemption = (props) => {
         <Spin spinning={loading}>
           <Input
             style={{ marginTop: 20 }}
-            label="名称"
-            name="name"
+            label='名称'
+            name='name'
             placeholder={'请输入名称'}
-            onChange={value => handleInputChange('name', value)}
+            onChange={(value) => handleInputChange('name', value)}
             value={name}
-            autoComplete="new-password"
+            autoComplete='new-password'
             required={!isEdit}
           />
           <Divider />
@@ -140,12 +169,12 @@ const EditRedemption = (props) => {
           </div>
           <AutoComplete
             style={{ marginTop: 8 }}
-            name="quota"
+            name='quota'
             placeholder={'请输入额度'}
             onChange={(value) => handleInputChange('quota', value)}
             value={quota}
-            autoComplete="new-password"
-            type="number"
+            autoComplete='new-password'
+            type='number'
             position={'bottom'}
             data={[
               { value: 500000, label: '1$' },
@@ -153,25 +182,25 @@ const EditRedemption = (props) => {
               { value: 25000000, label: '50$' },
               { value: 50000000, label: '100$' },
               { value: 250000000, label: '500$' },
-              { value: 500000000, label: '1000$' }
+              { value: 500000000, label: '1000$' },
             ]}
           />
-          {
-            !isEdit && <>
+          {!isEdit && (
+            <>
               <Divider />
               <Typography.Text>生成数量</Typography.Text>
               <Input
                 style={{ marginTop: 8 }}
-                label="生成数量"
-                name="count"
+                label='生成数量'
+                name='count'
                 placeholder={'请输入生成数量'}
-                onChange={value => handleInputChange('count', value)}
+                onChange={(value) => handleInputChange('count', value)}
                 value={count}
-                autoComplete="new-password"
-                type="number"
+                autoComplete='new-password'
+                type='number'
               />
             </>
-          }
+          )}
         </Spin>
       </SideSheet>
     </>

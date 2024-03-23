@@ -3,12 +3,12 @@ export const reducer = (state, action) => {
     case 'login':
       return {
         ...state,
-        user: action.payload
+        user: action.payload,
       };
     case 'logout':
       return {
         ...state,
-        user: undefined
+        user: undefined,
       };
 
     default:
@@ -17,5 +17,5 @@ export const reducer = (state, action) => {
 };
 
 export const initialState = {
-  user: undefined
+  user: undefined,
 };

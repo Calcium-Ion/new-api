@@ -1,8 +1,10 @@
 package dto
 
 type TextResponseWithError struct {
-	Choices []OpenAITextResponseChoice    `json:"choices"`
+	Id      string                        `json:"id"`
 	Object  string                        `json:"object"`
+	Created int64                         `json:"created"`
+	Choices []OpenAITextResponseChoice    `json:"choices"`
 	Data    []OpenAIEmbeddingResponseItem `json:"data"`
 	Model   string                        `json:"model"`
 	Usage   `json:"usage"`
@@ -10,6 +12,9 @@ type TextResponseWithError struct {
 }
 
 type TextResponse struct {
+	Id      string                     `json:"id"`
+	Object  string                     `json:"object"`
+	Created int64                      `json:"created"`
 	Model   string                     `json:"model"`
 	Choices []OpenAITextResponseChoice `json:"choices"`
 	Usage   `json:"usage"`

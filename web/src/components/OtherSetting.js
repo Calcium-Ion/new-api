@@ -10,21 +10,20 @@ const OtherSetting = () => {
     Logo: '',
     Footer: '',
     About: '',
-    HomePageContent: ''
+    HomePageContent: '',
   });
   let [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateData, setUpdateData] = useState({
     tag_name: '',
-    content: ''
+    content: '',
   });
-
 
   const updateOption = async (key, value) => {
     setLoading(true);
     const res = await API.put('/api/option/', {
       key,
-      value
+      value,
     });
     const { success, message } = res.data;
     if (success) {
@@ -41,7 +40,7 @@ const OtherSetting = () => {
     Logo: false,
     HomePageContent: false,
     About: false,
-    Footer: false
+    Footer: false,
   });
   const handleInputChange = async (value, e) => {
     const name = e.target.id;
@@ -68,14 +67,20 @@ const OtherSetting = () => {
   //  个性化设置 - SystemName
   const submitSystemName = async () => {
     try {
-      setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: true }));
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemName: true,
+      }));
       await updateOption('SystemName', inputs.SystemName);
       showSuccess('系统名称已更新');
     } catch (error) {
       console.error('系统名称更新失败', error);
       showError('系统名称更新失败');
     } finally {
-      setLoadingInput((loadingInput) => ({ ...loadingInput, SystemName: false }));
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemName: false,
+      }));
     }
   };
 
@@ -95,14 +100,20 @@ const OtherSetting = () => {
   // 个性化设置 - 首页内容
   const submitOption = async (key) => {
     try {
-      setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: true }));
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        HomePageContent: true,
+      }));
       await updateOption(key, inputs[key]);
       showSuccess('首页内容已更新');
     } catch (error) {
       console.error('首页内容更新失败', error);
       showError('首页内容更新失败');
     } finally {
-      setLoadingInput((loadingInput) => ({ ...loadingInput, HomePageContent: false }));
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        HomePageContent: false,
+      }));
     }
   };
   // 个性化设置 - 关于
@@ -132,15 +143,13 @@ const OtherSetting = () => {
     }
   };
 
-
   const openGitHubRelease = () => {
-    window.location =
-      'https://github.com/songquanpeng/one-api/releases/latest';
+    window.location = 'https://github.com/songquanpeng/one-api/releases/latest';
   };
 
   const checkUpdate = async () => {
     const res = await API.get(
-      'https://api.github.com/repos/songquanpeng/one-api/releases/latest'
+      'https://api.github.com/repos/songquanpeng/one-api/releases/latest',
     );
     const { tag_name, body } = res.data;
     if (tag_name === process.env.REACT_APP_VERSION) {
@@ -148,7 +157,7 @@ const OtherSetting = () => {
     } else {
       setUpdateData({
         tag_name: tag_name,
-        content: marked.parse(body)
+        content: marked.parse(body),
       });
       setShowUpdateModal(true);
     }
@@ -175,13 +184,15 @@ const OtherSetting = () => {
     getOptions();
   }, []);
 
-
   return (
     <Row>
       <Col span={24}>
         {/* 通用设置 */}
-        <Form values={inputs} getFormApi={formAPI => formAPISettingGeneral.current = formAPI}
-              style={{ marginBottom: 15 }}>
+        <Form
+          values={inputs}
+          getFormApi={(formAPI) => (formAPISettingGeneral.current = formAPI)}
+          style={{ marginBottom: 15 }}
+        >
           <Form.Section text={'通用设置'}>
             <Form.TextArea
               label={'公告'}
@@ -191,12 +202,17 @@ const OtherSetting = () => {
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
               autosize={{ minRows: 6, maxRows: 12 }}
             />
-            <Button onClick={submitNotice} loading={loadingInput['Notice']}>设置公告</Button>
+            <Button onClick={submitNotice} loading={loadingInput['Notice']}>
+              设置公告
+            </Button>
           </Form.Section>
         </Form>
         {/* 个性化设置 */}
-        <Form values={inputs} getFormApi={formAPI => formAPIPersonalization.current = formAPI}
-              style={{ marginBottom: 15 }}>
+        <Form
+          values={inputs}
+          getFormApi={(formAPI) => (formAPIPersonalization.current = formAPI)}
+          style={{ marginBottom: 15 }}
+        >
           <Form.Section text={'个性化设置'}>
             <Form.Input
               label={'系统名称'}
@@ -204,48 +220,69 @@ const OtherSetting = () => {
               field={'SystemName'}
               onChange={handleInputChange}
             />
-            <Button onClick={submitSystemName} loading={loadingInput['SystemName']}>设置系统名称</Button>
+            <Button
+              onClick={submitSystemName}
+              loading={loadingInput['SystemName']}
+            >
+              设置系统名称
+            </Button>
             <Form.Input
               label={'Logo 图片地址'}
               placeholder={'在此输入 Logo 图片地址'}
               field={'Logo'}
               onChange={handleInputChange}
             />
-            <Button onClick={submitLogo} loading={loadingInput['Logo']}>设置 Logo</Button>
+            <Button onClick={submitLogo} loading={loadingInput['Logo']}>
+              设置 Logo
+            </Button>
             <Form.TextArea
               label={'首页内容'}
-              placeholder={'在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页。'}
+              placeholder={
+                '在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页。'
+              }
               field={'HomePageContent'}
               onChange={handleInputChange}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
               autosize={{ minRows: 6, maxRows: 12 }}
             />
-            <Button onClick={() => submitOption('HomePageContent')}
-                    loading={loadingInput['HomePageContent']}>设置首页内容</Button>
+            <Button
+              onClick={() => submitOption('HomePageContent')}
+              loading={loadingInput['HomePageContent']}
+            >
+              设置首页内容
+            </Button>
             <Form.TextArea
               label={'关于'}
-              placeholder={'在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面。'}
+              placeholder={
+                '在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面。'
+              }
               field={'About'}
               onChange={handleInputChange}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
               autosize={{ minRows: 6, maxRows: 12 }}
             />
-            <Button onClick={submitAbout} loading={loadingInput['About']}>设置关于</Button>
+            <Button onClick={submitAbout} loading={loadingInput['About']}>
+              设置关于
+            </Button>
             {/*  */}
             <Banner
               fullMode={false}
-              type="info"
-              description="移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。"
+              type='info'
+              description='移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。'
               closeIcon={null}
               style={{ marginTop: 15 }}
             />
             <Form.Input
               label={'页脚'}
-              placeholder={'在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码'}
+              placeholder={
+                '在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码'
+              }
               field={'Footer'}
               onChange={handleInputChange}
             />
-            <Button onClick={submitFooter} loading={loadingInput['Footer']}>设置页脚</Button>
+            <Button onClick={submitFooter} loading={loadingInput['Footer']}>
+              设置页脚
+            </Button>
           </Form.Section>
         </Form>
       </Col>

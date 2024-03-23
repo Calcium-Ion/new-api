@@ -17,15 +17,15 @@ let headerButtons = [
     text: '关于',
     itemKey: 'about',
     to: '/about',
-    icon: <IconHelpCircle />
-  }
+    icon: <IconHelpCircle />,
+  },
 ];
 
 if (localStorage.getItem('chat_link')) {
   headerButtons.splice(1, 0, {
     name: '聊天',
     to: '/chat',
-    icon: 'comments'
+    icon: 'comments',
   });
 }
 
@@ -40,7 +40,11 @@ const HeaderBar = () => {
   var themeMode = localStorage.getItem('theme-mode');
   const currentDate = new Date();
   // enable fireworks on new year(1.1 and 2.9-2.24)
-  const isNewYear = (currentDate.getMonth() === 0 && currentDate.getDate() === 1) || (currentDate.getMonth() === 1 && currentDate.getDate() >= 9 && currentDate.getDate() <= 24);
+  const isNewYear =
+    (currentDate.getMonth() === 0 && currentDate.getDate() === 1) ||
+    (currentDate.getMonth() === 1 &&
+      currentDate.getDate() >= 9 &&
+      currentDate.getDate() <= 24);
 
   async function logout() {
     setShowSidebar(false);
@@ -93,7 +97,7 @@ const HeaderBar = () => {
               const routerMap = {
                 about: '/about',
                 login: '/login',
-                register: '/register'
+                register: '/register',
               };
               return (
                 <Link
@@ -106,52 +110,69 @@ const HeaderBar = () => {
             }}
             selectedKeys={[]}
             // items={headerButtons}
-            onSelect={key => {
-
-            }}
+            onSelect={(key) => {}}
             footer={
               <>
-                {isNewYear &&
+                {isNewYear && (
                   // happy new year
                   <Dropdown
-                    position="bottomRight"
+                    position='bottomRight'
                     render={
                       <Dropdown.Menu>
-                        <Dropdown.Item onClick={handleNewYearClick}>Happy New Year!!!</Dropdown.Item>
+                        <Dropdown.Item onClick={handleNewYearClick}>
+                          Happy New Year!!!
+                        </Dropdown.Item>
                       </Dropdown.Menu>
                     }
                   >
                     <Nav.Item itemKey={'new-year'} text={'🏮'} />
                   </Dropdown>
-                }
+                )}
                 <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
-                <Switch checkedText="🌞" size={'large'} checked={dark} uncheckedText="🌙" onChange={switchMode} />
-                {userState.user ?
+                <Switch
+                  checkedText='🌞'
+                  size={'large'}
+                  checked={dark}
+                  uncheckedText='🌙'
+                  onChange={switchMode}
+                />
+                {userState.user ? (
                   <>
                     <Dropdown
-                      position="bottomRight"
+                      position='bottomRight'
                       render={
                         <Dropdown.Menu>
                           <Dropdown.Item onClick={logout}>退出</Dropdown.Item>
                         </Dropdown.Menu>
                       }
                     >
-                      <Avatar size="small" color={stringToColor(userState.user.username)} style={{ margin: 4 }}>
+                      <Avatar
+                        size='small'
+                        color={stringToColor(userState.user.username)}
+                        style={{ margin: 4 }}
+                      >
                         {userState.user.username[0]}
                       </Avatar>
                       <span>{userState.user.username}</span>
                     </Dropdown>
                   </>
-                  :
+                ) : (
                   <>
-                    <Nav.Item itemKey={'login'} text={'登录'} icon={<IconKey />} />
-                    <Nav.Item itemKey={'register'} text={'注册'} icon={<IconUser />} />
+                    <Nav.Item
+                      itemKey={'login'}
+                      text={'登录'}
+                      icon={<IconKey />}
+                    />
+                    <Nav.Item
+                      itemKey={'register'}
+                      text={'注册'}
+                      icon={<IconUser />}
+                    />
                   </>
-                }
+                )}
               </>
             }
-          >
-          </Nav>
+          ></Nav>
         </div>
       </Layout>
     </>

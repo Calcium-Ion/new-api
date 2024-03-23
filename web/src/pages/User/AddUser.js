@@ -7,7 +7,7 @@ const AddUser = (props) => {
   const originInputs = {
     username: '',
     display_name: '',
-    password: ''
+    password: '',
   };
   const [inputs, setInputs] = useState(originInputs);
   const [loading, setLoading] = useState(false);
@@ -48,8 +48,17 @@ const AddUser = (props) => {
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Space>
-              <Button theme="solid" size={'large'} onClick={submit}>提交</Button>
-              <Button theme="solid" size={'large'} type={'tertiary'} onClick={handleCancel}>取消</Button>
+              <Button theme='solid' size={'large'} onClick={submit}>
+                提交
+              </Button>
+              <Button
+                theme='solid'
+                size={'large'}
+                type={'tertiary'}
+                onClick={handleCancel}
+              >
+                取消
+              </Button>
             </Space>
           </div>
         }
@@ -60,34 +69,34 @@ const AddUser = (props) => {
         <Spin spinning={loading}>
           <Input
             style={{ marginTop: 20 }}
-            label="用户名"
-            name="username"
+            label='用户名'
+            name='username'
             addonBefore={'用户名'}
             placeholder={'请输入用户名'}
-            onChange={value => handleInputChange('username', value)}
+            onChange={(value) => handleInputChange('username', value)}
             value={username}
-            autoComplete="off"
+            autoComplete='off'
           />
           <Input
             style={{ marginTop: 20 }}
             addonBefore={'显示名'}
-            label="显示名称"
-            name="display_name"
-            autoComplete="off"
+            label='显示名称'
+            name='display_name'
+            autoComplete='off'
             placeholder={'请输入显示名称'}
-            onChange={value => handleInputChange('display_name', value)}
+            onChange={(value) => handleInputChange('display_name', value)}
             value={display_name}
           />
           <Input
             style={{ marginTop: 20 }}
-            label="密 码"
-            name="password"
+            label='密 码'
+            name='password'
             type={'password'}
             addonBefore={'密码'}
             placeholder={'请输入密码'}
-            onChange={value => handleInputChange('password', value)}
+            onChange={(value) => handleInputChange('password', value)}
             value={password}
-            autoComplete="off"
+            autoComplete='off'
           />
         </Spin>
       </SideSheet>

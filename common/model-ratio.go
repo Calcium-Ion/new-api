@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// ModelRatio
+// modelRatio
 // https://platform.openai.com/docs/models/model-endpoint-compatibility
 // https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Blfmc9dlf
 // https://openai.com/pricing
@@ -93,6 +93,11 @@ var DefaultModelRatio = map[string]float64{
 	"embedding_s1_v1":           0.0715, // ¥0.001 / 1k tokens
 	"semantic_similarity_s1_v1": 0.0715, // ¥0.001 / 1k tokens
 	"hunyuan":                   7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
+	// https://platform.lingyiwanwu.com/docs#-计费单元
+	// 已经按照 7.2 来换算美元价格
+	"yi-34b-chat-0205": 0.018,
+	"yi-34b-chat-200k": 0.0864,
+	"yi-vl-plus":       0.0432,
 }
 
 var DefaultModelPrice = map[string]float64{
@@ -114,14 +119,14 @@ var DefaultModelPrice = map[string]float64{
 	"swap_face":         0.05,
 }
 
-var ModelPrice = map[string]float64{}
-var ModelRatio = map[string]float64{}
+var modelPrice map[string]float64 = nil
+var modelRatio map[string]float64 = nil
 
 func ModelPrice2JSONString() string {
-	if len(ModelPrice) == 0 {
-		ModelPrice = DefaultModelPrice
+	if modelPrice == nil {
+		modelPrice = DefaultModelPrice
 	}
-	jsonBytes, err := json.Marshal(ModelPrice)
+	jsonBytes, err := json.Marshal(modelPrice)
 	if err != nil {
 		SysError("error marshalling model price: " + err.Error())
 	}
@@ -129,18 +134,18 @@ func ModelPrice2JSONString() string {
 }
 
 func UpdateModelPriceByJSONString(jsonStr string) error {
-	ModelPrice = make(map[string]float64)
-	return json.Unmarshal([]byte(jsonStr), &ModelPrice)
+	modelPrice = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &modelPrice)
 }
 
 func GetModelPrice(name string, printErr bool) float64 {
-	if len(ModelPrice) == 0 {
-		ModelPrice = DefaultModelPrice
+	if modelPrice == nil {
+		modelPrice = DefaultModelPrice
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
-	price, ok := ModelPrice[name]
+	price, ok := modelPrice[name]
 	if !ok {
 		if printErr {
 			SysError("model price not found: " + name)
@@ -151,10 +156,10 @@ func GetModelPrice(name string, printErr bool) float64 {
 }
 
 func ModelRatio2JSONString() string {
-	if len(ModelRatio) == 0 {
-		ModelRatio = DefaultModelRatio
+	if modelRatio == nil {
+		modelRatio = DefaultModelRatio
 	}
-	jsonBytes, err := json.Marshal(ModelRatio)
+	jsonBytes, err := json.Marshal(modelRatio)
 	if err != nil {
 		SysError("error marshalling model ratio: " + err.Error())
 	}
@@ -162,18 +167,18 @@ func ModelRatio2JSONString() string {
 }
 
 func UpdateModelRatioByJSONString(jsonStr string) error {
-	ModelRatio = make(map[string]float64)
-	return json.Unmarshal([]byte(jsonStr), &ModelRatio)
+	modelRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &modelRatio)
 }
 
 func GetModelRatio(name string) float64 {
-	if len(ModelRatio) == 0 {
-		ModelRatio = DefaultModelRatio
+	if modelRatio == nil {
+		modelRatio = DefaultModelRatio
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
-	ratio, ok := ModelRatio[name]
+	ratio, ok := modelRatio[name]
 	if !ok {
 		SysError("model ratio not found: " + name)
 		return 30
