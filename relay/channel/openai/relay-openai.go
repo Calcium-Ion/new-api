@@ -75,11 +75,20 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
 			if err != nil {
 				common.SysError("error unmarshalling stream response: " + err.Error())
-				return // just ignore the error
-			}
-			for _, streamResponse := range streamResponses {
-				for _, choice := range streamResponse.Choices {
-					responseTextBuilder.WriteString(choice.Delta.Content)
+				for _, item := range streamItems {
+					var streamResponse dto.ChatCompletionsStreamResponseSimple
+					err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
+					if err == nil {
+						for _, choice := range streamResponse.Choices {
+							responseTextBuilder.WriteString(choice.Delta.Content)
+						}
+					}
+				}
+			} else {
+				for _, streamResponse := range streamResponses {
+					for _, choice := range streamResponse.Choices {
+						responseTextBuilder.WriteString(choice.Delta.Content)
+					}
 				}
 			}
 		case relayconstant.RelayModeCompletions:
@@ -87,11 +96,20 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
 			if err != nil {
 				common.SysError("error unmarshalling stream response: " + err.Error())
-				return // just ignore the error
-			}
-			for _, streamResponse := range streamResponses {
-				for _, choice := range streamResponse.Choices {
-					responseTextBuilder.WriteString(choice.Text)
+				for _, item := range streamItems {
+					var streamResponse dto.CompletionsStreamResponse
+					err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
+					if err == nil {
+						for _, choice := range streamResponse.Choices {
+							responseTextBuilder.WriteString(choice.Text)
+						}
+					}
+				}
+			} else {
+				for _, streamResponse := range streamResponses {
+					for _, choice := range streamResponse.Choices {
+						responseTextBuilder.WriteString(choice.Text)
+					}
 				}
 			}
 		}
