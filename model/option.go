@@ -78,8 +78,8 @@ func InitOptionMap() {
 	common.OptionMap["QuotaForInvitee"] = strconv.Itoa(common.QuotaForInvitee)
 	common.OptionMap["QuotaRemindThreshold"] = strconv.Itoa(common.QuotaRemindThreshold)
 	common.OptionMap["PreConsumedQuota"] = strconv.Itoa(common.PreConsumedQuota)
-	common.OptionMap["modelRatio"] = common.ModelRatio2JSONString()
-	common.OptionMap["modelPrice"] = common.ModelPrice2JSONString()
+	common.OptionMap["ModelRatio"] = common.ModelRatio2JSONString()
+	common.OptionMap["ModelPrice"] = common.ModelPrice2JSONString()
 	common.OptionMap["GroupRatio"] = common.GroupRatio2JSONString()
 	common.OptionMap["TopUpLink"] = common.TopUpLink
 	common.OptionMap["ChatLink"] = common.ChatLink
