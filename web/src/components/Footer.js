@@ -41,7 +41,7 @@ const Footer = () => {
               href="https://github.com/Calcium-Ion/new-api"
               target="_blank" rel="noreferrer"
             >
-              New API {process.env.REACT_APP_VERSION}{' '}
+              New API {import.meta.env.VITE_REACT_APP_VERSION}{' '}
             </a>
             由{' '}
             <a href="https://github.com/Calcium-Ion" target="_blank" rel="noreferrer">
