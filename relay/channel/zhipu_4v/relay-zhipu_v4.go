@@ -74,6 +74,25 @@ func getZhipuToken(apikey string) string {
 func requestOpenAI2Zhipu(request dto.GeneralOpenAIRequest) *dto.GeneralOpenAIRequest {
 	messages := make([]dto.Message, 0, len(request.Messages))
 	for _, message := range request.Messages {
+		if !message.IsStringContent() {
+			mediaMessages := message.ParseContent()
+			for j, mediaMessage := range mediaMessages {
+				if mediaMessage.Type == dto.ContentTypeImageURL {
+					imageUrl := mediaMessage.ImageUrl.(dto.MessageImageUrl)
+					// check if base64
+					if strings.HasPrefix(imageUrl.Url, "data:image/") {
+						// 去除base64数据的URL前缀（如果有）
+						if idx := strings.Index(imageUrl.Url, ","); idx != -1 {
+							imageUrl.Url = imageUrl.Url[idx+1:]
+						}
+					}
+					mediaMessage.ImageUrl = imageUrl
+					mediaMessages[j] = mediaMessage
+				}
+			}
+			messageRaw, _ := json.Marshal(mediaMessages)
+			message.Content = messageRaw
+		}
 		messages = append(messages, dto.Message{
 			Role:       message.Role,
 			Content:    message.Content,
@@ -138,7 +157,7 @@ func streamResponseZhipu2OpenAI(zhipuResponse *ZhipuV4StreamResponse) *dto.ChatC
 		Id:      zhipuResponse.Id,
 		Object:  "chat.completion.chunk",
 		Created: zhipuResponse.Created,
-		Model:   "glm-4",
+		Model:   "glm-4v",
 		Choices: []dto.ChatCompletionsStreamResponseChoice{choice},
 	}
 	return &response
