@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// ModelRatio
+// modelRatio
 // https://platform.openai.com/docs/models/model-endpoint-compatibility
 // https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Blfmc9dlf
 // https://openai.com/pricing
@@ -114,14 +114,14 @@ var DefaultModelPrice = map[string]float64{
 	"swap_face":         0.05,
 }
 
-var ModelPrice = map[string]float64{}
-var ModelRatio = map[string]float64{}
+var modelPrice map[string]float64 = nil
+var modelRatio map[string]float64 = nil
 
 func ModelPrice2JSONString() string {
-	if len(ModelPrice) == 0 {
-		ModelPrice = DefaultModelPrice
+	if modelPrice == nil {
+		modelPrice = DefaultModelPrice
 	}
-	jsonBytes, err := json.Marshal(ModelPrice)
+	jsonBytes, err := json.Marshal(modelPrice)
 	if err != nil {
 		SysError("error marshalling model price: " + err.Error())
 	}
@@ -129,18 +129,18 @@ func ModelPrice2JSONString() string {
 }
 
 func UpdateModelPriceByJSONString(jsonStr string) error {
-	ModelPrice = make(map[string]float64)
-	return json.Unmarshal([]byte(jsonStr), &ModelPrice)
+	modelPrice = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &modelPrice)
 }
 
 func GetModelPrice(name string, printErr bool) float64 {
-	if len(ModelPrice) == 0 {
-		ModelPrice = DefaultModelPrice
+	if modelPrice == nil {
+		modelPrice = DefaultModelPrice
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
-	price, ok := ModelPrice[name]
+	price, ok := modelPrice[name]
 	if !ok {
 		if printErr {
 			SysError("model price not found: " + name)
@@ -151,10 +151,10 @@ func GetModelPrice(name string, printErr bool) float64 {
 }
 
 func ModelRatio2JSONString() string {
-	if len(ModelRatio) == 0 {
-		ModelRatio = DefaultModelRatio
+	if modelRatio == nil {
+		modelRatio = DefaultModelRatio
 	}
-	jsonBytes, err := json.Marshal(ModelRatio)
+	jsonBytes, err := json.Marshal(modelRatio)
 	if err != nil {
 		SysError("error marshalling model ratio: " + err.Error())
 	}
@@ -162,18 +162,18 @@ func ModelRatio2JSONString() string {
 }
 
 func UpdateModelRatioByJSONString(jsonStr string) error {
-	ModelRatio = make(map[string]float64)
-	return json.Unmarshal([]byte(jsonStr), &ModelRatio)
+	modelRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &modelRatio)
 }
 
 func GetModelRatio(name string) float64 {
-	if len(ModelRatio) == 0 {
-		ModelRatio = DefaultModelRatio
+	if modelRatio == nil {
+		modelRatio = DefaultModelRatio
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
-	ratio, ok := ModelRatio[name]
+	ratio, ok := modelRatio[name]
 	if !ok {
 		SysError("model ratio not found: " + name)
 		return 30
