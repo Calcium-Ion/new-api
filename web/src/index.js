@@ -1,4 +1,3 @@
-import { initVChartSemiTheme } from '@visactor/vchart-semi-theme';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {BrowserRouter} from 'react-router-dom';
@@ -15,9 +14,7 @@ import {Layout} from "@douyinfe/semi-ui";
 import SiderBar from "./components/SiderBar";
 
 // initialization
-initVChartSemiTheme({
-    isWatchingThemeSwitch: true,
-});
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const {Sider, Content, Header} = Layout;

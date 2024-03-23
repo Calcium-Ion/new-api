@@ -1,6 +1,5 @@
 import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
-import { splitVendorChunkPlugin } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,7 +18,6 @@ export default defineConfig({
       },
     },
     react(),
-    splitVendorChunkPlugin()
   ],
   optimizeDeps: {
     force: true,
@@ -33,11 +31,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'semi': ['@douyinfe/semi-ui'],
-          'icons': ['@douyinfe/semi-icons'],
-          'semantic': ['semantic-ui-react'],
-          'visactor': ['@visactor/react-vchart', '@visactor/vchart']
+          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          'semi-ui': ['@douyinfe/semi-icons', '@douyinfe/semi-ui'],
+          'semantic': ['semantic-ui-css', 'semantic-ui-react'],
+          'visactor': ['@visactor/react-vchart', '@visactor/vchart'],
+          'tools': ['axios', 'history', 'marked'],
+          'react-components': ['react-dropzone', 'react-fireworks', 'react-telegram-login', 'react-toastify', 'react-turnstile'],
         },
       },
     },

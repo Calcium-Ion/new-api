@@ -22,9 +22,10 @@ import Log from './pages/Log';
 import Chat from './pages/Chat';
 import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
-import Detail from './pages/Detail';
+// import Detail from './pages/Detail';
 
 const Home = lazy(() => import('./pages/Home'));
+const Detail = lazy(() => import('./pages/Detail'));
 const About = lazy(() => import('./pages/About'));
 
 function App() {
@@ -202,7 +203,9 @@ function App() {
             path="/detail"
             element={
               <PrivateRoute>
-                <Detail />
+                <Suspense fallback={<Loading></Loading>}>
+                  <Detail />
+                </Suspense>
               </PrivateRoute>
             }
           />
@@ -210,7 +213,9 @@ function App() {
             path="/midjourney"
             element={
               <PrivateRoute>
-                <Midjourney />
+                <Suspense fallback={<Loading></Loading>}>
+                  <Midjourney />
+                </Suspense>
               </PrivateRoute>
             }
           />

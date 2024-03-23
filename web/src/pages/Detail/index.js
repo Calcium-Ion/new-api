@@ -1,4 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
+import { initVChartSemiTheme } from '@visactor/vchart-semi-theme';
+
 import {Button, Col, Form, Layout, Row, Spin} from "@douyinfe/semi-ui";
 import VChart from '@visactor/vchart';
 import {API, isAdmin, showError, timestamp2string, timestamp2string1} from "../../helpers";
@@ -292,6 +294,9 @@ const Detail = (props) => {
         //     formRef.current.formApi.setValue('start_timestamp', st);
         // }
         if (!initialized.current) {
+            initVChartSemiTheme({
+                isWatchingThemeSwitch: true,
+            });
             initialized.current = true;
             initChart();
         }
