@@ -29,6 +29,19 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'semi': ['@douyinfe/semi-ui'],
+          'icons': ['@douyinfe/semi-icons'],
+          'semantic': ['semantic-ui-react'],
+          'visactor': ['@visactor/react-vchart', '@visactor/vchart']
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': {
