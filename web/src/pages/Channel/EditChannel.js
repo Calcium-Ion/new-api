@@ -188,6 +188,9 @@ const EditChannel = (props) => {
   const loadChannel = async () => {
     setLoading(true);
     let res = await API.get(`/api/channel/${channelId}`);
+    if (res === undefined) {
+      return;
+    }
     const { success, message, data } = res.data;
     if (success) {
       if (data.models === '') {
@@ -223,6 +226,9 @@ const EditChannel = (props) => {
   const fetchModels = async () => {
     try {
       let res = await API.get(`/api/channel/models`);
+      if (res === undefined) {
+        return;
+      }
       let localModelOptions = res.data.data.map((model) => ({
         label: model.id,
         value: model.id,
@@ -244,6 +250,9 @@ const EditChannel = (props) => {
   const fetchGroups = async () => {
     try {
       let res = await API.get(`/api/group/`);
+      if (res === undefined) {
+        return;
+      }
       setGroupOptions(
         res.data.data.map((group) => ({
           label: group,

@@ -322,6 +322,9 @@ const ChannelsTable = () => {
     const res = await API.get(
       `/api/channel/?p=${startIdx}&page_size=${pageSize}&id_sort=${idSort}`,
     );
+    if (res === undefined) {
+      return;
+    }
     const { success, message, data } = res.data;
     if (success) {
       if (startIdx === 0) {
@@ -608,6 +611,9 @@ const ChannelsTable = () => {
       let res = await API.get(`/api/group/`);
       // add 'all' option
       // res.data.data.unshift('all');
+      if (res === undefined) {
+        return;
+      }
       setGroupOptions(
         res.data.data.map((group) => ({
           label: group,

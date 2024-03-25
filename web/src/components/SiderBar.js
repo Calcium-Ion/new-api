@@ -156,6 +156,9 @@ const SiderBar = () => {
 
   const loadStatus = async () => {
     const res = await API.get('/api/status');
+    if (res === undefined) {
+      return;
+    }
     const { success, data } = res.data;
     if (success) {
       localStorage.setItem('status', JSON.stringify(data));
