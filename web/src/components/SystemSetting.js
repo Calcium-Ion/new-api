@@ -42,7 +42,7 @@ const SystemSetting = () => {
     TurnstileSecretKey: '',
     RegisterEnabled: '',
     EmailDomainRestrictionEnabled: '',
-    EmailDomainWhitelist: '',
+    EmailDomainWhitelist: [],
     // telegram login
     TelegramOAuthEnabled: '',
     TelegramBotToken: '',
@@ -85,6 +85,7 @@ const SystemSetting = () => {
   useEffect(() => {
     getOptions().then();
   }, []);
+  useEffect(() => {}, [inputs.EmailDomainWhitelist]);
 
   const updateOption = async (key, value) => {
     setLoading(true);

@@ -39,7 +39,7 @@ const Setting = () => {
         <Layout.Content>
           <Tabs type='line' defaultActiveKey='1'>
             {panes.map((pane) => (
-              <TabPane itemKey={pane.itemKey} tab={pane.tab}>
+              <TabPane itemKey={pane.itemKey} tab={pane.tab} key={pane.itemKey}>
                 {pane.content}
               </TabPane>
             ))}
