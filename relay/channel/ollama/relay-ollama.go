@@ -1,6 +1,8 @@
 package ollama
 
-import "one-api/dto"
+import (
+	"one-api/dto"
+)
 
 func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
 	messages := make([]dto.Message, 0, len(request.Messages))
