@@ -208,7 +208,7 @@ func CountTokenInput(input any, model string, check bool) (int, error, bool) {
 		}
 		return CountTokenText(text, model, check)
 	}
-	return 0, errors.New("unsupported input type"), false
+	return 0, nil, false
 }
 
 func CountAudioToken(text string, model string, check bool) (int, error, bool) {
