@@ -426,8 +426,11 @@ const TokensTable = () => {
     if (await copy(text)) {
       showSuccess('已复制到剪贴板！');
     } else {
-      // setSearchKeyword(text);
-      Modal.error({ title: '无法复制到剪贴板，请手动复制', content: text });
+      Modal.error({
+        title: '无法复制到剪贴板，请手动复制',
+        content: text,
+        size: 'large',
+      });
     }
   };
 

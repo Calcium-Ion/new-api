@@ -10,8 +10,8 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel"
 	"one-api/relay/channel/ai360"
-	"one-api/relay/channel/moonshot"
 	"one-api/relay/channel/lingyiwanwu"
+	"one-api/relay/channel/moonshot"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
@@ -34,9 +34,6 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		model_ := info.UpstreamModelName
 		model_ = strings.Replace(model_, ".", "", -1)
 		// https://github.com/songquanpeng/one-api/issues/67
-		model_ = strings.TrimSuffix(model_, "-0301")
-		model_ = strings.TrimSuffix(model_, "-0314")
-		model_ = strings.TrimSuffix(model_, "-0613")
 
 		requestURL = fmt.Sprintf("/openai/deployments/%s/%s", model_, task)
 		return relaycommon.GetFullRequestURL(info.BaseUrl, requestURL, info.ChannelType), nil

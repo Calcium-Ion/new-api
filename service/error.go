@@ -29,7 +29,7 @@ func MidjourneyErrorWithStatusCodeWrapper(code int, desc string, statusCode int)
 func OpenAIErrorWrapper(err error, code string, statusCode int) *dto.OpenAIErrorWithStatusCode {
 	text := err.Error()
 	// 定义一个正则表达式匹配URL
-	if strings.Contains(text, "Post") {
+	if strings.Contains(text, "Post") || strings.Contains(text, "dial") {
 		common.SysLog(fmt.Sprintf("error: %s", text))
 		text = "请求上游地址失败"
 	}

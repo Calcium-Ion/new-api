@@ -108,6 +108,7 @@ func buildTestRequest() *dto.GeneralOpenAIRequest {
 	testRequest := &dto.GeneralOpenAIRequest{
 		Model:     "", // this will be set later
 		MaxTokens: 1,
+		Stream:    false,
 	}
 	content, _ := json.Marshal("hi")
 	testMessage := dto.Message{
