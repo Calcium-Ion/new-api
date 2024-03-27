@@ -6,3 +6,5 @@ upload
 build
 *.db-journal
 logs
+fly.toml
+dist
