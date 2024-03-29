@@ -173,7 +173,7 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 			if strings.HasPrefix(audioRequest.Model, "tts-1") {
 				quota = promptTokens
 			} else {
-				quota, err, _ = service.CountAudioToken(audioResponse.Text, audioRequest.Model, constant.ShouldCheckCompletionSensitive())
+				quota, err, _ = service.CountAudioToken(audioResponse.Text, audioRequest.Model, false)
 			}
 			quota = int(float64(quota) * ratio)
 			if ratio != 0 && quota <= 0 {

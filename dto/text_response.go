@@ -11,6 +11,12 @@ type TextResponseWithError struct {
 	Error   OpenAIError `json:"error"`
 }
 
+type SimpleResponse struct {
+	Usage   `json:"usage"`
+	Error   OpenAIError                `json:"error"`
+	Choices []OpenAITextResponseChoice `json:"choices"`
+}
+
 type TextResponse struct {
 	Id      string                     `json:"id"`
 	Object  string                     `json:"object"`
