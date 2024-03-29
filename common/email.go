@@ -24,7 +24,7 @@ func SendEmail(subject string, receiver string, content string) error {
 	addr := fmt.Sprintf("%s:%d", SMTPServer, SMTPPort)
 	to := strings.Split(receiver, ";")
 	var err error
-	if SMTPPort == 465 {
+	if SMTPPort == 465 || SMTPSSLEnabled {
 		tlsConfig := &tls.Config{
 			InsecureSkipVerify: true,
 			ServerName:         SMTPServer,

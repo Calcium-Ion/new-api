@@ -43,7 +43,16 @@ func SetRelayRouter(router *gin.Engine) {
 		relayV1Router.DELETE("/models/:model", controller.RelayNotImplemented)
 		relayV1Router.POST("/moderations", controller.Relay)
 	}
+
 	relayMjRouter := router.Group("/mj")
+	registerMjRouterGroup(relayMjRouter)
+
+	relayMjModeRouter := router.Group("/:mode/mj")
+	registerMjRouterGroup(relayMjModeRouter)
+	//relayMjRouter.Use()
+}
+
+func registerMjRouterGroup(relayMjRouter *gin.RouterGroup) {
 	relayMjRouter.GET("/image/:id", relay.RelayMidjourneyImage)
 	relayMjRouter.Use(middleware.TokenAuth(), middleware.Distribute())
 	{
@@ -61,5 +70,4 @@ func SetRelayRouter(router *gin.Engine) {
 		relayMjRouter.POST("/task/list-by-condition", controller.RelayMidjourney)
 		relayMjRouter.POST("/insight-face/swap", controller.RelayMidjourney)
 	}
-	//relayMjRouter.Use()
 }
