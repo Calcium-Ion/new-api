@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"one-api/common"
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,8 +73,26 @@ func GetAllUsers(startIdx int, num int) (users []*User, err error) {
 	return users, err
 }
 
-func SearchUsers(keyword string) (users []*User, err error) {
-	err = DB.Omit("password").Where("id = ? or username LIKE ? or email LIKE ? or display_name LIKE ?", keyword, keyword+"%", keyword+"%", keyword+"%").Find(&users).Error
+func SearchUsers(keyword string) ([]*User, error) {
+	var users []*User
+	var err error
+
+	// 尝试将关键字转换为整数ID
+	keywordInt, err := strconv.Atoi(keyword)
+	if err == nil {
+		// 如果转换成功，按照ID搜索用户
+		err = DB.Unscoped().Omit("password").Where("id = ?", keywordInt).Find(&users).Error
+		if err != nil || len(users) > 0 {
+			// 如果依据ID找到用户或者发生错误，返回结果或错误
+			return users, err
+		}
+	}
+
+	// 如果ID转换失败或者没有找到用户，依据其他字段进行模糊搜索
+	err = DB.Unscoped().Omit("password").
+		Where("username LIKE ? OR email LIKE ? OR display_name LIKE ?", keyword+"%", keyword+"%", keyword+"%").
+		Find(&users).Error
+
 	return users, err
 }
 
