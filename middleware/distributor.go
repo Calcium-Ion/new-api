@@ -44,7 +44,7 @@ func Distribute() func(c *gin.Context) {
 			// Select a channel for the user
 			var modelRequest ModelRequest
 			var err error
-			if strings.HasPrefix(c.Request.URL.Path, "/mj") {
+			if strings.Contains(c.Request.URL.Path, "/mj/") {
 				relayMode := relayconstant.Path2RelayModeMidjourney(c.Request.URL.Path)
 				if relayMode == relayconstant.RelayModeMidjourneyTaskFetch ||
 					relayMode == relayconstant.RelayModeMidjourneyTaskFetchByCondition ||
