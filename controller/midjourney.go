@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func UpdateMidjourneyTaskBulk() {
@@ -147,7 +148,7 @@ func UpdateMidjourneyTaskBulk() {
 					task.Buttons = string(buttonStr)
 				}
 
-				if task.Progress != "100%" && responseItem.FailReason != "" {
+				if task.Progress != "100%" && responseItem.FailReason != "" || task.Progress == "100%" && task.Status == "FAILURE" {
 					common.LogInfo(ctx, task.MjId+" 构建失败，"+task.FailReason)
 					task.Progress = "100%"
 					err = model.CacheUpdateUserQuota(task.UserId)
