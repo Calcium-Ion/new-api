@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SystemSetting from '../../components/SystemSetting';
 import { isRoot } from '../../helpers';
 import OtherSetting from '../../components/OtherSetting';
@@ -7,6 +7,7 @@ import OperationSetting from '../../components/OperationSetting';
 import { Layout, TabPane, Tabs } from '@douyinfe/semi-ui';
 
 const Setting = () => {
+  const [tabActiveKey, setTabActiveKey] = useState('1');
   let panes = [
     {
       tab: '个人设置',
@@ -37,10 +38,14 @@ const Setting = () => {
     <div>
       <Layout>
         <Layout.Content>
-          <Tabs type='line' defaultActiveKey='1'>
+          <Tabs
+            type='line'
+            defaultActiveKey='1'
+            onChange={(key) => setTabActiveKey(key)}
+          >
             {panes.map((pane) => (
               <TabPane itemKey={pane.itemKey} tab={pane.tab} key={pane.itemKey}>
-                {pane.content}
+                {tabActiveKey === pane.itemKey && pane.content}
               </TabPane>
             ))}
           </Tabs>
