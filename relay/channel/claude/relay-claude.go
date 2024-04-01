@@ -34,6 +34,7 @@ func requestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeR
 		StopSequences:     nil,
 		Temperature:       textRequest.Temperature,
 		TopP:              textRequest.TopP,
+		TopK:              textRequest.TopK,
 		Stream:            textRequest.Stream,
 	}
 	if claudeRequest.MaxTokensToSample == 0 {
@@ -63,6 +64,7 @@ func requestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		StopSequences: nil,
 		Temperature:   textRequest.Temperature,
 		TopP:          textRequest.TopP,
+		TopK:          textRequest.TopK,
 		Stream:        textRequest.Stream,
 	}
 	if claudeRequest.MaxTokens == 0 {
