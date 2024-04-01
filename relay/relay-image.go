@@ -72,6 +72,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 	// map model name
 	modelMapping := c.GetString("model_mapping")
 	isModelMapped := false
+	modelBeforeMapped := ""
 	if modelMapping != "" {
 		modelMap := make(map[string]string)
 		err := json.Unmarshal([]byte(modelMapping), &modelMap)
@@ -79,8 +80,9 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 			return service.OpenAIErrorWrapper(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
 		}
 		if modelMap[imageRequest.Model] != "" {
-			imageRequest.Model = modelMap[imageRequest.Model]
 			isModelMapped = true
+			modelBeforeMapped = imageRequest.Model
+			imageRequest.Model = modelMap[imageRequest.Model]
 		}
 	}
 	baseURL := common.ChannelBaseURLs[channelType]
@@ -106,7 +108,13 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 		requestBody = c.Request.Body
 	}
 
-	modelRatio := common.GetModelRatio(imageRequest.Model)
+	modelRatio, _ := common.GetModelRatio(imageRequest.Model)
+	if isModelMapped {
+		srcModelRatio, ok := common.GetModelRatio(modelBeforeMapped)
+		if ok {
+			modelRatio = srcModelRatio
+		}
+	}
 	groupRatio := common.GetGroupRatio(group)
 	ratio := modelRatio * groupRatio
 	userQuota, err := model.CacheGetUserQuota(userId)

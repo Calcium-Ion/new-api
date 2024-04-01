@@ -78,6 +78,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	// map model name
 	modelMapping := c.GetString("model_mapping")
 	isModelMapped := false
+	modelBeforeMapped := ""
 	if modelMapping != "" && modelMapping != "{}" {
 		modelMap := make(map[string]string)
 		err := json.Unmarshal([]byte(modelMapping), &modelMap)
@@ -85,13 +86,25 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 			return service.OpenAIErrorWrapper(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
 		}
 		if modelMap[textRequest.Model] != "" {
-			textRequest.Model = modelMap[textRequest.Model]
 			// set upstream model name
 			isModelMapped = true
+			modelBeforeMapped = textRequest.Model
+			textRequest.Model = modelMap[textRequest.Model]
+
 		}
 	}
 	relayInfo.UpstreamModelName = textRequest.Model
-	modelPrice := common.GetModelPrice(textRequest.Model, false)
+
+	modelPrice := float64(-1)
+	modelPrice = common.GetModelPrice(textRequest.Model, false)
+	if isModelMapped {
+		srcModelPrice := common.GetModelPrice(modelBeforeMapped, false)
+		if srcModelPrice != -1 {
+			// 优先使用映射前的模型价格
+			modelPrice = srcModelPrice
+		}
+	}
+
 	groupRatio := common.GetGroupRatio(relayInfo.Group)
 
 	var preConsumedQuota int
@@ -113,7 +126,13 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		if textRequest.MaxTokens != 0 {
 			preConsumedTokens = promptTokens + int(textRequest.MaxTokens)
 		}
-		modelRatio = common.GetModelRatio(textRequest.Model)
+		modelRatio, _ = common.GetModelRatio(textRequest.Model)
+		if isModelMapped {
+			srcModelRatio, ok := common.GetModelRatio(modelBeforeMapped)
+			if ok {
+				modelRatio = srcModelRatio
+			}
+		}
 		ratio = modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
 	} else {

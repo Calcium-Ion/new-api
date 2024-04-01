@@ -73,7 +73,7 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		}
 		preConsumedTokens = promptTokens
 	}
-	modelRatio := common.GetModelRatio(audioRequest.Model)
+	modelRatio, _ := common.GetModelRatio(audioRequest.Model)
 	groupRatio := common.GetGroupRatio(group)
 	ratio := modelRatio * groupRatio
 	preConsumedQuota := int(float64(preConsumedTokens) * ratio)

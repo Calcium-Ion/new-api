@@ -173,7 +173,7 @@ func UpdateModelRatioByJSONString(jsonStr string) error {
 	return json.Unmarshal([]byte(jsonStr), &modelRatio)
 }
 
-func GetModelRatio(name string) float64 {
+func GetModelRatio(name string) (float64, bool) {
 	if modelRatio == nil {
 		modelRatio = DefaultModelRatio
 	}
@@ -183,9 +183,9 @@ func GetModelRatio(name string) float64 {
 	ratio, ok := modelRatio[name]
 	if !ok {
 		SysError("model ratio not found: " + name)
-		return 30
+		return 30, false
 	}
-	return ratio
+	return ratio, true
 }
 
 func GetCompletionRatio(name string) float64 {
