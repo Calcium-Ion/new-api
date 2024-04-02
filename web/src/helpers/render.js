@@ -8,46 +8,36 @@ export function renderText(text, limit) {
   return text;
 }
 
+/**
+ * Render group tags based on the input group string
+ * @param {string} group - The input group string
+ * @returns {JSX.Element} - The rendered group tags
+ */
 export function renderGroup(group) {
   if (group === '') {
-    return (
-      <Tag size='large' key={group}>
-        default
-      </Tag>
-    );
+    return <Tag size='large' key='default'>default</Tag>;
   }
-  let groups = group.split(',');
-  groups.sort();
+
+  const tagColors = {
+    'vip': 'yellow',
+    'pro': 'yellow',
+    'svip': 'red',
+    'premium': 'red'
+  };
+
+  const groups = group.split(',').sort();
+
   return (
     <span key={group}>
-      {groups.map((group) => {
-        if (group === 'vip' || group === 'pro') {
-          return (
-            <Tag size='large' color='yellow' key={group}>
-              {group}
-            </Tag>
-          );
-        } else if (group === 'svip' || group === 'premium') {
-          return (
-            <Tag size='large' color='red' key={group}>
-              {group}
-            </Tag>
-          );
-        }
-        if (group === 'default') {
-          return (
-            <Tag size='large' key={group}>
-              {group}
-            </Tag>
-          );
-        } else {
-          return (
-            <Tag size='large' color={stringToColor(group)} key={group}>
-              {group}
-            </Tag>
-          );
-        }
-      })}
+      {groups.map((group) => (
+        <Tag
+          size='large'
+          color={tagColors[group] || stringToColor(group)}
+          key={group}
+        >
+          {group}
+        </Tag>
+      ))}
     </span>
   );
 }
