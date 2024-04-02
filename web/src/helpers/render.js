@@ -10,37 +10,45 @@ export function renderText(text, limit) {
 
 export function renderGroup(group) {
   if (group === '') {
-    return <Tag size='large'>default</Tag>;
+    return (
+      <Tag size='large' key={group}>
+        default
+      </Tag>
+    );
   }
   let groups = group.split(',');
   groups.sort();
   return (
-    <>
+    <span key={group}>
       {groups.map((group) => {
         if (group === 'vip' || group === 'pro') {
           return (
-            <Tag size='large' color='yellow'>
+            <Tag size='large' color='yellow' key={group}>
               {group}
             </Tag>
           );
         } else if (group === 'svip' || group === 'premium') {
           return (
-            <Tag size='large' color='red'>
+            <Tag size='large' color='red' key={group}>
               {group}
             </Tag>
           );
         }
         if (group === 'default') {
-          return <Tag size='large'>{group}</Tag>;
+          return (
+            <Tag size='large' key={group}>
+              {group}
+            </Tag>
+          );
         } else {
           return (
-            <Tag size='large' color={stringToColor(group)}>
+            <Tag size='large' color={stringToColor(group)} key={group}>
               {group}
             </Tag>
           );
         }
       })}
-    </>
+    </span>
   );
 }
 
