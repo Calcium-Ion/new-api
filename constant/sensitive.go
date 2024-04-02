@@ -4,7 +4,8 @@ import "strings"
 
 var CheckSensitiveEnabled = true
 var CheckSensitiveOnPromptEnabled = true
-var CheckSensitiveOnCompletionEnabled = true
+
+//var CheckSensitiveOnCompletionEnabled = true
 
 // StopOnSensitiveEnabled 如果检测到敏感词，是否立刻停止生成，否则替换敏感词
 var StopOnSensitiveEnabled = true
@@ -37,6 +38,6 @@ func ShouldCheckPromptSensitive() bool {
 	return CheckSensitiveEnabled && CheckSensitiveOnPromptEnabled
 }
 
-func ShouldCheckCompletionSensitive() bool {
-	return CheckSensitiveEnabled && CheckSensitiveOnCompletionEnabled
-}
+//func ShouldCheckCompletionSensitive() bool {
+//	return CheckSensitiveEnabled && CheckSensitiveOnCompletionEnabled
+//}

@@ -330,21 +330,21 @@ const OperationSetting = () => {
               name='CheckSensitiveOnPromptEnabled'
               onChange={handleInputChange}
             />
-            <Form.Checkbox
-              checked={inputs.CheckSensitiveOnCompletionEnabled === 'true'}
-              label='启用生成内容检查'
-              name='CheckSensitiveOnCompletionEnabled'
-              onChange={handleInputChange}
-            />
+            {/*<Form.Checkbox*/}
+            {/*  checked={inputs.CheckSensitiveOnCompletionEnabled === 'true'}*/}
+            {/*  label='启用生成内容检查'*/}
+            {/*  name='CheckSensitiveOnCompletionEnabled'*/}
+            {/*  onChange={handleInputChange}*/}
+            {/*/>*/}
           </Form.Group>
-          <Form.Group inline>
-            <Form.Checkbox
-              checked={inputs.StopOnSensitiveEnabled === 'true'}
-              label='在检测到屏蔽词时，立刻停止生成，否则替换屏蔽词'
-              name='StopOnSensitiveEnabled'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
+          {/*<Form.Group inline>*/}
+          {/*  <Form.Checkbox*/}
+          {/*    checked={inputs.StopOnSensitiveEnabled === 'true'}*/}
+          {/*    label='在检测到屏蔽词时，立刻停止生成，否则替换屏蔽词'*/}
+          {/*    name='StopOnSensitiveEnabled'*/}
+          {/*    onChange={handleInputChange}*/}
+          {/*  />*/}
+          {/*</Form.Group>*/}
           {/*<Form.Group>*/}
           {/*  <Form.Input*/}
           {/*    label="流模式下缓存队列，默认不缓存，设置越大检测越准确，但是回复会有卡顿感"*/}
