@@ -120,18 +120,28 @@ func SendEmailVerification(c *gin.Context) {
 		})
 		return
 	}
-	if common.EmailDomainRestrictionEnabled {
+	if config.EmailDomainRestrictionEnabled {
+		parts := strings.Split(email, "@")
+		localPart := parts[0]
+		domainPart := parts[1]
+
+		containsSpecialSymbols := strings.Contains(localPart, "+") || strings.Count(localPart, ".") > 1
 		allowed := false
-		for _, domain := range common.EmailDomainWhitelist {
-			if strings.HasSuffix(email, "@"+domain) {
+		for _, domain := range config.EmailDomainWhitelist {
+			if domainPart == domain {
 				allowed = true
 				break
 			}
 		}
-		if !allowed {
+		if allowed && !containsSpecialSymbols {
+			c.JSON(http.StatusOK, gin.H{
+				"success": true,
+				"message": "Your email address is allowed.",
+			})
+		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "管理员启用了邮箱域名白名单，您的邮箱地址的域名不在白名单中",
+				"message": "The administrator has enabled the email domain name whitelist, and your email address is not allowed due to special symbols or it's not in the whitelist.",
 			})
 			return
 		}
