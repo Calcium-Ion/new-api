@@ -225,10 +225,11 @@ func (user *User) Update(updatePassword bool) error {
 	}
 	newUser := *user
 	DB.First(&user, user.Id)
-	err = DB.Model(user).Updates(newUser).Error
+	err = DB.Model(user).Select("*").Updates(newUser).Error
 	if err == nil {
 		if common.RedisEnabled {
 			_ = common.RedisSet(fmt.Sprintf("user_group:%d", user.Id), user.Group, time.Duration(UserId2GroupCacheSeconds)*time.Second)
+			_ = common.RedisSet(fmt.Sprintf("user_quota:%d", user.Id), strconv.Itoa(user.Quota), time.Duration(UserId2QuotaCacheSeconds)*time.Second)
 		}
 	}
 	return err
