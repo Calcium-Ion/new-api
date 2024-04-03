@@ -120,14 +120,14 @@ func SendEmailVerification(c *gin.Context) {
 		})
 		return
 	}
-	if config.EmailDomainRestrictionEnabled {
+	if common.EmailDomainRestrictionEnabled {
 		parts := strings.Split(email, "@")
 		localPart := parts[0]
 		domainPart := parts[1]
 
 		containsSpecialSymbols := strings.Contains(localPart, "+") || strings.Count(localPart, ".") > 1
 		allowed := false
-		for _, domain := range config.EmailDomainWhitelist {
+		for _, domain := range common.EmailDomainWhitelist {
 			if domainPart == domain {
 				allowed = true
 				break

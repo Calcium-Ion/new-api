@@ -471,10 +471,10 @@ const LogsTable = () => {
       });
   };
 
-  const refresh = async (localLogType) => {
+  const refresh = async () => {
     // setLoading(true);
     setActivePage(1);
-    await loadLogs(0, pageSize, localLogType);
+    await loadLogs(0, pageSize, logType);
   };
 
   const copyText = async (text) => {
@@ -635,7 +635,7 @@ const LogsTable = () => {
           style={{ width: 120 }}
           onChange={(value) => {
             setLogType(parseInt(value));
-            refresh(parseInt(value)).then();
+            loadLogs(0, pageSize, parseInt(value));
           }}
         >
           <Select.Option value='0'>全部</Select.Option>
