@@ -163,7 +163,7 @@ func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, mode
 	if channel.AutoBan != nil && *channel.AutoBan == 0 {
 		ban = false
 	}
-	if nil != channel.OpenAIOrganization {
+	if nil != channel.OpenAIOrganization && "" != *channel.OpenAIOrganization {
 		c.Set("channel_organization", *channel.OpenAIOrganization)
 	}
 	c.Set("auto_ban", ban)
