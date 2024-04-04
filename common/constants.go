@@ -111,7 +111,7 @@ var IsMasterNode = os.Getenv("NODE_TYPE") != "slave"
 var requestInterval, _ = strconv.Atoi(os.Getenv("POLLING_INTERVAL"))
 var RequestInterval = time.Duration(requestInterval) * time.Second
 
-var SyncFrequency = GetOrDefault("SYNC_FREQUENCY", 10*60) // unit is second
+var SyncFrequency = GetOrDefault("SYNC_FREQUENCY", 60) // unit is second
 
 var BatchUpdateEnabled = false
 var BatchUpdateInterval = GetOrDefault("BATCH_UPDATE_INTERVAL", 5)

@@ -57,7 +57,7 @@ func GetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
 		// Randomly choose one
 		weight := common.GetRandomInt(int(weightSum))
 		for _, ability_ := range abilities {
-			weight -= int(ability_.Weight)
+			weight -= int(ability_.Weight) + 10
 			//log.Printf("weight: %d, ability weight: %d", weight, *ability_.Weight)
 			if weight <= 0 {
 				channel.Id = ability_.ChannelId
