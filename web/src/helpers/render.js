@@ -17,7 +17,7 @@ export function renderGroup(group) {
   if (group === '') {
     return (
       <Tag size='large' key='default'>
-        default
+        unknown
       </Tag>
     );
   }
