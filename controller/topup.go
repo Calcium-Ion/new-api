@@ -111,9 +111,13 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "拉起支付失败"})
 		return
 	}
+	amount := req.Amount
+	if !common.DisplayInCurrencyEnabled {
+		amount = amount / int(common.QuotaPerUnit)
+	}
 	topUp := &model.TopUp{
 		UserId:     id,
-		Amount:     req.Amount,
+		Amount:     amount,
 		Money:      payMoney,
 		TradeNo:    "A" + tradeNo,
 		CreateTime: time.Now().Unix(),
