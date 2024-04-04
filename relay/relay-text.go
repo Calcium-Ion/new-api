@@ -288,11 +288,13 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, textRe
 		//	logContent += fmt.Sprintf("，敏感词：%s", strings.Join(sensitiveResp.SensitiveWords, ", "))
 		//}
 		quotaDelta := quota - preConsumedQuota
-		err := model.PostConsumeTokenQuota(relayInfo.TokenId, userQuota, quotaDelta, preConsumedQuota, true)
-		if err != nil {
-			common.LogError(ctx, "error consuming token remain quota: "+err.Error())
+		if quotaDelta != 0 {
+			err := model.PostConsumeTokenQuota(relayInfo.TokenId, userQuota, quotaDelta, preConsumedQuota, true)
+			if err != nil {
+				common.LogError(ctx, "error consuming token remain quota: "+err.Error())
+			}
 		}
-		err = model.CacheUpdateUserQuota(relayInfo.UserId)
+		err := model.CacheUpdateUserQuota(relayInfo.UserId)
 		if err != nil {
 			common.LogError(ctx, "error update user quota cache: "+err.Error())
 		}
