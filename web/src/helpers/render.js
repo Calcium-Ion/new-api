@@ -15,14 +15,18 @@ export function renderText(text, limit) {
  */
 export function renderGroup(group) {
   if (group === '') {
-    return <Tag size='large' key='default'>default</Tag>;
+    return (
+      <Tag size='large' key='default'>
+        default
+      </Tag>
+    );
   }
 
   const tagColors = {
-    'vip': 'yellow',
-    'pro': 'yellow',
-    'svip': 'red',
-    'premium': 'red'
+    vip: 'yellow',
+    pro: 'yellow',
+    svip: 'red',
+    premium: 'red',
   };
 
   const groups = group.split(',').sort();
@@ -97,10 +101,27 @@ export function getQuotaPerUnit() {
   return quotaPerUnit;
 }
 
+export function renderUnitWithQuota(quota) {
+  let quotaPerUnit = localStorage.getItem('quota_per_unit');
+  quotaPerUnit = parseFloat(quotaPerUnit);
+  quota = parseFloat(quota);
+  return quotaPerUnit * quota;
+}
+
 export function getQuotaWithUnit(quota, digits = 6) {
   let quotaPerUnit = localStorage.getItem('quota_per_unit');
   quotaPerUnit = parseFloat(quotaPerUnit);
   return (quota / quotaPerUnit).toFixed(digits);
+}
+
+export function renderQuotaWithAmount(amount) {
+  let displayInCurrency = localStorage.getItem('display_in_currency');
+  displayInCurrency = displayInCurrency === 'true';
+  if (displayInCurrency) {
+    return '$' + amount;
+  } else {
+    return renderUnitWithQuota(amount);
+  }
 }
 
 export function renderQuota(quota, digits = 2) {

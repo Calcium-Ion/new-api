@@ -362,7 +362,7 @@ const SystemSetting = () => {
               onChange={handleInputChange}
             />
             <Form.Input
-              label='最低充值数量'
+              label='最低充值美元数量（以美金为单位，如果使用额度请自行换算！）'
               placeholder='例如：2，就是最低充值2$'
               value={inputs.MinTopUp}
               name='MinTopUp'
