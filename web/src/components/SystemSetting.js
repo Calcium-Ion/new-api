@@ -42,6 +42,7 @@ const SystemSetting = () => {
     TurnstileSecretKey: '',
     RegisterEnabled: '',
     EmailDomainRestrictionEnabled: '',
+    EmailAliasRestrictionEnabled: '',
     SMTPSSLEnabled: '',
     EmailDomainWhitelist: [],
     // telegram login
@@ -99,6 +100,7 @@ const SystemSetting = () => {
       case 'TelegramOAuthEnabled':
       case 'TurnstileCheckEnabled':
       case 'EmailDomainRestrictionEnabled':
+      case 'EmailAliasRestrictionEnabled':
       case 'SMTPSSLEnabled':
       case 'RegisterEnabled':
         value = inputs[key] === 'true' ? 'false' : 'true';
@@ -478,6 +480,14 @@ const SystemSetting = () => {
               name='EmailDomainRestrictionEnabled'
               onChange={handleInputChange}
               checked={inputs.EmailDomainRestrictionEnabled === 'true'}
+            />
+          </Form.Group>
+          <Form.Group widths={3}>
+            <Form.Checkbox
+              label='启用邮箱别名限制（例如：ab.cd@gmail.com）'
+              name='EmailAliasRestrictionEnabled'
+              onChange={handleInputChange}
+              checked={inputs.EmailAliasRestrictionEnabled === 'true'}
             />
           </Form.Group>
           <Form.Group widths={2}>
