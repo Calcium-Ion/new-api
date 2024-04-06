@@ -272,7 +272,7 @@ func CacheGetRandomSatisfiedChannel(group string, model string, retry int) (*Cha
 
 	// if memory cache is disabled, get channel directly from database
 	if !common.MemoryCacheEnabled {
-		return GetRandomSatisfiedChannel(group, model)
+		return GetRandomSatisfiedChannel(group, model, retry)
 	}
 	channelSyncLock.RLock()
 	defer channelSyncLock.RUnlock()
