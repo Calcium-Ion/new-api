@@ -2,9 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"github.com/Calcium-Ion/go-epay/epay"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
-	epay "github.com/star-horizon/go-epay"
+
 	"log"
 	"net/url"
 	"one-api/common"
@@ -30,7 +31,7 @@ func GetEpayClient() *epay.Client {
 	if common.PayAddress == "" || common.EpayId == "" || common.EpayKey == "" {
 		return nil
 	}
-	withUrl, err := epay.NewClientWithUrl(&epay.Config{
+	withUrl, err := epay.NewClient(&epay.Config{
 		PartnerID: common.EpayId,
 		Key:       common.EpayKey,
 	}, common.PayAddress)
