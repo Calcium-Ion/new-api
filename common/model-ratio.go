@@ -206,11 +206,11 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 2
 	}
-	if strings.HasPrefix(name, "claude-instant-1") {
+	if strings.Contains(name, "claude-instant-1") {
 		return 3
-	} else if strings.HasPrefix(name, "claude-2") {
+	} else if strings.Contains(name, "claude-2") {
 		return 3
-	} else if strings.HasPrefix(name, "claude-3") {
+	} else if strings.Contains(name, "claude-3") {
 		return 5
 	}
 	if strings.HasPrefix(name, "mistral-") {
