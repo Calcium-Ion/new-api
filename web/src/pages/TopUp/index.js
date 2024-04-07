@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { API, isMobile, showError, showInfo, showSuccess } from '../../helpers';
-import { renderNumber, renderQuota } from '../../helpers/render';
+import {
+  renderNumber,
+  renderQuota,
+  renderQuotaWithAmount,
+} from '../../helpers/render';
 import {
   Col,
   Layout,
@@ -12,6 +16,7 @@ import {
   Divider,
   Space,
   Modal,
+  Toast,
 } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
@@ -20,7 +25,7 @@ import { Link } from 'react-router-dom';
 const TopUp = () => {
   const [redemptionCode, setRedemptionCode] = useState('');
   const [topUpCode, setTopUpCode] = useState('');
-  const [topUpCount, setTopUpCount] = useState(10);
+  const [topUpCount, setTopUpCount] = useState(0);
   const [minTopupCount, setMinTopUpCount] = useState(1);
   const [amount, setAmount] = useState(0.0);
   const [minTopUp, setMinTopUp] = useState(1);
@@ -76,11 +81,9 @@ const TopUp = () => {
       showError('管理员未开启在线充值！');
       return;
     }
-    if (amount === 0) {
-      await getAmount();
-    }
+    await getAmount();
     if (topUpCount < minTopUp) {
-      showInfo('充值数量不能小于' + minTopUp);
+      showError('充值数量不能小于' + minTopUp);
       return;
     }
     setPayWay(payment);
@@ -92,7 +95,7 @@ const TopUp = () => {
       await getAmount();
     }
     if (topUpCount < minTopUp) {
-      showInfo('充值数量不能小于' + minTopUp);
+      showError('充值数量不能小于' + minTopUp);
       return;
     }
     setOpen(false);
@@ -189,7 +192,8 @@ const TopUp = () => {
         if (message === 'success') {
           setAmount(parseFloat(data));
         } else {
-          showError(data);
+          setAmount(0);
+          Toast.error({ content: '错误：' + data, id: 'getAmount' });
           // setTopUpCount(parseInt(res.data.count));
           // setAmount(parseInt(data));
         }
@@ -222,7 +226,7 @@ const TopUp = () => {
             size={'small'}
             centered={true}
           >
-            <p>充值数量：{topUpCount}$</p>
+            <p>充值数量：{topUpCount}</p>
             <p>实付金额：{renderAmount()}</p>
             <p>是否确认充值？</p>
           </Modal>
@@ -274,20 +278,15 @@ const TopUp = () => {
                     disabled={!enableOnlineTopUp}
                     field={'redemptionCount'}
                     label={'实付金额：' + renderAmount()}
-                    placeholder={'充值数量，最低' + minTopUp + '$'}
+                    placeholder={
+                      '充值数量，最低 ' + renderQuotaWithAmount(minTopUp)
+                    }
                     name='redemptionCount'
                     type={'number'}
                     value={topUpCount}
-                    suffix={'$'}
-                    min={minTopUp}
-                    defaultValue={minTopUp}
-                    max={100000}
                     onChange={async (value) => {
                       if (value < 1) {
                         value = 1;
-                      }
-                      if (value > 100000) {
-                        value = 100000;
                       }
                       setTopUpCount(value);
                       await getAmount(value);

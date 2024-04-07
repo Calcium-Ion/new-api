@@ -236,3 +236,8 @@ func StringToByteSlice(s string) []byte {
 	tmp2 := [3]uintptr{tmp1[0], tmp1[1], tmp1[1]}
 	return *(*[]byte)(unsafe.Pointer(&tmp2))
 }
+
+func RandomSleep() {
+	// Sleep for 0-3000 ms
+	time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
+}

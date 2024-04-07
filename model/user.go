@@ -229,6 +229,27 @@ func (user *User) Update(updatePassword bool) error {
 	if err == nil {
 		if common.RedisEnabled {
 			_ = common.RedisSet(fmt.Sprintf("user_group:%d", user.Id), user.Group, time.Duration(UserId2GroupCacheSeconds)*time.Second)
+			_ = common.RedisSet(fmt.Sprintf("user_quota:%d", user.Id), strconv.Itoa(user.Quota), time.Duration(UserId2QuotaCacheSeconds)*time.Second)
+		}
+	}
+	return err
+}
+
+func (user *User) UpdateAll(updatePassword bool) error {
+	var err error
+	if updatePassword {
+		user.Password, err = common.Password2Hash(user.Password)
+		if err != nil {
+			return err
+		}
+	}
+	newUser := *user
+	DB.First(&user, user.Id)
+	err = DB.Model(user).Select("*").Updates(newUser).Error
+	if err == nil {
+		if common.RedisEnabled {
+			_ = common.RedisSet(fmt.Sprintf("user_group:%d", user.Id), user.Group, time.Duration(UserId2GroupCacheSeconds)*time.Second)
+			_ = common.RedisSet(fmt.Sprintf("user_quota:%d", user.Id), strconv.Itoa(user.Quota), time.Duration(UserId2QuotaCacheSeconds)*time.Second)
 		}
 	}
 	return err

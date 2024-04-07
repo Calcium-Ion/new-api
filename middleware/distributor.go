@@ -23,7 +23,7 @@ func Distribute() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userId := c.GetInt("id")
 		var channel *model.Channel
-		channelId, ok := c.Get("channelId")
+		channelId, ok := c.Get("specific_channel_id")
 		if ok {
 			id, err := strconv.Atoi(channelId.(string))
 			if err != nil {
@@ -131,7 +131,7 @@ func Distribute() func(c *gin.Context) {
 			userGroup, _ := model.CacheGetUserGroup(userId)
 			c.Set("group", userGroup)
 			if shouldSelectChannel {
-				channel, err = model.CacheGetRandomSatisfiedChannel(userGroup, modelRequest.Model)
+				channel, err = model.CacheGetRandomSatisfiedChannel(userGroup, modelRequest.Model, 0)
 				if err != nil {
 					message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", userGroup, modelRequest.Model)
 					// 如果错误，但是渠道不为空，说明是数据库一致性问题
@@ -147,36 +147,41 @@ func Distribute() func(c *gin.Context) {
 					abortWithOpenAiMessage(c, http.StatusServiceUnavailable, fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道（数据库一致性已被破坏）", userGroup, modelRequest.Model))
 					return
 				}
-				c.Set("channel", channel.Type)
-				c.Set("channel_id", channel.Id)
-				c.Set("channel_name", channel.Name)
-				ban := true
-				// parse *int to bool
-				if channel.AutoBan != nil && *channel.AutoBan == 0 {
-					ban = false
-				}
-				if nil != channel.OpenAIOrganization {
-					c.Set("channel_organization", *channel.OpenAIOrganization)
-				}
-				c.Set("auto_ban", ban)
-				c.Set("model_mapping", channel.GetModelMapping())
-				c.Request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", channel.Key))
-				c.Set("base_url", channel.GetBaseURL())
-				// TODO: api_version统一
-				switch channel.Type {
-				case common.ChannelTypeAzure:
-					c.Set("api_version", channel.Other)
-				case common.ChannelTypeXunfei:
-					c.Set("api_version", channel.Other)
-				//case common.ChannelTypeAIProxyLibrary:
-				//	c.Set("library_id", channel.Other)
-				case common.ChannelTypeGemini:
-					c.Set("api_version", channel.Other)
-				case common.ChannelTypeAli:
-					c.Set("plugin", channel.Other)
-				}
+				SetupContextForSelectedChannel(c, channel, modelRequest.Model)
 			}
 		}
 		c.Next()
+	}
+}
+
+func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, modelName string) {
+	c.Set("channel", channel.Type)
+	c.Set("channel_id", channel.Id)
+	c.Set("channel_name", channel.Name)
+	ban := true
+	// parse *int to bool
+	if channel.AutoBan != nil && *channel.AutoBan == 0 {
+		ban = false
+	}
+	if nil != channel.OpenAIOrganization && "" != *channel.OpenAIOrganization {
+		c.Set("channel_organization", *channel.OpenAIOrganization)
+	}
+	c.Set("auto_ban", ban)
+	c.Set("model_mapping", channel.GetModelMapping())
+	c.Set("original_model", modelName) // for retry
+	c.Request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", channel.Key))
+	c.Set("base_url", channel.GetBaseURL())
+	// TODO: api_version统一
+	switch channel.Type {
+	case common.ChannelTypeAzure:
+		c.Set("api_version", channel.Other)
+	case common.ChannelTypeXunfei:
+		c.Set("api_version", channel.Other)
+	//case common.ChannelTypeAIProxyLibrary:
+	//	c.Set("library_id", channel.Other)
+	case common.ChannelTypeGemini:
+		c.Set("api_version", channel.Other)
+	case common.ChannelTypeAli:
+		c.Set("plugin", channel.Other)
 	}
 }

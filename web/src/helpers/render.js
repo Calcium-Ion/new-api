@@ -8,39 +8,41 @@ export function renderText(text, limit) {
   return text;
 }
 
+/**
+ * Render group tags based on the input group string
+ * @param {string} group - The input group string
+ * @returns {JSX.Element} - The rendered group tags
+ */
 export function renderGroup(group) {
   if (group === '') {
-    return <Tag size='large'>default</Tag>;
+    return (
+      <Tag size='large' key='default'>
+        unknown
+      </Tag>
+    );
   }
-  let groups = group.split(',');
-  groups.sort();
+
+  const tagColors = {
+    vip: 'yellow',
+    pro: 'yellow',
+    svip: 'red',
+    premium: 'red',
+  };
+
+  const groups = group.split(',').sort();
+
   return (
-    <>
-      {groups.map((group) => {
-        if (group === 'vip' || group === 'pro') {
-          return (
-            <Tag size='large' color='yellow'>
-              {group}
-            </Tag>
-          );
-        } else if (group === 'svip' || group === 'premium') {
-          return (
-            <Tag size='large' color='red'>
-              {group}
-            </Tag>
-          );
-        }
-        if (group === 'default') {
-          return <Tag size='large'>{group}</Tag>;
-        } else {
-          return (
-            <Tag size='large' color={stringToColor(group)}>
-              {group}
-            </Tag>
-          );
-        }
-      })}
-    </>
+    <span key={group}>
+      {groups.map((group) => (
+        <Tag
+          size='large'
+          color={tagColors[group] || stringToColor(group)}
+          key={group}
+        >
+          {group}
+        </Tag>
+      ))}
+    </span>
   );
 }
 
@@ -99,10 +101,27 @@ export function getQuotaPerUnit() {
   return quotaPerUnit;
 }
 
+export function renderUnitWithQuota(quota) {
+  let quotaPerUnit = localStorage.getItem('quota_per_unit');
+  quotaPerUnit = parseFloat(quotaPerUnit);
+  quota = parseFloat(quota);
+  return quotaPerUnit * quota;
+}
+
 export function getQuotaWithUnit(quota, digits = 6) {
   let quotaPerUnit = localStorage.getItem('quota_per_unit');
   quotaPerUnit = parseFloat(quotaPerUnit);
   return (quota / quotaPerUnit).toFixed(digits);
+}
+
+export function renderQuotaWithAmount(amount) {
+  let displayInCurrency = localStorage.getItem('display_in_currency');
+  displayInCurrency = displayInCurrency === 'true';
+  if (displayInCurrency) {
+    return '$' + amount;
+  } else {
+    return renderUnitWithQuota(amount);
+  }
 }
 
 export function renderQuota(quota, digits = 2) {

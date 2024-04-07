@@ -46,6 +46,12 @@ func OpenAIErrorWrapper(err error, code string, statusCode int) *dto.OpenAIError
 	}
 }
 
+func OpenAIErrorWrapperLocal(err error, code string, statusCode int) *dto.OpenAIErrorWithStatusCode {
+	openaiErr := OpenAIErrorWrapper(err, code, statusCode)
+	openaiErr.LocalError = true
+	return openaiErr
+}
+
 func RelayErrorHandler(resp *http.Response) (errWithStatusCode *dto.OpenAIErrorWithStatusCode) {
 	errWithStatusCode = &dto.OpenAIErrorWithStatusCode{
 		StatusCode: resp.StatusCode,

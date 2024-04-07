@@ -56,7 +56,7 @@ func Redeem(key string, userId int) (quota int, err error) {
 	if common.UsingPostgreSQL {
 		keyCol = `"key"`
 	}
-
+	common.RandomSleep()
 	err = DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Set("gorm:query_option", "FOR UPDATE").Where(keyCol+" = ?", key).First(redemption).Error
 		if err != nil {

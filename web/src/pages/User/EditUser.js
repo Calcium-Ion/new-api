@@ -223,19 +223,22 @@ const EditUser = (props) => {
             placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
             readonly
           />
-          <Input
-            name='telegram_id'
-            value={telegram_id}
-            autoComplete='new-password'
-            placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
-            readonly
-          />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>已绑定的邮箱账户</Typography.Text>
           </div>
           <Input
             name='email'
             value={email}
+            autoComplete='new-password'
+            placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
+            readonly
+          />
+          <div style={{ marginTop: 20 }}>
+            <Typography.Text>已绑定的Telegram账户</Typography.Text>
+          </div>
+          <Input
+            name='telegram_id'
+            value={telegram_id}
             autoComplete='new-password'
             placeholder='此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改'
             readonly

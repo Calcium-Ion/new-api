@@ -55,7 +55,8 @@ var TelegramOAuthEnabled = false
 var TurnstileCheckEnabled = false
 var RegisterEnabled = true
 
-var EmailDomainRestrictionEnabled = false
+var EmailDomainRestrictionEnabled = false // 是否启用邮箱域名限制
+var EmailAliasRestrictionEnabled = false  // 是否启用邮箱别名限制
 var EmailDomainWhitelist = []string{
 	"gmail.com",
 	"163.com",
@@ -111,7 +112,7 @@ var IsMasterNode = os.Getenv("NODE_TYPE") != "slave"
 var requestInterval, _ = strconv.Atoi(os.Getenv("POLLING_INTERVAL"))
 var RequestInterval = time.Duration(requestInterval) * time.Second
 
-var SyncFrequency = GetOrDefault("SYNC_FREQUENCY", 10*60) // unit is second
+var SyncFrequency = GetOrDefault("SYNC_FREQUENCY", 60) // unit is second
 
 var BatchUpdateEnabled = false
 var BatchUpdateInterval = GetOrDefault("BATCH_UPDATE_INTERVAL", 5)

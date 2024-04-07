@@ -7,6 +7,7 @@ import (
 	"one-api/common"
 	"one-api/model"
 	"strconv"
+	"sync"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -724,7 +725,7 @@ func ManageUser(c *gin.Context) {
 		user.Role = common.RoleCommonUser
 	}
 
-	if err := user.Update(false); err != nil {
+	if err := user.UpdateAll(false); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),
@@ -789,7 +790,11 @@ type topUpRequest struct {
 	Key string `json:"key"`
 }
 
+var lock = sync.Mutex{}
+
 func TopUp(c *gin.Context) {
+	lock.Lock()
+	defer lock.Unlock()
 	req := topUpRequest{}
 	err := c.ShouldBindJSON(&req)
 	if err != nil {

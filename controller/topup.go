@@ -2,9 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"github.com/Calcium-Ion/go-epay/epay"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
-	epay "github.com/star-horizon/go-epay"
+
 	"log"
 	"net/url"
 	"one-api/common"
@@ -30,7 +31,7 @@ func GetEpayClient() *epay.Client {
 	if common.PayAddress == "" || common.EpayId == "" || common.EpayKey == "" {
 		return nil
 	}
-	withUrl, err := epay.NewClientWithUrl(&epay.Config{
+	withUrl, err := epay.NewClient(&epay.Config{
 		PartnerID: common.EpayId,
 		Key:       common.EpayKey,
 	}, common.PayAddress)
@@ -40,31 +41,46 @@ func GetEpayClient() *epay.Client {
 	return withUrl
 }
 
-func GetAmount(count float64, user model.User) float64 {
+func getPayMoney(amount float64, user model.User) float64 {
+	if !common.DisplayInCurrencyEnabled {
+		amount = amount / common.QuotaPerUnit
+	}
 	// 别问为什么用float64，问就是这么点钱没必要
 	topupGroupRatio := common.GetTopupGroupRatio(user.Group)
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
 	}
-	amount := count * common.Price * topupGroupRatio
-	return amount
+	payMoney := amount * common.Price * topupGroupRatio
+	return payMoney
+}
+
+func getMinTopup() int {
+	minTopup := common.MinTopUp
+	if !common.DisplayInCurrencyEnabled {
+		minTopup = minTopup * int(common.QuotaPerUnit)
+	}
+	return minTopup
 }
 
 func RequestEpay(c *gin.Context) {
 	var req EpayRequest
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		c.JSON(200, gin.H{"message": err.Error(), "data": 10})
+		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
 		return
 	}
-	if req.Amount < common.MinTopUp {
-		c.JSON(200, gin.H{"message": fmt.Sprintf("充值数量不能小于 %d", common.MinTopUp), "data": 10})
+	if req.Amount < getMinTopup() {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
 		return
 	}
 
 	id := c.GetInt("id")
 	user, _ := model.GetUserById(id, false)
-	payMoney := GetAmount(float64(req.Amount), *user)
+	payMoney := getPayMoney(float64(req.Amount), *user)
+	if payMoney < 0.01 {
+		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
+		return
+	}
 
 	var payType epay.PurchaseType
 	if req.PaymentMethod == "zfb" {
@@ -96,9 +112,13 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "拉起支付失败"})
 		return
 	}
+	amount := req.Amount
+	if !common.DisplayInCurrencyEnabled {
+		amount = amount / int(common.QuotaPerUnit)
+	}
 	topUp := &model.TopUp{
 		UserId:     id,
-		Amount:     req.Amount,
+		Amount:     amount,
 		Money:      payMoney,
 		TradeNo:    "A" + tradeNo,
 		CreateTime: time.Now().Unix(),
@@ -186,13 +206,13 @@ func EpayNotify(c *gin.Context) {
 			}
 			//user, _ := model.GetUserById(topUp.UserId, false)
 			//user.Quota += topUp.Amount * 500000
-			err = model.IncreaseUserQuota(topUp.UserId, topUp.Amount*500000)
+			err = model.IncreaseUserQuota(topUp.UserId, topUp.Amount*int(common.QuotaPerUnit))
 			if err != nil {
 				log.Printf("易支付回调更新用户失败: %v", topUp)
 				return
 			}
 			log.Printf("易支付回调更新用户成功 %v", topUp)
-			model.RecordLog(topUp.UserId, model.LogTypeTopup, fmt.Sprintf("使用在线充值成功，充值金额: %v，支付金额：%f", common.LogQuota(topUp.Amount*500000), topUp.Money))
+			model.RecordLog(topUp.UserId, model.LogTypeTopup, fmt.Sprintf("使用在线充值成功，充值金额: %v，支付金额：%f", common.LogQuota(topUp.Amount*int(common.QuotaPerUnit)), topUp.Money))
 		}
 	} else {
 		log.Printf("易支付异常回调: %v", verifyInfo)
@@ -206,12 +226,17 @@ func RequestAmount(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
 		return
 	}
-	if req.Amount < common.MinTopUp {
-		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", common.MinTopUp)})
+
+	if req.Amount < getMinTopup() {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
 		return
 	}
 	id := c.GetInt("id")
 	user, _ := model.GetUserById(id, false)
-	payMoney := GetAmount(float64(req.Amount), *user)
+	payMoney := getPayMoney(float64(req.Amount), *user)
+	if payMoney <= 0.01 {
+		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
+		return
+	}
 	c.JSON(200, gin.H{"message": "success", "data": strconv.FormatFloat(payMoney, 'f', 2, 64)})
 }

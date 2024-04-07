@@ -42,6 +42,7 @@ const SystemSetting = () => {
     TurnstileSecretKey: '',
     RegisterEnabled: '',
     EmailDomainRestrictionEnabled: '',
+    EmailAliasRestrictionEnabled: '',
     SMTPSSLEnabled: '',
     EmailDomainWhitelist: [],
     // telegram login
@@ -99,6 +100,7 @@ const SystemSetting = () => {
       case 'TelegramOAuthEnabled':
       case 'TurnstileCheckEnabled':
       case 'EmailDomainRestrictionEnabled':
+      case 'EmailAliasRestrictionEnabled':
       case 'SMTPSSLEnabled':
       case 'RegisterEnabled':
         value = inputs[key] === 'true' ? 'false' : 'true';
@@ -362,7 +364,7 @@ const SystemSetting = () => {
               onChange={handleInputChange}
             />
             <Form.Input
-              label='最低充值数量'
+              label='最低充值美元数量（以美金为单位，如果使用额度请自行换算！）'
               placeholder='例如：2，就是最低充值2$'
               value={inputs.MinTopUp}
               name='MinTopUp'
@@ -478,6 +480,14 @@ const SystemSetting = () => {
               name='EmailDomainRestrictionEnabled'
               onChange={handleInputChange}
               checked={inputs.EmailDomainRestrictionEnabled === 'true'}
+            />
+          </Form.Group>
+          <Form.Group widths={3}>
+            <Form.Checkbox
+              label='启用邮箱别名限制（例如：ab.cd@gmail.com）'
+              name='EmailAliasRestrictionEnabled'
+              onChange={handleInputChange}
+              checked={inputs.EmailAliasRestrictionEnabled === 'true'}
             />
           </Form.Group>
           <Form.Group widths={2}>

@@ -31,6 +31,7 @@ type RelayInfo struct {
 func GenRelayInfo(c *gin.Context) *RelayInfo {
 	channelType := c.GetInt("channel")
 	channelId := c.GetInt("channel_id")
+
 	tokenId := c.GetInt("token_id")
 	userId := c.GetInt("id")
 	group := c.GetString("group")

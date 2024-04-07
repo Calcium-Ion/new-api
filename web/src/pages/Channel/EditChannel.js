@@ -63,6 +63,7 @@ const EditChannel = (props) => {
     model_mapping: '',
     models: [],
     auto_ban: 1,
+    test_model: '',
     groups: ['default'],
   };
   const [batch, setBatch] = useState(false);
@@ -668,6 +669,17 @@ const EditChannel = (props) => {
               handleInputChange('openai_organization', value);
             }}
             value={inputs.openai_organization}
+          />
+          <div style={{ marginTop: 10 }}>
+            <Typography.Text strong>默认测试模型：</Typography.Text>
+          </div>
+          <Input
+            name='test_model'
+            placeholder='不填则为模型列表第一个'
+            onChange={(value) => {
+              handleInputChange('test_model', value);
+            }}
+            value={inputs.test_model}
           />
           <div style={{ marginTop: 10, display: 'flex' }}>
             <Space>
