@@ -160,6 +160,10 @@ func getModelRequest(c *gin.Context) (*ModelRequest, bool, error) {
 }
 
 func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, modelName string) {
+	c.Set("original_model", modelName) // for retry
+	if channel == nil {
+		return
+	}
 	c.Set("channel", channel.Type)
 	c.Set("channel_id", channel.Id)
 	c.Set("channel_name", channel.Name)
@@ -173,7 +177,6 @@ func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, mode
 	}
 	c.Set("auto_ban", ban)
 	c.Set("model_mapping", channel.GetModelMapping())
-	c.Set("original_model", modelName) // for retry
 	c.Request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", channel.Key))
 	c.Set("base_url", channel.GetBaseURL())
 	// TODO: api_version统一
