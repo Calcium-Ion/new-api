@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"one-api/common"
 	"strings"
@@ -134,7 +135,16 @@ func (channel *Channel) AddAbilities() error {
 			abilities = append(abilities, ability)
 		}
 	}
-	return DB.Create(&abilities).Error
+	if len(abilities) == 0 {
+		return nil
+	}
+	for _, chunk := range lo.Chunk(abilities, 50) {
+		err := DB.Create(&chunk).Error
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (channel *Channel) DeleteAbilities() error {
