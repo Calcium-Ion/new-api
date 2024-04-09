@@ -2,6 +2,8 @@ package constant
 
 var MjNotifyEnabled = false
 
+var MjModeClearEnabled = false
+
 const (
 	MjErrorUnknown = 5
 	MjRequestError = 4

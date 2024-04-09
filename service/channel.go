@@ -57,6 +57,8 @@ func ShouldDisableChannel(err *relaymodel.OpenAIError, statusCode int) bool {
 		return true
 	} else if strings.HasPrefix(err.Message, "This organization has been disabled.") {
 		return true
+	} else if strings.HasPrefix(err.Message, "You exceeded your current quota") {
+		return true
 	}
 	return false
 }

@@ -36,6 +36,7 @@ const OperationSetting = () => {
     StopOnSensitiveEnabled: '',
     SensitiveWords: '',
     MjNotifyEnabled: '',
+    MjModeClearEnabled: '',
     DrawingEnabled: '',
     DataExportEnabled: '',
     DataExportDefaultTime: 'hour',
@@ -310,6 +311,12 @@ const OperationSetting = () => {
               checked={inputs.MjNotifyEnabled === 'true'}
               label='允许回调（会泄露服务器ip地址）'
               name='MjNotifyEnabled'
+              onChange={handleInputChange}
+            />
+            <Form.Checkbox
+              checked={inputs.MjModeClearEnabled === 'true'}
+              label='开启之后会清除用户提示词中的--fast、--relax以及--turbo参数'
+              name='MjModeClearEnabled'
               onChange={handleInputChange}
             />
           </Form.Group>
