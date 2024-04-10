@@ -74,6 +74,7 @@ const EditChannel = (props) => {
     auto_ban: 1,
     test_model: '',
     groups: ['default'],
+    remark: '',
   };
   const [batch, setBatch] = useState(false);
   const [autoBan, setAutoBan] = useState(true);
@@ -820,6 +821,19 @@ const EditChannel = (props) => {
           {/*  }}*/}
           {/*  value={inputs.max_input_tokens}*/}
           {/*/>*/}
+          <div style={{ marginTop: 10 }}>
+            <Typography.Text strong>备注：</Typography.Text>
+          </div>
+          <TextArea
+            placeholder={`填写备注信息`}
+            name='remark'
+            onChange={(value) => {
+              handleInputChange('remark', value);
+            }}
+            autosize
+            value={inputs.remark}
+            autoComplete='new-password'
+          />
         </Spin>
       </SideSheet>
     </>
