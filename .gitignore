@@ -9,3 +9,5 @@ logs
 fly.toml
 dist
 node_modules
+.env
+
