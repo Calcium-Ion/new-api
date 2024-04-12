@@ -6,6 +6,6 @@ upload
 build
 *.db-journal
 logs
-.env
 fly.toml
-
+dist
+node_modules
