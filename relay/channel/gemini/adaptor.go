@@ -3,13 +3,14 @@ package gemini
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Adaptor struct {
@@ -19,7 +20,7 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIReq
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	version := "v1"
+	version := "v1beta"
 	if info.ApiVersion != "" {
 		version = info.ApiVersion
 	}
