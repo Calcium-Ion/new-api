@@ -5,7 +5,7 @@ const (
 )
 
 var ModelList = []string{
-	"gemini-pro", "gemini-1.0-pro-001", "gemini-1.5-pro",
+	"gemini-pro", "gemini-1.0-pro-001", "gemini-1.5-pro", "gemini-ultra",
 	"gemini-pro-vision", "gemini-1.0-pro-vision-001",
 }
 
