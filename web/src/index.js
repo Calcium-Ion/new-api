@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { StatusProvider } from './context/Status';
 import { Layout } from '@douyinfe/semi-ui';
 import SiderBar from './components/SiderBar';
+import { ThemeProvider } from './context/Theme';
 
 // initialization
 
@@ -22,27 +23,29 @@ root.render(
     <StatusProvider>
       <UserProvider>
         <BrowserRouter>
-          <Layout>
-            <Sider>
-              <SiderBar />
-            </Sider>
+          <ThemeProvider>
             <Layout>
-              <Header>
-                <HeaderBar />
-              </Header>
-              <Content
-                style={{
-                  padding: '24px',
-                }}
-              >
-                <App />
-              </Content>
-              <Layout.Footer>
-                <Footer></Footer>
-              </Layout.Footer>
+              <Sider>
+                <SiderBar />
+              </Sider>
+              <Layout>
+                <Header>
+                  <HeaderBar />
+                </Header>
+                <Content
+                  style={{
+                    padding: '24px',
+                  }}
+                >
+                  <App />
+                </Content>
+                <Layout.Footer>
+                  <Footer></Footer>
+                </Layout.Footer>
+              </Layout>
+              <ToastContainer />
             </Layout>
-            <ToastContainer />
-          </Layout>
+          </ThemeProvider>
         </BrowserRouter>
       </UserProvider>
     </StatusProvider>

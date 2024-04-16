@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/User';
+import { useSetTheme, useTheme } from '../context/Theme';
 
 import { API, getLogo, getSystemName, showSuccess } from '../helpers';
 import '../index.css';
@@ -34,10 +35,8 @@ const HeaderBar = () => {
   let navigate = useNavigate();
 
   const [showSidebar, setShowSidebar] = useState(false);
-  const [dark, setDark] = useState(false);
   const systemName = getSystemName();
   const logo = getLogo();
-  var themeMode = localStorage.getItem('theme-mode');
   const currentDate = new Date();
   // enable fireworks on new year(1.1 and 2.9-2.24)
   const isNewYear =
@@ -66,26 +65,19 @@ const HeaderBar = () => {
     }, 3000);
   };
 
+  const theme = useTheme();
+  const setTheme = useSetTheme();
+
   useEffect(() => {
-    if (themeMode === 'dark') {
-      switchMode(true);
+    if (theme === 'dark') {
+      document.body.setAttribute('theme-mode', 'dark');
     }
+
     if (isNewYear) {
       console.log('Happy New Year!');
     }
   }, []);
 
-  const switchMode = (model) => {
-    const body = document.body;
-    if (!model) {
-      body.removeAttribute('theme-mode');
-      localStorage.setItem('theme-mode', 'light');
-    } else {
-      body.setAttribute('theme-mode', 'dark');
-      localStorage.setItem('theme-mode', 'dark');
-    }
-    setDark(model);
-  };
   return (
     <>
       <Layout>
@@ -132,9 +124,11 @@ const HeaderBar = () => {
                 <Switch
                   checkedText='🌞'
                   size={'large'}
-                  checked={dark}
+                  checked={theme === 'dark'}
                   uncheckedText='🌙'
-                  onChange={switchMode}
+                  onChange={(checked) => {
+                    setTheme(checked);
+                  }}
                 />
                 {userState.user ? (
                   <>
