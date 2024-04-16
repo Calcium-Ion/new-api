@@ -8,6 +8,8 @@ import {
   verifyJSON,
 } from '../helpers';
 
+import { useTheme } from '../context/Theme';
+
 const OperationSetting = () => {
   let now = new Date();
   let [inputs, setInputs] = useState({
@@ -76,6 +78,9 @@ const OperationSetting = () => {
       showError(message);
     }
   };
+
+  const theme = useTheme();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     getOptions().then();
@@ -219,8 +224,10 @@ const OperationSetting = () => {
   return (
     <Grid columns={1}>
       <Grid.Column>
-        <Form loading={loading}>
-          <Header as='h3'>通用设置</Header>
+        <Form loading={loading} inverted={isDark}>
+          <Header as='h3' inverted={isDark}>
+            通用设置
+          </Header>
           <Form.Group widths={4}>
             <Form.Input
               label='充值链接'
@@ -299,7 +306,9 @@ const OperationSetting = () => {
             保存通用设置
           </Form.Button>
           <Divider />
-          <Header as='h3'>绘图设置</Header>
+          <Header as='h3' inverted={isDark}>
+            绘图设置
+          </Header>
           <Form.Group inline>
             <Form.Checkbox
               checked={inputs.DrawingEnabled === 'true'}
@@ -321,7 +330,9 @@ const OperationSetting = () => {
             />
           </Form.Group>
           <Divider />
-          <Header as='h3'>屏蔽词过滤设置</Header>
+          <Header as='h3' inverted={isDark}>
+            屏蔽词过滤设置
+          </Header>
           <Form.Group inline>
             <Form.Checkbox
               checked={inputs.CheckSensitiveEnabled === 'true'}
@@ -381,7 +392,9 @@ const OperationSetting = () => {
             保存屏蔽词设置
           </Form.Button>
           <Divider />
-          <Header as='h3'>日志设置</Header>
+          <Header as='h3' inverted={isDark}>
+            日志设置
+          </Header>
           <Form.Group inline>
             <Form.Checkbox
               checked={inputs.LogConsumeEnabled === 'true'}
@@ -409,7 +422,9 @@ const OperationSetting = () => {
             清理历史日志
           </Form.Button>
           <Divider />
-          <Header as='h3'>数据看板</Header>
+          <Header as='h3' inverted={isDark}>
+            数据看板
+          </Header>
           <Form.Checkbox
             checked={inputs.DataExportEnabled === 'true'}
             label='启用数据看板（实验性）'
@@ -439,7 +454,9 @@ const OperationSetting = () => {
             />
           </Form.Group>
           <Divider />
-          <Header as='h3'>监控设置</Header>
+          <Header as='h3' inverted={isDark}>
+            监控设置
+          </Header>
           <Form.Group widths={3}>
             <Form.Input
               label='最长响应时间'
@@ -484,7 +501,9 @@ const OperationSetting = () => {
             保存监控设置
           </Form.Button>
           <Divider />
-          <Header as='h3'>额度设置</Header>
+          <Header as='h3' inverted={isDark}>
+            额度设置
+          </Header>
           <Form.Group widths={4}>
             <Form.Input
               label='新用户初始额度'
@@ -535,7 +554,9 @@ const OperationSetting = () => {
             保存额度设置
           </Form.Button>
           <Divider />
-          <Header as='h3'>倍率设置</Header>
+          <Header as='h3' inverted={isDark}>
+            倍率设置
+          </Header>
           <Form.Group widths='equal'>
             <Form.TextArea
               label='模型固定价格（一次调用消耗多少刀，优先级大于模型倍率）'
