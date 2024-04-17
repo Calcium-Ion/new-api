@@ -76,7 +76,10 @@ var DefaultModelRatio = map[string]float64{
 	"gemini-pro-vision":         1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
 	"gemini-1.0-pro-vision-001": 1,
 	"gemini-1.0-pro-001":        1,
-	"gemini-1.5-pro":            1,
+	"gemini-1.5-pro-latest":     1,
+	"gemini-1.0-pro-latest":     1,
+	"gemini-1.0-pro-vision-latest":   1,
+	"gemini-ultra":              1,
 	"chatglm_turbo":             0.3572, // ￥0.005 / 1k tokens
 	"chatglm_pro":               0.7143, // ￥0.01 / 1k tokens
 	"chatglm_std":               0.3572, // ￥0.005 / 1k tokens
