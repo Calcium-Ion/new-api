@@ -254,6 +254,19 @@ const ChannelsTable = () => {
           >
             编辑
           </Button>
+          <Popconfirm
+            title='确定是否要复制此渠道？'
+            content='复制渠道的所有信息'
+            okType={'danger'}
+            position={'left'}
+            onConfirm={async () => {
+              copySelectedChannel(record.id);
+            }}
+          >
+            <Button theme='light' type='primary' style={{ marginRight: 1 }}>
+              复制
+            </Button>
+          </Popconfirm>
         </div>
       ),
     },
@@ -338,6 +351,31 @@ const ChannelsTable = () => {
       showError(message);
     }
     setLoading(false);
+  };
+
+  const copySelectedChannel = async (id) => {
+    const channelToCopy = channels.find(channel => String(channel.id) === String(id));
+    console.log(channelToCopy)
+    channelToCopy.name += '_复制';
+    channelToCopy.created_time = null;
+    channelToCopy.balance = 0;
+    channelToCopy.used_quota = 0;
+    if (!channelToCopy) {
+        showError("渠道未找到，请刷新页面后重试。");
+        return;
+    }
+    try {
+        const newChannel = {...channelToCopy, id: undefined};
+        const response = await API.post('/api/channel/', newChannel);
+        if (response.data.success) {
+            showSuccess("渠道复制成功");
+            await refresh();
+        } else {
+            showError(response.data.message);
+        }
+    } catch (error) {
+        showError("渠道复制失败: " + error.message);
+    }
   };
 
   const refresh = async () => {
