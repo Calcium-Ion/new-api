@@ -179,7 +179,13 @@ func xunfeiHandler(c *gin.Context, textRequest dto.GeneralOpenAIRequest, appId s
 		case stop = <-stopChan:
 		}
 	}
-
+	if len(xunfeiResponse.Payload.Choices.Text) == 0 {
+		xunfeiResponse.Payload.Choices.Text = []XunfeiChatResponseTextItem{
+			{
+				Content: "",
+			},
+		}
+	}
 	xunfeiResponse.Payload.Choices.Text[0].Content = content
 
 	response := responseXunfei2OpenAI(&xunfeiResponse)
