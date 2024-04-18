@@ -10,11 +10,11 @@ import (
 	"log"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	"one-api/service"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -233,6 +233,12 @@ func GetAllMidjourney(c *gin.Context) {
 	if logs == nil {
 		logs = make([]*model.Midjourney, 0)
 	}
+	if constant.MjForwardUrlEnabled {
+		for i, midjourney := range logs {
+			midjourney.ImageUrl = common.ServerAddress + "/mj/image/" + midjourney.MjId
+			logs[i] = midjourney
+		}
+	}
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": "",
@@ -259,7 +265,7 @@ func GetUserMidjourney(c *gin.Context) {
 	if logs == nil {
 		logs = make([]*model.Midjourney, 0)
 	}
-	if !strings.Contains(common.ServerAddress, "localhost") {
+	if constant.MjForwardUrlEnabled {
 		for i, midjourney := range logs {
 			midjourney.ImageUrl = common.ServerAddress + "/mj/image/" + midjourney.MjId
 			logs[i] = midjourney

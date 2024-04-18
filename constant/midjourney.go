@@ -1,8 +1,8 @@
 package constant
 
 var MjNotifyEnabled = false
-
 var MjModeClearEnabled = false
+var MjForwardUrlEnabled = true
 
 const (
 	MjErrorUnknown = 5
