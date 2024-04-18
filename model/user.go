@@ -410,6 +410,11 @@ func ValidateAccessToken(token string) (user *User) {
 
 func GetUserQuota(id int) (quota int, err error) {
 	err = DB.Model(&User{}).Where("id = ?", id).Select("quota").Find(&quota).Error
+	if err != nil {
+		if common.RedisEnabled {
+			go CacheSetUserQuota(id, quota)
+		}
+	}
 	return quota, err
 }
 
