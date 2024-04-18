@@ -63,8 +63,8 @@ func InitOptionMap() {
 	common.OptionMap["CustomCallbackAddress"] = ""
 	common.OptionMap["EpayId"] = ""
 	common.OptionMap["EpayKey"] = ""
-	common.OptionMap["Price"] = strconv.FormatFloat(common.Price, 'f', -1, 64)
-	common.OptionMap["MinTopUp"] = strconv.Itoa(common.MinTopUp)
+	common.OptionMap["Price"] = strconv.FormatFloat(constant.Price, 'f', -1, 64)
+	common.OptionMap["MinTopUp"] = strconv.Itoa(constant.MinTopUp)
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["GitHubClientId"] = ""
 	common.OptionMap["GitHubClientSecret"] = ""
@@ -227,17 +227,17 @@ func updateOptionMap(key string, value string) (err error) {
 	case "ServerAddress":
 		common.ServerAddress = value
 	case "PayAddress":
-		common.PayAddress = value
+		constant.PayAddress = value
 	case "CustomCallbackAddress":
-		common.CustomCallbackAddress = value
+		constant.CustomCallbackAddress = value
 	case "EpayId":
-		common.EpayId = value
+		constant.EpayId = value
 	case "EpayKey":
-		common.EpayKey = value
+		constant.EpayKey = value
 	case "Price":
-		common.Price, _ = strconv.ParseFloat(value, 64)
+		constant.Price, _ = strconv.ParseFloat(value, 64)
 	case "MinTopUp":
-		common.MinTopUp, _ = strconv.Atoi(value)
+		constant.MinTopUp, _ = strconv.Atoi(value)
 	case "TopupGroupRatio":
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":

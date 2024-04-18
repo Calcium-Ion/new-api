@@ -312,7 +312,9 @@ const SystemSetting = () => {
     <Grid columns={1}>
       <Grid.Column>
         <Form loading={loading} inverted={isDark}>
-          <Header as='h3' inverted={isDark}>通用设置</Header>
+          <Header as='h3' inverted={isDark}>
+            通用设置
+          </Header>
           <Form.Group widths='equal'>
             <Form.Input
               label='服务器地址'
@@ -346,7 +348,7 @@ const SystemSetting = () => {
             />
             <Form.Input
               label='易支付商户密钥'
-              placeholder='例如：dejhfueqhujasjmndbjkqaw'
+              placeholder='敏感信息不会发送到前端显示'
               value={inputs.EpayKey}
               name='EpayKey'
               onChange={handleInputChange}
@@ -390,7 +392,9 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitPayAddress}>更新支付设置</Form.Button>
           <Divider />
-          <Header as='h3' inverted={isDark}>配置登录注册</Header>
+          <Header as='h3' inverted={isDark}>
+            配置登录注册
+          </Header>
           <Form.Group inline>
             <Form.Checkbox
               checked={inputs.PasswordLoginEnabled === 'true'}
@@ -684,7 +688,9 @@ const SystemSetting = () => {
             保存 WeChat Server 设置
           </Form.Button>
           <Divider />
-          <Header as='h3' inverted={isDark}>配置 Telegram 登录</Header>
+          <Header as='h3' inverted={isDark}>
+            配置 Telegram 登录
+          </Header>
           <Form.Group inline>
             <Form.Input
               label='Telegram Bot Token'

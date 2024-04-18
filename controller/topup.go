@@ -5,6 +5,7 @@ import (
 	"github.com/Calcium-Ion/go-epay/epay"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
+	"one-api/constant"
 
 	"log"
 	"net/url"
@@ -28,13 +29,13 @@ type AmountRequest struct {
 }
 
 func GetEpayClient() *epay.Client {
-	if common.PayAddress == "" || common.EpayId == "" || common.EpayKey == "" {
+	if constant.PayAddress == "" || constant.EpayId == "" || constant.EpayKey == "" {
 		return nil
 	}
 	withUrl, err := epay.NewClient(&epay.Config{
-		PartnerID: common.EpayId,
-		Key:       common.EpayKey,
-	}, common.PayAddress)
+		PartnerID: constant.EpayId,
+		Key:       constant.EpayKey,
+	}, constant.PayAddress)
 	if err != nil {
 		return nil
 	}
@@ -50,12 +51,12 @@ func getPayMoney(amount float64, user model.User) float64 {
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
 	}
-	payMoney := amount * common.Price * topupGroupRatio
+	payMoney := amount * constant.Price * topupGroupRatio
 	return payMoney
 }
 
 func getMinTopup() int {
-	minTopup := common.MinTopUp
+	minTopup := constant.MinTopUp
 	if !common.DisplayInCurrencyEnabled {
 		minTopup = minTopup * int(common.QuotaPerUnit)
 	}
