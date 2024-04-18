@@ -72,6 +72,7 @@ const Detail = (props) => {
     stack: true,
     legends: {
       visible: true,
+      selectMode: 'single',
     },
     title: {
       visible: true,
@@ -216,6 +217,8 @@ const Detail = (props) => {
       } else if (dataExportDefaultTime === 'week') {
         timeGranularity = 604800;
       }
+      // sort created_at
+      data.sort((a, b) => a.created_at - b.created_at);
       data.forEach((item) => {
         item['created_at'] =
           Math.floor(item['created_at'] / timeGranularity) * timeGranularity;
