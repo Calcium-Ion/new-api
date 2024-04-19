@@ -216,7 +216,8 @@ func GetAllUsers(c *gin.Context) {
 
 func SearchUsers(c *gin.Context) {
 	keyword := c.Query("keyword")
-	users, err := model.SearchUsers(keyword)
+	group := c.Query("group")
+	users, err := model.SearchUsers(keyword, group)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

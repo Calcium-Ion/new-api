@@ -73,27 +73,36 @@ func GetAllUsers(startIdx int, num int) (users []*User, err error) {
 	return users, err
 }
 
-func SearchUsers(keyword string) ([]*User, error) {
-	var users []*User
-	var err error
+func SearchUsers(keyword string, group string) ([]*User, error) {
+    var users []*User
+    var err error
 
-	// 尝试将关键字转换为整数ID
-	keywordInt, err := strconv.Atoi(keyword)
-	if err == nil {
-		// 如果转换成功，按照ID搜索用户
-		err = DB.Unscoped().Omit("password").Where("id = ?", keywordInt).Find(&users).Error
-		if err != nil || len(users) > 0 {
-			// 如果依据ID找到用户或者发生错误，返回结果或错误
-			return users, err
-		}
-	}
+    // 尝试将关键字转换为整数ID
+    keywordInt, err := strconv.Atoi(keyword)
+    if err == nil {
+        // 如果转换成功，按照ID和可选的组别搜索用户
+        query := DB.Unscoped().Omit("password").Where("`id` = ?", keywordInt)
+        if group != "" {
+            query = query.Where("`group` = ?", group)  // 使用反引号包围group
+        }
+        err = query.Find(&users).Error
+        if err != nil || len(users) > 0 {
+            return users, err
+        }
+    }
 
-	// 如果ID转换失败或者没有找到用户，依据其他字段进行模糊搜索
-	err = DB.Unscoped().Omit("password").
-		Where("username LIKE ? OR email LIKE ? OR display_name LIKE ?", keyword+"%", keyword+"%", keyword+"%").
-		Find(&users).Error
+    err = nil
 
-	return users, err
+    query := DB.Unscoped().Omit("password")
+    likeCondition := "`username` LIKE ? OR `email` LIKE ? OR `display_name` LIKE ?"
+    if group != "" {
+        query = query.Where("("+likeCondition+") AND `group` = ?", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%", group)
+    } else {
+        query = query.Where(likeCondition, "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
+    }
+    err = query.Find(&users).Error
+
+    return users, err
 }
 
 func GetUserById(id int, selectAll bool) (*User, error) {
