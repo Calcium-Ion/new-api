@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"one-api/common"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -191,6 +192,13 @@ func (user *User) Insert(inviterId int) error {
 			return err
 		}
 	}
+	// 在这里添加对用户名的正则表达式检查
+	regExp := regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+	if !regExp.MatchString(user.Username) {
+		return errors.New("用户名包含非法字符，仅支持字母、数字、下划线(_)和横杠(-)")
+	}
+
+	// 用户名通过检查后，继续其他注册逻辑
 	user.Quota = common.QuotaForNewUser
 	user.AccessToken = common.GetUUID()
 	user.AffCode = common.GetRandomString(4)
@@ -279,6 +287,10 @@ func (user *User) ValidateAndFill() (err error) {
 	password := user.Password
 	if user.Username == "" || password == "" {
 		return errors.New("用户名或密码为空")
+	}
+	// 检查是否使用邮箱作为用户名
+	if strings.Contains(user.Username, "@") {
+		return errors.New("本站仅支持使用用户名登录，不支持使用邮箱登录")
 	}
 	DB.Where(User{Username: user.Username}).First(user)
 	okay := common.ValidatePasswordAndHash(password, user.Password)

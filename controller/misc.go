@@ -9,6 +9,7 @@ import (
 	"one-api/model"
 	"strings"
 
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -133,7 +134,7 @@ func SendEmailVerification(c *gin.Context) {
 	if common.EmailDomainRestrictionEnabled {
 		allowed := false
 		for _, domain := range common.EmailDomainWhitelist {
-			if domainPart == domain {
+			if strings.HasSuffix(domainPart, "." + domain) {
 				allowed = true
 				break
 			}
@@ -141,7 +142,7 @@ func SendEmailVerification(c *gin.Context) {
 		if !allowed {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "The administrator has enabled the email domain name whitelist, and your email address is not allowed due to special symbols or it's not in the whitelist.",
+				"message": "管理员启用了邮箱域名白名单，您的邮箱地址的域名不在白名单中",
 			})
 			return
 		}
