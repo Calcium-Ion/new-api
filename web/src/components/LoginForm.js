@@ -241,16 +241,25 @@ const LoginForm = () => {
                       ) : (
                         <></>
                       )}
-
-                      {status.telegram_oauth ? (
-                        <TelegramLoginButton
-                          dataOnauth={onTelegramLoginClicked}
-                          botName={status.telegram_bot_name}
-                        />
-                      ) : (
-                        <></>
-                      )}
                     </div>
+                    {status.telegram_oauth ? (
+                      <>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            marginTop: 5,
+                          }}
+                        >
+                          <TelegramLoginButton
+                            dataOnauth={onTelegramLoginClicked}
+                            botName={status.telegram_bot_name}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <></>
+                    )}
                   </>
                 ) : (
                   <></>
