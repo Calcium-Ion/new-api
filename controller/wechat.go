@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/model"
-	"strconv"
+	// "strconv"
 	"time"
 )
 
@@ -50,65 +50,50 @@ func getWeChatIdByCode(code string) (string, error) {
 }
 
 func WeChatAuth(c *gin.Context) {
-	if !common.WeChatAuthEnabled {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "管理员未开启通过微信登录以及注册",
-			"success": false,
-		})
-		return
-	}
-	code := c.Query("code")
-	wechatId, err := getWeChatIdByCode(code)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"message": err.Error(),
-			"success": false,
-		})
-		return
-	}
-	user := model.User{
-		WeChatId: wechatId,
-	}
-	if model.IsWeChatIdAlreadyTaken(wechatId) {
-		err := user.FillUserByWeChatId()
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
-		}
-	} else {
-		if common.RegisterEnabled {
-			user.Username = "wechat_" + strconv.Itoa(model.GetMaxUserId()+1)
-			user.DisplayName = "WeChat User"
-			user.Role = common.RoleCommonUser
-			user.Status = common.UserStatusEnabled
+    if !common.WeChatAuthEnabled {
+        c.JSON(http.StatusOK, gin.H{
+            "message": "管理员未开启通过微信登录以及注册",
+            "success": false,
+        })
+        return
+    }
+    code := c.Query("code")
+    wechatId, err := getWeChatIdByCode(code)
+    if err != nil {
+        c.JSON(http.StatusOK, gin.H{
+            "message": err.Error(),
+            "success": false,
+        })
+        return
+    }
+    user := model.User{
+        WeChatId: wechatId,
+    }
+    if model.IsWeChatIdAlreadyTaken(wechatId) {
+        err := user.FillUserByWeChatId()
+        if err != nil {
+            c.JSON(http.StatusOK, gin.H{
+                "success": false,
+                "message": err.Error(),
+            })
+            return
+        }
+    } else {
+        c.JSON(http.StatusOK, gin.H{
+            "success": false,
+            "message": "管理员已关闭微信的新用户注册功能。现在，只有已经注册的用户可以使用微信进行登录和绑定。如果您想要注册新的微信账号，请使用您学校的邮箱（以.edu.cn结尾）进行注册。",
+        })
+        return
+    }
 
-			if err := user.Insert(0); err != nil {
-				c.JSON(http.StatusOK, gin.H{
-					"success": false,
-					"message": err.Error(),
-				})
-				return
-			}
-		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "管理员关闭了新用户注册",
-			})
-			return
-		}
-	}
-
-	if user.Status != common.UserStatusEnabled {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "用户已被封禁",
-			"success": false,
-		})
-		return
-	}
-	setupLogin(&user, c)
+    if user.Status != common.UserStatusEnabled {
+        c.JSON(http.StatusOK, gin.H{
+            "message": "用户已被封禁",
+            "success": false,
+        })
+        return
+    }
+    setupLogin(&user, c)
 }
 
 func WeChatBind(c *gin.Context) {
