@@ -15,6 +15,7 @@ import (
 	"one-api/relay/constant"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
+	"strings"
 )
 
 func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
@@ -42,7 +43,7 @@ func Relay(c *gin.Context) {
 	group := c.GetString("group")
 	originalModel := c.GetString("original_model")
 	openaiErr := relayHandler(c, relayMode)
-	retryLogStr := fmt.Sprintf("重试：%d", channelId)
+	useChannel := []int{channelId}
 	if openaiErr != nil {
 		go processChannelError(c, channelId, openaiErr)
 	} else {
@@ -55,7 +56,7 @@ func Relay(c *gin.Context) {
 			break
 		}
 		channelId = channel.Id
-		retryLogStr += fmt.Sprintf("->%d", channel.Id)
+		useChannel = append(useChannel, channelId)
 		common.LogInfo(c.Request.Context(), fmt.Sprintf("using channel #%d to retry (remain times %d)", channel.Id, i))
 		middleware.SetupContextForSelectedChannel(c, channel, originalModel)
 
@@ -66,7 +67,10 @@ func Relay(c *gin.Context) {
 			go processChannelError(c, channelId, openaiErr)
 		}
 	}
-	common.LogInfo(c.Request.Context(), retryLogStr)
+	if len(useChannel) > 1 {
+		retryLogStr := fmt.Sprintf("重试：%s", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(useChannel)), "->"), "[]"))
+		common.LogInfo(c.Request.Context(), retryLogStr)
+	}
 
 	if openaiErr != nil {
 		if openaiErr.StatusCode == http.StatusTooManyRequests {
