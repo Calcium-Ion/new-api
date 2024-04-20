@@ -154,6 +154,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		requestBody = bytes.NewBuffer(jsonData)
 	}
 
+	statusCodeMappingStr := c.GetString("status_code_mapping")
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
@@ -162,12 +163,17 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	if resp.StatusCode != http.StatusOK {
 		returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
-		return service.RelayErrorHandler(resp)
+		openaiErr := service.RelayErrorHandler(resp)
+		// reset status code 重置状态码
+		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
+		return openaiErr
 	}
 
 	usage, openaiErr := adaptor.DoResponse(c, resp, relayInfo)
 	if openaiErr != nil {
 		returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
+		// reset status code 重置状态码
+		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 		return openaiErr
 	}
 	postConsumeQuota(c, relayInfo, *textRequest, usage, ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, modelPrice)

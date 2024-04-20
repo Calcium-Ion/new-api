@@ -29,6 +29,10 @@ const MODEL_MAPPING_EXAMPLE = {
   'gpt-4-32k-0314': 'gpt-4-32k',
 };
 
+const STATUS_CODE_MAPPING_EXAMPLE = {
+  400: '500',
+};
+
 function type2secretPrompt(type) {
   // inputs.type === 15 ? '按照如下格式输入：APIKey|SecretKey' : (inputs.type === 18 ? '按照如下格式输入：APPID|APISecret|APIKey' : '请输入渠道对应的鉴权密钥')
   switch (type) {
@@ -61,6 +65,7 @@ const EditChannel = (props) => {
     base_url: '',
     other: '',
     model_mapping: '',
+    status_code_mapping: '',
     models: [],
     auto_ban: 1,
     test_model: '',
@@ -624,6 +629,36 @@ const EditChannel = (props) => {
               handleInputChange(
                 'model_mapping',
                 JSON.stringify(MODEL_MAPPING_EXAMPLE, null, 2),
+              );
+            }}
+          >
+            填入模板
+          </Typography.Text>
+          <div style={{ marginTop: 10 }}>
+            <Typography.Text strong>
+              状态码复写（仅影响本地判断，不修改返回到上游的状态码）：
+            </Typography.Text>
+          </div>
+          <TextArea
+            placeholder={`此项可选，用于复写返回的状态码，比如将claude渠道的400错误复写为500（用于重试），请勿滥用该功能，例如：\n${JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2)}`}
+            name='status_code_mapping'
+            onChange={(value) => {
+              handleInputChange('status_code_mapping', value);
+            }}
+            autosize
+            value={inputs.status_code_mapping}
+            autoComplete='new-password'
+          />
+          <Typography.Text
+            style={{
+              color: 'rgba(var(--semi-blue-5), 1)',
+              userSelect: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              handleInputChange(
+                'status_code_mapping',
+                JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2),
               );
             }}
           >
