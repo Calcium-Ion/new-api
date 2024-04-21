@@ -141,7 +141,14 @@ const EditChannel = (props) => {
           localModels = ['hunyuan'];
           break;
         case 24:
-          localModels = ['gemini-pro', 'gemini-pro-vision'];
+          localModels = [
+            'gemini-1.0-pro-001',
+            'gemini-1.0-pro-vision-001',
+            'gemini-1.5-pro',
+            'gemini-1.5-pro-latest',
+            'gemini-pro',
+            'gemini-pro-vision',
+          ];
           break;
         case 25:
           localModels = [
