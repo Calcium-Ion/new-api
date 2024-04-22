@@ -12,23 +12,24 @@ import (
 // TODO: when a new api is enabled, check the pricing here
 // 1 === $0.002 / 1K tokens
 // 1 === ￥0.014 / 1k tokens
+
 var DefaultModelRatio = map[string]float64{
 	//"midjourney":                50,
-	"gpt-4-gizmo-*":                15,
-	"gpt-4":                        15,
-	"gpt-4-0314":                   15,
-	"gpt-4-0613":                   15,
-	"gpt-4-32k":                    30,
-	"gpt-4-32k-0314":               30,
-	"gpt-4-32k-0613":               30,
-	"gpt-4-1106-preview":           5,    // $0.01 / 1K tokens
-	"gpt-4-0125-preview":           5,    // $0.01 / 1K tokens
-	"gpt-4-turbo-preview":          5,    // $0.01 / 1K tokens
-	"gpt-4-vision-preview":         5,    // $0.01 / 1K tokens
-	"gpt-4-1106-vision-preview":    5,    // $0.01 / 1K tokens
-	"gpt-4-turbo":                  5,    // $0.01 / 1K tokens
-	"gpt-3.5-turbo":                0.25, // $0.0015 / 1K tokens
-	"gpt-3.5-turbo-0301":           0.75,
+	"gpt-4-gizmo-*": 15,
+	"gpt-4":         15,
+	//"gpt-4-0314":                   15, //deprecated
+	"gpt-4-0613": 15,
+	"gpt-4-32k":  30,
+	//"gpt-4-32k-0314":               30, //deprecated
+	"gpt-4-32k-0613":            30,
+	"gpt-4-1106-preview":        5,    // $0.01 / 1K tokens
+	"gpt-4-0125-preview":        5,    // $0.01 / 1K tokens
+	"gpt-4-turbo-preview":       5,    // $0.01 / 1K tokens
+	"gpt-4-vision-preview":      5,    // $0.01 / 1K tokens
+	"gpt-4-1106-vision-preview": 5,    // $0.01 / 1K tokens
+	"gpt-4-turbo":               5,    // $0.01 / 1K tokens
+	"gpt-3.5-turbo":             0.25, // $0.0015 / 1K tokens
+	//"gpt-3.5-turbo-0301":           0.75, //deprecated
 	"gpt-3.5-turbo-0613":           0.75,
 	"gpt-3.5-turbo-16k":            1.5, // $0.003 / 1K tokens
 	"gpt-3.5-turbo-16k-0613":       1.5,

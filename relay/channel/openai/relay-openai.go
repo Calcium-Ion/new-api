@@ -68,6 +68,12 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 					if err == nil {
 						for _, choice := range streamResponse.Choices {
 							responseTextBuilder.WriteString(choice.Delta.Content)
+							if choice.Delta.ToolCalls != nil {
+								for _, tool := range choice.Delta.ToolCalls {
+									responseTextBuilder.WriteString(tool.Function.Name)
+									responseTextBuilder.WriteString(tool.Function.Arguments)
+								}
+							}
 						}
 					}
 				}
@@ -75,6 +81,12 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 				for _, streamResponse := range streamResponses {
 					for _, choice := range streamResponse.Choices {
 						responseTextBuilder.WriteString(choice.Delta.Content)
+						if choice.Delta.ToolCalls != nil {
+							for _, tool := range choice.Delta.ToolCalls {
+								responseTextBuilder.WriteString(tool.Function.Name)
+								responseTextBuilder.WriteString(tool.Function.Arguments)
+							}
+						}
 					}
 				}
 			}
