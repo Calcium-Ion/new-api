@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"one-api/dto"
 	"one-api/service"
+	"strings"
 )
 
 func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
@@ -41,7 +42,7 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
 func requestOpenAI2Embeddings(request dto.GeneralOpenAIRequest) *OllamaEmbeddingRequest {
 	return &OllamaEmbeddingRequest{
 		Model:  request.Model,
-		Prompt: request.Input,
+		Prompt: strings.Join(request.ParseInput(), " "),
 	}
 }
 
