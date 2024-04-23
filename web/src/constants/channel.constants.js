@@ -26,7 +26,7 @@ export const CHANNEL_OPTIONS = [
     key: 33,
     text: 'AWS Claude',
     value: 33,
-    color: 'black',
+    color: 'indigo',
     label: 'AWS Claude',
   },
   {

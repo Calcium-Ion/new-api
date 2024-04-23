@@ -28,17 +28,17 @@ func stopReasonClaude2OpenAI(reason string) string {
 
 func RequestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeRequest {
 	claudeRequest := ClaudeRequest{
-		Model:             textRequest.Model,
-		Prompt:            "",
-		MaxTokensToSample: textRequest.MaxTokens,
-		StopSequences:     nil,
-		Temperature:       textRequest.Temperature,
-		TopP:              textRequest.TopP,
-		TopK:              textRequest.TopK,
-		Stream:            textRequest.Stream,
+		Model:         textRequest.Model,
+		Prompt:        "",
+		MaxTokens:     textRequest.MaxTokens,
+		StopSequences: nil,
+		Temperature:   textRequest.Temperature,
+		TopP:          textRequest.TopP,
+		TopK:          textRequest.TopK,
+		Stream:        textRequest.Stream,
 	}
-	if claudeRequest.MaxTokensToSample == 0 {
-		claudeRequest.MaxTokensToSample = 1000000
+	if claudeRequest.MaxTokens == 0 {
+		claudeRequest.MaxTokens = 4096
 	}
 	prompt := ""
 	for _, message := range textRequest.Messages {
