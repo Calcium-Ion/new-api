@@ -70,8 +70,39 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	if claudeRequest.MaxTokens == 0 {
 		claudeRequest.MaxTokens = 4096
 	}
+	formatMessages := make([]dto.Message, 0)
+	var lastMessage *dto.Message
+	for i, message := range textRequest.Messages {
+		if message.Role == "system" {
+			if i != 0 {
+				message.Role = "user"
+			}
+		}
+		if message.Role == "" {
+			message.Role = "user"
+		}
+		fmtMessage := dto.Message{
+			Role:    message.Role,
+			Content: message.Content,
+		}
+		if lastMessage != nil && lastMessage.Role == message.Role {
+			if lastMessage.IsStringContent() && message.IsStringContent() {
+				content, _ := json.Marshal(strings.Trim(fmt.Sprintf("%s %s", lastMessage.StringContent(), message.StringContent()), "\""))
+				fmtMessage.Content = content
+				// delete last message
+				formatMessages = formatMessages[:len(formatMessages)-1]
+			}
+		}
+		if fmtMessage.Content == nil {
+			content, _ := json.Marshal("...")
+			fmtMessage.Content = content
+		}
+		formatMessages = append(formatMessages, fmtMessage)
+		lastMessage = &message
+	}
+
 	claudeMessages := make([]ClaudeMessage, 0)
-	for _, message := range textRequest.Messages {
+	for _, message := range formatMessages {
 		if message.Role == "system" {
 			claudeRequest.System = message.StringContent()
 		} else {
