@@ -211,6 +211,23 @@ func CountTokenInput(input any, model string, check bool) (int, error, bool) {
 	return CountTokenInput(fmt.Sprintf("%v", input), model, check)
 }
 
+func CountTokenStreamChoices(messages []dto.ChatCompletionsStreamResponseChoice, model string) int {
+	tokens := 0
+	for _, message := range messages {
+		tkm, _, _ := CountTokenInput(message.Delta.Content, model, false)
+		tokens += tkm
+		if message.Delta.ToolCalls != nil {
+			for _, tool := range message.Delta.ToolCalls {
+				tkm, _, _ := CountTokenInput(tool.Function.Name, model, false)
+				tokens += tkm
+				tkm, _, _ = CountTokenInput(tool.Function.Arguments, model, false)
+				tokens += tkm
+			}
+		}
+	}
+	return tokens
+}
+
 func CountAudioToken(text string, model string, check bool) (int, error, bool) {
 	if strings.HasPrefix(model, "tts") {
 		contains, words := SensitiveWordContains(text)
