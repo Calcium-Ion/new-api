@@ -159,14 +159,16 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
 	}
-	relayInfo.IsStream = relayInfo.IsStream || strings.HasPrefix(resp.Header.Get("Content-Type"), "text/event-stream")
 
-	if resp.StatusCode != http.StatusOK {
-		returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
-		openaiErr := service.RelayErrorHandler(resp)
-		// reset status code 重置状态码
-		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
-		return openaiErr
+	if resp != nil {
+		relayInfo.IsStream = relayInfo.IsStream || strings.HasPrefix(resp.Header.Get("Content-Type"), "text/event-stream")
+		if resp.StatusCode != http.StatusOK {
+			returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
+			openaiErr := service.RelayErrorHandler(resp)
+			// reset status code 重置状态码
+			service.ResetStatusCode(openaiErr, statusCodeMappingStr)
+			return openaiErr
+		}
 	}
 
 	usage, openaiErr := adaptor.DoResponse(c, resp, relayInfo)

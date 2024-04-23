@@ -1,13 +1,12 @@
-package claude
+package aws
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"one-api/dto"
-	"one-api/relay/channel"
+	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
 	"strings"
 )
@@ -30,21 +29,10 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIReq
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	if a.RequestMode == RequestModeMessage {
-		return fmt.Sprintf("%s/v1/messages", info.BaseUrl), nil
-	} else {
-		return fmt.Sprintf("%s/v1/complete", info.BaseUrl), nil
-	}
+	return "", nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
-	channel.SetupApiRequestHeader(info, c, req)
-	req.Header.Set("x-api-key", info.ApiKey)
-	anthropicVersion := c.Request.Header.Get("anthropic-version")
-	if anthropicVersion == "" {
-		anthropicVersion = "2023-06-01"
-	}
-	req.Header.Set("anthropic-version", anthropicVersion)
 	return nil
 }
 
@@ -52,28 +40,38 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
+
+	var claudeReq *claude.ClaudeRequest
+	var err error
 	if a.RequestMode == RequestModeCompletion {
-		return RequestOpenAI2ClaudeComplete(*request), nil
+		claudeReq = claude.RequestOpenAI2ClaudeComplete(*request)
 	} else {
-		return RequestOpenAI2ClaudeMessage(*request)
+		claudeReq, err = claude.RequestOpenAI2ClaudeMessage(*request)
 	}
+	c.Set("request_model", request.Model)
+	c.Set("converted_request", claudeReq)
+	return claudeReq, err
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
-	return channel.DoApiRequest(a, c, info, requestBody)
+	return nil, nil
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
-		err, usage = claudeStreamHandler(a.RequestMode, info.UpstreamModelName, info.PromptTokens, c, resp)
+		err, usage = awsStreamHandler(c, info, a.RequestMode)
 	} else {
-		err, usage = claudeHandler(a.RequestMode, c, resp, info.PromptTokens, info.UpstreamModelName)
+		err, usage = awsHandler(c, info, a.RequestMode)
 	}
 	return
 }
 
-func (a *Adaptor) GetModelList() []string {
-	return ModelList
+func (a *Adaptor) GetModelList() (models []string) {
+	for n := range awsModelIDMap {
+		models = append(models, n)
+	}
+
+	return
 }
 
 func (a *Adaptor) GetChannelName() string {

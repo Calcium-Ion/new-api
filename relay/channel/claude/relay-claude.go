@@ -26,7 +26,7 @@ func stopReasonClaude2OpenAI(reason string) string {
 	}
 }
 
-func requestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeRequest {
+func RequestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeRequest {
 	claudeRequest := ClaudeRequest{
 		Model:             textRequest.Model,
 		Prompt:            "",
@@ -57,7 +57,7 @@ func requestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeR
 	return &claudeRequest
 }
 
-func requestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeRequest, error) {
+func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeRequest, error) {
 	claudeRequest := ClaudeRequest{
 		Model:         textRequest.Model,
 		MaxTokens:     textRequest.MaxTokens,
@@ -122,7 +122,7 @@ func requestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	return &claudeRequest, nil
 }
 
-func streamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*dto.ChatCompletionsStreamResponse, *ClaudeUsage) {
+func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*dto.ChatCompletionsStreamResponse, *ClaudeUsage) {
 	var response dto.ChatCompletionsStreamResponse
 	var claudeUsage *ClaudeUsage
 	response.Object = "chat.completion.chunk"
@@ -149,6 +149,8 @@ func streamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 				choice.FinishReason = &finishReason
 			}
 			claudeUsage = &claudeResponse.Usage
+		} else if claudeResponse.Type == "message_stop" {
+			return nil, nil
 		}
 	}
 	if claudeUsage == nil {
@@ -158,7 +160,7 @@ func streamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 	return &response, claudeUsage
 }
 
-func responseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.OpenAITextResponse {
+func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.OpenAITextResponse {
 	choices := make([]dto.OpenAITextResponseChoice, 0)
 	fullTextResponse := dto.OpenAITextResponse{
 		Id:      fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
@@ -242,7 +244,10 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 				return true
 			}
 
-			response, claudeUsage := streamResponseClaude2OpenAI(requestMode, &claudeResponse)
+			response, claudeUsage := StreamResponseClaude2OpenAI(requestMode, &claudeResponse)
+			if response == nil {
+				return true
+			}
 			if requestMode == RequestModeCompletion {
 				responseText += claudeResponse.Completion
 				responseId = response.Id
@@ -317,7 +322,7 @@ func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptT
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
-	fullTextResponse := responseClaude2OpenAI(requestMode, &claudeResponse)
+	fullTextResponse := ResponseClaude2OpenAI(requestMode, &claudeResponse)
 	completionTokens, err, _ := service.CountTokenText(claudeResponse.Completion, model, false)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "count_token_text_failed", http.StatusInternalServerError), nil

@@ -18,6 +18,7 @@ const (
 	APITypeZhipu_v4
 	APITypeOllama
 	APITypePerplexity
+	APITypeAws
 
 	APITypeDummy // this one is only for count, do not add any channel after this
 )
@@ -49,6 +50,8 @@ func ChannelType2APIType(channelType int) int {
 		apiType = APITypeOllama
 	case common.ChannelTypePerplexity:
 		apiType = APITypePerplexity
+	case common.ChannelTypeAws:
+		apiType = APITypeAws
 	}
 	return apiType
 }

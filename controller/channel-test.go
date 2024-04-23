@@ -86,7 +86,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	if err != nil {
 		return err, nil
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp != nil && resp.StatusCode != http.StatusOK {
 		err := relaycommon.RelayErrorHandler(resp)
 		return fmt.Errorf("status code %d: %s", resp.StatusCode, err.Error.Message), &err.Error
 	}
