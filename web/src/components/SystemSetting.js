@@ -189,7 +189,7 @@ const SystemSetting = () => {
     if (inputs.EpayId !== '') {
       await updateOption('EpayId', inputs.EpayId);
     }
-    if (inputs.EpayKey !== '') {
+    if (inputs.EpayKey !== undefined && inputs.EpayKey !== '') {
       await updateOption('EpayKey', inputs.EpayKey);
     }
     await updateOption('Price', '' + inputs.Price);
