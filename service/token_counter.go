@@ -116,6 +116,41 @@ func getImageToken(imageUrl *dto.MessageImageUrl) (int, error) {
 	return tiles*170 + 85, nil
 }
 
+func CountTokenChatRequest(request dto.GeneralOpenAIRequest, model string, checkSensitive bool) (int, error, bool) {
+	tkm := 0
+	msgTokens, err, b := CountTokenMessages(request.Messages, model, checkSensitive)
+	if err != nil {
+		return 0, err, b
+	}
+	tkm += msgTokens
+	if request.Tools != nil {
+		toolsData, _ := json.Marshal(request.Tools)
+		var openaiTools []dto.OpenAITools
+		err := json.Unmarshal(toolsData, &openaiTools)
+		if err != nil {
+			return 0, errors.New(fmt.Sprintf("count tools token fail: %s", err.Error())), false
+		}
+		countStr := ""
+		for _, tool := range openaiTools {
+			countStr = tool.Function.Name
+			if tool.Function.Description != "" {
+				countStr += tool.Function.Description
+			}
+			if tool.Function.Parameters != nil {
+				countStr += fmt.Sprintf("%v", tool.Function.Parameters)
+			}
+		}
+		toolTokens, err, _ := CountTokenInput(countStr, model, false)
+		if err != nil {
+			return 0, err, false
+		}
+		tkm += 8
+		tkm += toolTokens
+	}
+
+	return tkm, nil, false
+}
+
 func CountTokenMessages(messages []dto.Message, model string, checkSensitive bool) (int, error, bool) {
 	//recover when panic
 	tokenEncoder := getTokenEncoder(model)
