@@ -109,6 +109,10 @@ func shouldRetry(c *gin.Context, channelId int, openaiErr *dto.OpenAIErrorWithSt
 	if openaiErr.StatusCode == http.StatusBadRequest {
 		return false
 	}
+	if openaiErr.StatusCode == 408 {
+		// azure处理超时不重试
+		return false
+	}
 	if openaiErr.LocalError {
 		return false
 	}
