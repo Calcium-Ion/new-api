@@ -22,6 +22,7 @@ import {
   Checkbox,
   Banner,
 } from '@douyinfe/semi-ui';
+import { Divider } from 'semantic-ui-react';
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo-0301': 'gpt-3.5-turbo',
@@ -44,6 +45,8 @@ function type2secretPrompt(type) {
       return '按照如下格式输入：APIKey-AppId，例如：fastgpt-0sp2gtvfdgyi4k30jwlgwf1i-64f335d84283f05518e9e041';
     case 23:
       return '按照如下格式输入：AppId|SecretId|SecretKey';
+    case 33:
+      return '按照如下格式输入：Ak|Sk|Region';
     default:
       return '请输入渠道对应的鉴权密钥';
   }
@@ -62,6 +65,7 @@ const EditChannel = (props) => {
     type: 1,
     key: '',
     openai_organization: '',
+    max_input_tokens: 0,
     base_url: '',
     other: '',
     model_mapping: '',
@@ -86,6 +90,7 @@ const EditChannel = (props) => {
     if (name === 'type' && inputs.models.length === 0) {
       let localModels = [];
       switch (value) {
+        case 33:
         case 14:
           localModels = [
             'claude-instant-1.2',
@@ -642,36 +647,6 @@ const EditChannel = (props) => {
             填入模板
           </Typography.Text>
           <div style={{ marginTop: 10 }}>
-            <Typography.Text strong>
-              状态码复写（仅影响本地判断，不修改返回到上游的状态码）：
-            </Typography.Text>
-          </div>
-          <TextArea
-            placeholder={`此项可选，用于复写返回的状态码，比如将claude渠道的400错误复写为500（用于重试），请勿滥用该功能，例如：\n${JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2)}`}
-            name='status_code_mapping'
-            onChange={(value) => {
-              handleInputChange('status_code_mapping', value);
-            }}
-            autosize
-            value={inputs.status_code_mapping}
-            autoComplete='new-password'
-          />
-          <Typography.Text
-            style={{
-              color: 'rgba(var(--semi-blue-5), 1)',
-              userSelect: 'none',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              handleInputChange(
-                'status_code_mapping',
-                JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2),
-              );
-            }}
-          >
-            填入模板
-          </Typography.Text>
-          <div style={{ marginTop: 10 }}>
             <Typography.Text strong>密钥：</Typography.Text>
           </div>
           {batch ? (
@@ -700,18 +675,22 @@ const EditChannel = (props) => {
               autoComplete='new-password'
             />
           )}
-          <div style={{ marginTop: 10 }}>
-            <Typography.Text strong>组织：</Typography.Text>
-          </div>
-          <Input
-            label='组织，可选，不填则为默认组织'
-            name='openai_organization'
-            placeholder='请输入组织org-xxx'
-            onChange={(value) => {
-              handleInputChange('openai_organization', value);
-            }}
-            value={inputs.openai_organization}
-          />
+          {inputs.type === 1 && (
+            <>
+              <div style={{ marginTop: 10 }}>
+                <Typography.Text strong>组织：</Typography.Text>
+              </div>
+              <Input
+                label='组织，可选，不填则为默认组织'
+                name='openai_organization'
+                placeholder='请输入组织org-xxx'
+                onChange={(value) => {
+                  handleInputChange('openai_organization', value);
+                }}
+                value={inputs.openai_organization}
+              />
+            </>
+          )}
           <div style={{ marginTop: 10 }}>
             <Typography.Text strong>默认测试模型：</Typography.Text>
           </div>
@@ -787,6 +766,50 @@ const EditChannel = (props) => {
               />
             </>
           )}
+          <div style={{ marginTop: 10 }}>
+            <Typography.Text strong>
+              状态码复写（仅影响本地判断，不修改返回到上游的状态码）：
+            </Typography.Text>
+          </div>
+          <TextArea
+            placeholder={`此项可选，用于复写返回的状态码，比如将claude渠道的400错误复写为500（用于重试），请勿滥用该功能，例如：\n${JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2)}`}
+            name='status_code_mapping'
+            onChange={(value) => {
+              handleInputChange('status_code_mapping', value);
+            }}
+            autosize
+            value={inputs.status_code_mapping}
+            autoComplete='new-password'
+          />
+          <Typography.Text
+            style={{
+              color: 'rgba(var(--semi-blue-5), 1)',
+              userSelect: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              handleInputChange(
+                'status_code_mapping',
+                JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2),
+              );
+            }}
+          >
+            填入模板
+          </Typography.Text>
+          {/*<div style={{ marginTop: 10 }}>*/}
+          {/*  <Typography.Text strong>*/}
+          {/*    最大请求token（0表示不限制）：*/}
+          {/*  </Typography.Text>*/}
+          {/*</div>*/}
+          {/*<Input*/}
+          {/*  label='最大请求token'*/}
+          {/*  name='max_input_tokens'*/}
+          {/*  placeholder='默认为0，表示不限制'*/}
+          {/*  onChange={(value) => {*/}
+          {/*    handleInputChange('max_input_tokens', value);*/}
+          {/*  }}*/}
+          {/*  value={inputs.max_input_tokens}*/}
+          {/*/>*/}
         </Spin>
       </SideSheet>
     </>
