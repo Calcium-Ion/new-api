@@ -20,15 +20,6 @@ import (
 	"time"
 )
 
-var availableVoices = []string{
-	"alloy",
-	"echo",
-	"fable",
-	"onyx",
-	"nova",
-	"shimmer",
-}
-
 func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	tokenId := c.GetInt("token_id")
 	channelType := c.GetInt("channel")
@@ -58,9 +49,6 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	if strings.HasPrefix(audioRequest.Model, "tts-1") {
 		if audioRequest.Voice == "" {
 			return service.OpenAIErrorWrapper(errors.New("voice is required"), "required_field_missing", http.StatusBadRequest)
-		}
-		if !common.StringsContains(availableVoices, audioRequest.Voice) {
-			return service.OpenAIErrorWrapper(errors.New("voice must be one of "+strings.Join(availableVoices, ", ")), "invalid_field_value", http.StatusBadRequest)
 		}
 	}
 	var err error
