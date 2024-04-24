@@ -224,6 +224,9 @@ func GetCompletionRatio(name string) float64 {
 	if strings.HasPrefix(name, "gemini-") {
 		return 3
 	}
+	if strings.HasPrefix(name, "command") {
+		return 5
+	}
 	switch name {
 	case "llama2-70b-4096":
 		return 0.8 / 0.7
