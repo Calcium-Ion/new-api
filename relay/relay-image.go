@@ -34,7 +34,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 	}
 
 	if imageRequest.Model == "" {
-		imageRequest.Model = "dall-e-2"
+		imageRequest.Model = "dall-e-3"
 	}
 	if imageRequest.Size == "" {
 		imageRequest.Size = "1024x1024"
@@ -186,7 +186,11 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 		}
 		if quota != 0 {
 			tokenName := c.GetString("token_name")
-			logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f", modelRatio, groupRatio)
+			quality := "normal"
+			if imageRequest.Quality == "hd" {
+				quality = "hd"
+			}
+			logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f, 大小 %s, 品质 %s", modelRatio, groupRatio, imageRequest.Size, quality)
 			model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageRequest.Model, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), false)
 			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 			channelId := c.GetInt("channel_id")

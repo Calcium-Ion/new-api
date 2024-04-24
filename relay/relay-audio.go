@@ -20,15 +20,6 @@ import (
 	"time"
 )
 
-var availableVoices = []string{
-	"alloy",
-	"echo",
-	"fable",
-	"onyx",
-	"nova",
-	"shimmer",
-}
-
 func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	tokenId := c.GetInt("token_id")
 	channelType := c.GetInt("channel")
@@ -58,9 +49,6 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	if strings.HasPrefix(audioRequest.Model, "tts-1") {
 		if audioRequest.Voice == "" {
 			return service.OpenAIErrorWrapper(errors.New("voice is required"), "required_field_missing", http.StatusBadRequest)
-		}
-		if !common.StringsContains(availableVoices, audioRequest.Voice) {
-			return service.OpenAIErrorWrapper(errors.New("voice must be one of "+strings.Join(availableVoices, ", ")), "invalid_field_value", http.StatusBadRequest)
 		}
 	}
 	var err error
@@ -99,6 +87,22 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 			return service.OpenAIErrorWrapper(err, "pre_consume_token_quota_failed", http.StatusForbidden)
 		}
 	}
+
+	succeed := false
+	defer func() {
+		if succeed {
+			return
+		}
+		if preConsumedQuota > 0 {
+			// we need to roll back the pre-consumed quota
+			defer func() {
+				go func() {
+					// negative means add quota back for token & user
+					returnPreConsumedQuota(c, tokenId, userQuota, preConsumedQuota)
+				}()
+			}()
+		}
+	}()
 
 	// map model name
 	modelMapping := c.GetString("model_mapping")
@@ -163,6 +167,7 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	if resp.StatusCode != http.StatusOK {
 		return relaycommon.RelayErrorHandler(resp)
 	}
+	succeed = true
 
 	var audioResponse dto.AudioResponse
 
