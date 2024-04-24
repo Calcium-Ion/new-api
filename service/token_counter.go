@@ -196,22 +196,8 @@ func CountTokenMessages(messages []dto.Message, model string, checkSensitive boo
 						if model == "glm-4v" {
 							imageTokenNum = 1047
 						} else {
-							if str, ok := m.ImageUrl.(string); ok {
-								imageTokenNum, err = getImageToken(&dto.MessageImageUrl{Url: str, Detail: "auto"})
-							} else {
-								imageUrlMap := m.ImageUrl.(map[string]interface{})
-								detail, ok := imageUrlMap["detail"]
-								if ok {
-									imageUrlMap["detail"] = detail.(string)
-								} else {
-									imageUrlMap["detail"] = "auto"
-								}
-								imageUrl := dto.MessageImageUrl{
-									Url:    imageUrlMap["url"].(string),
-									Detail: imageUrlMap["detail"].(string),
-								}
-								imageTokenNum, err = getImageToken(&imageUrl)
-							}
+							imageUrl := m.ImageUrl.(dto.MessageImageUrl)
+							imageTokenNum, err = getImageToken(&imageUrl)
 							if err != nil {
 								return 0, err, false
 							}
