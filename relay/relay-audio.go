@@ -100,6 +100,22 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		}
 	}
 
+	succeed := false
+	defer func() {
+		if succeed {
+			return
+		}
+		if preConsumedQuota > 0 {
+			// we need to roll back the pre-consumed quota
+			defer func() {
+				go func() {
+					// negative means add quota back for token & user
+					returnPreConsumedQuota(c, tokenId, userQuota, preConsumedQuota)
+				}()
+			}()
+		}
+	}()
+
 	// map model name
 	modelMapping := c.GetString("model_mapping")
 	if modelMapping != "" {
@@ -163,6 +179,7 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	if resp.StatusCode != http.StatusOK {
 		return relaycommon.RelayErrorHandler(resp)
 	}
+	succeed = true
 
 	var audioResponse dto.AudioResponse
 

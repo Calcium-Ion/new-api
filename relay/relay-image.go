@@ -34,7 +34,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 	}
 
 	if imageRequest.Model == "" {
-		imageRequest.Model = "dall-e-2"
+		imageRequest.Model = "dall-e-3"
 	}
 	if imageRequest.Size == "" {
 		imageRequest.Size = "1024x1024"
