@@ -20,7 +20,7 @@ func stopReasonClaude2OpenAI(reason string) string {
 	case "end_turn":
 		return "stop"
 	case "max_tokens":
-		return "length"
+		return "max_tokens"
 	default:
 		return reason
 	}

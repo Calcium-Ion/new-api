@@ -155,6 +155,16 @@ const EditChannel = (props) => {
             'gemini-pro-vision',
           ];
           break;
+        case 34:
+          localModels = [
+            'command-r',
+            'command-r-plus',
+            'command-light',
+            'command-light-nightly',
+            'command',
+            'command-nightly',
+          ];
+          break;
         case 25:
           localModels = [
             'moonshot-v1-8k',

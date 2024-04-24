@@ -51,6 +51,13 @@ export const CHANNEL_OPTIONS = [
     label: 'Google Gemini',
   },
   {
+    key: 34,
+    text: 'Cohere',
+    value: 34,
+    color: 'purple',
+    label: 'Cohere',
+  },
+  {
     key: 15,
     text: '百度文心千帆',
     value: 15,

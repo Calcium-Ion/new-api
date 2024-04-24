@@ -43,6 +43,10 @@ type OpenAIFunction struct {
 	Parameters  any    `json:"parameters,omitempty"`
 }
 
+func (r GeneralOpenAIRequest) GetMaxTokens() int64 {
+	return int64(r.MaxTokens)
+}
+
 func (r GeneralOpenAIRequest) ParseInput() []string {
 	if r.Input == nil {
 		return nil
