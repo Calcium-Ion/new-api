@@ -102,9 +102,15 @@ var DefaultModelRatio = map[string]float64{
 	"hunyuan":                      7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
 	// https://platform.lingyiwanwu.com/docs#-计费单元
 	// 已经按照 7.2 来换算美元价格
-	"yi-34b-chat-0205": 0.018,
-	"yi-34b-chat-200k": 0.0864,
-	"yi-vl-plus":       0.0432,
+	"yi-34b-chat-0205":      0.018,
+	"yi-34b-chat-200k":      0.0864,
+	"yi-vl-plus":            0.0432,
+	"command":               0.5,
+	"command-nightly":       0.5,
+	"command-light":         0.5,
+	"command-light-nightly": 0.5,
+	"command-r":             0.25,
+	"command-r-plus	":       1.5,
 }
 
 var DefaultModelPrice = map[string]float64{
@@ -225,7 +231,14 @@ func GetCompletionRatio(name string) float64 {
 		return 3
 	}
 	if strings.HasPrefix(name, "command") {
-		return 5
+		switch name {
+		case "command-r":
+			return 3
+		case "command-r-plus":
+			return 5
+		default:
+			return 2
+		}
 	}
 	switch name {
 	case "llama2-70b-4096":
