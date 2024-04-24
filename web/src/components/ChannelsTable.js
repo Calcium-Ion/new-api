@@ -307,27 +307,22 @@ const ChannelsTable = () => {
   };
 
   const setChannelFormat = (channels) => {
-    for (let i = 0; i < channels.length; i++) {
-      channels[i].key = '' + channels[i].id;
-      let test_models = [];
-      channels[i].models.split(',').forEach((item, index) => {
-        test_models.push({
-          node: 'item',
-          name: item,
-          onClick: () => {
-            testChannel(channels[i], item);
-          },
-        });
-      });
-      channels[i].test_models = test_models;
-    }
-    // data.key = '' + data.id
-    setChannels(channels);
-    if (channels.length >= pageSize) {
-      setChannelCount(channels.length + pageSize);
-    } else {
-      setChannelCount(channels.length);
-    }
+    const newChannels = channels.map((channel, i) => {
+        const test_models = channel.models.split(',').map((model, index) => ({
+            node: 'item',
+            name: model.trim(),
+            onClick: () => testChannel({ ...channel }, model.trim())
+        }));
+
+        return {
+            ...channel, // 创建新对象以避免直接修改旧状态
+            key: String(channel.id),
+            test_models,
+        };
+    });
+
+    setChannels(newChannels); // 现在这个 setState 调用的是全新的数组，因此不会影响原有状态
+    setChannelCount(newChannels.length >= pageSize ? newChannels.length + pageSize : newChannels.length);
   };
 
   const loadChannels = async (startIdx, pageSize, idSort) => {
@@ -355,11 +350,12 @@ const ChannelsTable = () => {
 
   const copySelectedChannel = async (id) => {
     const channelToCopy = channels.find(channel => String(channel.id) === String(id));
-    console.log(channelToCopy)
+    //初始化部分信息
     channelToCopy.name += '_复制';
     channelToCopy.created_time = null;
     channelToCopy.balance = 0;
     channelToCopy.used_quota = 0;
+    channelToCopy.status = 2;
     if (!channelToCopy) {
         showError("渠道未找到，请刷新页面后重试。");
         return;
