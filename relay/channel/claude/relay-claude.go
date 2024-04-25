@@ -79,7 +79,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		//	}
 		//}
 		if message.Role == "" {
-			message.Role = "user"
+			textRequest.Messages[i].Role = "user"
 		}
 		fmtMessage := dto.Message{
 			Role:    message.Role,
@@ -172,6 +172,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 	var choice dto.ChatCompletionsStreamResponseChoice
 	if reqMode == RequestModeCompletion {
 		choice.Delta.Content = claudeResponse.Completion
+		choice.Delta.Role = "assistant"
 		finishReason := stopReasonClaude2OpenAI(claudeResponse.StopReason)
 		if finishReason != "null" {
 			choice.FinishReason = &finishReason
@@ -184,6 +185,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 		} else if claudeResponse.Type == "content_block_delta" {
 			choice.Index = claudeResponse.Index
 			choice.Delta.Content = claudeResponse.Delta.Text
+			choice.Delta.Role = "assistant"
 		} else if claudeResponse.Type == "message_delta" {
 			finishReason := stopReasonClaude2OpenAI(*claudeResponse.Delta.StopReason)
 			if finishReason != "null" {
