@@ -55,8 +55,9 @@ type OpenAIEmbeddingResponse struct {
 
 type ChatCompletionsStreamResponseChoice struct {
 	Delta        ChatCompletionsStreamResponseChoiceDelta `json:"delta,omitempty"`
+	Logprobs     *any                                     `json:"logprobs"`
 	FinishReason *string                                  `json:"finish_reason"`
-	Index        int                                      `json:"index,omitempty"`
+	Index        int                                      `json:"index"`
 }
 
 type ChatCompletionsStreamResponseChoiceDelta struct {
@@ -95,11 +96,12 @@ type FunctionCall struct {
 }
 
 type ChatCompletionsStreamResponse struct {
-	Id      string                                `json:"id"`
-	Object  string                                `json:"object"`
-	Created int64                                 `json:"created"`
-	Model   string                                `json:"model"`
-	Choices []ChatCompletionsStreamResponseChoice `json:"choices"`
+	Id                string                                `json:"id"`
+	Object            string                                `json:"object"`
+	Created           int64                                 `json:"created"`
+	Model             string                                `json:"model"`
+	SystemFingerprint *string                               `json:"system_fingerprint"`
+	Choices           []ChatCompletionsStreamResponseChoice `json:"choices"`
 }
 
 type ChatCompletionsStreamResponseSimple struct {

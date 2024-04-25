@@ -181,9 +181,10 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			response.Id = claudeResponse.Message.Id
 			response.Model = claudeResponse.Message.Model
 			claudeUsage = &claudeResponse.Message.Usage
-		} else if claudeResponse.Type == "content_block_start" {
 			choice.Delta.SetContentString("")
 			choice.Delta.Role = "assistant"
+		} else if claudeResponse.Type == "content_block_start" {
+			return nil, nil
 		} else if claudeResponse.Type == "content_block_delta" {
 			choice.Index = claudeResponse.Index
 			choice.Delta.SetContentString(claudeResponse.Delta.Text)
