@@ -126,7 +126,7 @@ func responseZhipu2OpenAI(response *ZhipuResponse) *dto.OpenAITextResponse {
 
 func streamResponseZhipu2OpenAI(zhipuResponse string) *dto.ChatCompletionsStreamResponse {
 	var choice dto.ChatCompletionsStreamResponseChoice
-	choice.Delta.Content = zhipuResponse
+	choice.Delta.SetContentString(zhipuResponse)
 	response := dto.ChatCompletionsStreamResponse{
 		Object:  "chat.completion.chunk",
 		Created: common.GetTimestamp(),
@@ -138,7 +138,7 @@ func streamResponseZhipu2OpenAI(zhipuResponse string) *dto.ChatCompletionsStream
 
 func streamMetaResponseZhipu2OpenAI(zhipuResponse *ZhipuStreamMetaResponse) (*dto.ChatCompletionsStreamResponse, *dto.Usage) {
 	var choice dto.ChatCompletionsStreamResponseChoice
-	choice.Delta.Content = ""
+	choice.Delta.SetContentString("")
 	choice.FinishReason = &relaycommon.StopFinishReason
 	response := dto.ChatCompletionsStreamResponse{
 		Id:      zhipuResponse.RequestId,

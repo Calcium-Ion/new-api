@@ -54,15 +54,30 @@ type OpenAIEmbeddingResponse struct {
 }
 
 type ChatCompletionsStreamResponseChoice struct {
-	Delta        ChatCompletionsStreamResponseChoiceDelta `json:"delta"`
-	FinishReason *string                                  `json:"finish_reason,omitempty"`
+	Delta        ChatCompletionsStreamResponseChoiceDelta `json:"delta,omitempty"`
+	FinishReason *string                                  `json:"finish_reason"`
 	Index        int                                      `json:"index,omitempty"`
 }
 
 type ChatCompletionsStreamResponseChoiceDelta struct {
-	Content   string     `json:"content"`
+	Content   *string    `json:"content,omitempty"`
 	Role      string     `json:"role,omitempty"`
 	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
+}
+
+func (c *ChatCompletionsStreamResponseChoiceDelta) IsEmpty() bool {
+	return c.Content == nil && len(c.ToolCalls) == 0
+}
+
+func (c *ChatCompletionsStreamResponseChoiceDelta) SetContentString(s string) {
+	c.Content = &s
+}
+
+func (c *ChatCompletionsStreamResponseChoiceDelta) GetContentString() string {
+	if c.Content == nil {
+		return ""
+	}
+	return *c.Content
 }
 
 type ToolCall struct {

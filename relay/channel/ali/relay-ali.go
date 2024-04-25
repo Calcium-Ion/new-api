@@ -136,7 +136,7 @@ func responseAli2OpenAI(response *AliChatResponse) *dto.OpenAITextResponse {
 
 func streamResponseAli2OpenAI(aliResponse *AliChatResponse) *dto.ChatCompletionsStreamResponse {
 	var choice dto.ChatCompletionsStreamResponseChoice
-	choice.Delta.Content = aliResponse.Output.Text
+	choice.Delta.SetContentString(aliResponse.Output.Text)
 	if aliResponse.Output.FinishReason != "null" {
 		finishReason := aliResponse.Output.FinishReason
 		choice.FinishReason = &finishReason
@@ -199,7 +199,7 @@ func aliStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWith
 				usage.TotalTokens = aliResponse.Usage.InputTokens + aliResponse.Usage.OutputTokens
 			}
 			response := streamResponseAli2OpenAI(&aliResponse)
-			response.Choices[0].Delta.Content = strings.TrimPrefix(response.Choices[0].Delta.Content, lastResponseText)
+			response.Choices[0].Delta.SetContentString(strings.TrimPrefix(response.Choices[0].Delta.GetContentString(), lastResponseText))
 			lastResponseText = aliResponse.Output.Text
 			jsonResponse, err := json.Marshal(response)
 			if err != nil {

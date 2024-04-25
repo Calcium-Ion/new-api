@@ -171,8 +171,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 	response.Choices = make([]dto.ChatCompletionsStreamResponseChoice, 0)
 	var choice dto.ChatCompletionsStreamResponseChoice
 	if reqMode == RequestModeCompletion {
-		choice.Delta.Content = claudeResponse.Completion
-		choice.Delta.Role = "assistant"
+		choice.Delta.SetContentString(claudeResponse.Completion)
 		finishReason := stopReasonClaude2OpenAI(claudeResponse.StopReason)
 		if finishReason != "null" {
 			choice.FinishReason = &finishReason
@@ -182,10 +181,12 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			response.Id = claudeResponse.Message.Id
 			response.Model = claudeResponse.Message.Model
 			claudeUsage = &claudeResponse.Message.Usage
+		} else if claudeResponse.Type == "content_block_start" {
+			choice.Delta.SetContentString("")
+			choice.Delta.Role = "assistant"
 		} else if claudeResponse.Type == "content_block_delta" {
 			choice.Index = claudeResponse.Index
-			choice.Delta.Content = claudeResponse.Delta.Text
-			choice.Delta.Role = "assistant"
+			choice.Delta.SetContentString(claudeResponse.Delta.Text)
 		} else if claudeResponse.Type == "message_delta" {
 			finishReason := stopReasonClaude2OpenAI(*claudeResponse.Delta.StopReason)
 			if finishReason != "null" {
@@ -194,12 +195,15 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			claudeUsage = &claudeResponse.Usage
 		} else if claudeResponse.Type == "message_stop" {
 			return nil, nil
+		} else {
+			return nil, nil
 		}
 	}
 	if claudeUsage == nil {
 		claudeUsage = &ClaudeUsage{}
 	}
 	response.Choices = append(response.Choices, choice)
+
 	return &response, claudeUsage
 }
 
