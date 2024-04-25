@@ -72,12 +72,12 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	}
 	formatMessages := make([]dto.Message, 0)
 	var lastMessage *dto.Message
-	for i, message := range textRequest.Messages {
-		if message.Role == "system" {
-			if i != 0 {
-				message.Role = "user"
-			}
-		}
+	for _, message := range textRequest.Messages {
+		//if message.Role == "system" {
+		//	if i != 0 {
+		//		message.Role = "user"
+		//	}
+		//}
 		if message.Role == "" {
 			message.Role = "user"
 		}
