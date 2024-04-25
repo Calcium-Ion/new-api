@@ -72,7 +72,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	}
 	formatMessages := make([]dto.Message, 0)
 	var lastMessage *dto.Message
-	for _, message := range textRequest.Messages {
+	for i, message := range textRequest.Messages {
 		//if message.Role == "system" {
 		//	if i != 0 {
 		//		message.Role = "user"
@@ -98,13 +98,24 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 			fmtMessage.Content = content
 		}
 		formatMessages = append(formatMessages, fmtMessage)
-		lastMessage = &message
+		lastMessage = &textRequest.Messages[i]
 	}
 
 	claudeMessages := make([]ClaudeMessage, 0)
 	for _, message := range formatMessages {
 		if message.Role == "system" {
-			claudeRequest.System = message.StringContent()
+			if message.IsStringContent() {
+				claudeRequest.System = message.StringContent()
+			} else {
+				contents := message.ParseContent()
+				content := ""
+				for _, ctx := range contents {
+					if ctx.Type == "text" {
+						content += ctx.Text
+					}
+				}
+				claudeRequest.System = content
+			}
 		} else {
 			claudeMessage := ClaudeMessage{
 				Role: message.Role,
@@ -149,7 +160,6 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	}
 	claudeRequest.Prompt = ""
 	claudeRequest.Messages = claudeMessages
-
 	return &claudeRequest, nil
 }
 
