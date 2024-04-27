@@ -151,7 +151,7 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 
 func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) *dto.ChatCompletionsStreamResponse {
 	var choice dto.ChatCompletionsStreamResponseChoice
-	choice.Delta.Content = geminiResponse.GetResponseText()
+	choice.Delta.SetContentString(geminiResponse.GetResponseText())
 	choice.FinishReason = &relaycommon.StopFinishReason
 	var response dto.ChatCompletionsStreamResponse
 	response.Object = "chat.completion.chunk"
@@ -203,7 +203,7 @@ func geminiChatStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIEr
 			err := json.Unmarshal([]byte(data), &dummy)
 			responseText += dummy.Content
 			var choice dto.ChatCompletionsStreamResponseChoice
-			choice.Delta.Content = dummy.Content
+			choice.Delta.SetContentString(dummy.Content)
 			response := dto.ChatCompletionsStreamResponse{
 				Id:      fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
 				Object:  "chat.completion.chunk",

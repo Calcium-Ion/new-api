@@ -117,7 +117,7 @@ func cohereStreamHandler(c *gin.Context, resp *http.Response, modelName string, 
 					{
 						Delta: dto.ChatCompletionsStreamResponseChoiceDelta{
 							Role:    "assistant",
-							Content: cohereResp.Text,
+							Content: &cohereResp.Text,
 						},
 						Index: 0,
 					},

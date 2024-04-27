@@ -57,7 +57,7 @@ func responseBaidu2OpenAI(response *BaiduChatResponse) *dto.OpenAITextResponse {
 
 func streamResponseBaidu2OpenAI(baiduResponse *BaiduChatStreamResponse) *dto.ChatCompletionsStreamResponse {
 	var choice dto.ChatCompletionsStreamResponseChoice
-	choice.Delta.Content = baiduResponse.Result
+	choice.Delta.SetContentString(baiduResponse.Result)
 	if baiduResponse.IsEnd {
 		choice.FinishReason = &relaycommon.StopFinishReason
 	}

@@ -156,6 +156,7 @@ func awsStreamHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode i
 	var usage relaymodel.Usage
 	var id string
 	var model string
+	createdTime := common.GetTimestamp()
 	c.Stream(func(w io.Writer) bool {
 		event, ok := <-stream.Events()
 		if !ok {
@@ -188,6 +189,7 @@ func awsStreamHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode i
 			if response.Model != "" {
 				model = response.Model
 			}
+			response.Created = createdTime
 			response.Id = id
 			response.Model = model
 

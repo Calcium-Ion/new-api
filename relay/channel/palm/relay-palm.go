@@ -61,7 +61,7 @@ func responsePaLM2OpenAI(response *PaLMChatResponse) *dto.OpenAITextResponse {
 func streamResponsePaLM2OpenAI(palmResponse *PaLMChatResponse) *dto.ChatCompletionsStreamResponse {
 	var choice dto.ChatCompletionsStreamResponseChoice
 	if len(palmResponse.Candidates) > 0 {
-		choice.Delta.Content = palmResponse.Candidates[0].Content
+		choice.Delta.SetContentString(palmResponse.Candidates[0].Content)
 	}
 	choice.FinishReason = &relaycommon.StopFinishReason
 	var response dto.ChatCompletionsStreamResponse
