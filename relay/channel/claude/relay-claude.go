@@ -30,15 +30,14 @@ func RequestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeR
 	claudeRequest := ClaudeRequest{
 		Model:         textRequest.Model,
 		Prompt:        "",
-		MaxTokens:     textRequest.MaxTokens,
 		StopSequences: nil,
 		Temperature:   textRequest.Temperature,
 		TopP:          textRequest.TopP,
 		TopK:          textRequest.TopK,
 		Stream:        textRequest.Stream,
 	}
-	if claudeRequest.MaxTokens == 0 {
-		claudeRequest.MaxTokens = 4096
+	if claudeRequest.MaxTokensToSample == 0 {
+		claudeRequest.MaxTokensToSample = 4096
 	}
 	prompt := ""
 	for _, message := range textRequest.Messages {
