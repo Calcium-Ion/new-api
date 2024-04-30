@@ -165,7 +165,9 @@ func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestU
 		if err != nil {
 			return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "read_request_body_failed", http.StatusInternalServerError), nullBytes, err
 		}
-		delete(mapResult, "accountFilter")
+		if !constant.MjAccountFilterEnabled {
+			delete(mapResult, "accountFilter")
+		}
 		if !constant.MjNotifyEnabled {
 			delete(mapResult, "notifyHook")
 		}
@@ -174,11 +176,11 @@ func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestU
 	}
 	if constant.MjModeClearEnabled {
 		if prompt, ok := mapResult["prompt"].(string); ok {
-		    prompt = strings.Replace(prompt, "--fast", "", -1)
-		    prompt = strings.Replace(prompt, "--relax", "", -1)
-		    prompt = strings.Replace(prompt, "--turbo", "", -1)
-		    
-		    mapResult["prompt"] = prompt
+			prompt = strings.Replace(prompt, "--fast", "", -1)
+			prompt = strings.Replace(prompt, "--relax", "", -1)
+			prompt = strings.Replace(prompt, "--turbo", "", -1)
+
+			mapResult["prompt"] = prompt
 		}
 	}
 	reqBody, err := json.Marshal(mapResult)

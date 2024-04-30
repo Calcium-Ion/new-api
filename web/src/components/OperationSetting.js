@@ -38,6 +38,7 @@ const OperationSetting = () => {
     StopOnSensitiveEnabled: '',
     SensitiveWords: '',
     MjNotifyEnabled: '',
+    MjAccountFilterEnabled: '',
     MjModeClearEnabled: '',
     MjForwardUrlEnabled: '',
     DrawingEnabled: '',
@@ -321,6 +322,12 @@ const OperationSetting = () => {
               checked={inputs.MjNotifyEnabled === 'true'}
               label='允许回调（会泄露服务器ip地址）'
               name='MjNotifyEnabled'
+              onChange={handleInputChange}
+            />
+            <Form.Checkbox
+              checked={inputs.MjAccountFilterEnabled === 'true'}
+              label='允许AccountFilter参数'
+              name='MjAccountFilterEnabled'
               onChange={handleInputChange}
             />
             <Form.Checkbox
