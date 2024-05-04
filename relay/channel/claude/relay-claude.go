@@ -20,7 +20,7 @@ func stopReasonClaude2OpenAI(reason string) string {
 	case "end_turn":
 		return "stop"
 	case "max_tokens":
-		return "length"
+		return "max_tokens"
 	default:
 		return reason
 	}
@@ -30,15 +30,14 @@ func RequestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeR
 	claudeRequest := ClaudeRequest{
 		Model:         textRequest.Model,
 		Prompt:        "",
-		MaxTokens:     textRequest.MaxTokens,
 		StopSequences: nil,
 		Temperature:   textRequest.Temperature,
 		TopP:          textRequest.TopP,
 		TopK:          textRequest.TopK,
 		Stream:        textRequest.Stream,
 	}
-	if claudeRequest.MaxTokens == 0 {
-		claudeRequest.MaxTokens = 4096
+	if claudeRequest.MaxTokensToSample == 0 {
+		claudeRequest.MaxTokensToSample = 4096
 	}
 	prompt := ""
 	for _, message := range textRequest.Messages {
@@ -73,13 +72,13 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	formatMessages := make([]dto.Message, 0)
 	var lastMessage *dto.Message
 	for i, message := range textRequest.Messages {
-		if message.Role == "system" {
-			if i != 0 {
-				message.Role = "user"
-			}
-		}
+		//if message.Role == "system" {
+		//	if i != 0 {
+		//		message.Role = "user"
+		//	}
+		//}
 		if message.Role == "" {
-			message.Role = "user"
+			textRequest.Messages[i].Role = "user"
 		}
 		fmtMessage := dto.Message{
 			Role:    message.Role,
@@ -98,13 +97,24 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 			fmtMessage.Content = content
 		}
 		formatMessages = append(formatMessages, fmtMessage)
-		lastMessage = &message
+		lastMessage = &textRequest.Messages[i]
 	}
 
 	claudeMessages := make([]ClaudeMessage, 0)
 	for _, message := range formatMessages {
 		if message.Role == "system" {
-			claudeRequest.System = message.StringContent()
+			if message.IsStringContent() {
+				claudeRequest.System = message.StringContent()
+			} else {
+				contents := message.ParseContent()
+				content := ""
+				for _, ctx := range contents {
+					if ctx.Type == "text" {
+						content += ctx.Text
+					}
+				}
+				claudeRequest.System = content
+			}
 		} else {
 			claudeMessage := ClaudeMessage{
 				Role: message.Role,
@@ -149,7 +159,6 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	}
 	claudeRequest.Prompt = ""
 	claudeRequest.Messages = claudeMessages
-
 	return &claudeRequest, nil
 }
 
@@ -161,7 +170,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 	response.Choices = make([]dto.ChatCompletionsStreamResponseChoice, 0)
 	var choice dto.ChatCompletionsStreamResponseChoice
 	if reqMode == RequestModeCompletion {
-		choice.Delta.Content = claudeResponse.Completion
+		choice.Delta.SetContentString(claudeResponse.Completion)
 		finishReason := stopReasonClaude2OpenAI(claudeResponse.StopReason)
 		if finishReason != "null" {
 			choice.FinishReason = &finishReason
@@ -171,9 +180,13 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			response.Id = claudeResponse.Message.Id
 			response.Model = claudeResponse.Message.Model
 			claudeUsage = &claudeResponse.Message.Usage
+			choice.Delta.SetContentString("")
+			choice.Delta.Role = "assistant"
+		} else if claudeResponse.Type == "content_block_start" {
+			return nil, nil
 		} else if claudeResponse.Type == "content_block_delta" {
 			choice.Index = claudeResponse.Index
-			choice.Delta.Content = claudeResponse.Delta.Text
+			choice.Delta.SetContentString(claudeResponse.Delta.Text)
 		} else if claudeResponse.Type == "message_delta" {
 			finishReason := stopReasonClaude2OpenAI(*claudeResponse.Delta.StopReason)
 			if finishReason != "null" {
@@ -182,12 +195,15 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			claudeUsage = &claudeResponse.Usage
 		} else if claudeResponse.Type == "message_stop" {
 			return nil, nil
+		} else {
+			return nil, nil
 		}
 	}
 	if claudeUsage == nil {
 		claudeUsage = &ClaudeUsage{}
 	}
 	response.Choices = append(response.Choices, choice)
+
 	return &response, claudeUsage
 }
 

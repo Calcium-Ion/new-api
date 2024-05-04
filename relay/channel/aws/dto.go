@@ -5,6 +5,7 @@ import "one-api/relay/channel/claude"
 type AwsClaudeRequest struct {
 	// AnthropicVersion should be "bedrock-2023-05-31"
 	AnthropicVersion string                 `json:"anthropic_version"`
+	System           string                 `json:"system"`
 	Messages         []claude.ClaudeMessage `json:"messages"`
 	MaxTokens        int                    `json:"max_tokens,omitempty"`
 	Temperature      float64                `json:"temperature,omitempty"`

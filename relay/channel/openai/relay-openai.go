@@ -50,7 +50,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 			if data[:6] != "data: " && data[:6] != "[DONE]" {
 				continue
 			}
-			dataChan <- data
+			common.SafeSendString(dataChan, data)
 			data = data[6:]
 			if !strings.HasPrefix(data, "[DONE]") {
 				streamItems = append(streamItems, data)
@@ -68,7 +68,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 					err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
 					if err == nil {
 						for _, choice := range streamResponse.Choices {
-							responseTextBuilder.WriteString(choice.Delta.Content)
+							responseTextBuilder.WriteString(choice.Delta.GetContentString())
 							if choice.Delta.ToolCalls != nil {
 								if len(choice.Delta.ToolCalls) > toolCount {
 									toolCount = len(choice.Delta.ToolCalls)
@@ -84,7 +84,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 			} else {
 				for _, streamResponse := range streamResponses {
 					for _, choice := range streamResponse.Choices {
-						responseTextBuilder.WriteString(choice.Delta.Content)
+						responseTextBuilder.WriteString(choice.Delta.GetContentString())
 						if choice.Delta.ToolCalls != nil {
 							if len(choice.Delta.ToolCalls) > toolCount {
 								toolCount = len(choice.Delta.ToolCalls)
@@ -123,7 +123,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*d
 			// wait data out
 			time.Sleep(2 * time.Second)
 		}
-		common.SafeSend(stopChan, true)
+		common.SafeSendBool(stopChan, true)
 	}()
 	service.SetEventStreamHeaders(c)
 	c.Stream(func(w io.Writer) bool {

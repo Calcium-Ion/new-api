@@ -232,7 +232,7 @@ func CountTokenInput(input any, model string, check bool) (int, error, bool) {
 func CountTokenStreamChoices(messages []dto.ChatCompletionsStreamResponseChoice, model string) int {
 	tokens := 0
 	for _, message := range messages {
-		tkm, _, _ := CountTokenInput(message.Delta.Content, model, false)
+		tkm, _, _ := CountTokenInput(message.Delta.GetContentString(), model, false)
 		tokens += tkm
 		if message.Delta.ToolCalls != nil {
 			for _, tool := range message.Delta.ToolCalls {

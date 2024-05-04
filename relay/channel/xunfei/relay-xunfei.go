@@ -87,7 +87,7 @@ func streamResponseXunfei2OpenAI(xunfeiResponse *XunfeiChatResponse) *dto.ChatCo
 		}
 	}
 	var choice dto.ChatCompletionsStreamResponseChoice
-	choice.Delta.Content = xunfeiResponse.Payload.Choices.Text[0].Content
+	choice.Delta.SetContentString(xunfeiResponse.Payload.Choices.Text[0].Content)
 	if xunfeiResponse.Payload.Choices.Status == 2 {
 		choice.FinishReason = &relaycommon.StopFinishReason
 	}

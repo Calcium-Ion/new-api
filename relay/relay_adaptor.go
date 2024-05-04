@@ -6,6 +6,7 @@ import (
 	"one-api/relay/channel/aws"
 	"one-api/relay/channel/baidu"
 	"one-api/relay/channel/claude"
+	"one-api/relay/channel/cohere"
 	"one-api/relay/channel/gemini"
 	"one-api/relay/channel/ollama"
 	"one-api/relay/channel/openai"
@@ -48,6 +49,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &perplexity.Adaptor{}
 	case constant.APITypeAws:
 		return &aws.Adaptor{}
+	case constant.APITypeCohere:
+		return &cohere.Adaptor{}
 	}
 	return nil
 }

@@ -86,7 +86,7 @@ func UpdateMidjourneyTaskBulk() {
 				continue
 			}
 			// 设置超时时间
-			timeout := time.Second * 5
+			timeout := time.Second * 15
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			// 使用带有超时的 context 创建新的请求
 			req = req.WithContext(ctx)
