@@ -111,6 +111,8 @@ var DefaultModelRatio = map[string]float64{
 	"command-light-nightly": 0.5,
 	"command-r":             0.25,
 	"command-r-plus	":       1.5,
+	"deepseek-chat":         0.07,
+	"deepseek-coder":        0.07,
 }
 
 var DefaultModelPrice = map[string]float64{
@@ -239,6 +241,9 @@ func GetCompletionRatio(name string) float64 {
 		default:
 			return 2
 		}
+	}
+	if strings.HasPrefix(name, "deepseek") {
+		return 2
 	}
 	switch name {
 	case "llama2-70b-4096":
