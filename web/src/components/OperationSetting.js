@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Divider, Form, Grid, Header } from 'semantic-ui-react';
 import { Card } from '@douyinfe/semi-ui';
 import GeneralSettings from '../pages/Setting/Operation/GeneralSettings.js';
+import DrawingSettings from '../pages/Setting/Operation/DrawingSettings.js';
 import {
   API,
   showError,
@@ -235,50 +236,17 @@ const OperationSetting = () => {
   };
   return (
     <>
+      {/* 通用设置 */}
       <Card>
-        {/* 通用设置 */}
         <GeneralSettings options={inputs} />
+      </Card>
+      {/* 绘图设置 */}
+      <Card style={{ marginTop: '10px' }}>
+        <DrawingSettings options={inputs} />
       </Card>
       <Grid columns={1}>
         <Grid.Column>
           <Form loading={loading} inverted={isDark}>
-            <Divider />
-            <Header as='h3' inverted={isDark}>
-              绘图设置
-            </Header>
-            <Form.Group inline>
-              <Form.Checkbox
-                checked={inputs.DrawingEnabled === 'true'}
-                label='启用绘图功能'
-                name='DrawingEnabled'
-                onChange={handleInputChange}
-              />
-              <Form.Checkbox
-                checked={inputs.MjNotifyEnabled === 'true'}
-                label='允许回调（会泄露服务器ip地址）'
-                name='MjNotifyEnabled'
-                onChange={handleInputChange}
-              />
-              <Form.Checkbox
-                checked={inputs.MjAccountFilterEnabled === 'true'}
-                label='允许AccountFilter参数'
-                name='MjAccountFilterEnabled'
-                onChange={handleInputChange}
-              />
-              <Form.Checkbox
-                checked={inputs.MjForwardUrlEnabled === 'true'}
-                label='开启之后将上游地址替换为服务器地址'
-                name='MjForwardUrlEnabled'
-                onChange={handleInputChange}
-              />
-              <Form.Checkbox
-                checked={inputs.MjModeClearEnabled === 'true'}
-                label='开启之后会清除用户提示词中的--fast、--relax以及--turbo参数'
-                name='MjModeClearEnabled'
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Divider />
             <Header as='h3' inverted={isDark}>
               屏蔽词过滤设置
             </Header>
