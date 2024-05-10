@@ -8,14 +8,12 @@ import {
   showWarning,
 } from '../../../helpers';
 
-export default function GeneralSettings(props) {
+export default function SettingsSensitiveWords(props) {
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
-    DrawingEnabled: false,
-    MjNotifyEnabled: false,
-    MjAccountFilterEnabled: false,
-    MjForwardUrlEnabled: false,
-    MjModeClearEnabled: false,
+    CheckSensitiveEnabled: false,
+    CheckSensitiveOnPromptEnabled: false,
+    SensitiveWords: '',
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -73,12 +71,12 @@ export default function GeneralSettings(props) {
           getFormApi={(formAPI) => (refForm.current = formAPI)}
           style={{ marginBottom: 15 }}
         >
-          <Form.Section text={'绘图设置'}>
+          <Form.Section text={'屏蔽词过滤设置'}>
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Switch
-                  field={'DrawingEnabled'}
-                  label={'启用绘图功能'}
+                  field={'CheckSensitiveEnabled'}
+                  label={'启用屏蔽词过滤功能'}
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
@@ -87,15 +85,15 @@ export default function GeneralSettings(props) {
                   onChange={(value) => {
                     setInputs({
                       ...inputs,
-                      DrawingEnabled: value,
+                      CheckSensitiveEnabled: value,
                     });
                   }}
                 />
               </Col>
               <Col span={8}>
                 <Form.Switch
-                  field={'MjNotifyEnabled'}
-                  label={'允许回调（会泄露服务器 IP 地址）'}
+                  field={'CheckSensitiveOnPromptEnabled'}
+                  label={'启用 Prompt 检查'}
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
@@ -104,71 +102,33 @@ export default function GeneralSettings(props) {
                   onChange={(value) =>
                     setInputs({
                       ...inputs,
-                      MjNotifyEnabled: value,
-                    })
-                  }
-                />
-              </Col>
-              <Col span={8}>
-                <Form.Switch
-                  field={'MjAccountFilterEnabled'}
-                  label={'允许 AccountFilter 参数'}
-                  size='large'
-                  checkedText='｜'
-                  uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      MjAccountFilterEnabled: value,
-                    })
-                  }
-                />
-              </Col>
-              <Col span={8}>
-                <Form.Switch
-                  field={'MjForwardUrlEnabled'}
-                  label={'开启之后将上游地址替换为服务器地址'}
-                  size='large'
-                  checkedText='｜'
-                  uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      MjForwardUrlEnabled: value,
-                    })
-                  }
-                />
-              </Col>
-              <Col span={8}>
-                <Form.Switch
-                  field={'MjModeClearEnabled'}
-                  label={
-                    <>
-                      开启之后会清除用户提示词中的 <Tag>--fast</Tag> 、
-                      <Tag>--relax</Tag> 以及 <Tag>--turbo</Tag> 参数
-                    </>
-                  }
-                  size='large'
-                  checkedText='｜'
-                  uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      MjModeClearEnabled: value,
+                      CheckSensitiveOnPromptEnabled: value,
                     })
                   }
                 />
               </Col>
             </Row>
             <Row>
+              <Col span={16}>
+                <Form.TextArea
+                  label={'屏蔽词列表'}
+                  extraText={'一行一个屏蔽词，不需要符号分割'}
+                  placeholder={'一行一个屏蔽词，不需要符号分割'}
+                  field={'SensitiveWords'}
+                  onChange={(value) =>
+                    setInputs({
+                      ...inputs,
+                      SensitiveWords: value,
+                    })
+                  }
+                  style={{ fontFamily: 'JetBrains Mono, Consolas' }}
+                  autosize={{ minRows: 6, maxRows: 12 }}
+                />
+              </Col>
+            </Row>
+            <Row>
               <Button size='large' onClick={onSubmit}>
-                保存绘图设置
+                保存屏蔽词过滤设置
               </Button>
             </Row>
           </Form.Section>

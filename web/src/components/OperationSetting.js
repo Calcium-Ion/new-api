@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Divider, Form, Grid, Header } from 'semantic-ui-react';
 import { Card } from '@douyinfe/semi-ui';
-import GeneralSettings from '../pages/Setting/Operation/GeneralSettings.js';
-import DrawingSettings from '../pages/Setting/Operation/DrawingSettings.js';
+import SettingsGeneral from '../pages/Setting/Operation/SettingsGeneral.js';
+import SettingsDrawing from '../pages/Setting/Operation/SettingsDrawing.js';
+import SettingsSensitiveWords from '../pages/Setting/Operation/SettingsSensitiveWords.js';
+
 import {
   API,
   showError,
@@ -238,40 +240,19 @@ const OperationSetting = () => {
     <>
       {/* 通用设置 */}
       <Card>
-        <GeneralSettings options={inputs} />
+        <SettingsGeneral options={inputs} />
       </Card>
       {/* 绘图设置 */}
       <Card style={{ marginTop: '10px' }}>
-        <DrawingSettings options={inputs} />
+        <SettingsDrawing options={inputs} />
+      </Card>
+      {/* 屏蔽词过滤设置 */}
+      <Card style={{ marginTop: '10px' }}>
+        <SettingsSensitiveWords options={inputs} />
       </Card>
       <Grid columns={1}>
         <Grid.Column>
           <Form loading={loading} inverted={isDark}>
-            <Header as='h3' inverted={isDark}>
-              屏蔽词过滤设置
-            </Header>
-            <Form.Group inline>
-              <Form.Checkbox
-                checked={inputs.CheckSensitiveEnabled === 'true'}
-                label='启用屏蔽词过滤功能'
-                name='CheckSensitiveEnabled'
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group inline>
-              <Form.Checkbox
-                checked={inputs.CheckSensitiveOnPromptEnabled === 'true'}
-                label='启用prompt检查'
-                name='CheckSensitiveOnPromptEnabled'
-                onChange={handleInputChange}
-              />
-              {/*<Form.Checkbox*/}
-              {/*  checked={inputs.CheckSensitiveOnCompletionEnabled === 'true'}*/}
-              {/*  label='启用生成内容检查'*/}
-              {/*  name='CheckSensitiveOnCompletionEnabled'*/}
-              {/*  onChange={handleInputChange}*/}
-              {/*/>*/}
-            </Form.Group>
             {/*<Form.Group inline>*/}
             {/*  <Form.Checkbox*/}
             {/*    checked={inputs.StopOnSensitiveEnabled === 'true'}*/}
@@ -291,27 +272,7 @@ const OperationSetting = () => {
             {/*    placeholder="例如：10"*/}
             {/*  />*/}
             {/*</Form.Group>*/}
-            <Form.Group widths='equal'>
-              <Form.TextArea
-                label='屏蔽词列表，一行一个屏蔽词，不需要符号分割'
-                name='SensitiveWords'
-                onChange={handleInputChange}
-                style={{
-                  minHeight: 250,
-                  fontFamily: 'JetBrains Mono, Consolas',
-                }}
-                value={inputs.SensitiveWords}
-                placeholder='一行一个屏蔽词'
-              />
-            </Form.Group>
-            <Form.Button
-              onClick={() => {
-                submitConfig('words').then();
-              }}
-            >
-              保存屏蔽词设置
-            </Form.Button>
-            <Divider />
+
             <Header as='h3' inverted={isDark}>
               日志设置
             </Header>
