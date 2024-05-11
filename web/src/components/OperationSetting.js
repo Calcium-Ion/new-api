@@ -6,6 +6,7 @@ import SettingsDrawing from '../pages/Setting/Operation/SettingsDrawing.js';
 import SettingsSensitiveWords from '../pages/Setting/Operation/SettingsSensitiveWords.js';
 import SettingsLog from '../pages/Setting/Operation/SettingsLog.js';
 import SettingsDataDashboard from '../pages/Setting/Operation/SettingsDataDashboard.js';
+import SettingsMonitoring from '../pages/Setting/Operation/SettingsMonitoring.js';
 
 import {
   API,
@@ -33,8 +34,8 @@ const OperationSetting = () => {
     ChatLink: '',
     ChatLink2: '', // 添加的新状态变量
     QuotaPerUnit: 0,
-    AutomaticDisableChannelEnabled: '',
-    AutomaticEnableChannelEnabled: '',
+    AutomaticDisableChannelEnabled: false,
+    AutomaticEnableChannelEnabled: false,
     ChannelDisableThreshold: 0,
     LogConsumeEnabled: false,
     DisplayInCurrencyEnabled: false,
@@ -220,7 +221,7 @@ const OperationSetting = () => {
   return (
     <>
       {/* 通用设置 */}
-      <Card>
+      <Card style={{ marginTop: '10px' }}>
         <SettingsGeneral options={inputs} />
       </Card>
       {/* 绘图设置 */}
@@ -238,6 +239,10 @@ const OperationSetting = () => {
       {/* 数据看板 */}
       <Card style={{ marginTop: '10px' }}>
         <SettingsDataDashboard options={inputs} />
+      </Card>
+      {/* 监控设置 */}
+      <Card style={{ marginTop: '10px' }}>
+        <SettingsMonitoring options={inputs} />
       </Card>
       <Grid columns={1}>
         <Grid.Column>
@@ -262,53 +267,6 @@ const OperationSetting = () => {
             {/*  />*/}
             {/*</Form.Group>*/}
 
-            <Divider />
-            <Header as='h3' inverted={isDark}>
-              监控设置
-            </Header>
-            <Form.Group widths={3}>
-              <Form.Input
-                label='最长响应时间'
-                name='ChannelDisableThreshold'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.ChannelDisableThreshold}
-                type='number'
-                min='0'
-                placeholder='单位秒，当运行通道全部测试时，超过此时间将自动禁用通道'
-              />
-              <Form.Input
-                label='额度提醒阈值'
-                name='QuotaRemindThreshold'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.QuotaRemindThreshold}
-                type='number'
-                min='0'
-                placeholder='低于此额度时将发送邮件提醒用户'
-              />
-            </Form.Group>
-            <Form.Group inline>
-              <Form.Checkbox
-                checked={inputs.AutomaticDisableChannelEnabled === 'true'}
-                label='失败时自动禁用通道'
-                name='AutomaticDisableChannelEnabled'
-                onChange={handleInputChange}
-              />
-              <Form.Checkbox
-                checked={inputs.AutomaticEnableChannelEnabled === 'true'}
-                label='成功时自动启用通道'
-                name='AutomaticEnableChannelEnabled'
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Button
-              onClick={() => {
-                submitConfig('monitor').then();
-              }}
-            >
-              保存监控设置
-            </Form.Button>
             <Divider />
             <Header as='h3' inverted={isDark}>
               额度设置
