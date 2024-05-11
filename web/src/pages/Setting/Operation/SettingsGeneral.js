@@ -140,8 +140,6 @@ export default function GeneralSettings(props) {
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
                   onChange={(value) => {
                     setInputs({
                       ...inputs,
@@ -157,8 +155,6 @@ export default function GeneralSettings(props) {
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
                   onChange={(value) =>
                     setInputs({
                       ...inputs,
@@ -174,8 +170,6 @@ export default function GeneralSettings(props) {
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
                   onChange={(value) =>
                     setInputs({
                       ...inputs,

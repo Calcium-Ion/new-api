@@ -80,8 +80,6 @@ export default function SettingsSensitiveWords(props) {
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
                   onChange={(value) => {
                     setInputs({
                       ...inputs,
@@ -97,8 +95,6 @@ export default function SettingsSensitiveWords(props) {
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
-                  defaultChecked={false}
-                  checked={false}
                   onChange={(value) =>
                     setInputs({
                       ...inputs,
