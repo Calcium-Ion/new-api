@@ -8,14 +8,17 @@ import {
   showWarning,
 } from '../../../helpers';
 
-export default function SettingsDrawing(props) {
+export default function DataDashboard(props) {
+  const optionsDataExportDefaultTime = [
+    { key: 'hour', label: '小时', value: 'hour' },
+    { key: 'day', label: '天', value: 'day' },
+    { key: 'week', label: '周', value: 'week' },
+  ];
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
-    DrawingEnabled: false,
-    MjNotifyEnabled: false,
-    MjAccountFilterEnabled: false,
-    MjForwardUrlEnabled: false,
-    MjModeClearEnabled: false,
+    DataExportEnabled: false,
+    DataExportInterval: '',
+    DataExportDefaultTime: '',
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -64,8 +67,12 @@ export default function SettingsDrawing(props) {
     setInputs(currentInputs);
     setInputsRow(structuredClone(currentInputs));
     refForm.current.setValues(currentInputs);
-    localStorage.setItem('mj_notify_enabled', String(inputs.MjNotifyEnabled));
+    localStorage.setItem(
+      'data_export_default_time',
+      String(inputs.DataExportDefaultTime),
+    );
   }, [props.options]);
+
   return (
     <>
       <Spin spinning={loading}>
@@ -74,84 +81,54 @@ export default function SettingsDrawing(props) {
           getFormApi={(formAPI) => (refForm.current = formAPI)}
           style={{ marginBottom: 15 }}
         >
-          <Form.Section text={'绘图设置'}>
+          <Form.Section text={'数据看板设置'}>
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Switch
-                  field={'DrawingEnabled'}
-                  label={'启用绘图功能'}
+                  field={'DataExportEnabled'}
+                  label={'启用数据看板（实验性）'}
                   size='large'
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) => {
                     setInputs({
                       ...inputs,
-                      DrawingEnabled: value,
+                      DataExportEnabled: value,
                     });
                   }}
                 />
               </Col>
+            </Row>
+            <Row>
               <Col span={8}>
-                <Form.Switch
-                  field={'MjNotifyEnabled'}
-                  label={'允许回调（会泄露服务器 IP 地址）'}
-                  size='large'
-                  checkedText='｜'
-                  uncheckedText='〇'
+                <Form.InputNumber
+                  label={'数据看板更新间隔 '}
+                  step={1}
+                  min={1}
+                  suffix={'分钟'}
+                  extraText={'设置过短会影响数据库性能'}
+                  placeholder={'数据看板更新间隔'}
+                  field={'DataExportInterval'}
                   onChange={(value) =>
                     setInputs({
                       ...inputs,
-                      MjNotifyEnabled: value,
+                      DataExportInterval: String(value),
                     })
                   }
                 />
               </Col>
               <Col span={8}>
-                <Form.Switch
-                  field={'MjAccountFilterEnabled'}
-                  label={'允许 AccountFilter 参数'}
-                  size='large'
-                  checkedText='｜'
-                  uncheckedText='〇'
+                <Form.Select
+                  label='数据看板默认时间粒度'
+                  optionList={optionsDataExportDefaultTime}
+                  field={'DataExportDefaultTime'}
+                  extraText={'仅修改展示粒度，统计精确到小时'}
+                  placeholder={'数据看板默认时间粒度'}
+                  style={{ width: 180 }}
                   onChange={(value) =>
                     setInputs({
                       ...inputs,
-                      MjAccountFilterEnabled: value,
-                    })
-                  }
-                />
-              </Col>
-              <Col span={8}>
-                <Form.Switch
-                  field={'MjForwardUrlEnabled'}
-                  label={'开启之后将上游地址替换为服务器地址'}
-                  size='large'
-                  checkedText='｜'
-                  uncheckedText='〇'
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      MjForwardUrlEnabled: value,
-                    })
-                  }
-                />
-              </Col>
-              <Col span={8}>
-                <Form.Switch
-                  field={'MjModeClearEnabled'}
-                  label={
-                    <>
-                      开启之后会清除用户提示词中的 <Tag>--fast</Tag> 、
-                      <Tag>--relax</Tag> 以及 <Tag>--turbo</Tag> 参数
-                    </>
-                  }
-                  size='large'
-                  checkedText='｜'
-                  uncheckedText='〇'
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      MjModeClearEnabled: value,
+                      DataExportDefaultTime: String(value),
                     })
                   }
                 />
@@ -159,7 +136,7 @@ export default function SettingsDrawing(props) {
             </Row>
             <Row>
               <Button size='large' onClick={onSubmit}>
-                保存绘图设置
+                保存数据看板设置
               </Button>
             </Row>
           </Form.Section>

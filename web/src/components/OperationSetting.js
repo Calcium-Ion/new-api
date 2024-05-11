@@ -5,6 +5,7 @@ import SettingsGeneral from '../pages/Setting/Operation/SettingsGeneral.js';
 import SettingsDrawing from '../pages/Setting/Operation/SettingsDrawing.js';
 import SettingsSensitiveWords from '../pages/Setting/Operation/SettingsSensitiveWords.js';
 import SettingsLog from '../pages/Setting/Operation/SettingsLog.js';
+import SettingsDataDashboard from '../pages/Setting/Operation/SettingsDataDashboard.js';
 
 import {
   API,
@@ -48,7 +49,7 @@ const OperationSetting = () => {
     MjModeClearEnabled: false,
     MjForwardUrlEnabled: false,
     DrawingEnabled: false,
-    DataExportEnabled: '',
+    DataExportEnabled: false,
     DataExportDefaultTime: 'hour',
     DataExportInterval: 5,
     DefaultCollapseSidebar: false, // 默认折叠侧边栏
@@ -56,15 +57,7 @@ const OperationSetting = () => {
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
-  let [historyTimestamp, setHistoryTimestamp] = useState(
-    timestamp2string(now.getTime() / 1000 - 30 * 24 * 3600),
-  ); // a month ago
-  // 精确时间选项（小时，天，周）
-  const timeOptions = [
-    { key: 'hour', text: '小时', value: 'hour' },
-    { key: 'day', text: '天', value: 'day' },
-    { key: 'week', text: '周', value: 'week' },
-  ];
+
   const getOptions = async () => {
     const res = await API.get('/api/option/');
     const { success, message, data } = res.data;
@@ -242,6 +235,10 @@ const OperationSetting = () => {
       <Card style={{ marginTop: '10px' }}>
         <SettingsLog options={inputs} />
       </Card>
+      {/* 数据看板 */}
+      <Card style={{ marginTop: '10px' }}>
+        <SettingsDataDashboard options={inputs} />
+      </Card>
       <Grid columns={1}>
         <Grid.Column>
           <Form loading={loading} inverted={isDark}>
@@ -265,37 +262,6 @@ const OperationSetting = () => {
             {/*  />*/}
             {/*</Form.Group>*/}
 
-            <Header as='h3' inverted={isDark}>
-              数据看板
-            </Header>
-            <Form.Checkbox
-              checked={inputs.DataExportEnabled === 'true'}
-              label='启用数据看板（实验性）'
-              name='DataExportEnabled'
-              onChange={handleInputChange}
-            />
-            <Form.Group>
-              <Form.Input
-                label='数据看板更新间隔（分钟，设置过短会影响数据库性能）'
-                name='DataExportInterval'
-                type={'number'}
-                step='1'
-                min='1'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.DataExportInterval}
-                placeholder='数据看板更新间隔（分钟，设置过短会影响数据库性能）'
-              />
-              <Form.Select
-                label='数据看板默认时间粒度（仅修改展示粒度，统计精确到小时）'
-                options={timeOptions}
-                name='DataExportDefaultTime'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.DataExportDefaultTime}
-                placeholder='数据看板默认时间粒度'
-              />
-            </Form.Group>
             <Divider />
             <Header as='h3' inverted={isDark}>
               监控设置
