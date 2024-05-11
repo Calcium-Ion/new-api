@@ -7,6 +7,7 @@ import SettingsSensitiveWords from '../pages/Setting/Operation/SettingsSensitive
 import SettingsLog from '../pages/Setting/Operation/SettingsLog.js';
 import SettingsDataDashboard from '../pages/Setting/Operation/SettingsDataDashboard.js';
 import SettingsMonitoring from '../pages/Setting/Operation/SettingsMonitoring.js';
+import SettingsCreditLimit from '../pages/Setting/Operation/SettingsCreditLimit.js';
 
 import {
   API,
@@ -244,6 +245,10 @@ const OperationSetting = () => {
       <Card style={{ marginTop: '10px' }}>
         <SettingsMonitoring options={inputs} />
       </Card>
+      {/* 额度设置 */}
+      <Card style={{ marginTop: '10px' }}>
+        <SettingsCreditLimit options={inputs} />
+      </Card>
       <Grid columns={1}>
         <Grid.Column>
           <Form loading={loading} inverted={isDark}>
@@ -267,59 +272,6 @@ const OperationSetting = () => {
             {/*  />*/}
             {/*</Form.Group>*/}
 
-            <Divider />
-            <Header as='h3' inverted={isDark}>
-              额度设置
-            </Header>
-            <Form.Group widths={4}>
-              <Form.Input
-                label='新用户初始额度'
-                name='QuotaForNewUser'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.QuotaForNewUser}
-                type='number'
-                min='0'
-                placeholder='例如：100'
-              />
-              <Form.Input
-                label='请求预扣费额度'
-                name='PreConsumedQuota'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.PreConsumedQuota}
-                type='number'
-                min='0'
-                placeholder='请求结束后多退少补'
-              />
-              <Form.Input
-                label='邀请新用户奖励额度'
-                name='QuotaForInviter'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.QuotaForInviter}
-                type='number'
-                min='0'
-                placeholder='例如：2000'
-              />
-              <Form.Input
-                label='新用户使用邀请码奖励额度'
-                name='QuotaForInvitee'
-                onChange={handleInputChange}
-                autoComplete='new-password'
-                value={inputs.QuotaForInvitee}
-                type='number'
-                min='0'
-                placeholder='例如：1000'
-              />
-            </Form.Group>
-            <Form.Button
-              onClick={() => {
-                submitConfig('quota').then();
-              }}
-            >
-              保存额度设置
-            </Form.Button>
             <Divider />
             <Header as='h3' inverted={isDark}>
               倍率设置
