@@ -4,6 +4,7 @@ import { Card } from '@douyinfe/semi-ui';
 import SettingsGeneral from '../pages/Setting/Operation/SettingsGeneral.js';
 import SettingsDrawing from '../pages/Setting/Operation/SettingsDrawing.js';
 import SettingsSensitiveWords from '../pages/Setting/Operation/SettingsSensitiveWords.js';
+import SettingsLog from '../pages/Setting/Operation/SettingsLog.js';
 
 import {
   API,
@@ -34,19 +35,19 @@ const OperationSetting = () => {
     AutomaticDisableChannelEnabled: '',
     AutomaticEnableChannelEnabled: '',
     ChannelDisableThreshold: 0,
-    LogConsumeEnabled: '',
+    LogConsumeEnabled: false,
     DisplayInCurrencyEnabled: false,
     DisplayTokenStatEnabled: false,
-    CheckSensitiveEnabled: '',
-    CheckSensitiveOnPromptEnabled: '',
+    CheckSensitiveEnabled: false,
+    CheckSensitiveOnPromptEnabled: false,
     CheckSensitiveOnCompletionEnabled: '',
     StopOnSensitiveEnabled: '',
     SensitiveWords: '',
-    MjNotifyEnabled: '',
-    MjAccountFilterEnabled: '',
-    MjModeClearEnabled: '',
-    MjForwardUrlEnabled: '',
-    DrawingEnabled: '',
+    MjNotifyEnabled: false,
+    MjAccountFilterEnabled: false,
+    MjModeClearEnabled: false,
+    MjForwardUrlEnabled: false,
+    DrawingEnabled: false,
     DataExportEnabled: '',
     DataExportDefaultTime: 'hour',
     DataExportInterval: 5,
@@ -223,19 +224,6 @@ const OperationSetting = () => {
         break;
     }
   };
-
-  const deleteHistoryLogs = async () => {
-    console.log(inputs);
-    const res = await API.delete(
-      `/api/log/?target_timestamp=${Date.parse(historyTimestamp) / 1000}`,
-    );
-    const { success, message, data } = res.data;
-    if (success) {
-      showSuccess(`${data} 条日志已清理！`);
-      return;
-    }
-    showError('日志清理失败：' + message);
-  };
   return (
     <>
       {/* 通用设置 */}
@@ -249,6 +237,10 @@ const OperationSetting = () => {
       {/* 屏蔽词过滤设置 */}
       <Card style={{ marginTop: '10px' }}>
         <SettingsSensitiveWords options={inputs} />
+      </Card>
+      {/* 日志设置 */}
+      <Card style={{ marginTop: '10px' }}>
+        <SettingsLog options={inputs} />
       </Card>
       <Grid columns={1}>
         <Grid.Column>
@@ -273,36 +265,6 @@ const OperationSetting = () => {
             {/*  />*/}
             {/*</Form.Group>*/}
 
-            <Header as='h3' inverted={isDark}>
-              日志设置
-            </Header>
-            <Form.Group inline>
-              <Form.Checkbox
-                checked={inputs.LogConsumeEnabled === 'true'}
-                label='启用额度消费日志记录'
-                name='LogConsumeEnabled'
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group widths={4}>
-              <Form.Input
-                label='目标时间'
-                value={historyTimestamp}
-                type='datetime-local'
-                name='history_timestamp'
-                onChange={(e, { name, value }) => {
-                  setHistoryTimestamp(value);
-                }}
-              />
-            </Form.Group>
-            <Form.Button
-              onClick={() => {
-                deleteHistoryLogs().then();
-              }}
-            >
-              清理历史日志
-            </Form.Button>
-            <Divider />
             <Header as='h3' inverted={isDark}>
               数据看板
             </Header>
