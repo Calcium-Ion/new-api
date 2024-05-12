@@ -6,7 +6,7 @@ var ModelList = []string{
 	"gpt-3.5-turbo-instruct",
 	"gpt-4", "gpt-4-0314", "gpt-4-0613", "gpt-4-1106-preview", "gpt-4-0125-preview",
 	"gpt-4-32k", "gpt-4-32k-0314", "gpt-4-32k-0613",
-	"gpt-4-turbo-preview",
+	"gpt-4-turbo-preview", "gpt-4-turbo", "gpt-4-turbo-2024-04-09",
 	"gpt-4-vision-preview",
 	"text-embedding-ada-002", "text-embedding-3-small", "text-embedding-3-large",
 	"text-curie-001", "text-babbage-001", "text-ada-001", "text-davinci-002", "text-davinci-003",

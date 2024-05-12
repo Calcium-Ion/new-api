@@ -3,14 +3,17 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
+	"one-api/common"
 	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	"one-api/relay"
 	"one-api/relay/channel/ai360"
-	"one-api/relay/channel/moonshot"
 	"one-api/relay/channel/lingyiwanwu"
+	"one-api/relay/channel/moonshot"
+	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
 )
 
@@ -43,6 +46,7 @@ type OpenAIModels struct {
 
 var openAIModels []OpenAIModels
 var openAIModelsMap map[string]OpenAIModels
+var channelId2Models map[int][]string
 
 func init() {
 	var permission []OpenAIModelPermission
@@ -85,7 +89,7 @@ func init() {
 			Id:         modelName,
 			Object:     "model",
 			Created:    1626777600,
-			OwnedBy:    "360",
+			OwnedBy:    ai360.ChannelName,
 			Permission: permission,
 			Root:       modelName,
 			Parent:     nil,
@@ -128,6 +132,18 @@ func init() {
 	for _, model := range openAIModels {
 		openAIModelsMap[model.Id] = model
 	}
+	channelId2Models = make(map[int][]string)
+	for i := 1; i <= common.ChannelTypeDummy; i++ {
+		apiType := relayconstant.ChannelType2APIType(i)
+		if apiType == -1 || apiType == relayconstant.APITypeAIProxyLibrary {
+			continue
+		}
+		log.Println(apiType)
+		meta := &relaycommon.RelayInfo{ChannelType: i}
+		adaptor := relay.GetAdaptor(apiType)
+		adaptor.Init(meta, dto.GeneralOpenAIRequest{})
+		channelId2Models[i] = adaptor.GetModelList()
+	}
 }
 
 func ListModels(c *gin.Context) {
@@ -148,15 +164,22 @@ func ListModels(c *gin.Context) {
 		}
 	}
 	c.JSON(200, gin.H{
-		"object": "list",
-		"data":   userOpenAiModels,
+		"success": true,
+		"data":    userOpenAiModels,
 	})
 }
 
 func ChannelListModels(c *gin.Context) {
 	c.JSON(200, gin.H{
-		"object": "list",
-		"data":   openAIModels,
+		"success": true,
+		"data":    openAIModels,
+	})
+}
+
+func DashboardListModels(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"success": true,
+		"data":    channelId2Models,
 	})
 }
 
