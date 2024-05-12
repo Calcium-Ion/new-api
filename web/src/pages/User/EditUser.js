@@ -19,7 +19,7 @@ const EditUser = (props) => {
   const userId = props.editingUser.id;
   const [loading, setLoading] = useState(true);
   const [addQuotaModalOpen, setIsModalOpen] = useState(false);
-  const [addQuotaLocal, setAddQuotaLocal] = useState(0);
+  const [addQuotaLocal, setAddQuotaLocal] = useState('');
   const [inputs, setInputs] = useState({
     username: '',
     display_name: '',
@@ -111,12 +111,12 @@ const EditUser = (props) => {
   };
 
   const addLocalQuota = () => {
-    let newQuota = parseInt(quota) + addQuotaLocal;
+    let newQuota = parseInt(quota) + parseInt(addQuotaLocal);
     setInputs((inputs) => ({ ...inputs, quota: newQuota }));
   };
 
   const openAddQuotaModal = () => {
-    setAddQuotaLocal(0);
+    setAddQuotaLocal('0');
     setIsModalOpen(true);
   };
 
@@ -272,12 +272,14 @@ const EditUser = (props) => {
         closable={null}
       >
         <div style={{ marginTop: 20 }}>
-          <Typography.Text>{`新额度${renderQuota(quota)} + ${renderQuota(addQuotaLocal)} = ${renderQuota(quota + addQuotaLocal)}`}</Typography.Text>
+          <Typography.Text>{`新额度${renderQuota(quota)} + ${renderQuota(addQuotaLocal)} = ${renderQuota(quota + parseInt(addQuotaLocal))}`}</Typography.Text>
         </div>
         <Input
           name='addQuotaLocal'
-          placeholder={'需要添加的额度'}
-          onChange={(value) => setAddQuotaLocal(parseInt(value))}
+          placeholder={'需要添加的额度（支持负数）'}
+          onChange={(value) => {
+            setAddQuotaLocal(value);
+          }}
           value={addQuotaLocal}
           type={'number'}
           autoComplete='new-password'
