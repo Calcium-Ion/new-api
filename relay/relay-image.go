@@ -191,7 +191,10 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 				quality = "hd"
 			}
 			logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f, 大小 %s, 品质 %s", modelRatio, groupRatio, imageRequest.Size, quality)
-			model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageRequest.Model, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), false)
+			other := make(map[string]interface{})
+			other["model_ratio"] = modelRatio
+			other["group_ratio"] = groupRatio
+			model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageRequest.Model, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), false, other)
 			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 			channelId := c.GetInt("channel_id")
 			model.UpdateChannelUsedQuota(channelId, quota)
