@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"one-api/common"
 	"one-api/constant"
@@ -48,7 +47,7 @@ var openAIModels []OpenAIModels
 var openAIModelsMap map[string]OpenAIModels
 var channelId2Models map[int][]string
 
-func init() {
+func getPermission() []OpenAIModelPermission {
 	var permission []OpenAIModelPermission
 	permission = append(permission, OpenAIModelPermission{
 		Id:                 "modelperm-LwHkVFn8AcMItP432fKKDIKJ",
@@ -64,7 +63,12 @@ func init() {
 		Group:              nil,
 		IsBlocking:         false,
 	})
+	return permission
+}
+
+func init() {
 	// https://platform.openai.com/docs/models/model-endpoint-compatibility
+	permission := getPermission()
 	for i := 0; i < relayconstant.APITypeDummy; i++ {
 		if i == relayconstant.APITypeAIProxyLibrary {
 			continue
@@ -138,7 +142,6 @@ func init() {
 		if apiType == -1 || apiType == relayconstant.APITypeAIProxyLibrary {
 			continue
 		}
-		log.Println(apiType)
 		meta := &relaycommon.RelayInfo{ChannelType: i}
 		adaptor := relay.GetAdaptor(apiType)
 		adaptor.Init(meta, dto.GeneralOpenAIRequest{})
@@ -158,9 +161,20 @@ func ListModels(c *gin.Context) {
 	}
 	models := model.GetGroupModels(user.Group)
 	userOpenAiModels := make([]OpenAIModels, 0)
+	permission := getPermission()
 	for _, s := range models {
 		if _, ok := openAIModelsMap[s]; ok {
 			userOpenAiModels = append(userOpenAiModels, openAIModelsMap[s])
+		} else {
+			userOpenAiModels = append(userOpenAiModels, OpenAIModels{
+				Id:         s,
+				Object:     "model",
+				Created:    1626777600,
+				OwnedBy:    "openai",
+				Permission: permission,
+				Root:       s,
+				Parent:     nil,
+			})
 		}
 	}
 	c.JSON(200, gin.H{
