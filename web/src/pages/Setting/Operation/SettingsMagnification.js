@@ -52,7 +52,7 @@ export default function SettingsMagnification(props) {
         })
         .finally(() => {
           setLoading(false);
-          setInputsRow(structuredClone(inputs));
+          props.refresh();
         });
     } catch (error) {
       showError('请检查输入');

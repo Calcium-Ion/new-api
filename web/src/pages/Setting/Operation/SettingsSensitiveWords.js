@@ -48,7 +48,7 @@ export default function SettingsSensitiveWords(props) {
       })
       .finally(() => {
         setLoading(false);
-        setInputsRow(structuredClone(inputs));
+        props.refresh();
       });
   }
 

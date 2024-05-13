@@ -53,7 +53,7 @@ export default function DataDashboard(props) {
       })
       .finally(() => {
         setLoading(false);
-        setInputsRow(structuredClone(inputs));
+        props.refresh();
       });
   }
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Divider, Form, Grid, Header } from 'semantic-ui-react';
 import { Card, Spin } from '@douyinfe/semi-ui';
 import SettingsGeneral from '../pages/Setting/Operation/SettingsGeneral.js';
 import SettingsDrawing from '../pages/Setting/Operation/SettingsDrawing.js';
@@ -10,13 +9,7 @@ import SettingsMonitoring from '../pages/Setting/Operation/SettingsMonitoring.js
 import SettingsCreditLimit from '../pages/Setting/Operation/SettingsCreditLimit.js';
 import SettingsMagnification from '../pages/Setting/Operation/SettingsMagnification.js';
 
-import {
-  API,
-  showError,
-  showSuccess,
-  timestamp2string,
-  verifyJSON,
-} from '../helpers';
+import { API, showError, showSuccess } from '../helpers';
 
 const OperationSetting = () => {
   let [inputs, setInputs] = useState({
@@ -101,7 +94,7 @@ const OperationSetting = () => {
   }
 
   useEffect(() => {
-    getOptions();
+    onRefresh();
   }, []);
 
   return (
@@ -109,35 +102,35 @@ const OperationSetting = () => {
       <Spin spinning={loading} size='large'>
         {/* 通用设置 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsGeneral options={inputs} />
+          <SettingsGeneral options={inputs} refresh={onRefresh} />
         </Card>
         {/* 绘图设置 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsDrawing options={inputs} />
+          <SettingsDrawing options={inputs} refresh={onRefresh} />
         </Card>
         {/* 屏蔽词过滤设置 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsSensitiveWords options={inputs} />
+          <SettingsSensitiveWords options={inputs} refresh={onRefresh} />
         </Card>
         {/* 日志设置 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsLog options={inputs} />
+          <SettingsLog options={inputs} refresh={onRefresh} />
         </Card>
         {/* 数据看板 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsDataDashboard options={inputs} />
+          <SettingsDataDashboard options={inputs} refresh={onRefresh} />
         </Card>
         {/* 监控设置 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsMonitoring options={inputs} />
+          <SettingsMonitoring options={inputs} refresh={onRefresh} />
         </Card>
         {/* 额度设置 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsCreditLimit options={inputs} />
+          <SettingsCreditLimit options={inputs} refresh={onRefresh} />
         </Card>
         {/* 倍率设置 */}
         <Card style={{ marginTop: '10px' }}>
-          <SettingsMagnification options={inputs} />
+          <SettingsMagnification options={inputs} refresh={onRefresh} />
         </Card>
       </Spin>
     </>

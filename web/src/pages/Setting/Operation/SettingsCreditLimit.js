@@ -49,7 +49,7 @@ export default function SettingsCreditLimit(props) {
       })
       .finally(() => {
         setLoading(false);
-        setInputsRow(structuredClone(inputs));
+        props.refresh();
       });
   }
 

@@ -16,9 +16,6 @@ export default function SettingsLog(props) {
     LogConsumeEnabled: false,
     historyTimestamp: dayjs().subtract(1, 'month').toDate(),
   });
-  // const [historyTimestamp, setHistoryTimestamp] = useState(
-  //   dayjs().subtract(1, 'month').toDate(),
-  // );
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
 
@@ -55,7 +52,7 @@ export default function SettingsLog(props) {
       })
       .finally(() => {
         setLoading(false);
-        setInputsRow(structuredClone(inputs));
+        props.refresh();
       });
   }
   async function onCleanHistoryLog() {

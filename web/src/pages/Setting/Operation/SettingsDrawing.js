@@ -50,7 +50,7 @@ export default function SettingsDrawing(props) {
       })
       .finally(() => {
         setLoading(false);
-        setInputsRow(structuredClone(inputs));
+        props.refresh();
       });
   }
 

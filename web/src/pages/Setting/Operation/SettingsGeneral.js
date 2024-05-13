@@ -56,7 +56,7 @@ export default function GeneralSettings(props) {
       })
       .finally(() => {
         setLoading(false);
-        setInputsRow(structuredClone(inputs));
+        props.refresh();
       });
   }
 
