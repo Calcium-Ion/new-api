@@ -1,4 +1,3 @@
-import { Label } from 'semantic-ui-react';
 import { Tag } from '@douyinfe/semi-ui';
 
 export function renderText(text, limit) {
@@ -152,9 +151,9 @@ export function renderModelPrice(
     let completionRatioPrice =
       modelRatio * completionRatio * 0.002 * groupRatio;
     return (
-      '输入：$' +
+      '输入 $' +
       inputRatioPrice.toFixed(3) +
-      '/1K tokens，补全：$' +
+      '/1K tokens，补全 $' +
       completionRatioPrice.toFixed(3) +
       '/1K tokens'
     );

@@ -138,8 +138,8 @@ func init() {
 	}
 	channelId2Models = make(map[int][]string)
 	for i := 1; i <= common.ChannelTypeDummy; i++ {
-		apiType := relayconstant.ChannelType2APIType(i)
-		if apiType == -1 || apiType == relayconstant.APITypeAIProxyLibrary {
+		apiType, success := relayconstant.ChannelType2APIType(i)
+		if !success || apiType == relayconstant.APITypeAIProxyLibrary {
 			continue
 		}
 		meta := &relaycommon.RelayInfo{ChannelType: i}
