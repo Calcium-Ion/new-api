@@ -178,6 +178,13 @@ func GetModelPrice(name string, printErr bool) (float64, bool) {
 	return price, true
 }
 
+func GetModelPrices() map[string]float64 {
+	if modelPrice == nil {
+		modelPrice = DefaultModelPrice
+	}
+	return modelPrice
+}
+
 func ModelRatio2JSONString() string {
 	if modelRatio == nil {
 		modelRatio = DefaultModelRatio
@@ -207,6 +214,13 @@ func GetModelRatio(name string) float64 {
 		return 30
 	}
 	return ratio
+}
+
+func GetModelRatios() map[string]float64 {
+	if modelRatio == nil {
+		modelRatio = DefaultModelRatio
+	}
+	return modelRatio
 }
 
 func CompletionRatio2JSONString() string {
@@ -281,4 +295,11 @@ func GetCompletionRatio(name string) float64 {
 		return ratio
 	}
 	return 1
+}
+
+func GetCompletionRatios() map[string]float64 {
+	if CompletionRatio == nil {
+		CompletionRatio = DefaultCompletionRatio
+	}
+	return CompletionRatio
 }
