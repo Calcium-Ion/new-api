@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"log"
 	"net/http"
 	"one-api/common"
 	"one-api/dto"
@@ -114,7 +113,6 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 		// per 1 modelRatio = $0.04 / 16
 		modelPrice = 0.0025 * modelRatio
 	}
-	log.Printf("modelPrice: %f", modelPrice)
 	groupRatio := common.GetGroupRatio(group)
 	userQuota, err := model.CacheGetUserQuota(userId)
 
