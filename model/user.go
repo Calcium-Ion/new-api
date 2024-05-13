@@ -253,14 +253,17 @@ func (user *User) Edit(updatePassword bool) error {
 		}
 	}
 	newUser := *user
-	DB.First(&user, user.Id)
-	err = DB.Model(user).Updates(map[string]interface{}{
+	updates := map[string]interface{}{
 		"username":     newUser.Username,
-		"password":     newUser.Password,
 		"display_name": newUser.DisplayName,
 		"group":        newUser.Group,
 		"quota":        newUser.Quota,
-	}).Error
+	}
+	if updatePassword {
+		updates["password"] = newUser.Password
+	}
+	DB.First(&user, user.Id)
+	err = DB.Model(user).Updates(updates).Error
 	if err == nil {
 		if common.RedisEnabled {
 			_ = common.RedisSet(fmt.Sprintf("user_group:%d", user.Id), user.Group, time.Duration(UserId2GroupCacheSeconds)*time.Second)

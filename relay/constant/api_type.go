@@ -25,8 +25,18 @@ const (
 )
 
 func ChannelType2APIType(channelType int) int {
-	apiType := APITypeOpenAI
+	apiType := -1
 	switch channelType {
+	case common.ChannelTypeOpenAI:
+		apiType = APITypeOpenAI
+	case common.ChannelTypeAzure:
+		apiType = APITypeOpenAI
+	case common.ChannelTypeMoonshot:
+		apiType = APITypeOpenAI
+	case common.ChannelTypeLingYiWanWu:
+		apiType = APITypeOpenAI
+	case common.ChannelType360:
+		apiType = APITypeOpenAI
 	case common.ChannelTypeAnthropic:
 		apiType = APITypeAnthropic
 	case common.ChannelTypeBaidu:

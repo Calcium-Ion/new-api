@@ -23,6 +23,7 @@ import {
   Banner,
 } from '@douyinfe/semi-ui';
 import { Divider } from 'semantic-ui-react';
+import { getChannelModels, loadChannelModels } from '../../components/utils.js';
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo-0301': 'gpt-3.5-turbo',
@@ -87,97 +88,9 @@ const EditChannel = (props) => {
   const [customModel, setCustomModel] = useState('');
   const handleInputChange = (name, value) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
-    if (name === 'type' && inputs.models.length === 0) {
+    if (name === 'type') {
       let localModels = [];
       switch (value) {
-        case 33:
-        case 14:
-          localModels = [
-            'claude-instant-1.2',
-            'claude-2',
-            'claude-2.0',
-            'claude-2.1',
-            'claude-3-opus-20240229',
-            'claude-3-sonnet-20240229',
-            'claude-3-haiku-20240307',
-          ];
-          break;
-        case 11:
-          localModels = ['PaLM-2'];
-          break;
-        case 15:
-          localModels = [
-            'ERNIE-Bot',
-            'ERNIE-Bot-turbo',
-            'ERNIE-Bot-4',
-            'Embedding-V1',
-          ];
-          break;
-        case 17:
-          localModels = [
-            'qwen-turbo',
-            'qwen-plus',
-            'qwen-max',
-            'qwen-max-longcontext',
-            'text-embedding-v1',
-          ];
-          break;
-        case 16:
-          localModels = ['chatglm_pro', 'chatglm_std', 'chatglm_lite'];
-          break;
-        case 18:
-          localModels = [
-            'SparkDesk',
-            'SparkDesk-v1.1',
-            'SparkDesk-v2.1',
-            'SparkDesk-v3.1',
-            'SparkDesk-v3.5',
-          ];
-          break;
-        case 19:
-          localModels = [
-            '360GPT_S2_V9',
-            'embedding-bert-512-v1',
-            'embedding_s1_v1',
-            'semantic_similarity_s1_v1',
-          ];
-          break;
-        case 23:
-          localModels = ['hunyuan'];
-          break;
-        case 24:
-          localModels = [
-            'gemini-1.0-pro-001',
-            'gemini-1.0-pro-vision-001',
-            'gemini-1.5-pro',
-            'gemini-1.5-pro-latest',
-            'gemini-pro',
-            'gemini-pro-vision',
-          ];
-          break;
-        case 34:
-          localModels = [
-            'command-r',
-            'command-r-plus',
-            'command-light',
-            'command-light-nightly',
-            'command',
-            'command-nightly',
-          ];
-          break;
-        case 25:
-          localModels = [
-            'moonshot-v1-8k',
-            'moonshot-v1-32k',
-            'moonshot-v1-128k',
-          ];
-          break;
-        case 26:
-          localModels = ['glm-4', 'glm-4v', 'glm-3-turbo'];
-          break;
-        case 31:
-          localModels = ['yi-34b-chat-0205', 'yi-34b-chat-200k', 'yi-vl-plus'];
-          break;
         case 2:
           localModels = [
             'mj_imagine',
@@ -207,8 +120,14 @@ const EditChannel = (props) => {
             'mj_pan',
           ];
           break;
+        default:
+          localModels = getChannelModels(value);
+          break;
       }
-      setInputs((inputs) => ({ ...inputs, models: localModels }));
+      if (inputs.models.length === 0) {
+        setInputs((inputs) => ({ ...inputs, models: localModels }));
+      }
+      setBasicModels(localModels);
     }
     //setAutoBan
   };
@@ -244,6 +163,7 @@ const EditChannel = (props) => {
       } else {
         setAutoBan(true);
       }
+      setBasicModels(getChannelModels(data.type));
       // console.log(data);
     } else {
       showError(message);
@@ -312,6 +232,9 @@ const EditChannel = (props) => {
       loadChannel().then(() => {});
     } else {
       setInputs(originInputs);
+      let localModels = getChannelModels(inputs.type);
+      setBasicModels(localModels);
+      setInputs((inputs) => ({ ...inputs, models: localModels }));
     }
   }, [props.editingChannel.id]);
 
@@ -596,7 +519,7 @@ const EditChannel = (props) => {
                   handleInputChange('models', basicModels);
                 }}
               >
-                填入基础模型
+                填入相关模型
               </Button>
               <Button
                 type='secondary'

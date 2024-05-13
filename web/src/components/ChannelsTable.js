@@ -31,6 +31,7 @@ import {
 } from '@douyinfe/semi-ui';
 import EditChannel from '../pages/Channel/EditChannel';
 import { IconTreeTriangleDown } from '@douyinfe/semi-icons';
+import { loadChannelModels } from './utils.js';
 
 function renderTimestamp(timestamp) {
   return <>{timestamp2string(timestamp)}</>;
@@ -354,27 +355,29 @@ const ChannelsTable = () => {
   };
 
   const copySelectedChannel = async (id) => {
-    const channelToCopy = channels.find(channel => String(channel.id) === String(id));
-    console.log(channelToCopy)
+    const channelToCopy = channels.find(
+      (channel) => String(channel.id) === String(id),
+    );
+    console.log(channelToCopy);
     channelToCopy.name += '_复制';
     channelToCopy.created_time = null;
     channelToCopy.balance = 0;
     channelToCopy.used_quota = 0;
     if (!channelToCopy) {
-        showError("渠道未找到，请刷新页面后重试。");
-        return;
+      showError('渠道未找到，请刷新页面后重试。');
+      return;
     }
     try {
-        const newChannel = {...channelToCopy, id: undefined};
-        const response = await API.post('/api/channel/', newChannel);
-        if (response.data.success) {
-            showSuccess("渠道复制成功");
-            await refresh();
-        } else {
-            showError(response.data.message);
-        }
+      const newChannel = { ...channelToCopy, id: undefined };
+      const response = await API.post('/api/channel/', newChannel);
+      if (response.data.success) {
+        showSuccess('渠道复制成功');
+        await refresh();
+      } else {
+        showError(response.data.message);
+      }
     } catch (error) {
-        showError("渠道复制失败: " + error.message);
+      showError('渠道复制失败: ' + error.message);
     }
   };
 
@@ -395,6 +398,7 @@ const ChannelsTable = () => {
         showError(reason);
       });
     fetchGroups().then();
+    loadChannelModels().then();
   }, []);
 
   const manageChannel = async (id, action, record, value) => {

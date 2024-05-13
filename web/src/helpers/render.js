@@ -135,6 +135,32 @@ export function renderQuota(quota, digits = 2) {
   return renderNumber(quota);
 }
 
+export function renderModelPrice(
+  modelRatio,
+  modelPrice = -1,
+  completionRatio,
+  groupRatio,
+) {
+  // 1 ratio = $0.002 / 1K tokens
+  if (modelPrice !== -1) {
+    return '模型价格：$' + modelPrice * groupRatio;
+  } else {
+    if (completionRatio === undefined) {
+      completionRatio = 0;
+    }
+    let inputRatioPrice = modelRatio * 0.002 * groupRatio;
+    let completionRatioPrice =
+      modelRatio * completionRatio * 0.002 * groupRatio;
+    return (
+      '输入：$' +
+      inputRatioPrice.toFixed(3) +
+      '/1K tokens，补全：$' +
+      completionRatioPrice.toFixed(3) +
+      '/1K tokens'
+    );
+  }
+}
+
 export function renderQuotaWithPrompt(quota, digits) {
   let displayInCurrency = localStorage.getItem('display_in_currency');
   displayInCurrency = displayInCurrency === 'true';

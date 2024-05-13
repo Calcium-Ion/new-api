@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API, isMobile, showError, showSuccess } from '../../helpers';
-import { renderQuotaWithPrompt } from '../../helpers/render';
+import { renderQuota, renderQuotaWithPrompt } from '../../helpers/render';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import {
   Button,
   Divider,
   Input,
+  Modal,
   Select,
   SideSheet,
   Space,
@@ -17,6 +18,8 @@ import {
 const EditUser = (props) => {
   const userId = props.editingUser.id;
   const [loading, setLoading] = useState(true);
+  const [addQuotaModalOpen, setIsModalOpen] = useState(false);
+  const [addQuotaLocal, setAddQuotaLocal] = useState('');
   const [inputs, setInputs] = useState({
     username: '',
     display_name: '',
@@ -107,6 +110,16 @@ const EditUser = (props) => {
     setLoading(false);
   };
 
+  const addLocalQuota = () => {
+    let newQuota = parseInt(quota) + parseInt(addQuotaLocal);
+    setInputs((inputs) => ({ ...inputs, quota: newQuota }));
+  };
+
+  const openAddQuotaModal = () => {
+    setAddQuotaLocal('0');
+    setIsModalOpen(true);
+  };
+
   return (
     <>
       <SideSheet
@@ -192,14 +205,17 @@ const EditUser = (props) => {
               <div style={{ marginTop: 20 }}>
                 <Typography.Text>{`剩余额度${renderQuotaWithPrompt(quota)}`}</Typography.Text>
               </div>
-              <Input
-                name='quota'
-                placeholder={'请输入新的剩余额度'}
-                onChange={(value) => handleInputChange('quota', value)}
-                value={quota}
-                type={'number'}
-                autoComplete='new-password'
-              />
+              <Space>
+                <Input
+                  name='quota'
+                  placeholder={'请输入新的剩余额度'}
+                  onChange={(value) => handleInputChange('quota', value)}
+                  value={quota}
+                  type={'number'}
+                  autoComplete='new-password'
+                />
+                <Button onClick={openAddQuotaModal}>添加额度</Button>
+              </Space>
             </>
           )}
           <Divider style={{ marginTop: 20 }}>以下信息不可修改</Divider>
@@ -245,6 +261,30 @@ const EditUser = (props) => {
           />
         </Spin>
       </SideSheet>
+      <Modal
+        centered={true}
+        visible={addQuotaModalOpen}
+        onOk={() => {
+          addLocalQuota();
+          setIsModalOpen(false);
+        }}
+        onCancel={() => setIsModalOpen(false)}
+        closable={null}
+      >
+        <div style={{ marginTop: 20 }}>
+          <Typography.Text>{`新额度${renderQuota(quota)} + ${renderQuota(addQuotaLocal)} = ${renderQuota(quota + parseInt(addQuotaLocal))}`}</Typography.Text>
+        </div>
+        <Input
+          name='addQuotaLocal'
+          placeholder={'需要添加的额度（支持负数）'}
+          onChange={(value) => {
+            setAddQuotaLocal(value);
+          }}
+          value={addQuotaLocal}
+          type={'number'}
+          autoComplete='new-password'
+        />
+      </Modal>
     </>
   );
 };

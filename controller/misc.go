@@ -147,7 +147,7 @@ func SendEmailVerification(c *gin.Context) {
 		}
 	}
 	if common.EmailAliasRestrictionEnabled {
-		containsSpecialSymbols := strings.Contains(localPart, "+") || strings.Count(localPart, ".") > 1
+		containsSpecialSymbols := strings.Contains(localPart, "+") || strings.Contains(localPart, ".")
 		if containsSpecialSymbols {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
