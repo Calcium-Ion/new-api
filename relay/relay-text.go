@@ -268,8 +268,8 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, textRe
 
 	quota := 0
 	if modelPrice == -1 {
-		quota = promptTokens + int(float64(completionTokens)*completionRatio)
-		quota = int(float64(quota) * ratio)
+		quota = promptTokens + int(math.Round(float64(completionTokens)*completionRatio))
+		quota = int(math.Round(float64(quota) * ratio))
 		if ratio != 0 && quota <= 0 {
 			quota = 1
 		}

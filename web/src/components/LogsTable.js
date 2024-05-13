@@ -316,6 +316,8 @@ const LogsTable = () => {
         }
         let other = JSON.parse(record.other);
         let content = renderModelPrice(
+          record.prompt_tokens,
+          record.completion_tokens,
           other.model_ratio,
           other.model_price,
           other.completion_ratio,
@@ -326,10 +328,6 @@ const LogsTable = () => {
             <Paragraph
               ellipsis={{
                 rows: 2,
-                showTooltip: {
-                  type: 'popover',
-                  opts: { style: { width: 240 } },
-                },
               }}
               style={{ maxWidth: 240 }}
             >
