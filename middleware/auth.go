@@ -64,6 +64,17 @@ func authHelper(c *gin.Context, minRole int) {
 	c.Next()
 }
 
+func TryUserAuth() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+		id := session.Get("id")
+		if id != nil {
+			c.Set("id", id)
+		}
+		c.Next()
+	}
+}
+
 func UserAuth() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		authHelper(c, common.RoleCommonUser)
