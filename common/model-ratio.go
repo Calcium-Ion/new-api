@@ -61,8 +61,6 @@ var DefaultModelRatio = map[string]float64{
 	"text-search-ada-doc-001":      10,
 	"text-moderation-stable":       0.1,
 	"text-moderation-latest":       0.1,
-	"dall-e-2":                     8,
-	"dall-e-3":                     16,
 	"claude-instant-1":             0.4,    // $0.8 / 1M tokens
 	"claude-2.0":                   4,      // $8 / 1M tokens
 	"claude-2.1":                   4,      // $8 / 1M tokens
@@ -117,6 +115,8 @@ var DefaultModelRatio = map[string]float64{
 }
 
 var DefaultModelPrice = map[string]float64{
+	"dall-e-2":          0.02,
+	"dall-e-3":          0.04,
 	"gpt-4-gizmo-*":     0.1,
 	"mj_imagine":        0.1,
 	"mj_variation":      0.1,
@@ -160,7 +160,8 @@ func UpdateModelPriceByJSONString(jsonStr string) error {
 	return json.Unmarshal([]byte(jsonStr), &modelPrice)
 }
 
-func GetModelPrice(name string, printErr bool) float64 {
+// GetModelPrice 返回模型的价格，如果模型不存在则返回-1，false
+func GetModelPrice(name string, printErr bool) (float64, bool) {
 	if modelPrice == nil {
 		modelPrice = DefaultModelPrice
 	}
@@ -172,9 +173,9 @@ func GetModelPrice(name string, printErr bool) float64 {
 		if printErr {
 			SysError("model price not found: " + name)
 		}
-		return -1
+		return -1, false
 	}
-	return price
+	return price, true
 }
 
 func ModelRatio2JSONString() string {

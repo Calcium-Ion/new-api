@@ -159,7 +159,7 @@ export function renderModelPrice(
         <article>
           <p>提示 ${inputRatioPrice} / 1M tokens</p>
           <p>补全 ${completionRatioPrice} / 1M tokens</p>
-          <p>计算过程：</p>
+          <p> </p>
           <p>
             提示 {inputTokens} tokens / 1M tokens * ${inputRatioPrice} + 补全{' '}
             {completionTokens} tokens / 1M tokens * ${completionRatioPrice} = $
