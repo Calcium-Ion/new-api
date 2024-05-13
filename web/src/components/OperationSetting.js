@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Divider, Form, Grid, Header } from 'semantic-ui-react';
-import { Card } from '@douyinfe/semi-ui';
+import { Card, Spin } from '@douyinfe/semi-ui';
 import SettingsGeneral from '../pages/Setting/Operation/SettingsGeneral.js';
 import SettingsDrawing from '../pages/Setting/Operation/SettingsDrawing.js';
 import SettingsSensitiveWords from '../pages/Setting/Operation/SettingsSensitiveWords.js';
@@ -8,6 +8,7 @@ import SettingsLog from '../pages/Setting/Operation/SettingsLog.js';
 import SettingsDataDashboard from '../pages/Setting/Operation/SettingsDataDashboard.js';
 import SettingsMonitoring from '../pages/Setting/Operation/SettingsMonitoring.js';
 import SettingsCreditLimit from '../pages/Setting/Operation/SettingsCreditLimit.js';
+import SettingsMagnification from '../pages/Setting/Operation/SettingsMagnification.js';
 
 import {
   API,
@@ -17,10 +18,7 @@ import {
   verifyJSON,
 } from '../helpers';
 
-import { useTheme } from '../context/Theme';
-
 const OperationSetting = () => {
-  let now = new Date();
   let [inputs, setInputs] = useState({
     QuotaForNewUser: 0,
     QuotaForInviter: 0,
@@ -58,7 +56,7 @@ const OperationSetting = () => {
     DefaultCollapseSidebar: false, // 默认折叠侧边栏
     RetryTimes: 0,
   });
-  const [originInputs, setOriginInputs] = useState({});
+
   let [loading, setLoading] = useState(false);
 
   const getOptions = async () => {
@@ -86,271 +84,62 @@ const OperationSetting = () => {
       });
 
       setInputs(newInputs);
-      setOriginInputs(newInputs);
     } else {
       showError(message);
     }
   };
-
-  const theme = useTheme();
-  const isDark = theme === 'dark';
+  async function onRefresh() {
+    try {
+      setLoading(true);
+      await getOptions();
+      showSuccess('刷新成功');
+    } catch (error) {
+      showError('刷新失败');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    getOptions().then();
+    getOptions();
   }, []);
 
-  const updateOption = async (key, value) => {
-    setLoading(true);
-    if (key.endsWith('Enabled')) {
-      value = inputs[key] === 'true' ? 'false' : 'true';
-    }
-    if (key === 'DefaultCollapseSidebar') {
-      value = inputs[key] === 'true' ? 'false' : 'true';
-    }
-    console.log(key, value);
-    const res = await API.put('/api/option/', {
-      key,
-      value,
-    });
-    const { success, message } = res.data;
-    if (success) {
-      setInputs((inputs) => ({ ...inputs, [key]: value }));
-    } else {
-      showError(message);
-    }
-    setLoading(false);
-  };
-
-  const handleInputChange = async (e, { name, value }) => {
-    if (
-      name.endsWith('Enabled') ||
-      name === 'DataExportInterval' ||
-      name === 'DataExportDefaultTime' ||
-      name === 'DefaultCollapseSidebar'
-    ) {
-      if (name === 'DataExportDefaultTime') {
-        localStorage.setItem('data_export_default_time', value);
-      } else if (name === 'MjNotifyEnabled') {
-        localStorage.setItem('mj_notify_enabled', value);
-      }
-      await updateOption(name, value);
-    } else {
-      setInputs((inputs) => ({ ...inputs, [name]: value }));
-    }
-  };
-
-  const submitConfig = async (group) => {
-    switch (group) {
-      case 'monitor':
-        if (
-          originInputs['ChannelDisableThreshold'] !==
-          inputs.ChannelDisableThreshold
-        ) {
-          await updateOption(
-            'ChannelDisableThreshold',
-            inputs.ChannelDisableThreshold,
-          );
-        }
-        if (
-          originInputs['QuotaRemindThreshold'] !== inputs.QuotaRemindThreshold
-        ) {
-          await updateOption(
-            'QuotaRemindThreshold',
-            inputs.QuotaRemindThreshold,
-          );
-        }
-        break;
-      case 'ratio':
-        if (originInputs['ModelRatio'] !== inputs.ModelRatio) {
-          if (!verifyJSON(inputs.ModelRatio)) {
-            showError('模型倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('ModelRatio', inputs.ModelRatio);
-        }
-        if (originInputs['CompletionRatio'] !== inputs.CompletionRatio) {
-          if (!verifyJSON(inputs.CompletionRatio)) {
-            showError('模型补全倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('CompletionRatio', inputs.CompletionRatio);
-        }
-        if (originInputs['GroupRatio'] !== inputs.GroupRatio) {
-          if (!verifyJSON(inputs.GroupRatio)) {
-            showError('分组倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('GroupRatio', inputs.GroupRatio);
-        }
-        if (originInputs['ModelPrice'] !== inputs.ModelPrice) {
-          if (!verifyJSON(inputs.ModelPrice)) {
-            showError('模型固定价格不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('ModelPrice', inputs.ModelPrice);
-        }
-        break;
-      case 'words':
-        if (originInputs['SensitiveWords'] !== inputs.SensitiveWords) {
-          await updateOption('SensitiveWords', inputs.SensitiveWords);
-        }
-        break;
-      case 'quota':
-        if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
-          await updateOption('QuotaForNewUser', inputs.QuotaForNewUser);
-        }
-        if (originInputs['QuotaForInvitee'] !== inputs.QuotaForInvitee) {
-          await updateOption('QuotaForInvitee', inputs.QuotaForInvitee);
-        }
-        if (originInputs['QuotaForInviter'] !== inputs.QuotaForInviter) {
-          await updateOption('QuotaForInviter', inputs.QuotaForInviter);
-        }
-        if (originInputs['PreConsumedQuota'] !== inputs.PreConsumedQuota) {
-          await updateOption('PreConsumedQuota', inputs.PreConsumedQuota);
-        }
-        break;
-      case 'general':
-        if (originInputs['TopUpLink'] !== inputs.TopUpLink) {
-          await updateOption('TopUpLink', inputs.TopUpLink);
-        }
-        if (originInputs['ChatLink'] !== inputs.ChatLink) {
-          await updateOption('ChatLink', inputs.ChatLink);
-        }
-        if (originInputs['ChatLink2'] !== inputs.ChatLink2) {
-          await updateOption('ChatLink2', inputs.ChatLink2);
-        }
-        if (originInputs['QuotaPerUnit'] !== inputs.QuotaPerUnit) {
-          await updateOption('QuotaPerUnit', inputs.QuotaPerUnit);
-        }
-        if (originInputs['RetryTimes'] !== inputs.RetryTimes) {
-          await updateOption('RetryTimes', inputs.RetryTimes);
-        }
-        break;
-    }
-  };
   return (
     <>
-      {/* 通用设置 */}
-      <Card style={{ marginTop: '10px' }}>
-        <SettingsGeneral options={inputs} />
-      </Card>
-      {/* 绘图设置 */}
-      <Card style={{ marginTop: '10px' }}>
-        <SettingsDrawing options={inputs} />
-      </Card>
-      {/* 屏蔽词过滤设置 */}
-      <Card style={{ marginTop: '10px' }}>
-        <SettingsSensitiveWords options={inputs} />
-      </Card>
-      {/* 日志设置 */}
-      <Card style={{ marginTop: '10px' }}>
-        <SettingsLog options={inputs} />
-      </Card>
-      {/* 数据看板 */}
-      <Card style={{ marginTop: '10px' }}>
-        <SettingsDataDashboard options={inputs} />
-      </Card>
-      {/* 监控设置 */}
-      <Card style={{ marginTop: '10px' }}>
-        <SettingsMonitoring options={inputs} />
-      </Card>
-      {/* 额度设置 */}
-      <Card style={{ marginTop: '10px' }}>
-        <SettingsCreditLimit options={inputs} />
-      </Card>
-      <Grid columns={1}>
-        <Grid.Column>
-          <Form loading={loading} inverted={isDark}>
-            {/*<Form.Group inline>*/}
-            {/*  <Form.Checkbox*/}
-            {/*    checked={inputs.StopOnSensitiveEnabled === 'true'}*/}
-            {/*    label='在检测到屏蔽词时，立刻停止生成，否则替换屏蔽词'*/}
-            {/*    name='StopOnSensitiveEnabled'*/}
-            {/*    onChange={handleInputChange}*/}
-            {/*  />*/}
-            {/*</Form.Group>*/}
-            {/*<Form.Group>*/}
-            {/*  <Form.Input*/}
-            {/*    label="流模式下缓存队列，默认不缓存，设置越大检测越准确，但是回复会有卡顿感"*/}
-            {/*    name="StreamCacheTextLength"*/}
-            {/*    onChange={handleInputChange}*/}
-            {/*    value={inputs.StreamCacheQueueLength}*/}
-            {/*    type="number"*/}
-            {/*    min="0"*/}
-            {/*    placeholder="例如：10"*/}
-            {/*  />*/}
-            {/*</Form.Group>*/}
-
-            <Divider />
-            <Header as='h3' inverted={isDark}>
-              倍率设置
-            </Header>
-            <Form.Group widths='equal'>
-              <Form.TextArea
-                label='模型固定价格（一次调用消耗多少刀，优先级大于模型倍率）'
-                name='ModelPrice'
-                onChange={handleInputChange}
-                style={{
-                  minHeight: 250,
-                  fontFamily: 'JetBrains Mono, Consolas',
-                }}
-                autoComplete='new-password'
-                value={inputs.ModelPrice}
-                placeholder='为一个 JSON 文本，键为模型名称，值为一次调用消耗多少刀，比如 "gpt-4-gizmo-*": 0.1，一次消耗0.1刀'
-              />
-            </Form.Group>
-            <Form.Group widths='equal'>
-              <Form.TextArea
-                label='模型倍率'
-                name='ModelRatio'
-                onChange={handleInputChange}
-                style={{
-                  minHeight: 250,
-                  fontFamily: 'JetBrains Mono, Consolas',
-                }}
-                autoComplete='new-password'
-                value={inputs.ModelRatio}
-                placeholder='为一个 JSON 文本，键为模型名称，值为倍率'
-              />
-            </Form.Group>
-            <Form.Group widths='equal'>
-              <Form.TextArea
-                label='模型补全倍率（仅对自定义模型有效）'
-                name='CompletionRatio'
-                onChange={handleInputChange}
-                style={{
-                  minHeight: 250,
-                  fontFamily: 'JetBrains Mono, Consolas',
-                }}
-                autoComplete='new-password'
-                value={inputs.CompletionRatio}
-                placeholder='为一个 JSON 文本，键为分组名称，值为倍率'
-              />
-            </Form.Group>
-            <Form.Group widths='equal'>
-              <Form.TextArea
-                label='分组倍率'
-                name='GroupRatio'
-                onChange={handleInputChange}
-                style={{
-                  minHeight: 250,
-                  fontFamily: 'JetBrains Mono, Consolas',
-                }}
-                autoComplete='new-password'
-                value={inputs.GroupRatio}
-                placeholder='为一个 JSON 文本，键为分组名称，值为倍率'
-              />
-            </Form.Group>
-            <Form.Button
-              onClick={() => {
-                submitConfig('ratio').then();
-              }}
-            >
-              保存倍率设置
-            </Form.Button>
-          </Form>
-        </Grid.Column>
-      </Grid>
+      <Spin spinning={loading} size='large'>
+        {/* 通用设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsGeneral options={inputs} />
+        </Card>
+        {/* 绘图设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsDrawing options={inputs} />
+        </Card>
+        {/* 屏蔽词过滤设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsSensitiveWords options={inputs} />
+        </Card>
+        {/* 日志设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsLog options={inputs} />
+        </Card>
+        {/* 数据看板 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsDataDashboard options={inputs} />
+        </Card>
+        {/* 监控设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsMonitoring options={inputs} />
+        </Card>
+        {/* 额度设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsCreditLimit options={inputs} />
+        </Card>
+        {/* 倍率设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsMagnification options={inputs} />
+        </Card>
+      </Spin>
     </>
   );
 };
