@@ -1,4 +1,3 @@
-import { Label } from 'semantic-ui-react';
 import { Tag } from '@douyinfe/semi-ui';
 
 export function renderText(text, limit) {
@@ -133,6 +132,43 @@ export function renderQuota(quota, digits = 2) {
     return '$' + (quota / quotaPerUnit).toFixed(digits);
   }
   return renderNumber(quota);
+}
+
+export function renderModelPrice(
+  inputTokens,
+  completionTokens,
+  modelRatio,
+  modelPrice = -1,
+  completionRatio,
+  groupRatio,
+) {
+  // 1 ratio = $0.002 / 1K tokens
+  if (modelPrice !== -1) {
+    return '模型价格：$' + modelPrice * groupRatio;
+  } else {
+    if (completionRatio === undefined) {
+      completionRatio = 0;
+    }
+    let inputRatioPrice = modelRatio * 2.0 * groupRatio;
+    let completionRatioPrice = modelRatio * completionRatio * 2.0 * groupRatio;
+    let price =
+      (inputTokens / 1000000) * inputRatioPrice +
+      (completionTokens / 1000000) * completionRatioPrice;
+    return (
+      <>
+        <article>
+          <p>提示 ${inputRatioPrice} / 1M tokens</p>
+          <p>补全 ${completionRatioPrice} / 1M tokens</p>
+          <p></p>
+          <p>
+            提示 {inputTokens} tokens / 1M tokens * ${inputRatioPrice} + 补全{' '}
+            {completionTokens} tokens / 1M tokens * ${completionRatioPrice} = $
+            {price.toFixed(6)}
+          </p>
+        </article>
+      </>
+    );
+  }
 }
 
 export function renderQuotaWithPrompt(quota, digits) {

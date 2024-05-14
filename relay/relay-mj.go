@@ -155,9 +155,9 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 		return service.MidjourneyErrorWrapper(constant.MjRequestError, "sour_base64_and_target_base64_is_required")
 	}
 	modelName := service.CoverActionToModelName(constant.MjActionSwapFace)
-	modelPrice := common.GetModelPrice(modelName, true)
+	modelPrice, success := common.GetModelPrice(modelName, true)
 	// 如果没有配置价格，则使用默认价格
-	if modelPrice == -1 {
+	if !success {
 		defaultPrice, ok := common.DefaultModelPrice[modelName]
 		if !ok {
 			modelPrice = 0.1
@@ -202,7 +202,10 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 			if quota != 0 {
 				tokenName := c.GetString("token_name")
 				logContent := fmt.Sprintf("模型固定价格 %.2f，分组倍率 %.2f，操作 %s", modelPrice, groupRatio, constant.MjActionSwapFace)
-				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, modelName, tokenName, quota, logContent, tokenId, userQuota, 0, false)
+				other := make(map[string]interface{})
+				other["model_price"] = modelPrice
+				other["group_ratio"] = groupRatio
+				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, modelName, tokenName, quota, logContent, tokenId, userQuota, 0, false, other)
 				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 				channelId := c.GetInt("channel_id")
 				model.UpdateChannelUsedQuota(channelId, quota)
@@ -451,9 +454,9 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	fullRequestURL := fmt.Sprintf("%s%s", baseURL, requestURL)
 
 	modelName := service.CoverActionToModelName(midjRequest.Action)
-	modelPrice := common.GetModelPrice(modelName, true)
+	modelPrice, success := common.GetModelPrice(modelName, true)
 	// 如果没有配置价格，则使用默认价格
-	if modelPrice == -1 {
+	if !success {
 		defaultPrice, ok := common.DefaultModelPrice[modelName]
 		if !ok {
 			modelPrice = 0.1
@@ -498,7 +501,10 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 			if quota != 0 {
 				tokenName := c.GetString("token_name")
 				logContent := fmt.Sprintf("模型固定价格 %.2f，分组倍率 %.2f，操作 %s", modelPrice, groupRatio, midjRequest.Action)
-				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, modelName, tokenName, quota, logContent, tokenId, userQuota, 0, false)
+				other := make(map[string]interface{})
+				other["model_price"] = modelPrice
+				other["group_ratio"] = groupRatio
+				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, modelName, tokenName, quota, logContent, tokenId, userQuota, 0, false, other)
 				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 				channelId := c.GetInt("channel_id")
 				model.UpdateChannelUsedQuota(channelId, quota)

@@ -29,6 +29,13 @@ func GetGroupModels(group string) []string {
 	return models
 }
 
+func GetEnabledModels() []string {
+	var models []string
+	// Find distinct models
+	DB.Table("abilities").Where("enabled = ?", true).Distinct("model").Pluck("model", &models)
+	return models
+}
+
 func getPriority(group string, model string, retry int) (int, error) {
 	groupCol := "`group`"
 	trueVal := "1"

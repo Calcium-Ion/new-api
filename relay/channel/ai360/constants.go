@@ -6,3 +6,5 @@ var ModelList = []string{
 	"embedding_s1_v1",
 	"semantic_similarity_s1_v1",
 }
+
+var ChannelName = "ai360"

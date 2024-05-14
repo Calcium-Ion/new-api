@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"html/template"
@@ -240,4 +241,20 @@ func StringToByteSlice(s string) []byte {
 func RandomSleep() {
 	// Sleep for 0-3000 ms
 	time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
+}
+
+func MapToJsonStr(m map[string]interface{}) string {
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		return ""
+	}
+	return string(bytes)
+}
+
+func MapToJsonStrFloat(m map[string]float64) string {
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		return ""
+	}
+	return string(bytes)
 }

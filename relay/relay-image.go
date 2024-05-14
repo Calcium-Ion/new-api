@@ -106,21 +106,26 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 		requestBody = c.Request.Body
 	}
 
-	modelRatio := common.GetModelRatio(imageRequest.Model)
+	modelPrice, success := common.GetModelPrice(imageRequest.Model, true)
+	if !success {
+		modelRatio := common.GetModelRatio(imageRequest.Model)
+		// modelRatio 16 = modelPrice $0.04
+		// per 1 modelRatio = $0.04 / 16
+		modelPrice = 0.0025 * modelRatio
+	}
 	groupRatio := common.GetGroupRatio(group)
-	ratio := modelRatio * groupRatio
 	userQuota, err := model.CacheGetUserQuota(userId)
 
 	sizeRatio := 1.0
 	// Size
 	if imageRequest.Size == "256x256" {
-		sizeRatio = 1
+		sizeRatio = 0.4
 	} else if imageRequest.Size == "512x512" {
-		sizeRatio = 1.125
+		sizeRatio = 0.45
 	} else if imageRequest.Size == "1024x1024" {
-		sizeRatio = 1.25
+		sizeRatio = 1
 	} else if imageRequest.Size == "1024x1792" || imageRequest.Size == "1792x1024" {
-		sizeRatio = 2.5
+		sizeRatio = 2
 	}
 
 	qualityRatio := 1.0
@@ -131,7 +136,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 		}
 	}
 
-	quota := int(ratio*sizeRatio*qualityRatio*1000) * imageRequest.N
+	quota := int(modelPrice*groupRatio*common.QuotaPerUnit*sizeRatio*qualityRatio) * imageRequest.N
 
 	if userQuota-quota < 0 {
 		return service.OpenAIErrorWrapper(errors.New("user quota is not enough"), "insufficient_user_quota", http.StatusForbidden)
@@ -190,8 +195,11 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 			if imageRequest.Quality == "hd" {
 				quality = "hd"
 			}
-			logContent := fmt.Sprintf("模型倍率 %.2f，分组倍率 %.2f, 大小 %s, 品质 %s", modelRatio, groupRatio, imageRequest.Size, quality)
-			model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageRequest.Model, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), false)
+			logContent := fmt.Sprintf("模型价格 %.2f，分组倍率 %.2f, 大小 %s, 品质 %s", modelPrice, groupRatio, imageRequest.Size, quality)
+			other := make(map[string]interface{})
+			other["model_price"] = modelPrice
+			other["group_ratio"] = groupRatio
+			model.RecordConsumeLog(ctx, userId, channelId, 0, 0, imageRequest.Model, tokenName, quota, logContent, tokenId, userQuota, int(useTimeSeconds), false, other)
 			model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 			channelId := c.GetInt("channel_id")
 			model.UpdateChannelUsedQuota(channelId, quota)

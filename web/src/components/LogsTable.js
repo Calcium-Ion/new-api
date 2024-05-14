@@ -19,9 +19,15 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
 } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
-import { renderNumber, renderQuota, stringToColor } from '../helpers/render';
+import {
+  renderModelPrice,
+  renderNumber,
+  renderQuota,
+  stringToColor,
+} from '../helpers/render';
 import Paragraph from '@douyinfe/semi-ui/lib/es/typography/paragraph';
 
 const { Header } = Layout;
@@ -292,16 +298,42 @@ const LogsTable = () => {
       title: '详情',
       dataIndex: 'content',
       render: (text, record, index) => {
+        if (record.other === '') {
+          return (
+            <Paragraph
+              ellipsis={{
+                rows: 2,
+                showTooltip: {
+                  type: 'popover',
+                  opts: { style: { width: 240 } },
+                },
+              }}
+              style={{ maxWidth: 240 }}
+            >
+              {text}
+            </Paragraph>
+          );
+        }
+        let other = JSON.parse(record.other);
+        let content = renderModelPrice(
+          record.prompt_tokens,
+          record.completion_tokens,
+          other.model_ratio,
+          other.model_price,
+          other.completion_ratio,
+          other.group_ratio,
+        );
         return (
-          <Paragraph
-            ellipsis={{
-              rows: 2,
-              showTooltip: { type: 'popover', opts: { style: { width: 240 } } },
-            }}
-            style={{ maxWidth: 240 }}
-          >
-            {text}
-          </Paragraph>
+          <Tooltip content={content}>
+            <Paragraph
+              ellipsis={{
+                rows: 2,
+              }}
+              style={{ maxWidth: 240 }}
+            >
+              {text}
+            </Paragraph>
+          </Tooltip>
         );
       },
     },

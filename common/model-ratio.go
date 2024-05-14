@@ -27,7 +27,10 @@ var DefaultModelRatio = map[string]float64{
 	"gpt-4-turbo-preview":       5,    // $0.01 / 1K tokens
 	"gpt-4-vision-preview":      5,    // $0.01 / 1K tokens
 	"gpt-4-1106-vision-preview": 5,    // $0.01 / 1K tokens
+	"gpt-4o":                    2.5,  // $0.01 / 1K tokens
+	"gpt-4o-2024-05-13":         2.5,  // $0.01 / 1K tokens
 	"gpt-4-turbo":               5,    // $0.01 / 1K tokens
+	"gpt-4-turbo-2024-04-09":    5,    // $0.01 / 1K tokens
 	"gpt-3.5-turbo":             0.25, // $0.0015 / 1K tokens
 	//"gpt-3.5-turbo-0301":           0.75, //deprecated
 	"gpt-3.5-turbo-0613":           0.75,
@@ -60,8 +63,6 @@ var DefaultModelRatio = map[string]float64{
 	"text-search-ada-doc-001":      10,
 	"text-moderation-stable":       0.1,
 	"text-moderation-latest":       0.1,
-	"dall-e-2":                     8,
-	"dall-e-3":                     16,
 	"claude-instant-1":             0.4,    // $0.8 / 1M tokens
 	"claude-2.0":                   4,      // $8 / 1M tokens
 	"claude-2.1":                   4,      // $8 / 1M tokens
@@ -111,9 +112,13 @@ var DefaultModelRatio = map[string]float64{
 	"command-light-nightly": 0.5,
 	"command-r":             0.25,
 	"command-r-plus	":       1.5,
+	"deepseek-chat":         0.07,
+	"deepseek-coder":        0.07,
 }
 
 var DefaultModelPrice = map[string]float64{
+	"dall-e-2":          0.02,
+	"dall-e-3":          0.04,
 	"gpt-4-gizmo-*":     0.1,
 	"mj_imagine":        0.1,
 	"mj_variation":      0.1,
@@ -135,6 +140,12 @@ var DefaultModelPrice = map[string]float64{
 var modelPrice map[string]float64 = nil
 var modelRatio map[string]float64 = nil
 
+var CompletionRatio map[string]float64 = nil
+var DefaultCompletionRatio = map[string]float64{
+	"gpt-4-gizmo-*": 2,
+	"gpt-4-all":     2,
+}
+
 func ModelPrice2JSONString() string {
 	if modelPrice == nil {
 		modelPrice = DefaultModelPrice
@@ -151,7 +162,8 @@ func UpdateModelPriceByJSONString(jsonStr string) error {
 	return json.Unmarshal([]byte(jsonStr), &modelPrice)
 }
 
-func GetModelPrice(name string, printErr bool) float64 {
+// GetModelPrice 返回模型的价格，如果模型不存在则返回-1，false
+func GetModelPrice(name string, printErr bool) (float64, bool) {
 	if modelPrice == nil {
 		modelPrice = DefaultModelPrice
 	}
@@ -163,9 +175,16 @@ func GetModelPrice(name string, printErr bool) float64 {
 		if printErr {
 			SysError("model price not found: " + name)
 		}
-		return -1
+		return -1, false
 	}
-	return price
+	return price, true
+}
+
+func GetModelPrices() map[string]float64 {
+	if modelPrice == nil {
+		modelPrice = DefaultModelPrice
+	}
+	return modelPrice
 }
 
 func ModelRatio2JSONString() string {
@@ -199,7 +218,33 @@ func GetModelRatio(name string) float64 {
 	return ratio
 }
 
+func GetModelRatios() map[string]float64 {
+	if modelRatio == nil {
+		modelRatio = DefaultModelRatio
+	}
+	return modelRatio
+}
+
+func CompletionRatio2JSONString() string {
+	if CompletionRatio == nil {
+		CompletionRatio = DefaultCompletionRatio
+	}
+	jsonBytes, err := json.Marshal(CompletionRatio)
+	if err != nil {
+		SysError("error marshalling completion ratio: " + err.Error())
+	}
+	return string(jsonBytes)
+}
+
+func UpdateCompletionRatioByJSONString(jsonStr string) error {
+	CompletionRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &CompletionRatio)
+}
+
 func GetCompletionRatio(name string) float64 {
+	if strings.HasPrefix(name, "gpt-4-gizmo") {
+		name = "gpt-4-gizmo-*"
+	}
 	if strings.HasPrefix(name, "gpt-3.5") {
 		if name == "gpt-3.5-turbo" || strings.HasSuffix(name, "0125") {
 			// https://openai.com/blog/new-embedding-models-and-api-updates
@@ -211,8 +256,8 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 4.0 / 3.0
 	}
-	if strings.HasPrefix(name, "gpt-4") {
-		if strings.HasPrefix(name, "gpt-4-turbo") || strings.HasSuffix(name, "preview") {
+	if strings.HasPrefix(name, "gpt-4") && name != "gpt-4-all" && name != "gpt-4-gizmo-*" {
+		if strings.HasPrefix(name, "gpt-4-turbo") || strings.HasSuffix(name, "preview") || strings.HasPrefix(name, "gpt-4o") {
 			return 3
 		}
 		return 2
@@ -240,9 +285,26 @@ func GetCompletionRatio(name string) float64 {
 			return 2
 		}
 	}
+	if strings.HasPrefix(name, "deepseek") {
+		return 2
+	}
 	switch name {
 	case "llama2-70b-4096":
-		return 0.8 / 0.7
+		return 0.8 / 0.64
+	case "llama3-8b-8192":
+		return 2
+	case "llama3-70b-8192":
+		return 0.79 / 0.59
+	}
+	if ratio, ok := CompletionRatio[name]; ok {
+		return ratio
 	}
 	return 1
+}
+
+func GetCompletionRatios() map[string]float64 {
+	if CompletionRatio == nil {
+		CompletionRatio = DefaultCompletionRatio
+	}
+	return CompletionRatio
 }
