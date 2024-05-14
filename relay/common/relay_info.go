@@ -38,7 +38,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	tokenUnlimited := c.GetBool("token_unlimited_quota")
 	startTime := time.Now()
 
-	apiType := constant.ChannelType2APIType(channelType)
+	apiType, _ := constant.ChannelType2APIType(channelType)
 
 	info := &RelayInfo{
 		RelayMode:      constant.Path2RelayMode(c.Request.URL.Path),

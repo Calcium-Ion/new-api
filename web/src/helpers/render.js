@@ -1,4 +1,3 @@
-import { Label } from 'semantic-ui-react';
 import { Tag } from '@douyinfe/semi-ui';
 
 export function renderText(text, limit) {
@@ -136,6 +135,8 @@ export function renderQuota(quota, digits = 2) {
 }
 
 export function renderModelPrice(
+  inputTokens,
+  completionTokens,
   modelRatio,
   modelPrice = -1,
   completionRatio,
@@ -148,15 +149,24 @@ export function renderModelPrice(
     if (completionRatio === undefined) {
       completionRatio = 0;
     }
-    let inputRatioPrice = modelRatio * 0.002 * groupRatio;
-    let completionRatioPrice =
-      modelRatio * completionRatio * 0.002 * groupRatio;
+    let inputRatioPrice = modelRatio * 2.0 * groupRatio;
+    let completionRatioPrice = modelRatio * completionRatio * 2.0 * groupRatio;
+    let price =
+      (inputTokens / 1000000) * inputRatioPrice +
+      (completionTokens / 1000000) * completionRatioPrice;
     return (
-      '输入：$' +
-      inputRatioPrice.toFixed(3) +
-      '/1K tokens，补全：$' +
-      completionRatioPrice.toFixed(3) +
-      '/1K tokens'
+      <>
+        <article>
+          <p>提示 ${inputRatioPrice} / 1M tokens</p>
+          <p>补全 ${completionRatioPrice} / 1M tokens</p>
+          <p></p>
+          <p>
+            提示 {inputTokens} tokens / 1M tokens * ${inputRatioPrice} + 补全{' '}
+            {completionTokens} tokens / 1M tokens * ${completionRatioPrice} = $
+            {price.toFixed(6)}
+          </p>
+        </article>
+      </>
     );
   }
 }

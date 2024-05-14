@@ -53,7 +53,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	}
 
 	meta := relaycommon.GenRelayInfo(c)
-	apiType := constant.ChannelType2APIType(channel.Type)
+	apiType, _ := constant.ChannelType2APIType(channel.Type)
 	adaptor := relay.GetAdaptor(apiType)
 	if adaptor == nil {
 		return fmt.Errorf("invalid api type: %d, adaptor is nil", apiType), nil

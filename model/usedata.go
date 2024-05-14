@@ -45,6 +45,7 @@ func logQuotaDataCache(userId int, username string, modelName string, quota int,
 	if ok {
 		quotaData.Count += 1
 		quotaData.Quota += quota
+		quotaData.TokenUsed += tokenUsed
 	} else {
 		quotaData = &QuotaData{
 			UserID:    userId,

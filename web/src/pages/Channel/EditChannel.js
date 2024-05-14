@@ -99,6 +99,7 @@ const EditChannel = (props) => {
             'mj_blend',
             'mj_upscale',
             'mj_describe',
+            'mj_uploads',
           ];
           break;
         case 5:
@@ -118,6 +119,7 @@ const EditChannel = (props) => {
             'mj_high_variation',
             'mj_low_variation',
             'mj_pan',
+            'mj_uploads',
           ];
           break;
         default:
@@ -296,23 +298,38 @@ const EditChannel = (props) => {
     }
   };
 
-  const addCustomModel = () => {
+  const addCustomModels = () => {
     if (customModel.trim() === '') return;
-    if (inputs.models.includes(customModel)) return showError('该模型已存在！');
+    // 使用逗号分隔字符串，然后去除每个模型名称前后的空格
+    const modelArray = customModel.split(',').map(model => model.trim());
+    
     let localModels = [...inputs.models];
-    localModels.push(customModel);
-    let localModelOptions = [];
-    localModelOptions.push({
-      key: customModel,
-      text: customModel,
-      value: customModel,
+    let localModelOptions = [...modelOptions];
+    let hasError = false;
+
+    modelArray.forEach(model => {
+      // 检查模型是否已存在，且模型名称非空
+      if (model && !localModels.includes(model)) {
+        localModels.push(model); // 添加到模型列表
+        localModelOptions.push({ // 添加到下拉选项
+          key: model,
+          text: model,
+          value: model,
+        });
+      } else if (model) {
+        showError('某些模型已存在！');
+        hasError = true;
+      }
     });
-    setModelOptions((modelOptions) => {
-      return [...modelOptions, ...localModelOptions];
-    });
+
+    if (hasError) return; // 如果有错误则终止操作
+
+    // 更新状态值
+    setModelOptions(localModelOptions);
     setCustomModel('');
     handleInputChange('models', localModels);
   };
+
 
   return (
     <>
@@ -540,7 +557,7 @@ const EditChannel = (props) => {
             </Space>
             <Input
               addonAfter={
-                <Button type='primary' onClick={addCustomModel}>
+                <Button type='primary' onClick={addCustomModels}>
                   填入
                 </Button>
               }
