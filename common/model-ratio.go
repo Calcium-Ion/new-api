@@ -242,6 +242,9 @@ func UpdateCompletionRatioByJSONString(jsonStr string) error {
 }
 
 func GetCompletionRatio(name string) float64 {
+	if strings.HasPrefix(name, "gpt-4-gizmo") {
+		name = "gpt-4-gizmo-*"
+	}
 	if strings.HasPrefix(name, "gpt-3.5") {
 		if name == "gpt-3.5-turbo" || strings.HasSuffix(name, "0125") {
 			// https://openai.com/blog/new-embedding-models-and-api-updates
@@ -253,7 +256,7 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 4.0 / 3.0
 	}
-	if strings.HasPrefix(name, "gpt-4") && name != "gpt-4-all" && !strings.HasPrefix(name, "gpt-4-gizmo") {
+	if strings.HasPrefix(name, "gpt-4") && name != "gpt-4-all" && name != "gpt-4-gizmo-*" {
 		if strings.HasPrefix(name, "gpt-4-turbo") || strings.HasSuffix(name, "preview") || strings.HasPrefix(name, "gpt-4o") {
 			return 3
 		}
