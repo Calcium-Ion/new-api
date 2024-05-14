@@ -43,13 +43,13 @@ export default function SettingsMonitoring(props) {
           if (res.includes(undefined)) return showError('部分更新失败');
         }
         showSuccess('更新成功');
+        props.refresh();
       })
       .catch(() => {
         showError('更新失败');
       })
       .finally(() => {
         setLoading(false);
-        props.refresh();
       });
   }
 

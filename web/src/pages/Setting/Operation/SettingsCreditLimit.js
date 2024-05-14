@@ -40,16 +40,16 @@ export default function SettingsCreditLimit(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError('部分更新失败');
+          if (res.includes(undefined)) return showError('部分更新失败，请重试');
         }
         showSuccess('更新成功');
+        props.refresh();
       })
       .catch(() => {
         showError('更新失败');
       })
       .finally(() => {
         setLoading(false);
-        props.refresh();
       });
   }
 
