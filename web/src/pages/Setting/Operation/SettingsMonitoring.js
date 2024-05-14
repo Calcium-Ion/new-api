@@ -40,13 +40,13 @@ export default function SettingsMonitoring(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError('部分更新失败');
+          if (res.includes(undefined)) return showError('部分保存失败，请重试');
         }
-        showSuccess('更新成功');
+        showSuccess('保存成功');
         props.refresh();
       })
       .catch(() => {
-        showError('更新失败');
+        showError('保存失败，请重试');
       })
       .finally(() => {
         setLoading(false);
