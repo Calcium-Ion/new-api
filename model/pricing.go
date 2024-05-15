@@ -35,27 +35,18 @@ func GetPricing(user *User, openAIModels []dto.OpenAIModels) []dto.ModelPricing 
 }
 
 func updatePricing(openAIModels []dto.OpenAIModels) {
-	modelRatios := common.GetModelRatios()
+	//modelRatios := common.GetModelRatios()
 	enabledModels := GetEnabledModels()
-	allModels := make(map[string]string)
-	for _, openAIModel := range openAIModels {
-		if common.StringsContains(enabledModels, openAIModel.Id) {
-			allModels[openAIModel.Id] = openAIModel.OwnedBy
-		}
+	allModels := make(map[string]int)
+	for i, model := range enabledModels {
+		allModels[model] = i
 	}
-	for model, _ := range modelRatios {
-		if common.StringsContains(enabledModels, model) {
-			if _, ok := allModels[model]; !ok {
-				allModels[model] = "custom"
-			}
-		}
-	}
+
 	pricingMap = make([]dto.ModelPricing, 0)
-	for model, ownerBy := range allModels {
+	for model, _ := range allModels {
 		pricing := dto.ModelPricing{
 			Available: true,
 			ModelName: model,
-			OwnerBy:   ownerBy,
 		}
 		modelPrice, findPrice := common.GetModelPrice(model, false)
 		if findPrice {

@@ -1,7 +1,16 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { API, copy, showError, showSuccess } from '../helpers';
 
-import { Banner, Layout, Modal, Table, Tag, Tooltip } from '@douyinfe/semi-ui';
+import {
+  Banner,
+  Input,
+  Layout,
+  Modal,
+  Space,
+  Table,
+  Tag,
+  Tooltip,
+} from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render.js';
 import { UserContext } from '../context/User/index.js';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
@@ -45,6 +54,27 @@ function renderAvailable(available) {
 }
 
 const ModelPricing = () => {
+  const [filteredValue, setFilteredValue] = useState([]);
+  const compositionRef = useRef({ isComposition: false });
+
+  const handleChange = (value) => {
+    if (compositionRef.current.isComposition) {
+      return;
+    }
+    const newFilteredValue = value ? [value] : [];
+    setFilteredValue(newFilteredValue);
+  };
+  const handleCompositionStart = () => {
+    compositionRef.current.isComposition = true;
+  };
+
+  const handleCompositionEnd = (event) => {
+    compositionRef.current.isComposition = false;
+    const value = event.target.value;
+    const newFilteredValue = value ? [value] : [];
+    setFilteredValue(newFilteredValue);
+  };
+
   const columns = [
     {
       title: '可用性',
@@ -52,28 +82,28 @@ const ModelPricing = () => {
       render: (text, record, index) => {
         return renderAvailable(text);
       },
+      sorter: (a, b) => a.available - b.available,
     },
     {
-      title: '提供者',
-      dataIndex: 'owner_by',
-      render: (text, record, index) => {
-        return (
-          <>
-            <Tag color={stringToColor(text)} size='large'>
-              {text}
-            </Tag>
-          </>
-        );
-      },
-    },
-    {
-      title: '模型名称',
+      title: (
+        <Space>
+          <span>模型名称</span>
+          <Input
+            placeholder='模糊搜索'
+            style={{ width: 200 }}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
+            onChange={handleChange}
+            showClear
+          />
+        </Space>
+      ),
       dataIndex: 'model_name', // 以finish_time作为dataIndex
       render: (text, record, index) => {
         return (
           <>
             <Tag
-              color={stringToColor(record.owner_by)}
+              color={stringToColor(text)}
               size='large'
               onClick={() => {
                 copyText(text);
@@ -84,6 +114,8 @@ const ModelPricing = () => {
           </>
         );
       },
+      onFilter: (value, record) => record.model_name.includes(value),
+      filteredValue,
     },
     {
       title: '计费类型',
@@ -91,6 +123,7 @@ const ModelPricing = () => {
       render: (text, record, index) => {
         return renderQuotaType(parseInt(text));
       },
+      sorter: (a, b) => a.quota_type - b.quota_type,
     },
     {
       title: '模型倍率',
@@ -150,14 +183,17 @@ const ModelPricing = () => {
       return a.quota_type - b.quota_type;
     });
 
-    // sort by owner_by, openai is max, other use localeCompare
+    // sort by model_name, start with gpt is max, other use localeCompare
     models.sort((a, b) => {
-      if (a.owner_by === 'openai') {
+      if (a.model_name.startsWith('gpt') && !b.model_name.startsWith('gpt')) {
         return -1;
-      } else if (b.owner_by === 'openai') {
+      } else if (
+        !a.model_name.startsWith('gpt') &&
+        b.model_name.startsWith('gpt')
+      ) {
         return 1;
       } else {
-        return a.owner_by.localeCompare(b.owner_by);
+        return a.model_name.localeCompare(b.model_name);
       }
     });
 
