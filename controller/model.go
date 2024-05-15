@@ -108,8 +108,8 @@ func init() {
 		})
 	}
 	openAIModelsMap = make(map[string]dto.OpenAIModels)
-	for _, model := range openAIModels {
-		openAIModelsMap[model.Id] = model
+	for _, aiModel := range openAIModels {
+		openAIModelsMap[aiModel.Id] = aiModel
 	}
 	channelId2Models = make(map[int][]string)
 	for i := 1; i <= common.ChannelTypeDummy; i++ {
@@ -174,8 +174,8 @@ func DashboardListModels(c *gin.Context) {
 
 func RetrieveModel(c *gin.Context) {
 	modelId := c.Param("model")
-	if model, ok := openAIModelsMap[modelId]; ok {
-		c.JSON(200, model)
+	if aiModel, ok := openAIModelsMap[modelId]; ok {
+		c.JSON(200, aiModel)
 	} else {
 		openAIError := dto.OpenAIError{
 			Message: fmt.Sprintf("The model '%s' does not exist", modelId),
@@ -191,12 +191,12 @@ func RetrieveModel(c *gin.Context) {
 
 func GetPricing(c *gin.Context) {
 	userId := c.GetInt("id")
-	user, _ := model.GetUserById(userId, true)
+	group, err := model.CacheGetUserGroup(userId)
 	groupRatio := common.GetGroupRatio("default")
-	if user != nil {
-		groupRatio = common.GetGroupRatio(user.Group)
+	if err != nil {
+		groupRatio = common.GetGroupRatio(group)
 	}
-	pricing := model.GetPricing(user, openAIModels)
+	pricing := model.GetPricing(group)
 	c.JSON(200, gin.H{
 		"success":     true,
 		"data":        pricing,

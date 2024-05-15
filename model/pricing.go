@@ -13,16 +13,16 @@ var (
 	updatePricingLock  sync.Mutex
 )
 
-func GetPricing(user *User, openAIModels []dto.OpenAIModels) []dto.ModelPricing {
+func GetPricing(group string) []dto.ModelPricing {
 	updatePricingLock.Lock()
 	defer updatePricingLock.Unlock()
 
 	if time.Since(lastGetPricingTime) > time.Minute*1 || len(pricingMap) == 0 {
-		updatePricing(openAIModels)
+		updatePricing()
 	}
-	if user != nil {
+	if group != "" {
 		userPricingMap := make([]dto.ModelPricing, 0)
-		models := GetGroupModels(user.Group)
+		models := GetGroupModels(group)
 		for _, pricing := range pricingMap {
 			if !common.StringsContains(models, pricing.ModelName) {
 				pricing.Available = false
@@ -34,7 +34,7 @@ func GetPricing(user *User, openAIModels []dto.OpenAIModels) []dto.ModelPricing 
 	return pricingMap
 }
 
-func updatePricing(openAIModels []dto.OpenAIModels) {
+func updatePricing() {
 	//modelRatios := common.GetModelRatios()
 	enabledModels := GetEnabledModels()
 	allModels := make(map[string]int)
