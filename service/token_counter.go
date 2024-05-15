@@ -26,6 +26,7 @@ func InitTokenEncoders() {
 	}
 	defaultTokenEncoder = gpt35TokenEncoder
 	gpt4TokenEncoder, err := tiktoken.EncodingForModel("gpt-4")
+	gpt4oTokenEncoder, err := tiktoken.EncodingForModel("gpt-4o")
 	if err != nil {
 		common.FatalLog(fmt.Sprintf("failed to get gpt-4 token encoder: %s", err.Error()))
 	}
@@ -33,7 +34,11 @@ func InitTokenEncoders() {
 		if strings.HasPrefix(model, "gpt-3.5") {
 			tokenEncoderMap[model] = gpt35TokenEncoder
 		} else if strings.HasPrefix(model, "gpt-4") {
-			tokenEncoderMap[model] = gpt4TokenEncoder
+			if strings.HasPrefix(model, "gpt-4o") {
+				tokenEncoderMap[model] = gpt4oTokenEncoder
+			} else {
+				tokenEncoderMap[model] = gpt4TokenEncoder
+			}
 		} else {
 			tokenEncoderMap[model] = nil
 		}
