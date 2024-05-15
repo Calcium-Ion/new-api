@@ -79,6 +79,7 @@ var DefaultModelRatio = map[string]float64{
 	"gemini-1.0-pro-vision-001":    1,
 	"gemini-1.0-pro-001":           1,
 	"gemini-1.5-pro-latest":        1,
+	"gemini-1.5-flash-latest":      1,
 	"gemini-1.0-pro-latest":        1,
 	"gemini-1.0-pro-vision-latest": 1,
 	"gemini-ultra":                 1,
