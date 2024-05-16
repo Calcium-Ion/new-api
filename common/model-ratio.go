@@ -69,9 +69,17 @@ var DefaultModelRatio = map[string]float64{
 	"claude-3-haiku-20240307":      0.125,  // $0.25 / 1M tokens
 	"claude-3-sonnet-20240229":     1.5,    // $3 / 1M tokens
 	"claude-3-opus-20240229":       7.5,    // $15 / 1M tokens
-	"ERNIE-Bot":                    0.8572, // ￥0.012 / 1k tokens
-	"ERNIE-Bot-turbo":              0.5715, // ￥0.008 / 1k tokens
-	"ERNIE-Bot-4":                  8.572,  // ￥0.12 / 1k tokens
+	"ERNIE-Bot":                    0.8572, // ￥0.012 / 1k tokens //renamed to ERNIE-3.5-8K
+	"ERNIE-Bot-turbo":              0.5715, // ￥0.008 / 1k tokens //renamed to ERNIE-Lite-8K
+	"ERNIE-Bot-4":                  8.572,  // ￥0.12 / 1k tokens //renamed to ERNIE-4.0-8K
+	"ERNIE-4.0-8K":                 8.572,  // ￥0.12 / 1k tokens
+	"ERNIE-3.5-8K":                 0.8572, // ￥0.012 / 1k tokens
+	"ERNIE-Speed-8K":               0.2858, // ￥0.004 / 1k tokens
+	"ERNIE-Speed-128K":             0.2858, // ￥0.004 / 1k tokens
+	"ERNIE-Lite-8K":                0.2143, // ￥0.003 / 1k tokens
+	"ERNIE-Tiny-8K":                0.0715, // ￥0.001 / 1k tokens
+	"ERNIE-Character-8K":           0.2858, // ￥0.004 / 1k tokens
+	"ERNIE-Functions-8K":           0.2858, // ￥0.004 / 1k tokens
 	"Embedding-V1":                 0.1429, // ￥0.002 / 1k tokens
 	"PaLM-2":                       1,
 	"gemini-pro":                   1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
@@ -98,6 +106,9 @@ var DefaultModelRatio = map[string]float64{
 	"SparkDesk-v3.1":               1.2858, // ￥0.018 / 1k tokens
 	"SparkDesk-v3.5":               1.2858, // ￥0.018 / 1k tokens
 	"360GPT_S2_V9":                 0.8572, // ¥0.012 / 1k tokens
+	"360gpt-turbo":                 0.0858, // ¥0.0012 / 1k tokens
+	"360gpt-turbo-responsibility-8k": 0.8572, // ¥0.012 / 1k tokens
+	"360gpt-pro":                   0.8572, // ¥0.012 / 1k tokens
 	"embedding-bert-512-v1":        0.0715, // ¥0.001 / 1k tokens
 	"embedding_s1_v1":              0.0715, // ¥0.001 / 1k tokens
 	"semantic_similarity_s1_v1":    0.0715, // ¥0.001 / 1k tokens
@@ -287,6 +298,15 @@ func GetCompletionRatio(name string) float64 {
 		}
 	}
 	if strings.HasPrefix(name, "deepseek") {
+		return 2
+	}
+	if strings.HasPrefix(name, "ERNIE-Speed-") {
+		return 2
+	} else if strings.HasPrefix(name, "ERNIE-Lite-") {
+		return 2
+	} else if strings.HasPrefix(name, "ERNIE-Character") {
+		return 2
+	} else if strings.HasPrefix(name, "ERNIE-Functions") {
 		return 2
 	}
 	switch name {
