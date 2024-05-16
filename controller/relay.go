@@ -43,7 +43,7 @@ func Relay(c *gin.Context) {
 	group := c.GetString("group")
 	originalModel := c.GetString("original_model")
 	openaiErr := relayHandler(c, relayMode)
-	useChannel := []int{channelId}
+	c.Set("use_channel", []string{fmt.Sprintf("%d", channelId)})
 	if openaiErr != nil {
 		go processChannelError(c, channelId, openaiErr)
 	} else {
@@ -56,7 +56,9 @@ func Relay(c *gin.Context) {
 			break
 		}
 		channelId = channel.Id
-		useChannel = append(useChannel, channelId)
+		useChannel := c.GetStringSlice("use_channel")
+		useChannel = append(useChannel, fmt.Sprintf("%d", channelId))
+		c.Set("use_channel", useChannel)
 		common.LogInfo(c.Request.Context(), fmt.Sprintf("using channel #%d to retry (remain times %d)", channel.Id, i))
 		middleware.SetupContextForSelectedChannel(c, channel, originalModel)
 
@@ -67,6 +69,7 @@ func Relay(c *gin.Context) {
 			go processChannelError(c, channelId, openaiErr)
 		}
 	}
+	useChannel := c.GetStringSlice("use_channel")
 	if len(useChannel) > 1 {
 		retryLogStr := fmt.Sprintf("重试：%s", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(useChannel)), "->"), "[]"))
 		common.LogInfo(c.Request.Context(), retryLogStr)
