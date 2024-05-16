@@ -25,6 +25,7 @@ type Log struct {
 	ChannelId        int    `json:"channel" gorm:"index"`
 	TokenId          int    `json:"token_id" gorm:"default:0;index"`
 	Other            string `json:"other"`
+	ErrorRate        float64 `json:"error_rate" gorm:"default:0"` // Added field for error rate
 }
 
 const (
@@ -33,6 +34,7 @@ const (
 	LogTypeConsume
 	LogTypeManage
 	LogTypeSystem
+	LogTypeError // Added log type for channel errors
 )
 
 func GetLogByKey(key string) (logs []*Log, err error) {
@@ -55,6 +57,20 @@ func RecordLog(userId int, logType int, content string) {
 	err := DB.Create(log).Error
 	if err != nil {
 		common.SysError("failed to record log: " + err.Error())
+	}
+}
+
+// New function to record channel error logs
+func RecordChannelErrorLog(channelId int, errorMessage string) {
+	log := &Log{
+		ChannelId: channelId,
+		CreatedAt: common.GetTimestamp(),
+		Type:      LogTypeError,
+		Content:   errorMessage,
+	}
+	err := DB.Create(log).Error
+	if err != nil {
+		common.SysError("failed to record channel error log: " + err.Error())
 	}
 }
 

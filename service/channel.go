@@ -78,3 +78,33 @@ func ShouldEnableChannel(err error, openAIErr *relaymodel.OpenAIError, status in
 	}
 	return true
 }
+
+// CalculateChannelErrorRate calculates the error rate for a given channel based on recent error logs.
+func CalculateChannelErrorRate(channelId int) (float64, error) {
+	// Fetch error logs for the channel within a specific timeframe.
+	errorLogs, err := model.FetchChannelErrorLogs(channelId, common.ErrorLogTimeframe)
+	if err != nil {
+		return 0, err
+	}
+
+	// Calculate error rate.
+	totalRequests := len(errorLogs)
+	if totalRequests == 0 {
+		return 0, nil
+	}
+
+	errorCount := 0
+	for _, log := range errorLogs {
+		if log.Type == model.LogError {
+			errorCount++
+		}
+	}
+
+	errorRate := float64(errorCount) / float64(totalRequests)
+	return errorRate, nil
+}
+
+// UpdateChannelErrorRate updates the error rate of a channel in the database.
+func UpdateChannelErrorRate(channelId int, errorRate float64) error {
+	return model.UpdateChannelErrorRate(channelId, errorRate)
+}

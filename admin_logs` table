@@ -1,0 +1,7 @@
+CREATE TABLE `admin_logs` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `channel_id` INT NOT NULL,
+  `error_message` TEXT NOT NULL,
+  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `error_rate` FLOAT DEFAULT 0
+);

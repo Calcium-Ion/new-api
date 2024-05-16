@@ -83,6 +83,8 @@ func Relay(c *gin.Context) {
 		c.JSON(openaiErr.StatusCode, gin.H{
 			"error": openaiErr.Error,
 		})
+		channelId := c.GetInt("channel_id")
+		common.LogError(c, fmt.Sprintf("relay error (channel #%d, status code %d): %s", channelId, openaiErr.StatusCode, openaiErr.Error.Message))
 	}
 }
 
@@ -132,6 +134,8 @@ func processChannelError(c *gin.Context, channelId int, err *dto.OpenAIErrorWith
 		channelName := c.GetString("channel_name")
 		service.DisableChannel(channelId, channelName, err.Error.Message)
 	}
+	// Call RecordChannelErrorLog to log channel errors
+	model.RecordChannelErrorLog(channelId, err.Error.Message)
 }
 
 func RelayMidjourney(c *gin.Context) {
