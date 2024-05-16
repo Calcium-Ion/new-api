@@ -208,6 +208,7 @@ const (
 	ChannelTypeLingYiWanWu    = 31
 	ChannelTypeAws            = 33
 	ChannelTypeCohere         = 34
+	ChannelTypeMiniMax        = 35
 
 	ChannelTypeDummy // this one is only for count, do not add any channel after this
 )
