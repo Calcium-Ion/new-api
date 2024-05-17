@@ -7,3 +7,5 @@ var ModelList = []string{
 	"yi-34b-chat-200k",
 	"yi-vl-plus",
 }
+
+var ChannelName = "lingyiwanwu"

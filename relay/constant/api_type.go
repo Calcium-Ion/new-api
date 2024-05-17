@@ -15,7 +15,7 @@ const (
 	APITypeAIProxyLibrary
 	APITypeTencent
 	APITypeGemini
-	APITypeZhipu_v4
+	APITypeZhipuV4
 	APITypeOllama
 	APITypePerplexity
 	APITypeAws
@@ -48,7 +48,7 @@ func ChannelType2APIType(channelType int) (int, bool) {
 	case common.ChannelTypeGemini:
 		apiType = APITypeGemini
 	case common.ChannelTypeZhipu_v4:
-		apiType = APITypeZhipu_v4
+		apiType = APITypeZhipuV4
 	case common.ChannelTypeOllama:
 		apiType = APITypeOllama
 	case common.ChannelTypePerplexity:

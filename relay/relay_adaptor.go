@@ -41,7 +41,7 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &xunfei.Adaptor{}
 	case constant.APITypeZhipu:
 		return &zhipu.Adaptor{}
-	case constant.APITypeZhipu_v4:
+	case constant.APITypeZhipuV4:
 		return &zhipu_4v.Adaptor{}
 	case constant.APITypeOllama:
 		return &ollama.Adaptor{}

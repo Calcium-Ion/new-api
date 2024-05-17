@@ -11,6 +11,7 @@ import (
 	"one-api/relay"
 	"one-api/relay/channel/ai360"
 	"one-api/relay/channel/lingyiwanwu"
+	"one-api/relay/channel/minimax"
 	"one-api/relay/channel/moonshot"
 	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
@@ -79,7 +80,7 @@ func init() {
 			Id:         modelName,
 			Object:     "model",
 			Created:    1626777600,
-			OwnedBy:    "moonshot",
+			OwnedBy:    moonshot.ChannelName,
 			Permission: permission,
 			Root:       modelName,
 			Parent:     nil,
@@ -90,7 +91,18 @@ func init() {
 			Id:         modelName,
 			Object:     "model",
 			Created:    1626777600,
-			OwnedBy:    "lingyiwanwu",
+			OwnedBy:    lingyiwanwu.ChannelName,
+			Permission: permission,
+			Root:       modelName,
+			Parent:     nil,
+		})
+	}
+	for _, modelName := range minimax.ModelList {
+		openAIModels = append(openAIModels, dto.OpenAIModels{
+			Id:         modelName,
+			Object:     "model",
+			Created:    1626777600,
+			OwnedBy:    minimax.ChannelName,
 			Permission: permission,
 			Root:       modelName,
 			Parent:     nil,
