@@ -155,7 +155,7 @@ const ModelPricing = () => {
         );
       },
       onFilter: (value, record) =>
-        record.name.toLowerCase().includes(value.toLowerCase()),
+        record.model_name.toLowerCase().includes(value.toLowerCase()),
       filteredValue,
     },
     {
