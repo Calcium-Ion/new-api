@@ -93,10 +93,6 @@ const ModelPricing = () => {
           onChange: (selectedRowKeys, selectedRows) => {
             setSelectedRowKeys(selectedRowKeys);
           },
-          getCheckboxProps: record => ({
-              disabled: record.name === 'Michael James', // Column configuration not to be checked
-              name: record.model_name,
-          }),
       }),
       []
   );
@@ -158,7 +154,8 @@ const ModelPricing = () => {
           </>
         );
       },
-      onFilter: (value, record) => record.model_name.includes(value),
+      onFilter: (value, record) =>
+        record.name.toLowerCase().includes(value.toLowerCase()),
       filteredValue,
     },
     {
