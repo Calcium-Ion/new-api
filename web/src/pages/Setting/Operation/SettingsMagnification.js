@@ -135,7 +135,7 @@ export default function SettingsMagnification(props) {
             <Row gutter={16}>
               <Col span={16}>
                 <Form.TextArea
-                  label={'模型补全倍率'}
+                  label={'模型补全倍率（仅对自定义模型有效）'}
                   extraText={'仅对自定义模型有效'}
                   placeholder={'为一个 JSON 文本，键为模型名称，值为倍率'}
                   field={'CompletionRatio'}
