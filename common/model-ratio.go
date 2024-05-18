@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+//from songquanpeng/one-api
+const (
+	USD2RMB = 7.3 // 暂定 1 USD = 7.3 RMB
+	USD     = 500 // $0.002 = 1 -> $1 = 500
+	RMB     = USD / USD2RMB
+)
+
 // modelRatio
 // https://platform.openai.com/docs/models/model-endpoint-compatibility
 // https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Blfmc9dlf
@@ -115,9 +122,18 @@ var DefaultModelRatio = map[string]float64{
 	"hunyuan":                      7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
 	// https://platform.lingyiwanwu.com/docs#-计费单元
 	// 已经按照 7.2 来换算美元价格
-	"yi-34b-chat-0205":      0.018,
-	"yi-34b-chat-200k":      0.0864,
-	"yi-vl-plus":            0.0432,
+	"yi-34b-chat-0205":      0.18,
+	"yi-34b-chat-200k":      0.864,
+	"yi-vl-plus":            0.432,
+	"yi-large":              20.0 / 1000 * RMB,
+	"yi-medium":             2.5 / 1000 * RMB,
+	"yi-vision":             6.0 / 1000 * RMB,
+	"yi-medium-200k":        12.0 / 1000 * RMB,
+	"yi-spark":              1.0 / 1000 * RMB,
+	"yi-large-rag":          25.0 / 1000 * RMB,
+	"yi-large-turbo":        12.0 / 1000 * RMB,
+	"yi-large-preview":      20.0 / 1000 * RMB,
+	"yi-large-rag-preview":  25.0 / 1000 * RMB,
 	"command":               0.5,
 	"command-nightly":       0.5,
 	"command-light":         0.5,
@@ -126,6 +142,11 @@ var DefaultModelRatio = map[string]float64{
 	"command-r-plus	":       1.5,
 	"deepseek-chat":         0.07,
 	"deepseek-coder":        0.07,
+	// Perplexity online 模型对搜索额外收费，有需要应自行调整，此处不计入搜索费用
+	"llama-3-sonar-small-32k-chat":    0.2 / 1000 * USD,
+	"llama-3-sonar-small-32k-online":  0.2 / 1000 * USD,
+	"llama-3-sonar-large-32k-chat":    1 / 1000 * USD,
+	"llama-3-sonar-large-32k-online":  1 / 1000 * USD,
 }
 
 var DefaultModelPrice = map[string]float64{
