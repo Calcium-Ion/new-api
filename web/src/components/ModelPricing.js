@@ -146,7 +146,7 @@ const ModelPricing = () => {
       render: (text, record, index) => {
         let content = text;
         if (record.quota_type === 0) {
-          let inputRatioPrice = record.model_ratio * record.group_ratio;
+          let inputRatioPrice = record.model_ratio * 2 * record.group_ratio;
           let completionRatioPrice =
             record.model_ratio *
             record.completion_ratio *
