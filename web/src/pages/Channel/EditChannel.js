@@ -24,6 +24,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { Divider } from 'semantic-ui-react';
 import { getChannelModels, loadChannelModels } from '../../components/utils.js';
+import axios from 'axios';
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo-0301': 'gpt-3.5-turbo',
@@ -86,6 +87,34 @@ const EditChannel = (props) => {
   const [basicModels, setBasicModels] = useState([]);
   const [fullModels, setFullModels] = useState([]);
   const [customModel, setCustomModel] = useState('');
+
+  const fetchUpstreamModelList = (name) => {
+    const url = inputs['base_url'] + '/v1/models';
+    const key = inputs['key']
+    axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${key}`
+      }
+    }).then((res) => {
+      if (res.data && res.data?.success) {
+        const models = res.data.data.map((model) => model.id);
+        handleInputChange(name, models);
+        showSuccess("获取模型列表成功");
+      } else {
+        showError('获取模型列表失败');
+      }
+    }).catch((error) => {
+      console.log(error);
+      const errCode = error.response.status;
+      if (errCode === 401) {
+        showError(`获取模型列表失败，错误代码 ${errCode}，请检查密钥是否填写`);
+      } else {
+        showError(`获取模型列表失败，错误代码 ${errCode}`);
+      }
+    })
+  }
+
+
   const handleInputChange = (name, value) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
     if (name === 'type') {
@@ -231,7 +260,7 @@ const EditChannel = (props) => {
     fetchModels().then();
     fetchGroups().then();
     if (isEdit) {
-      loadChannel().then(() => {});
+      loadChannel().then(() => { });
     } else {
       setInputs(originInputs);
       let localModels = getChannelModels(inputs.type);
@@ -302,7 +331,7 @@ const EditChannel = (props) => {
     if (customModel.trim() === '') return;
     // 使用逗号分隔字符串，然后去除每个模型名称前后的空格
     const modelArray = customModel.split(',').map(model => model.trim());
-    
+
     let localModels = [...inputs.models];
     let localModelOptions = [...modelOptions];
     let hasError = false;
@@ -547,6 +576,14 @@ const EditChannel = (props) => {
                 填入所有模型
               </Button>
               <Button
+                type='tertiary'
+                onClick={() => {
+                  fetchUpstreamModelList('models');
+                }}
+              >
+                获取模型列表
+              </Button>
+              <Button
                 type='warning'
                 onClick={() => {
                   handleInputChange('models', []);
@@ -660,7 +697,7 @@ const EditChannel = (props) => {
                 onChange={() => {
                   setAutoBan(!autoBan);
                 }}
-                // onChange={handleInputChange}
+              // onChange={handleInputChange}
               />
               <Typography.Text strong>
                 是否自动禁用（仅当自动禁用开启时有效），关闭后不会自动禁用该渠道：
