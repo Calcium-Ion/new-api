@@ -15,6 +15,7 @@ import {
   Space,
   Spin,
   Button,
+  Tooltip,
   Input,
   Typography,
   Select,
@@ -35,6 +36,8 @@ const MODEL_MAPPING_EXAMPLE = {
 const STATUS_CODE_MAPPING_EXAMPLE = {
   400: '500',
 };
+
+const fetchButtonTips = "1. 新建渠道时，请求通过当前浏览器发出；2. 编辑已有渠道，请求通过后端服务器发出"
 
 function type2secretPrompt(type) {
   // inputs.type === 15 ? '按照如下格式输入：APIKey|SecretKey' : (inputs.type === 18 ? '按照如下格式输入：APPID|APISecret|APIKey' : '请输入渠道对应的鉴权密钥')
@@ -88,30 +91,51 @@ const EditChannel = (props) => {
   const [fullModels, setFullModels] = useState([]);
   const [customModel, setCustomModel] = useState('');
 
-  const fetchUpstreamModelList = (name) => {
-    const url = inputs['base_url'] + '/v1/models';
-    const key = inputs['key']
-    axios.get(url, {
-      headers: {
-        'Authorization': `Bearer ${key}`
-      }
-    }).then((res) => {
+  const fetchUpstreamModelList = async (name) => {
+    if (inputs["type"] !== 1) {
+      showError("仅支持 OpenAI 接口格式")
+      return;
+    }
+    const models = inputs["models"] || []
+    let err = false;
+    if (isEdit) {
+      const res = await API.get("/api/channel/fetch_models/" + channelId)
       if (res.data && res.data?.success) {
-        const models = res.data.data.map((model) => model.id);
-        handleInputChange(name, models);
-        showSuccess("获取模型列表成功");
+        models.push(...res.data.data)
       } else {
-        showError('获取模型列表失败');
+        err = true
       }
-    }).catch((error) => {
-      console.log(error);
-      const errCode = error.response.status;
-      if (errCode === 401) {
-        showError(`获取模型列表失败，错误代码 ${errCode}，请检查密钥是否填写`);
-      } else {
-        showError(`获取模型列表失败，错误代码 ${errCode}`);
+    } else {
+      if (!inputs?.["key"]) {
+        showError("请填写密钥")
+        return;
       }
-    })
+      try {
+        const host = new URL((inputs["base_url"] || "https://api.openai.com"))
+
+        const url = `https://${host.hostname}/v1/models`;
+        const key = inputs["key"];
+        const res = await axios.get(url, {
+          headers: {
+            'Authorization': `Bearer ${key}`
+          }
+        })
+        if (res.data && res.data?.success) {
+          models.push(...es.data.data.map((model) => model.id))
+        } else {
+          err = true
+        }
+      }
+      catch (error) {
+        err = true
+      }
+    }
+    if (!err) {
+      handleInputChange(name, Array.from(new Set(models)));
+      showSuccess("获取模型列表成功");
+    } else {
+      showError('获取模型列表失败');
+    }
   }
 
 
@@ -575,14 +599,16 @@ const EditChannel = (props) => {
               >
                 填入所有模型
               </Button>
-              <Button
-                type='tertiary'
-                onClick={() => {
-                  fetchUpstreamModelList('models');
-                }}
-              >
-                获取模型列表
-              </Button>
+              <Tooltip content={fetchButtonTips}>
+                <Button
+                  type='tertiary'
+                  onClick={() => {
+                    fetchUpstreamModelList('models');
+                  }}
+                >
+                  获取模型列表
+                </Button>
+              </Tooltip>
               <Button
                 type='warning'
                 onClick={() => {
