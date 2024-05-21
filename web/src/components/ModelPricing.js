@@ -149,7 +149,7 @@ const ModelPricing = () => {
           let inputRatioPrice = record.model_ratio * 2 * record.group_ratio;
           let completionRatioPrice =
             record.model_ratio *
-            record.completion_ratio *
+            record.completion_ratio * 2 *
             record.group_ratio;
           content = (
             <>
