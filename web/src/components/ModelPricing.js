@@ -146,6 +146,7 @@ const ModelPricing = () => {
       render: (text, record, index) => {
         let content = text;
         if (record.quota_type === 0) {
+          // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
           let inputRatioPrice = record.model_ratio * 2 * record.group_ratio;
           let completionRatioPrice =
             record.model_ratio *
