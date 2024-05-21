@@ -301,17 +301,18 @@ const EditChannel = (props) => {
   const addCustomModels = () => {
     if (customModel.trim() === '') return;
     // 使用逗号分隔字符串，然后去除每个模型名称前后的空格
-    const modelArray = customModel.split(',').map(model => model.trim());
-    
+    const modelArray = customModel.split(',').map((model) => model.trim());
+
     let localModels = [...inputs.models];
     let localModelOptions = [...modelOptions];
     let hasError = false;
 
-    modelArray.forEach(model => {
+    modelArray.forEach((model) => {
       // 检查模型是否已存在，且模型名称非空
       if (model && !localModels.includes(model)) {
         localModels.push(model); // 添加到模型列表
-        localModelOptions.push({ // 添加到下拉选项
+        localModelOptions.push({
+          // 添加到下拉选项
           key: model,
           text: model,
           value: model,
@@ -329,7 +330,6 @@ const EditChannel = (props) => {
     setCustomModel('');
     handleInputChange('models', localModels);
   };
-
 
   return (
     <>
@@ -433,11 +433,15 @@ const EditChannel = (props) => {
           {inputs.type === 8 && (
             <>
               <div style={{ marginTop: 10 }}>
-                <Typography.Text strong>Base URL：</Typography.Text>
+                <Typography.Text strong>
+                  完整的 Base URL，支持变量{'{model}'}：
+                </Typography.Text>
               </div>
               <Input
                 name='base_url'
-                placeholder={'请输入自定义渠道的 Base URL'}
+                placeholder={
+                  '请输入完整的URL，例如：https://api.openai.com/v1/chat/completions'
+                }
                 onChange={(value) => {
                   handleInputChange('base_url', value);
                 }}
