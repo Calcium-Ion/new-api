@@ -325,6 +325,9 @@ const LogsTable = () => {
       title: '详情',
       dataIndex: 'content',
       render: (text, record, index) => {
+        if (record.other === '') {
+          record.other = '{}'
+        }
         let other = JSON.parse(record.other);
         if (other == null) {
           return (
