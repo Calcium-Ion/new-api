@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pkoukk/tiktoken-go"
+	"github.com/linux-do/tiktoken-go"
 	"image"
 	"log"
 	"math"
@@ -26,6 +26,7 @@ func InitTokenEncoders() {
 	}
 	defaultTokenEncoder = gpt35TokenEncoder
 	gpt4TokenEncoder, err := tiktoken.EncodingForModel("gpt-4")
+	gpt4oTokenEncoder, err := tiktoken.EncodingForModel("gpt-4o")
 	if err != nil {
 		common.FatalLog(fmt.Sprintf("failed to get gpt-4 token encoder: %s", err.Error()))
 	}
@@ -33,7 +34,11 @@ func InitTokenEncoders() {
 		if strings.HasPrefix(model, "gpt-3.5") {
 			tokenEncoderMap[model] = gpt35TokenEncoder
 		} else if strings.HasPrefix(model, "gpt-4") {
-			tokenEncoderMap[model] = gpt4TokenEncoder
+			if strings.HasPrefix(model, "gpt-4o") {
+				tokenEncoderMap[model] = gpt4oTokenEncoder
+			} else {
+				tokenEncoderMap[model] = gpt4TokenEncoder
+			}
 		} else {
 			tokenEncoderMap[model] = nil
 		}
@@ -62,7 +67,11 @@ func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
 	return len(tokenEncoder.Encode(text, nil, nil))
 }
 
-func getImageToken(imageUrl *dto.MessageImageUrl) (int, error) {
+func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (int, error) {
+	// TODO: 非流模式下不计算图片token数量
+	if model == "glm-4v" {
+		return 1047, nil
+	}
 	if imageUrl.Detail == "low" {
 		return 85, nil
 	}
@@ -118,7 +127,7 @@ func getImageToken(imageUrl *dto.MessageImageUrl) (int, error) {
 
 func CountTokenChatRequest(request dto.GeneralOpenAIRequest, model string, checkSensitive bool) (int, error, bool) {
 	tkm := 0
-	msgTokens, err, b := CountTokenMessages(request.Messages, model, checkSensitive)
+	msgTokens, err, b := CountTokenMessages(request.Messages, model, request.Stream, checkSensitive)
 	if err != nil {
 		return 0, err, b
 	}
@@ -151,7 +160,7 @@ func CountTokenChatRequest(request dto.GeneralOpenAIRequest, model string, check
 	return tkm, nil, false
 }
 
-func CountTokenMessages(messages []dto.Message, model string, checkSensitive bool) (int, error, bool) {
+func CountTokenMessages(messages []dto.Message, model string, stream bool, checkSensitive bool) (int, error, bool) {
 	//recover when panic
 	tokenEncoder := getTokenEncoder(model)
 	// Reference:
@@ -188,19 +197,13 @@ func CountTokenMessages(messages []dto.Message, model string, checkSensitive boo
 					tokenNum += getTokenNum(tokenEncoder, *message.Name)
 				}
 			} else {
-				var err error
 				arrayContent := message.ParseContent()
 				for _, m := range arrayContent {
 					if m.Type == "image_url" {
-						var imageTokenNum int
-						if model == "glm-4v" {
-							imageTokenNum = 1047
-						} else {
-							imageUrl := m.ImageUrl.(dto.MessageImageUrl)
-							imageTokenNum, err = getImageToken(&imageUrl)
-							if err != nil {
-								return 0, err, false
-							}
+						imageUrl := m.ImageUrl.(dto.MessageImageUrl)
+						imageTokenNum, err := getImageToken(&imageUrl, model, stream)
+						if err != nil {
+							return 0, err, false
 						}
 						tokenNum += imageTokenNum
 						log.Printf("image token num: %d", imageTokenNum)

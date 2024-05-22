@@ -295,10 +295,41 @@ const LogsTable = () => {
       },
     },
     {
+      title: '重试',
+      dataIndex: 'retry',
+      className: isAdmin() ? 'tableShow' : 'tableHiddle',
+      render: (text, record, index) => {
+        let content = '渠道：' + record.channel;
+        if (record.other !== '') {
+          let other = JSON.parse(record.other);
+          if (other === null) {
+            return <></>
+          }
+          if (other.admin_info !== undefined) {
+            if (
+              other.admin_info.use_channel !== null &&
+              other.admin_info.use_channel !== undefined &&
+              other.admin_info.use_channel !== ''
+            ) {
+              // channel id array
+              let useChannel = other.admin_info.use_channel;
+              let useChannelStr = useChannel.join('->');
+              content = `渠道：${useChannelStr}`;
+            }
+          }
+        }
+        return isAdminUser ? <div>{content}</div> : <></>;
+      },
+    },
+    {
       title: '详情',
       dataIndex: 'content',
       render: (text, record, index) => {
         if (record.other === '') {
+          record.other = '{}'
+        }
+        let other = JSON.parse(record.other);
+        if (other == null) {
           return (
             <Paragraph
               ellipsis={{
@@ -314,7 +345,6 @@ const LogsTable = () => {
             </Paragraph>
           );
         }
-        let other = JSON.parse(record.other);
         let content = renderModelPrice(
           record.prompt_tokens,
           record.completion_tokens,

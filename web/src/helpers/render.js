@@ -149,8 +149,9 @@ export function renderModelPrice(
     if (completionRatio === undefined) {
       completionRatio = 0;
     }
+    // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
     let inputRatioPrice = modelRatio * 2.0 * groupRatio;
-    let completionRatioPrice = modelRatio * completionRatio * 2.0 * groupRatio;
+    let completionRatioPrice = modelRatio * 2.0 * completionRatio * groupRatio;
     let price =
       (inputTokens / 1000000) * inputRatioPrice +
       (completionTokens / 1000000) * completionRatioPrice;

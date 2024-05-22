@@ -13,16 +13,16 @@ var (
 	updatePricingLock  sync.Mutex
 )
 
-func GetPricing(user *User, openAIModels []dto.OpenAIModels) []dto.ModelPricing {
+func GetPricing(group string) []dto.ModelPricing {
 	updatePricingLock.Lock()
 	defer updatePricingLock.Unlock()
 
 	if time.Since(lastGetPricingTime) > time.Minute*1 || len(pricingMap) == 0 {
-		updatePricing(openAIModels)
+		updatePricing()
 	}
-	if user != nil {
+	if group != "" {
 		userPricingMap := make([]dto.ModelPricing, 0)
-		models := GetGroupModels(user.Group)
+		models := GetGroupModels(group)
 		for _, pricing := range pricingMap {
 			if !common.StringsContains(models, pricing.ModelName) {
 				pricing.Available = false
@@ -34,28 +34,19 @@ func GetPricing(user *User, openAIModels []dto.OpenAIModels) []dto.ModelPricing 
 	return pricingMap
 }
 
-func updatePricing(openAIModels []dto.OpenAIModels) {
-	modelRatios := common.GetModelRatios()
+func updatePricing() {
+	//modelRatios := common.GetModelRatios()
 	enabledModels := GetEnabledModels()
-	allModels := make(map[string]string)
-	for _, openAIModel := range openAIModels {
-		if common.StringsContains(enabledModels, openAIModel.Id) {
-			allModels[openAIModel.Id] = openAIModel.OwnedBy
-		}
+	allModels := make(map[string]int)
+	for i, model := range enabledModels {
+		allModels[model] = i
 	}
-	for model, _ := range modelRatios {
-		if common.StringsContains(enabledModels, model) {
-			if _, ok := allModels[model]; !ok {
-				allModels[model] = "custom"
-			}
-		}
-	}
+
 	pricingMap = make([]dto.ModelPricing, 0)
-	for model, ownerBy := range allModels {
+	for model, _ := range allModels {
 		pricing := dto.ModelPricing{
 			Available: true,
 			ModelName: model,
-			OwnerBy:   ownerBy,
 		}
 		modelPrice, findPrice := common.GetModelPrice(model, false)
 		if findPrice {

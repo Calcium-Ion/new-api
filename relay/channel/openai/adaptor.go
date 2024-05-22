@@ -11,6 +11,7 @@ import (
 	"one-api/relay/channel"
 	"one-api/relay/channel/ai360"
 	"one-api/relay/channel/lingyiwanwu"
+	"one-api/relay/channel/minimax"
 	"one-api/relay/channel/moonshot"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
@@ -26,7 +27,8 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIReq
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	if info.ChannelType == common.ChannelTypeAzure {
+	switch info.ChannelType {
+	case common.ChannelTypeAzure:
 		// https://learn.microsoft.com/en-us/azure/cognitive-services/openai/chatgpt-quickstart?pivots=rest-api&tabs=command-line#rest-api
 		requestURL := strings.Split(info.RequestURLPath, "?")[0]
 		requestURL = fmt.Sprintf("%s?api-version=%s", requestURL, info.ApiVersion)
@@ -37,8 +39,15 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 
 		requestURL = fmt.Sprintf("/openai/deployments/%s/%s", model_, task)
 		return relaycommon.GetFullRequestURL(info.BaseUrl, requestURL, info.ChannelType), nil
+	case common.ChannelTypeMiniMax:
+		return minimax.GetRequestURL(info)
+	case common.ChannelTypeCustom:
+		url := info.BaseUrl
+		url = strings.Replace(url, "{model}", info.UpstreamModelName, -1)
+		return url, nil
+	default:
+		return relaycommon.GetFullRequestURL(info.BaseUrl, info.RequestURLPath, info.ChannelType), nil
 	}
-	return relaycommon.GetFullRequestURL(info.BaseUrl, info.RequestURLPath, info.ChannelType), nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
@@ -90,11 +99,24 @@ func (a *Adaptor) GetModelList() []string {
 		return moonshot.ModelList
 	case common.ChannelTypeLingYiWanWu:
 		return lingyiwanwu.ModelList
+	case common.ChannelTypeMiniMax:
+		return minimax.ModelList
 	default:
 		return ModelList
 	}
 }
 
 func (a *Adaptor) GetChannelName() string {
-	return ChannelName
+	switch a.ChannelType {
+	case common.ChannelType360:
+		return ai360.ChannelName
+	case common.ChannelTypeMoonshot:
+		return moonshot.ChannelName
+	case common.ChannelTypeLingYiWanWu:
+		return lingyiwanwu.ChannelName
+	case common.ChannelTypeMiniMax:
+		return minimax.ChannelName
+	default:
+		return ChannelName
+	}
 }

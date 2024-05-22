@@ -6,6 +6,7 @@ import {
   showError,
   showInfo,
   showSuccess,
+  showWarning,
   timestamp2string,
 } from '../helpers';
 
@@ -309,6 +310,12 @@ const ChannelsTable = () => {
 
   const setChannelFormat = (channels) => {
     for (let i = 0; i < channels.length; i++) {
+      // if (channels[i].type === 8) {
+      //   showWarning(
+      //     '检测到您使用了“自定义渠道”类型，请更换为“OpenAI”渠道类型！',
+      //   );
+      //   showWarning('下个版本将不再支持“自定义渠道”类型！');
+      // }
       channels[i].key = '' + channels[i].id;
       let test_models = [];
       channels[i].models.split(',').forEach((item, index) => {

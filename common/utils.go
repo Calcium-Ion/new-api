@@ -258,3 +258,12 @@ func MapToJsonStrFloat(m map[string]float64) string {
 	}
 	return string(bytes)
 }
+
+func StrToMap(str string) map[string]interface{} {
+	m := make(map[string]interface{})
+	err := json.Unmarshal([]byte(str), &m)
+	if err != nil {
+		return nil
+	}
+	return m
+}
