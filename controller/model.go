@@ -203,9 +203,10 @@ func RetrieveModel(c *gin.Context) {
 
 func GetPricing(c *gin.Context) {
 	userId := c.GetInt("id")
-	group, err := model.CacheGetUserGroup(userId)
+	// if no login, get default group ratio
 	groupRatio := common.GetGroupRatio("default")
-	if err != nil {
+	group, err := model.CacheGetUserGroup(userId)
+	if err == nil {
 		groupRatio = common.GetGroupRatio(group)
 	}
 	pricing := model.GetPricing(group)
