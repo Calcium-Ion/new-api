@@ -40,19 +40,19 @@ var DefaultModelRatio = map[string]float64{
 	"gpt-4-turbo-2024-04-09":    5,    // $0.01 / 1K tokens
 	"gpt-3.5-turbo":             0.25, // $0.0015 / 1K tokens
 	//"gpt-3.5-turbo-0301":           0.75, //deprecated
-	"gpt-3.5-turbo-0613":             0.75,
-	"gpt-3.5-turbo-16k":              1.5, // $0.003 / 1K tokens
-	"gpt-3.5-turbo-16k-0613":         1.5,
-	"gpt-3.5-turbo-instruct":         0.75, // $0.0015 / 1K tokens
-	"gpt-3.5-turbo-1106":             0.5,  // $0.001 / 1K tokens
-	"gpt-3.5-turbo-0125":             0.25,
-	"babbage-002":                    0.2, // $0.0004 / 1K tokens
-	"davinci-002":                    1,   // $0.002 / 1K tokens
-	"text-ada-001":                   0.2,
-	"text-babbage-001":               0.25,
-	"text-curie-001":                 1,
-	"text-davinci-002":               10,
-	"text-davinci-003":               10,
+	"gpt-3.5-turbo-0613":     0.75,
+	"gpt-3.5-turbo-16k":      1.5, // $0.003 / 1K tokens
+	"gpt-3.5-turbo-16k-0613": 1.5,
+	"gpt-3.5-turbo-instruct": 0.75, // $0.0015 / 1K tokens
+	"gpt-3.5-turbo-1106":     0.5,  // $0.001 / 1K tokens
+	"gpt-3.5-turbo-0125":     0.25,
+	"babbage-002":            0.2, // $0.0004 / 1K tokens
+	"davinci-002":            1,   // $0.002 / 1K tokens
+	"text-ada-001":           0.2,
+	"text-babbage-001":       0.25,
+	"text-curie-001":         1,
+	//"text-davinci-002":               10,
+	//"text-davinci-003":               10,
 	"text-davinci-edit-001":          10,
 	"code-davinci-edit-001":          10,
 	"whisper-1":                      15,  // $0.006 / minute -> $0.006 / 150 words -> $0.006 / 200 tokens -> $0.03 / 1k tokens
@@ -150,7 +150,6 @@ var DefaultModelRatio = map[string]float64{
 }
 
 var DefaultModelPrice = map[string]float64{
-	"dall-e-2":          0.02,
 	"dall-e-3":          0.04,
 	"gpt-4-gizmo-*":     0.1,
 	"mj_imagine":        0.1,
