@@ -15,6 +15,7 @@ import {
   Space,
   Spin,
   Button,
+  Tooltip,
   Input,
   Typography,
   Select,
@@ -24,6 +25,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { Divider } from 'semantic-ui-react';
 import { getChannelModels, loadChannelModels } from '../../components/utils.js';
+import axios from 'axios';
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo-0301': 'gpt-3.5-turbo',
@@ -331,6 +333,7 @@ const EditChannel = (props) => {
     handleInputChange('models', localModels);
   };
 
+
   return (
     <>
       <SideSheet
@@ -550,6 +553,16 @@ const EditChannel = (props) => {
               >
                 填入所有模型
               </Button>
+              <Tooltip content={fetchButtonTips}>
+                <Button
+                  type='tertiary'
+                  onClick={() => {
+                    fetchUpstreamModelList('models');
+                  }}
+                >
+                  获取模型列表
+                </Button>
+              </Tooltip>
               <Button
                 type='warning'
                 onClick={() => {
