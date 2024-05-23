@@ -370,7 +370,7 @@ func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptT
 		}, nil
 	}
 	fullTextResponse := ResponseClaude2OpenAI(requestMode, &claudeResponse)
-	completionTokens, err, _ := service.CountTokenText(claudeResponse.Completion, model, false)
+	completionTokens, err := service.CountTokenText(claudeResponse.Completion, model)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "count_token_text_failed", http.StatusInternalServerError), nil
 	}

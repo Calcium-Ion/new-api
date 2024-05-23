@@ -190,7 +190,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if simpleResponse.Usage.TotalTokens == 0 {
 		completionTokens := 0
 		for _, choice := range simpleResponse.Choices {
-			ctkm, _, _ := service.CountTokenText(string(choice.Message.Content), model, false)
+			ctkm, _ := service.CountTokenText(string(choice.Message.Content), model)
 			completionTokens += ctkm
 		}
 		simpleResponse.Usage = dto.Usage{

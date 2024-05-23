@@ -1,5 +1,13 @@
 package common
 
+import (
+	"bytes"
+	"fmt"
+	goahocorasick "github.com/anknown/ahocorasick"
+	"one-api/constant"
+	"strings"
+)
+
 func SundaySearch(text string, pattern string) bool {
 	// 计算偏移表
 	offset := make(map[rune]int)
@@ -47,4 +55,26 @@ func RemoveDuplicate(s []string) []string {
 		}
 	}
 	return result
+}
+
+func InitAc() *goahocorasick.Machine {
+	m := new(goahocorasick.Machine)
+	dict := readRunes()
+	if err := m.Build(dict); err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return m
+}
+
+func readRunes() [][]rune {
+	var dict [][]rune
+
+	for _, word := range constant.SensitiveWords {
+		word = strings.ToLower(word)
+		l := bytes.TrimSpace([]byte(word))
+		dict = append(dict, bytes.Runes(l))
+	}
+
+	return dict
 }
