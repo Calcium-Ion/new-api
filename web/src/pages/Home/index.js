@@ -86,11 +86,21 @@ const Home = () => {
                   <p>
                     源码：
                     <a
-                      href='https://github.com/songquanpeng/one-api'
+                      href='https://github.com/Calcium-Ion/new-api'
                       target='_blank'
                       rel='noreferrer'
                     >
-                      https://github.com/songquanpeng/one-api
+                      https://github.com/Calcium-Ion/new-api
+                    </a>
+                  </p>
+                  <p>
+                    协议：
+                    <a
+                      href='https://www.apache.org/licenses/LICENSE-2.0'
+                      target='_blank'
+                      rel='noreferrer'
+                    >
+                      Apache-2.0 License
                     </a>
                   </p>
                   <p>启动时间：{getStartTimeString()}</p>
