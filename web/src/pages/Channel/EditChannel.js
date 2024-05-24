@@ -490,7 +490,7 @@ const EditChannel = (props) => {
                   type={'warning'}
                   description={
                     <>
-                      如果你对接的是上游One API或者New API，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。
+                      如果你对接的是上游One API或者New API等转发项目，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。
                     </>
                   }
                 ></Banner>
