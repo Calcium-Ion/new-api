@@ -56,17 +56,28 @@
 4. [Ollama](https://github.com/ollama/ollama?tab=readme-ov-file)，添加渠道时，密钥可以随便填写，默认的请求地址是[http://localhost:11434](http://localhost:11434)，如果需要修改请在渠道中修改
 5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
 6. [零一万物](https://platform.lingyiwanwu.com/)
+7. 自定义渠道，支持填入完整调用地址
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
 ## 渠道重试
-渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，建议开启缓存功能。  
+渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。  
 如果开启了重试功能，第一次重试使用同优先级，第二次重试使用下一个优先级，以此类推。  
 ### 缓存设置方法
 1. `REDIS_CONN_STRING`：设置之后将使用 Redis 作为缓存使用。
     + 例子：`REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
 2. `MEMORY_CACHE_ENABLED`：启用内存缓存（如果设置了`REDIS_CONN_STRING`，则无需手动设置），会导致用户额度的更新存在一定的延迟，可选值为 `true` 和 `false`，未设置则默认为 `false`。
     + 例子：`MEMORY_CACHE_ENABLED=true`
+### 为什么有的时候没有重试
+这些错误码不会重试：400，504，524
+### 我想让400也重试
+在`渠道->编辑`中，将`状态码复写`改为
+```json
+{
+  "400": "500"
+}
+```
+可以实现400错误转为500错误，从而重试
 
 
 ## 部署
@@ -88,6 +99,9 @@ docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -
 docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(宝塔的服务器地址:宝塔数据库端口)/宝塔数据库名称" -e TZ=Asia/Shanghai -v /www/wwwroot/new-api:/data calciumion/new-api:latest
 # 注意：数据库要开启远程访问，并且只允许服务器IP访问
 ```
+### 默认账号密码
+默认账号root 密码123456
+
 ## Midjourney接口设置文档
 [对接文档](Midjourney.md)
 
