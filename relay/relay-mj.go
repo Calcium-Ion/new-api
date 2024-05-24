@@ -158,7 +158,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 	modelPrice, success := common.GetModelPrice(modelName, true)
 	// 如果没有配置价格，则使用默认价格
 	if !success {
-		defaultPrice, ok := common.DefaultModelPrice[modelName]
+		defaultPrice, ok := common.GetDefaultModelRatioMap()[modelName]
 		if !ok {
 			modelPrice = 0.1
 		} else {
@@ -457,7 +457,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	modelPrice, success := common.GetModelPrice(modelName, true)
 	// 如果没有配置价格，则使用默认价格
 	if !success {
-		defaultPrice, ok := common.DefaultModelPrice[modelName]
+		defaultPrice, ok := common.GetDefaultModelRatioMap()[modelName]
 		if !ok {
 			modelPrice = 0.1
 		} else {

@@ -20,9 +20,11 @@ const (
 // 1 === $0.002 / 1K tokens
 // 1 === ￥0.014 / 1k tokens
 
-var DefaultModelRatio = map[string]float64{
+var defaultModelRatio = map[string]float64{
 	//"midjourney":                50,
 	"gpt-4-gizmo-*": 15,
+	"gpt-4-all":     15,
+	"gpt-4o-all":    15,
 	"gpt-4":         15,
 	//"gpt-4-0314":                   15, //deprecated
 	"gpt-4-0613": 15,
@@ -149,7 +151,7 @@ var DefaultModelRatio = map[string]float64{
 	"llama-3-sonar-large-32k-online": 1 / 1000 * USD,
 }
 
-var DefaultModelPrice = map[string]float64{
+var defaultModelPrice = map[string]float64{
 	"dall-e-3":          0.04,
 	"gpt-4-gizmo-*":     0.1,
 	"mj_imagine":        0.1,
@@ -173,14 +175,14 @@ var modelPrice map[string]float64 = nil
 var modelRatio map[string]float64 = nil
 
 var CompletionRatio map[string]float64 = nil
-var DefaultCompletionRatio = map[string]float64{
+var defaultCompletionRatio = map[string]float64{
 	"gpt-4-gizmo-*": 2,
 	"gpt-4-all":     2,
 }
 
 func ModelPrice2JSONString() string {
 	if modelPrice == nil {
-		modelPrice = DefaultModelPrice
+		modelPrice = defaultModelPrice
 	}
 	jsonBytes, err := json.Marshal(modelPrice)
 	if err != nil {
@@ -197,7 +199,7 @@ func UpdateModelPriceByJSONString(jsonStr string) error {
 // GetModelPrice 返回模型的价格，如果模型不存在则返回-1，false
 func GetModelPrice(name string, printErr bool) (float64, bool) {
 	if modelPrice == nil {
-		modelPrice = DefaultModelPrice
+		modelPrice = defaultModelPrice
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
@@ -212,16 +214,16 @@ func GetModelPrice(name string, printErr bool) (float64, bool) {
 	return price, true
 }
 
-func GetModelPrices() map[string]float64 {
+func GetModelPriceMap() map[string]float64 {
 	if modelPrice == nil {
-		modelPrice = DefaultModelPrice
+		modelPrice = defaultModelPrice
 	}
 	return modelPrice
 }
 
 func ModelRatio2JSONString() string {
 	if modelRatio == nil {
-		modelRatio = DefaultModelRatio
+		modelRatio = defaultModelRatio
 	}
 	jsonBytes, err := json.Marshal(modelRatio)
 	if err != nil {
@@ -237,7 +239,7 @@ func UpdateModelRatioByJSONString(jsonStr string) error {
 
 func GetModelRatio(name string) float64 {
 	if modelRatio == nil {
-		modelRatio = DefaultModelRatio
+		modelRatio = defaultModelRatio
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
@@ -250,16 +252,21 @@ func GetModelRatio(name string) float64 {
 	return ratio
 }
 
-func GetModelRatios() map[string]float64 {
-	if modelRatio == nil {
-		modelRatio = DefaultModelRatio
+func DefaultModelRatio2JSONString() string {
+	jsonBytes, err := json.Marshal(defaultModelRatio)
+	if err != nil {
+		SysError("error marshalling model ratio: " + err.Error())
 	}
-	return modelRatio
+	return string(jsonBytes)
+}
+
+func GetDefaultModelRatioMap() map[string]float64 {
+	return defaultModelRatio
 }
 
 func CompletionRatio2JSONString() string {
 	if CompletionRatio == nil {
-		CompletionRatio = DefaultCompletionRatio
+		CompletionRatio = defaultCompletionRatio
 	}
 	jsonBytes, err := json.Marshal(CompletionRatio)
 	if err != nil {
@@ -343,9 +350,9 @@ func GetCompletionRatio(name string) float64 {
 	return 1
 }
 
-func GetCompletionRatios() map[string]float64 {
+func GetCompletionRatioMap() map[string]float64 {
 	if CompletionRatio == nil {
-		CompletionRatio = DefaultCompletionRatio
+		CompletionRatio = defaultCompletionRatio
 	}
 	return CompletionRatio
 }
