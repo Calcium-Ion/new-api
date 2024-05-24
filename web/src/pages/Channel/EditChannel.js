@@ -486,6 +486,16 @@ const EditChannel = (props) => {
           {inputs.type === 8 && (
             <>
               <div style={{ marginTop: 10 }}>
+                <Banner
+                  type={'warning'}
+                  description={
+                    <>
+                      如果你对接的是上游One API或者New API，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。
+                    </>
+                  }
+                ></Banner>
+              </div>
+              <div style={{ marginTop: 10 }}>
                 <Typography.Text strong>
                   完整的 Base URL，支持变量{'{model}'}：
                 </Typography.Text>
