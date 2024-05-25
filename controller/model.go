@@ -200,18 +200,3 @@ func RetrieveModel(c *gin.Context) {
 		})
 	}
 }
-
-func GetPricing(c *gin.Context) {
-	userId := c.GetInt("id")
-	group, err := model.CacheGetUserGroup(userId)
-	groupRatio := common.GetGroupRatio("default")
-	if err != nil {
-		groupRatio = common.GetGroupRatio(group)
-	}
-	pricing := model.GetPricing(group)
-	c.JSON(200, gin.H{
-		"success":     true,
-		"data":        pricing,
-		"group_ratio": groupRatio,
-	})
-}

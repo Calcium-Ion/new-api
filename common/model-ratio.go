@@ -20,9 +20,11 @@ const (
 // 1 === $0.002 / 1K tokens
 // 1 === ￥0.014 / 1k tokens
 
-var DefaultModelRatio = map[string]float64{
+var defaultModelRatio = map[string]float64{
 	//"midjourney":                50,
 	"gpt-4-gizmo-*": 15,
+	"gpt-4-all":     15,
+	"gpt-4o-all":    15,
 	"gpt-4":         15,
 	//"gpt-4-0314":                   15, //deprecated
 	"gpt-4-0613": 15,
@@ -40,19 +42,19 @@ var DefaultModelRatio = map[string]float64{
 	"gpt-4-turbo-2024-04-09":    5,    // $0.01 / 1K tokens
 	"gpt-3.5-turbo":             0.25, // $0.0015 / 1K tokens
 	//"gpt-3.5-turbo-0301":           0.75, //deprecated
-	"gpt-3.5-turbo-0613":             0.75,
-	"gpt-3.5-turbo-16k":              1.5, // $0.003 / 1K tokens
-	"gpt-3.5-turbo-16k-0613":         1.5,
-	"gpt-3.5-turbo-instruct":         0.75, // $0.0015 / 1K tokens
-	"gpt-3.5-turbo-1106":             0.5,  // $0.001 / 1K tokens
-	"gpt-3.5-turbo-0125":             0.25,
-	"babbage-002":                    0.2, // $0.0004 / 1K tokens
-	"davinci-002":                    1,   // $0.002 / 1K tokens
-	"text-ada-001":                   0.2,
-	"text-babbage-001":               0.25,
-	"text-curie-001":                 1,
-	"text-davinci-002":               10,
-	"text-davinci-003":               10,
+	"gpt-3.5-turbo-0613":     0.75,
+	"gpt-3.5-turbo-16k":      1.5, // $0.003 / 1K tokens
+	"gpt-3.5-turbo-16k-0613": 1.5,
+	"gpt-3.5-turbo-instruct": 0.75, // $0.0015 / 1K tokens
+	"gpt-3.5-turbo-1106":     0.5,  // $0.001 / 1K tokens
+	"gpt-3.5-turbo-0125":     0.25,
+	"babbage-002":            0.2, // $0.0004 / 1K tokens
+	"davinci-002":            1,   // $0.002 / 1K tokens
+	"text-ada-001":           0.2,
+	"text-babbage-001":       0.25,
+	"text-curie-001":         1,
+	//"text-davinci-002":               10,
+	//"text-davinci-003":               10,
 	"text-davinci-edit-001":          10,
 	"code-davinci-edit-001":          10,
 	"whisper-1":                      15,  // $0.006 / minute -> $0.006 / 150 words -> $0.006 / 200 tokens -> $0.03 / 1k tokens
@@ -149,8 +151,7 @@ var DefaultModelRatio = map[string]float64{
 	"llama-3-sonar-large-32k-online": 1 / 1000 * USD,
 }
 
-var DefaultModelPrice = map[string]float64{
-	"dall-e-2":          0.02,
+var defaultModelPrice = map[string]float64{
 	"dall-e-3":          0.04,
 	"gpt-4-gizmo-*":     0.1,
 	"mj_imagine":        0.1,
@@ -174,14 +175,14 @@ var modelPrice map[string]float64 = nil
 var modelRatio map[string]float64 = nil
 
 var CompletionRatio map[string]float64 = nil
-var DefaultCompletionRatio = map[string]float64{
+var defaultCompletionRatio = map[string]float64{
 	"gpt-4-gizmo-*": 2,
 	"gpt-4-all":     2,
 }
 
 func ModelPrice2JSONString() string {
 	if modelPrice == nil {
-		modelPrice = DefaultModelPrice
+		modelPrice = defaultModelPrice
 	}
 	jsonBytes, err := json.Marshal(modelPrice)
 	if err != nil {
@@ -198,7 +199,7 @@ func UpdateModelPriceByJSONString(jsonStr string) error {
 // GetModelPrice 返回模型的价格，如果模型不存在则返回-1，false
 func GetModelPrice(name string, printErr bool) (float64, bool) {
 	if modelPrice == nil {
-		modelPrice = DefaultModelPrice
+		modelPrice = defaultModelPrice
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
@@ -213,16 +214,16 @@ func GetModelPrice(name string, printErr bool) (float64, bool) {
 	return price, true
 }
 
-func GetModelPrices() map[string]float64 {
+func GetModelPriceMap() map[string]float64 {
 	if modelPrice == nil {
-		modelPrice = DefaultModelPrice
+		modelPrice = defaultModelPrice
 	}
 	return modelPrice
 }
 
 func ModelRatio2JSONString() string {
 	if modelRatio == nil {
-		modelRatio = DefaultModelRatio
+		modelRatio = defaultModelRatio
 	}
 	jsonBytes, err := json.Marshal(modelRatio)
 	if err != nil {
@@ -238,7 +239,7 @@ func UpdateModelRatioByJSONString(jsonStr string) error {
 
 func GetModelRatio(name string) float64 {
 	if modelRatio == nil {
-		modelRatio = DefaultModelRatio
+		modelRatio = defaultModelRatio
 	}
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
@@ -251,16 +252,21 @@ func GetModelRatio(name string) float64 {
 	return ratio
 }
 
-func GetModelRatios() map[string]float64 {
-	if modelRatio == nil {
-		modelRatio = DefaultModelRatio
+func DefaultModelRatio2JSONString() string {
+	jsonBytes, err := json.Marshal(defaultModelRatio)
+	if err != nil {
+		SysError("error marshalling model ratio: " + err.Error())
 	}
-	return modelRatio
+	return string(jsonBytes)
+}
+
+func GetDefaultModelRatioMap() map[string]float64 {
+	return defaultModelRatio
 }
 
 func CompletionRatio2JSONString() string {
 	if CompletionRatio == nil {
-		CompletionRatio = DefaultCompletionRatio
+		CompletionRatio = defaultCompletionRatio
 	}
 	jsonBytes, err := json.Marshal(CompletionRatio)
 	if err != nil {
@@ -344,9 +350,9 @@ func GetCompletionRatio(name string) float64 {
 	return 1
 }
 
-func GetCompletionRatios() map[string]float64 {
+func GetCompletionRatioMap() map[string]float64 {
 	if CompletionRatio == nil {
-		CompletionRatio = DefaultCompletionRatio
+		CompletionRatio = defaultCompletionRatio
 	}
 	return CompletionRatio
 }

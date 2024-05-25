@@ -212,6 +212,16 @@ export const verifyJSON = (str) => {
   return true;
 };
 
+export function verifyJSONPromise(value) {
+  try {
+    JSON.parse(value);
+    return Promise.resolve();
+  } catch (e) {
+    return Promise.reject('不是合法的 JSON 字符串');
+  }
+}
+
+
 export function shouldShowPrompt(id) {
   let prompt = localStorage.getItem(`prompt-${id}`);
   return !prompt;

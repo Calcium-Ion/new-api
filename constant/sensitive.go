@@ -16,7 +16,7 @@ var StreamCacheQueueLength = 0
 // SensitiveWords 敏感词
 // var SensitiveWords []string
 var SensitiveWords = []string{
-	"test",
+	"test_sensitive",
 }
 
 func SensitiveWordsToString() string {

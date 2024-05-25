@@ -36,7 +36,7 @@ const (
 )
 
 func GetLogByKey(key string) (logs []*Log, err error) {
-	err = DB.Joins("left join tokens on tokens.id = logs.token_id").Where("tokens.key = ?", strings.Split(key, "-")[1]).Find(&logs).Error
+	err = DB.Joins("left join tokens on tokens.id = logs.token_id").Where("tokens.key = ?", strings.TrimPrefix(key, "sk-")).Find(&logs).Error
 	return logs, err
 }
 
