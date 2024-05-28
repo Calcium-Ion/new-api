@@ -79,11 +79,10 @@ func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (in
 	var err error
 	var format string
 	if strings.HasPrefix(imageUrl.Url, "http") {
-		common.SysLog(fmt.Sprintf("downloading image: %s", imageUrl.Url))
-		config, format, err = common.DecodeUrlImageData(imageUrl.Url)
+		config, format, err = DecodeUrlImageData(imageUrl.Url)
 	} else {
 		common.SysLog(fmt.Sprintf("decoding image"))
-		config, format, _, err = common.DecodeBase64ImageData(imageUrl.Url)
+		config, format, _, err = DecodeBase64ImageData(imageUrl.Url)
 	}
 	if err != nil {
 		return 0, err
