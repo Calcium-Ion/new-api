@@ -87,7 +87,7 @@ func SyncTokenCache(frequency int) {
 				}
 			} else {
 				// 如果数据库中存在，先检查redis
-				_, err := common.RedisGet(fmt.Sprintf("token:%s", key))
+				_, err = common.RedisGet(fmt.Sprintf("token:%s", key))
 				if err != nil {
 					// 如果redis中不存在，则跳过
 					continue

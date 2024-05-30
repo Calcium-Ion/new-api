@@ -20,8 +20,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/linux-do/tiktoken-go v0.7.0
 	github.com/pkg/errors v0.9.1
+	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/samber/lo v1.39.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	golang.org/x/crypto v0.21.0
