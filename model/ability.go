@@ -3,10 +3,11 @@ package model
 import (
 	"errors"
 	"fmt"
-	"github.com/samber/lo"
-	"gorm.io/gorm"
 	"one-api/common"
 	"strings"
+
+	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
 type Ability struct {
@@ -16,6 +17,7 @@ type Ability struct {
 	Enabled   bool   `json:"enabled"`
 	Priority  *int64 `json:"priority" gorm:"bigint;default:0;index"`
 	Weight    uint   `json:"weight" gorm:"default:0;index"`
+	IsImage   bool   `json:"is_image" gorm:"default:false"`
 }
 
 func GetGroupModels(group string) []string {
@@ -88,11 +90,18 @@ func getChannelQuery(group string, model string, retry int) *gorm.DB {
 	return channelQuery
 }
 
-func GetRandomSatisfiedChannel(group string, model string, retry int) (*Channel, error) {
+func GetRandomSatisfiedChannel(group string, model string, retry int, isImage bool) (*Channel, error) {
 	var abilities []Ability
 
 	var err error = nil
 	channelQuery := getChannelQuery(group, model, retry)
+	if isImage {
+		fmt.Println("这边要过滤掉不是图片的")
+		channelQuery = channelQuery.Where("is_image = ?", true)
+	} else {
+		fmt.Println("这边要过滤掉是图片的")
+		channelQuery = channelQuery.Where("is_image = ?", false)
+	}
 	if common.UsingSQLite || common.UsingPostgreSQL {
 		err = channelQuery.Order("weight DESC").Find(&abilities).Error
 	} else {

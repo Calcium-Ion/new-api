@@ -266,14 +266,14 @@ func SyncChannelCache(frequency int) {
 	}
 }
 
-func CacheGetRandomSatisfiedChannel(group string, model string, retry int) (*Channel, error) {
+func CacheGetRandomSatisfiedChannel(group string, model string, retry int, IsImage bool) (*Channel, error) {
 	if strings.HasPrefix(model, "gpt-4-gizmo") {
 		model = "gpt-4-gizmo-*"
 	}
 
 	// if memory cache is disabled, get channel directly from database
 	if !common.MemoryCacheEnabled {
-		return GetRandomSatisfiedChannel(group, model, retry)
+		return GetRandomSatisfiedChannel(group, model, retry, IsImage)
 	}
 	channelSyncLock.RLock()
 	defer channelSyncLock.RUnlock()
@@ -284,7 +284,10 @@ func CacheGetRandomSatisfiedChannel(group string, model string, retry int) (*Cha
 
 	uniquePriorities := make(map[int]bool)
 	for _, channel := range channels {
-		uniquePriorities[int(channel.GetPriority())] = true
+		// 过滤IsImage匹配的频道
+		if channelIsImage(channel, IsImage) {
+			uniquePriorities[int(channel.GetPriority())] = true
+		}
 	}
 	var sortedUniquePriorities []int
 	for priority := range uniquePriorities {
@@ -300,7 +303,7 @@ func CacheGetRandomSatisfiedChannel(group string, model string, retry int) (*Cha
 	// get the priority for the given retry number
 	var targetChannels []*Channel
 	for _, channel := range channels {
-		if channel.GetPriority() == targetPriority {
+		if channel.GetPriority() == targetPriority && channelIsImage(channel, IsImage) {
 			targetChannels = append(targetChannels, channel)
 		}
 	}
@@ -324,6 +327,14 @@ func CacheGetRandomSatisfiedChannel(group string, model string, retry int) (*Cha
 	}
 	// return null if no channel is not found
 	return nil, errors.New("channel not found")
+}
+
+// channelIsImage helper function to check if the channel's IsImage matches the provided value
+func channelIsImage(channel *Channel, IsImage bool) bool {
+	if channel.IsImage == nil {
+		return false
+	}
+	return *channel.IsImage == IsImage
 }
 
 func CacheGetChannel(id int) (*Channel, error) {

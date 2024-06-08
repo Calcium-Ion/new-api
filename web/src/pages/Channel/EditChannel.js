@@ -77,10 +77,12 @@ const EditChannel = (props) => {
     status_code_mapping: '',
     models: [],
     auto_ban: 1,
+    is_image: false,
     test_model: '',
     groups: ['default'],
   };
   const [batch, setBatch] = useState(false);
+  const [is_image, setImage] = useState(false)
   const [autoBan, setAutoBan] = useState(true);
   // const [autoBan, setAutoBan] = useState(true);
   const [inputs, setInputs] = useState(originInputs);
@@ -168,6 +170,11 @@ const EditChannel = (props) => {
         setAutoBan(false);
       } else {
         setAutoBan(true);
+      }
+      if (data.is_image == false){
+        setImage(false);
+      } else {
+        setImage(true);
       }
       setBasicModels(getChannelModels(data.type));
       // console.log(data);
@@ -325,6 +332,7 @@ const EditChannel = (props) => {
       return;
     }
     localInputs.auto_ban = autoBan ? 1 : 0;
+    localInputs.is_image = is_image ? true : false;
     localInputs.models = localInputs.models.join(',');
     localInputs.group = localInputs.groups.join(',');
     if (isEdit) {
@@ -758,6 +766,18 @@ const EditChannel = (props) => {
               </Space>
             </div>
           )}
+
+          <div style={{ marginTop: 10, display: 'flex' }}>
+            <Space>
+              <Checkbox
+                checked={is_image}
+                label='is_image'
+                name='is_image'
+                onChange={() => setImage(!is_image)}
+              />
+              <Typography.Text strong>is_image</Typography.Text>
+            </Space>
+          </div>
           {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && (
             <>
               <div style={{ marginTop: 10 }}>

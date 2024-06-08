@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -49,6 +50,11 @@ func SetupLogger() {
 func SysLog(s string) {
 	t := time.Now()
 	_, _ = fmt.Fprintf(gin.DefaultWriter, "[SYS] %v | %s \n", t.Format("2006/01/02 - 15:04:05"), s)
+}
+
+func DebugLog(s string) {
+	t := time.Now()
+	_, _ = fmt.Fprintf(gin.DefaultWriter, "[DEBUG] %v | %s \n", t.Format("2006/01/02 - 15:04:05"), s)
 }
 
 func SysError(s string) {

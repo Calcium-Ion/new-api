@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"one-api/common"
 	"one-api/constant"
@@ -65,9 +68,50 @@ func Distribute() func(c *gin.Context) {
 					return
 				}
 			}
+			// 在不影响后续通过c.Request.Body 获取 body 的情况下，将 body 读取出来
+			// 读取 body
+			var bodyBytes []byte
+			if c.Request.Body != nil {
+				bodyBytes, _ = io.ReadAll(c.Request.Body)
+			}
 
+			// 将 body 内容重新设置回 c.Request.Body
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+			// 解析 body 到请求的结构体
+
+			// 解析 JSON 请求数据
+			// 检查是否有 messages 字段并解析
+			isImage := false
+			var requestData map[string]interface{}
+			if err := json.Unmarshal(bodyBytes, &requestData); err != nil {
+				fmt.Println("解析 JSON 请求数据失败")
+			} else {
+				if messages, ok := requestData["messages"].([]interface{}); ok {
+					for _, message := range messages {
+						if msgMap, ok := message.(map[string]interface{}); ok {
+							if content, exists := msgMap["content"]; exists {
+								switch content.(type) {
+								case []interface{}:
+									for _, item := range content.([]interface{}) {
+										if itemMap, ok := item.(map[string]interface{}); ok {
+											if t, exists := itemMap["type"]; exists && t == "image_url" {
+												isImage = true
+												break
+											}
+										}
+									}
+								}
+								if isImage {
+									break
+								}
+							}
+						}
+					}
+				}
+			}
 			if shouldSelectChannel {
-				channel, err = model.CacheGetRandomSatisfiedChannel(userGroup, modelRequest.Model, 0)
+				channel, err = model.CacheGetRandomSatisfiedChannel(userGroup, modelRequest.Model, 0, isImage)
 				if err != nil {
 					message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", userGroup, modelRequest.Model)
 					// 如果错误，但是渠道不为空，说明是数据库一致性问题

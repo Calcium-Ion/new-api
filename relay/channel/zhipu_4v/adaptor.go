@@ -3,7 +3,6 @@ package zhipu_4v
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"one-api/dto"
@@ -11,6 +10,8 @@ import (
 	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Adaptor struct {
@@ -48,7 +49,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	if info.IsStream {
 		var responseText string
 		var toolCount int
-		err, responseText, toolCount = openai.OpenaiStreamHandler(c, resp, info.RelayMode)
+		err, responseText, toolCount = openai.OpenaiStreamHandler(c, resp, info.RelayMode, info.UpstreamModelName)
 		usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 		usage.CompletionTokens += toolCount * 7
 	} else {

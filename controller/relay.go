@@ -2,8 +2,8 @@ package controller
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +16,9 @@ import (
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"strings"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
@@ -36,6 +39,7 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 }
 
 func Relay(c *gin.Context) {
+	startTime := time.Now()
 	relayMode := constant.Path2RelayMode(c.Request.URL.Path)
 	retryTimes := common.RetryTimes
 	requestId := c.GetString(common.RequestIdKey)
@@ -50,7 +54,47 @@ func Relay(c *gin.Context) {
 		retryTimes = 0
 	}
 	for i := 0; shouldRetry(c, channelId, openaiErr, retryTimes) && i < retryTimes; i++ {
-		channel, err := model.CacheGetRandomSatisfiedChannel(group, originalModel, i)
+		var bodyBytes []byte
+		if c.Request.Body != nil {
+			bodyBytes, _ = io.ReadAll(c.Request.Body)
+		}
+
+		// 将 body 内容重新设置回 c.Request.Body
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		// 解析 body 到请求的结构体
+
+		// 解析 JSON 请求数据
+		// 检查是否有 messages 字段并解析
+		isImage := false
+		var requestData map[string]interface{}
+		if err := json.Unmarshal(bodyBytes, &requestData); err != nil {
+			fmt.Println("解析 JSON 请求数据失败")
+		} else {
+			if messages, ok := requestData["messages"].([]interface{}); ok {
+				for _, message := range messages {
+					if msgMap, ok := message.(map[string]interface{}); ok {
+						if content, exists := msgMap["content"]; exists {
+							switch content.(type) {
+							case []interface{}:
+								for _, item := range content.([]interface{}) {
+									if itemMap, ok := item.(map[string]interface{}); ok {
+										if t, exists := itemMap["type"]; exists && t == "image_url" {
+											isImage = true
+											break
+										}
+									}
+								}
+							}
+							if isImage {
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+		channel, err := model.CacheGetRandomSatisfiedChannel(group, originalModel, i, isImage)
 		if err != nil {
 			common.LogError(c.Request.Context(), fmt.Sprintf("CacheGetRandomSatisfiedChannel failed: %s", err.Error()))
 			break
@@ -74,6 +118,16 @@ func Relay(c *gin.Context) {
 		retryLogStr := fmt.Sprintf("重试：%s", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(useChannel)), "->"), "[]"))
 		common.LogInfo(c.Request.Context(), retryLogStr)
 	}
+
+	// Custom log info similar to [GIN] log
+	// clientIP := c.ClientIP()
+	latency := time.Since(startTime) // 计算响应延迟时间
+	statusCode := c.Writer.Status()
+	// method := c.Request.Method
+	// path := c.Request.URL.Path
+	retries := common.RetryTimes - retryTimes
+
+	common.DebugLog(fmt.Sprintf("%3d | %13v| Model: %s | Retries: %d", statusCode, latency, originalModel, retries))
 
 	if openaiErr != nil {
 		if openaiErr.StatusCode == http.StatusTooManyRequests {
