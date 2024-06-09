@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/dto"
+	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"strings"
 	"sync"
@@ -26,140 +27,8 @@ var modelmapper = map[string]string{
 	"gpt-4-turbo-preview": "gpt-4-0125-preview",
 }
 
-// func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, model string) (*dto.OpenAIErrorWithStatusCode, string, int) {
-// 	//checkSensitive := constant.ShouldCheckCompletionSensitive()
-// 	var responseTextBuilder strings.Builder
-// 	toolCount := 0
-// 	scanner := bufio.NewScanner(resp.Body)
-// 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-// 		if atEOF && len(data) == 0 {
-// 			return 0, nil, nil
-// 		}
-// 		if i := strings.Index(string(data), "\n"); i >= 0 {
-// 			return i + 1, data[0:i], nil
-// 		}
-// 		if atEOF {
-// 			return len(data), data, nil
-// 		}
-// 		return 0, nil, nil
-// 	})
-// 	dataChan := make(chan string, 5)
-// 	stopChan := make(chan bool, 2)
-// 	defer close(stopChan)
-// 	defer close(dataChan)
-// 	var wg sync.WaitGroup
-// 	go func() {
-// 		wg.Add(1)
-// 		defer wg.Done()
-// 		var streamItems []string // store stream items
-// 		for scanner.Scan() {
-// 			data := scanner.Text()
-// 			if len(data) < 6 { // ignore blank line or wrong format
-// 				continue
-// 			}
-// 			if data[:6] != "data: " && data[:6] != "[DONE]" {
-// 				continue
-// 			}
-// 			common.SafeSendString(dataChan, data)
-// 			data = data[6:]
-// 			if !strings.HasPrefix(data, "[DONE]") {
-// 				streamItems = append(streamItems, data)
-// 			}
-// 		}
-// 		streamResp := "[" + strings.Join(streamItems, ",") + "]"
-// 		switch relayMode {
-// 		case relayconstant.RelayModeChatCompletions:
-// 			var streamResponses []dto.ChatCompletionsStreamResponseSimple
-// 			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
-// 			if err != nil {
-// 				common.SysError("error unmarshalling stream response: " + err.Error())
-// 				for _, item := range streamItems {
-// 					var streamResponse dto.ChatCompletionsStreamResponseSimple
-// 					err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
-// 					if err == nil {
-// 						for _, choice := range streamResponse.Choices {
-// 							responseTextBuilder.WriteString(choice.Delta.GetContentString())
-// 							if choice.Delta.ToolCalls != nil {
-// 								if len(choice.Delta.ToolCalls) > toolCount {
-// 									toolCount = len(choice.Delta.ToolCalls)
-// 								}
-// 								for _, tool := range choice.Delta.ToolCalls {
-// 									responseTextBuilder.WriteString(tool.Function.Name)
-// 									responseTextBuilder.WriteString(tool.Function.Arguments)
-// 								}
-// 							}
-// 						}
-// 					}
-// 				}
-// 			} else {
-// 				for _, streamResponse := range streamResponses {
-// 					for _, choice := range streamResponse.Choices {
-// 						responseTextBuilder.WriteString(choice.Delta.GetContentString())
-// 						if choice.Delta.ToolCalls != nil {
-// 							if len(choice.Delta.ToolCalls) > toolCount {
-// 								toolCount = len(choice.Delta.ToolCalls)
-// 							}
-// 							for _, tool := range choice.Delta.ToolCalls {
-// 								responseTextBuilder.WriteString(tool.Function.Name)
-// 								responseTextBuilder.WriteString(tool.Function.Arguments)
-// 							}
-// 						}
-// 					}
-// 				}
-// 			}
-
-// 		case relayconstant.RelayModeCompletions:
-// 			var streamResponses []dto.CompletionsStreamResponse
-// 			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
-// 			if err != nil {
-// 				common.SysError("error unmarshalling stream response: " + err.Error())
-// 				for _, item := range streamItems {
-// 					var streamResponse dto.CompletionsStreamResponse
-// 					err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
-// 					if err == nil {
-// 						for _, choice := range streamResponse.Choices {
-// 							responseTextBuilder.WriteString(choice.Text)
-// 						}
-// 					}
-// 				}
-// 			} else {
-// 				for _, streamResponse := range streamResponses {
-// 					for _, choice := range streamResponse.Choices {
-// 						responseTextBuilder.WriteString(choice.Text)
-// 					}
-// 				}
-// 			}
-// 		}
-// 		if len(dataChan) > 0 {
-// 			// wait data out
-// 			time.Sleep(2 * time.Second)
-// 		}
-// 		common.SafeSendBool(stopChan, true)
-// 	}()
-// 	service.SetEventStreamHeaders(c)
-// 	c.Stream(func(w io.Writer) bool {
-// 		select {
-// 		case data := <-dataChan:
-// 			if strings.HasPrefix(data, "data: [DONE]") {
-// 				data = data[:12]
-// 			}
-// 			// some implementations may add \r at the end of data
-// 			data = strings.TrimSuffix(data, "\r")
-// 			c.Render(-1, common.CustomEvent{Data: data})
-// 			return true
-// 		case <-stopChan:
-// 			return false
-// 		}
-// 	})
-// 	err := resp.Body.Close()
-// 	if err != nil {
-// 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), "", toolCount
-// 	}
-// 	wg.Wait()
-// 	return nil, responseTextBuilder.String(), toolCount
-// }
-
 func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, model string) (*dto.OpenAIErrorWithStatusCode, string, int) {
+	//checkSensitive := constant.ShouldCheckCompletionSensitive()
 	modelName := model
 	if v, ok := modelmapper[model]; ok {
 		fmt.Println("modelName is in modelmapper change to ", v)
@@ -188,11 +57,16 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
+		var streamItems []string // store stream items
 		for scanner.Scan() {
 			data := scanner.Text()
-			if len(data) < 6 || (data[:6] != "data: " && data[:6] != "[DONE]") {
+			if len(data) < 6 { // ignore blank line or wrong format
 				continue
 			}
+			if data[:6] != "data: " && data[:6] != "[DONE]" {
+				continue
+			}
+
 			data = data[6:]
 			if strings.HasPrefix(data, "[DONE]") {
 				common.SafeSendString(dataChan, "data: [DONE]")
@@ -220,9 +94,75 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 				common.SysError("error marshalling modified response: " + err.Error())
 				continue
 			}
+			streamItems = append(streamItems, string(modifiedData))
 			common.SafeSendString(dataChan, "data: "+string(modifiedData))
 		}
+		streamResp := "[" + strings.Join(streamItems, ",") + "]"
+		switch relayMode {
+		case relayconstant.RelayModeChatCompletions:
+			var streamResponses []dto.ChatCompletionsStreamResponseSimple
+			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
+			if err != nil {
+				common.SysError("error unmarshalling stream response: " + err.Error())
+				for _, item := range streamItems {
+					var streamResponse dto.ChatCompletionsStreamResponseSimple
+					err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
+					if err == nil {
+						for _, choice := range streamResponse.Choices {
+							responseTextBuilder.WriteString(choice.Delta.GetContentString())
+							if choice.Delta.ToolCalls != nil {
+								if len(choice.Delta.ToolCalls) > toolCount {
+									toolCount = len(choice.Delta.ToolCalls)
+								}
+								for _, tool := range choice.Delta.ToolCalls {
+									responseTextBuilder.WriteString(tool.Function.Name)
+									responseTextBuilder.WriteString(tool.Function.Arguments)
+								}
+							}
+						}
+					}
+				}
+			} else {
+				for _, streamResponse := range streamResponses {
+					for _, choice := range streamResponse.Choices {
+						responseTextBuilder.WriteString(choice.Delta.GetContentString())
+						if choice.Delta.ToolCalls != nil {
+							if len(choice.Delta.ToolCalls) > toolCount {
+								toolCount = len(choice.Delta.ToolCalls)
+							}
+							for _, tool := range choice.Delta.ToolCalls {
+								responseTextBuilder.WriteString(tool.Function.Name)
+								responseTextBuilder.WriteString(tool.Function.Arguments)
+							}
+						}
+					}
+				}
+			}
+
+		case relayconstant.RelayModeCompletions:
+			var streamResponses []dto.CompletionsStreamResponse
+			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
+			if err != nil {
+				common.SysError("error unmarshalling stream response: " + err.Error())
+				for _, item := range streamItems {
+					var streamResponse dto.CompletionsStreamResponse
+					err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
+					if err == nil {
+						for _, choice := range streamResponse.Choices {
+							responseTextBuilder.WriteString(choice.Text)
+						}
+					}
+				}
+			} else {
+				for _, streamResponse := range streamResponses {
+					for _, choice := range streamResponse.Choices {
+						responseTextBuilder.WriteString(choice.Text)
+					}
+				}
+			}
+		}
 		if len(dataChan) > 0 {
+			// wait data out
 			time.Sleep(2 * time.Second)
 		}
 		common.SafeSendBool(stopChan, true)
@@ -231,6 +171,10 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case data := <-dataChan:
+			if strings.HasPrefix(data, "data: [DONE]") {
+				data = data[:12]
+			}
+			// some implementations may add \r at the end of data
 			data = strings.TrimSuffix(data, "\r")
 			c.Render(-1, common.CustomEvent{Data: data})
 			return true
@@ -245,6 +189,93 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 	wg.Wait()
 	return nil, responseTextBuilder.String(), toolCount
 }
+
+// func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, model string) (*dto.OpenAIErrorWithStatusCode, string, int) {
+// 	modelName := model
+// 	if v, ok := modelmapper[model]; ok {
+// 		fmt.Println("modelName is in modelmapper change to ", v)
+// 		modelName = v
+// 	}
+// 	var responseTextBuilder strings.Builder
+// 	toolCount := 0
+// 	scanner := bufio.NewScanner(resp.Body)
+// 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+// 		if atEOF && len(data) == 0 {
+// 			return 0, nil, nil
+// 		}
+// 		if i := strings.Index(string(data), "\n"); i >= 0 {
+// 			return i + 1, data[0:i], nil
+// 		}
+// 		if atEOF {
+// 			return len(data), data, nil
+// 		}
+// 		return 0, nil, nil
+// 	})
+// 	dataChan := make(chan string, 5)
+// 	stopChan := make(chan bool, 2)
+// 	defer close(stopChan)
+// 	defer close(dataChan)
+// 	var wg sync.WaitGroup
+// 	go func() {
+// 		wg.Add(1)
+// 		defer wg.Done()
+// 		for scanner.Scan() {
+// 			data := scanner.Text()
+// 			if len(data) < 6 || (data[:6] != "data: " && data[:6] != "[DONE]") {
+// 				continue
+// 			}
+// 			data = data[6:]
+// 			if strings.HasPrefix(data, "[DONE]") {
+// 				common.SafeSendString(dataChan, "data: [DONE]")
+// 				continue
+// 			}
+// 			var jsonData map[string]interface{}
+// 			err := json.Unmarshal([]byte(data), &jsonData)
+// 			if err != nil {
+// 				common.SysError("error unmarshalling stream response: " + err.Error())
+// 				continue
+// 			}
+// 			if _, ok := jsonData["model"]; ok {
+// 				jsonData["model"] = modelName
+// 			}
+// 			if choices, ok := jsonData["choices"].([]interface{}); ok {
+// 				for _, choice := range choices {
+// 					if choiceMap, ok := choice.(map[string]interface{}); ok {
+// 						delete(choiceMap, "content_filter_results")
+// 					}
+// 				}
+// 			}
+// 			delete(jsonData, "prompt_filter_results")
+// 			modifiedData, err := json.Marshal(jsonData)
+// 			if err != nil {
+// 				common.SysError("error marshalling modified response: " + err.Error())
+// 				continue
+// 			}
+// 			common.SafeSendString(dataChan, "data: "+string(modifiedData))
+// 		}
+// 		if len(dataChan) > 0 {
+// 			time.Sleep(2 * time.Second)
+// 		}
+// 		common.SafeSendBool(stopChan, true)
+// 	}()
+// 	service.SetEventStreamHeaders(c)
+// 	c.Stream(func(w io.Writer) bool {
+// 		select {
+// 		case data := <-dataChan:
+// 			data = strings.TrimSuffix(data, "\r")
+// 			c.Render(-1, common.CustomEvent{Data: data})
+// 			return true
+// 		case <-stopChan:
+// 			return false
+// 		}
+// 	})
+// 	err := resp.Body.Close()
+// 	if err != nil {
+// 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), "", toolCount
+// 	}
+// 	wg.Wait()
+// 	return nil, responseTextBuilder.String(), toolCount
+// }
 
 func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	modelName := model
@@ -312,6 +343,10 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	err = resp.Body.Close()
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = json.Unmarshal(responseBody, &simpleResponse)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
 
 	if simpleResponse.Usage.TotalTokens == 0 {
