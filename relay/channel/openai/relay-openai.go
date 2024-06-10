@@ -277,9 +277,9 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 // 	return nil, responseTextBuilder.String(), toolCount
 // }
 
-func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
-	modelName := model
-	if v, ok := modelmapper[model]; ok {
+func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string, originModel string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+	modelName := originModel
+	if v, ok := modelmapper[originModel]; ok {
 		fmt.Println("modelName is in modelmapper change to ", v)
 		modelName = v
 	}
@@ -319,6 +319,8 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	delete(jsonResponse, "prompt_filter_results")
 	// 修改下model名称
 	jsonResponse["model"] = modelName
+	fmt.Println("modelName is ", modelName)
+	fmt.Println("jsonResponse", jsonResponse)
 
 	// 将修改后的 JSON 对象重新转换为字符串
 	modifiedResponseBody, err := json.Marshal(jsonResponse)

@@ -78,6 +78,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	// map model name
 	modelMapping := c.GetString("model_mapping")
 	isModelMapped := false
+	relayInfo.OriginMoelName = textRequest.Model
 	if modelMapping != "" && modelMapping != "{}" {
 		modelMap := make(map[string]string)
 		err := json.Unmarshal([]byte(modelMapping), &modelMap)

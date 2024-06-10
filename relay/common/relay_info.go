@@ -1,11 +1,12 @@
 package common
 
 import (
-	"github.com/gin-gonic/gin"
 	"one-api/common"
 	"one-api/relay/constant"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RelayInfo struct {
@@ -26,6 +27,7 @@ type RelayInfo struct {
 	ApiKey            string
 	Organization      string
 	BaseUrl           string
+	OriginMoelName    string
 }
 
 func GenRelayInfo(c *gin.Context) *RelayInfo {
@@ -37,7 +39,6 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	group := c.GetString("group")
 	tokenUnlimited := c.GetBool("token_unlimited_quota")
 	startTime := time.Now()
-
 	apiType, _ := constant.ChannelType2APIType(channelType)
 
 	info := &RelayInfo{
