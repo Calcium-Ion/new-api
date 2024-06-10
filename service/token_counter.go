@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/linux-do/tiktoken-go"
+	"github.com/pkoukk/tiktoken-go"
 	"image"
 	"log"
 	"math"
@@ -17,6 +17,7 @@ import (
 // tokenEncoderMap won't grow after initialization
 var tokenEncoderMap = map[string]*tiktoken.Tiktoken{}
 var defaultTokenEncoder *tiktoken.Tiktoken
+var cl200kTokenEncoder *tiktoken.Tiktoken
 
 func InitTokenEncoders() {
 	common.SysLog("initializing token encoders")
@@ -26,16 +27,19 @@ func InitTokenEncoders() {
 	}
 	defaultTokenEncoder = gpt35TokenEncoder
 	gpt4TokenEncoder, err := tiktoken.EncodingForModel("gpt-4")
-	gpt4oTokenEncoder, err := tiktoken.EncodingForModel("gpt-4o")
 	if err != nil {
 		common.FatalLog(fmt.Sprintf("failed to get gpt-4 token encoder: %s", err.Error()))
+	}
+	cl200kTokenEncoder, err = tiktoken.EncodingForModel("gpt-4o")
+	if err != nil {
+		common.FatalLog(fmt.Sprintf("failed to get gpt-4o token encoder: %s", err.Error()))
 	}
 	for model, _ := range common.GetDefaultModelRatioMap() {
 		if strings.HasPrefix(model, "gpt-3.5") {
 			tokenEncoderMap[model] = gpt35TokenEncoder
 		} else if strings.HasPrefix(model, "gpt-4") {
 			if strings.HasPrefix(model, "gpt-4o") {
-				tokenEncoderMap[model] = gpt4oTokenEncoder
+				tokenEncoderMap[model] = cl200kTokenEncoder
 			} else {
 				tokenEncoderMap[model] = gpt4TokenEncoder
 			}
@@ -46,21 +50,30 @@ func InitTokenEncoders() {
 	common.SysLog("token encoders initialized")
 }
 
+func getModelDefaultTokenEncoder(model string) *tiktoken.Tiktoken {
+	if strings.HasPrefix(model, "gpt-4o") {
+		return cl200kTokenEncoder
+	}
+	return defaultTokenEncoder
+}
+
 func getTokenEncoder(model string) *tiktoken.Tiktoken {
 	tokenEncoder, ok := tokenEncoderMap[model]
 	if ok && tokenEncoder != nil {
 		return tokenEncoder
 	}
+	// 如果ok（即model在tokenEncoderMap中），但是tokenEncoder为nil，说明可能是自定义模型
 	if ok {
 		tokenEncoder, err := tiktoken.EncodingForModel(model)
 		if err != nil {
 			common.SysError(fmt.Sprintf("failed to get token encoder for model %s: %s, using encoder for gpt-3.5-turbo", model, err.Error()))
-			tokenEncoder = defaultTokenEncoder
+			tokenEncoder = getModelDefaultTokenEncoder(model)
 		}
 		tokenEncoderMap[model] = tokenEncoder
 		return tokenEncoder
 	}
-	return defaultTokenEncoder
+	// 如果model不在tokenEncoderMap中，直接返回默认的tokenEncoder
+	return getModelDefaultTokenEncoder(model)
 }
 
 func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
@@ -74,6 +87,10 @@ func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (in
 	}
 	if imageUrl.Detail == "low" {
 		return 85, nil
+	}
+	// 同步One API的图片计费逻辑
+	if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
+		imageUrl.Detail = "high"
 	}
 	var config image.Config
 	var err error
@@ -91,14 +108,14 @@ func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (in
 	if config.Width == 0 || config.Height == 0 {
 		return 0, errors.New(fmt.Sprintf("fail to decode image config: %s", imageUrl.Url))
 	}
-	// TODO: 适配官方auto计费
-	if config.Width < 512 && config.Height < 512 {
-		if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
-			// 如果图片尺寸小于512，强制使用low
-			imageUrl.Detail = "low"
-			return 85, nil
-		}
-	}
+	//// TODO: 适配官方auto计费
+	//if config.Width < 512 && config.Height < 512 {
+	//	if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
+	//		// 如果图片尺寸小于512，强制使用low
+	//		imageUrl.Detail = "low"
+	//		return 85, nil
+	//	}
+	//}
 
 	shortSide := config.Width
 	otherSide := config.Height

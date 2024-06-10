@@ -139,7 +139,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 	qualityRatio := 1.0
 	if imageRequest.Model == "dall-e-3" && imageRequest.Quality == "hd" {
 		qualityRatio = 2.0
-		if imageRequest.Size == "1024×1792" || imageRequest.Size == "1792×1024" {
+		if imageRequest.Size == "1024x1792" || imageRequest.Size == "1792x1024" {
 			qualityRatio = 1.5
 		}
 	}
