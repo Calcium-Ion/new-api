@@ -60,7 +60,7 @@ var EmailDomainWhitelist = []string{
 }
 
 var DebugEnabled = os.Getenv("DEBUG") == "true"
-var MemoryCacheEnabled = os.Getenv("MEMORY_CACHE_ENABLED") == "true"
+var MemoryCacheEnabled = false
 
 var LogConsumeEnabled = true
 
