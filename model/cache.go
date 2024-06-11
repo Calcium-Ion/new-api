@@ -272,6 +272,7 @@ func CacheGetRandomSatisfiedChannel(group string, model string, retry int, IsIma
 	}
 
 	// if memory cache is disabled, get channel directly from database
+	common.MemoryCacheEnabled = false
 	if !common.MemoryCacheEnabled {
 		return GetRandomSatisfiedChannel(group, model, retry, IsImage)
 	}
