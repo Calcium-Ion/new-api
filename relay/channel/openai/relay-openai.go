@@ -319,8 +319,8 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	delete(jsonResponse, "prompt_filter_results")
 	// 修改下model名称
 	jsonResponse["model"] = modelName
-	fmt.Println("modelName is ", modelName)
-	fmt.Println("jsonResponse", jsonResponse)
+	// fmt.Println("modelName is ", modelName)
+	// fmt.Println("jsonResponse", jsonResponse)
 
 	// 将修改后的 JSON 对象重新转换为字符串
 	modifiedResponseBody, err := json.Marshal(jsonResponse)
