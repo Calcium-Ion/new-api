@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"one-api/common"
 	"sync"
 	"time"
@@ -74,4 +76,14 @@ func batchUpdate() {
 		}
 	}
 	common.SysLog("batch update finished")
+}
+
+func RecordExist(err error) (bool, error) {
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return false, err
 }

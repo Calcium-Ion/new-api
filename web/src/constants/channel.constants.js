@@ -14,6 +14,13 @@ export const CHANNEL_OPTIONS = [
     color: 'blue',
     label: 'Midjourney Proxy Plus',
   },
+  {
+    key: 36,
+    text: 'Suno API',
+    value: 36,
+    color: 'purple',
+    label: 'Suno API',
+  },
   { key: 4, text: 'Ollama', value: 4, color: 'grey', label: 'Ollama' },
   {
     key: 14,
