@@ -18,12 +18,10 @@ import (
 
 type TaskAdaptor struct {
 	ChannelType int
-	Action      string
 }
 
 func (a *TaskAdaptor) Init(info *relaycommon.TaskRelayInfo) {
 	a.ChannelType = info.ChannelType
-
 }
 
 func (a *TaskAdaptor) ValidateRequestAndSetAction(c *gin.Context, info *relaycommon.TaskRelayInfo) (taskErr *dto.TaskError) {
@@ -49,16 +47,13 @@ func (a *TaskAdaptor) ValidateRequestAndSetAction(c *gin.Context, info *relaycom
 		info.OriginTaskID = sunoRequest.TaskID
 	}
 
-	a.Action = info.Action
+	info.Action = action
 	c.Set("task_request", sunoRequest)
 	return nil
 }
 
 func (a *TaskAdaptor) BuildRequestURL(info *relaycommon.TaskRelayInfo) (string, error) {
-	baseURL := common.ChannelBaseURLs[info.ChannelType]
-	if info.BaseUrl != "" {
-		baseURL = info.BaseUrl
-	}
+	baseURL := info.BaseUrl
 	fullRequestURL := fmt.Sprintf("%s%s", baseURL, "/submit/"+info.Action)
 	return fullRequestURL, nil
 }

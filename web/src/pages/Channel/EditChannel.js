@@ -126,6 +126,12 @@ const EditChannel = (props) => {
             'mj_uploads',
           ];
           break;
+        case 36:
+          localModels = [
+            'suno_music',
+            'suno_lyrics',
+          ];
+          break;
         default:
           localModels = getChannelModels(value);
           break;
@@ -513,6 +519,31 @@ const EditChannel = (props) => {
               />
             </>
           )}
+          {inputs.type === 36 && (
+              <>
+                <div style={{ marginTop: 10 }}>
+                  <Banner
+                      type={'info'}
+                      description={
+                        <>
+                          Suno 非官方 API，https://github.com/Suno-API/Suno-API
+                        </>
+                      }
+                  ></Banner>
+                </div>
+                <Input
+                    name='base_url'
+                    placeholder={
+                      '需要输入到 /submit 前的路径，通常就是域名 + /suno，例如：https://sunoapi.com/suno '
+                    }
+                    onChange={(value) => {
+                      handleInputChange('base_url', value);
+                    }}
+                    value={inputs.base_url}
+                    autoComplete='new-password'
+                />
+              </>
+          )}
           <div style={{ marginTop: 10 }}>
             <Typography.Text strong>名称：</Typography.Text>
           </div>
@@ -758,7 +789,7 @@ const EditChannel = (props) => {
               </Space>
             </div>
           )}
-          {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && (
+          {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && inputs.type !== 36 && (
             <>
               <div style={{ marginTop: 10 }}>
                 <Typography.Text strong>代理：</Typography.Text>

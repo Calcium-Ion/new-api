@@ -23,6 +23,7 @@ import Chat from './pages/Chat';
 import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
 import Pricing from './pages/Pricing/index.js';
+import Task from "./pages/Task/index.js";
 // import Detail from './pages/Detail';
 
 const Home = lazy(() => import('./pages/Home'));
@@ -218,6 +219,16 @@ function App() {
                   <Midjourney />
                 </Suspense>
               </PrivateRoute>
+            }
+          />
+          <Route
+            path='/task'
+            element={
+                <PrivateRoute>
+                    <Suspense fallback={<Loading></Loading>}>
+                        <Task />
+                    </Suspense>
+                </PrivateRoute>
             }
           />
           <Route

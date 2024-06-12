@@ -134,7 +134,7 @@ func getModelRequest(c *gin.Context) (*ModelRequest, bool, error) {
 			modelName := service.CoverTaskActionToModelName(constant.TaskPlatformSuno, c.Param("action"))
 			modelRequest.Model = modelName
 		}
-		c.Set("platform", constant.TaskPlatformSuno)
+		c.Set("platform", string(constant.TaskPlatformSuno))
 		c.Set("relay_mode", relayMode)
 	} else if !strings.HasPrefix(c.Request.URL.Path, "/v1/audio/transcriptions") {
 		err = common.UnmarshalBodyReusable(c, &modelRequest)
