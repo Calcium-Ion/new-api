@@ -50,6 +50,15 @@ func SetRelayRouter(router *gin.Engine) {
 	relayMjModeRouter := router.Group("/:mode/mj")
 	registerMjRouterGroup(relayMjModeRouter)
 	//relayMjRouter.Use()
+
+	relaySunoRouter := router.Group("/suno")
+	relaySunoRouter.Use(middleware.TokenAuth(), middleware.Distribute())
+	{
+		relaySunoRouter.POST("/submit/:action", controller.RelayTask)
+		relaySunoRouter.POST("/fetch", controller.RelayTask)
+		relaySunoRouter.GET("/fetch/:id", controller.RelayTask)
+	}
+
 }
 
 func registerMjRouterGroup(relayMjRouter *gin.RouterGroup) {

@@ -208,8 +208,10 @@ const (
 	ChannelTypeAws            = 33
 	ChannelTypeCohere         = 34
 	ChannelTypeMiniMax        = 35
+	ChannelTypeSuno           = 36
 
 	ChannelTypeDummy // this one is only for count, do not add any channel after this
+
 )
 
 var ChannelBaseURLs = []string{
