@@ -208,23 +208,23 @@ const UsersTable = () => {
               >
                 编辑
               </Button>
+              <Popconfirm
+                title='确定是否要注销此用户？'
+                content='相当于删除用户，此修改将不可逆'
+                okType={'danger'}
+                position={'left'}
+                onConfirm={() => {
+                  manageUser(record.username, 'delete', record).then(() => {
+                    removeRecord(record.id);
+                  });
+                }}
+              >
+                <Button theme='light' type='danger' style={{ marginRight: 1 }}>
+                  注销
+                </Button>
+              </Popconfirm>
             </>
           )}
-          <Popconfirm
-            title='确定是否要删除此用户？'
-            content='硬删除，此修改将不可逆'
-            okType={'danger'}
-            position={'left'}
-            onConfirm={() => {
-              manageUser(record.username, 'delete', record).then(() => {
-                removeRecord(record.id);
-              });
-            }}
-          >
-            <Button theme='light' type='danger' style={{ marginRight: 1 }}>
-              删除
-            </Button>
-          </Popconfirm>
         </div>
       ),
     },
@@ -253,13 +253,13 @@ const UsersTable = () => {
   };
 
   const removeRecord = (key) => {
-    console.log(key);
     let newDataSource = [...users];
     if (key != null) {
       let idx = newDataSource.findIndex((data) => data.id === key);
 
       if (idx > -1) {
-        newDataSource.splice(idx, 1);
+        // update deletedAt
+        newDataSource[idx].DeletedAt = new Date();
         setUsers(newDataSource);
       }
     }

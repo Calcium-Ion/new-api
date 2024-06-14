@@ -227,6 +227,14 @@ const TokensTable = () => {
                 },
                 {
                   node: 'item',
+                  key: 'lobe',
+                  name: 'Lobe Chat',
+                  onClick: () => {
+                    onOpenLink('lobe', record.key);
+                  },
+                },
+                {
+                  node: 'item',
                   key: 'ama',
                   name: 'AMA 问天（BotGem）',
                   onClick: () => {
@@ -377,51 +385,6 @@ const TokensTable = () => {
     await loadTokens(activePage - 1);
   };
 
-  const onCopy = async (type, key) => {
-    let status = localStorage.getItem('status');
-    let serverAddress = '';
-    if (status) {
-      status = JSON.parse(status);
-      serverAddress = status.server_address;
-    }
-    if (serverAddress === '') {
-      serverAddress = window.location.origin;
-    }
-    let encodedServerAddress = encodeURIComponent(serverAddress);
-    const nextLink = localStorage.getItem('chat_link');
-    const mjLink = localStorage.getItem('chat_link2');
-    let nextUrl;
-
-    if (nextLink) {
-      nextUrl =
-        nextLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    } else {
-      nextUrl = `https://chat.oneapi.pro/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    }
-
-    let url;
-    switch (type) {
-      case 'ama':
-        url =
-          mjLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-        break;
-      case 'opencat':
-        url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
-        break;
-      case 'next':
-        url = nextUrl;
-        break;
-      default:
-        url = `sk-${key}`;
-    }
-    // if (await copy(url)) {
-    //     showSuccess('已复制到剪贴板！');
-    // } else {
-    //     showWarning('无法复制到剪贴板，请手动复制，已将令牌填入搜索框。');
-    //     setSearchKeyword(url);
-    // }
-  };
-
   const copyText = async (text) => {
     if (await copy(text)) {
       showSuccess('已复制到剪贴板！');
@@ -460,6 +423,9 @@ const TokensTable = () => {
         break;
       case 'opencat':
         url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
+        break;
+      case 'lobe':
+        url = `https://chat-preview.lobehub.com/?settings={"keyVaults":{"openai":{"apiKey":"sk-${key}","baseURL":"${encodedServerAddress}"}}}`;
         break;
       case 'next-mj':
         url =
