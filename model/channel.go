@@ -34,7 +34,7 @@ type Channel struct {
 }
 
 func (channel *Channel) GetOtherInfo() map[string]interface{} {
-	var otherInfo map[string]interface{}
+	otherInfo := make(map[string]interface{})
 	if channel.OtherInfo != "" {
 		err := json.Unmarshal([]byte(channel.OtherInfo), &otherInfo)
 		if err != nil {
