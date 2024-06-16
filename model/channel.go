@@ -255,6 +255,7 @@ func UpdateChannelStatusById(id int, status int, reason string) {
 		// find channel by id success, update status and other info
 		info := channel.GetOtherInfo()
 		info["status_reason"] = reason
+		info["status_time"] = common.GetTimestamp()
 		channel.SetOtherInfo(info)
 		channel.Status = status
 		err = channel.Save()
