@@ -31,7 +31,7 @@ func ShouldDisableChannel(err *relaymodel.OpenAIError, statusCode int) bool {
 	if err == nil {
 		return false
 	}
-	if statusCode == http.StatusUnauthorized {
+	if statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
 		return true
 	}
 	switch err.Code {
@@ -58,6 +58,8 @@ func ShouldDisableChannel(err *relaymodel.OpenAIError, statusCode int) bool {
 	} else if strings.HasPrefix(err.Message, "This organization has been disabled.") {
 		return true
 	} else if strings.HasPrefix(err.Message, "You exceeded your current quota") {
+		return true
+	} else if strings.HasPrefix(err.Message, "Permission denied") {
 		return true
 	}
 	return false

@@ -96,7 +96,23 @@ const ChannelsTable = () => {
       title: '状态',
       dataIndex: 'status',
       render: (text, record, index) => {
-        return <div>{renderStatus(text)}</div>;
+        if (text === 3) {
+          if (record.other_info === '') {
+            record.other_info = '{}'
+          }
+          let otherInfo = JSON.parse(record.other_info);
+          let reason = otherInfo['status_reason'];
+          let time = otherInfo['status_time'];
+          return (
+            <div>
+              <Tooltip content={'原因：' + reason + '，时间：' + timestamp2string(time)}>
+                {renderStatus(text)}
+              </Tooltip>
+            </div>
+          );
+        } else {
+          return renderStatus(text);
+        }
       },
     },
     {
