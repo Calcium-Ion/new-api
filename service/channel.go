@@ -24,17 +24,20 @@ func EnableChannel(channelId int, channelName string) {
 	notifyRootUser(subject, content)
 }
 
-func ShouldDisableChannel(err *relaymodel.OpenAIError, statusCode int) bool {
+func ShouldDisableChannel(err *relaymodel.OpenAIErrorWithStatusCode) bool {
 	if !common.AutomaticDisableChannelEnabled {
 		return false
 	}
 	if err == nil {
 		return false
 	}
-	if statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
+	if err.LocalError {
+		return false
+	}
+	if err.StatusCode == http.StatusUnauthorized || err.StatusCode == http.StatusForbidden {
 		return true
 	}
-	switch err.Code {
+	switch err.Error.Code {
 	case "invalid_api_key":
 		return true
 	case "account_deactivated":
@@ -42,7 +45,7 @@ func ShouldDisableChannel(err *relaymodel.OpenAIError, statusCode int) bool {
 	case "billing_not_active":
 		return true
 	}
-	switch err.Type {
+	switch err.Error.Type {
 	case "insufficient_quota":
 		return true
 	// https://docs.anthropic.com/claude/reference/errors
@@ -53,13 +56,13 @@ func ShouldDisableChannel(err *relaymodel.OpenAIError, statusCode int) bool {
 	case "forbidden":
 		return true
 	}
-	if strings.HasPrefix(err.Message, "Your credit balance is too low") { // anthropic
+	if strings.HasPrefix(err.Error.Message, "Your credit balance is too low") { // anthropic
 		return true
-	} else if strings.HasPrefix(err.Message, "This organization has been disabled.") {
+	} else if strings.HasPrefix(err.Error.Message, "This organization has been disabled.") {
 		return true
-	} else if strings.HasPrefix(err.Message, "You exceeded your current quota") {
+	} else if strings.HasPrefix(err.Error.Message, "You exceeded your current quota") {
 		return true
-	} else if strings.HasPrefix(err.Message, "Permission denied") {
+	} else if strings.HasPrefix(err.Error.Message, "Permission denied") {
 		return true
 	}
 	return false
