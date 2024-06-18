@@ -55,6 +55,8 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	meta := relaycommon.GenRelayInfo(c)
 	apiType, _ := constant.ChannelType2APIType(channel.Type)
 	adaptor := relay.GetAdaptor(apiType)
+	// OpenAI 适配器需要 channelType
+	adaptor.Init(meta, dto.GeneralOpenAIRequest{})
 	if adaptor == nil {
 		return fmt.Errorf("invalid api type: %d, adaptor is nil", apiType), nil
 	}
@@ -64,21 +66,19 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 		} else {
 			testModel = adaptor.GetModelList()[0]
 		}
-	} else {
-		modelMapping := *channel.ModelMapping
-		if modelMapping != "" && modelMapping != "{}" {
-			modelMap := make(map[string]string)
-			err := json.Unmarshal([]byte(modelMapping), &modelMap)
-			if err != nil {
-				openaiErr := service.OpenAIErrorWrapperLocal(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError).Error
-				return err, &openaiErr
-			}
-			if modelMap[testModel] != "" {
-				testModel = modelMap[testModel]
-			}
+	}
+	modelMapping := *channel.ModelMapping
+	if modelMapping != "" && modelMapping != "{}" {
+		modelMap := make(map[string]string)
+		err := json.Unmarshal([]byte(modelMapping), &modelMap)
+		if err != nil {
+			openaiErr := service.OpenAIErrorWrapperLocal(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError).Error
+			return err, &openaiErr
+		}
+		if modelMap[testModel] != "" {
+			testModel = modelMap[testModel]
 		}
 	}
-
 	request := buildTestRequest()
 	request.Model = testModel
 	meta.UpstreamModelName = testModel
