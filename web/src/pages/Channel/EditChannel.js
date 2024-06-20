@@ -209,7 +209,7 @@ const EditChannel = (props) => {
             }
           })
           if (res.data && res.data?.success) {
-            models.push(...es.data.data.map((model) => model.id))
+            models.push(...res.data.data.map((model) => model.id))
           } else {
             err = true
           }
