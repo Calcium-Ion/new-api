@@ -19,3 +19,22 @@ type Adaptor interface {
 	GetModelList() []string
 	GetChannelName() string
 }
+
+type TaskAdaptor interface {
+	Init(info *relaycommon.TaskRelayInfo)
+
+	ValidateRequestAndSetAction(c *gin.Context, info *relaycommon.TaskRelayInfo) *dto.TaskError
+
+	BuildRequestURL(info *relaycommon.TaskRelayInfo) (string, error)
+	BuildRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.TaskRelayInfo) error
+	BuildRequestBody(c *gin.Context, info *relaycommon.TaskRelayInfo) (io.Reader, error)
+
+	DoRequest(c *gin.Context, info *relaycommon.TaskRelayInfo, requestBody io.Reader) (*http.Response, error)
+	DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.TaskRelayInfo) (taskID string, taskData []byte, err *dto.TaskError)
+
+	GetModelList() []string
+	GetChannelName() string
+
+	// FetchTask
+	FetchTask(baseUrl, key string, body map[string]any) (*http.Response, error)
+}

@@ -92,6 +92,9 @@ func main() {
 	common.SafeGoroutine(func() {
 		controller.UpdateMidjourneyTaskBulk()
 	})
+	common.SafeGoroutine(func() {
+		controller.UpdateTaskBulk()
+	})
 	if os.Getenv("BATCH_UPDATE_ENABLED") == "true" {
 		common.BatchUpdateEnabled = true
 		common.SysLog("batch update enabled with interval " + strconv.Itoa(common.BatchUpdateInterval) + "s")
