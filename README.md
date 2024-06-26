@@ -47,6 +47,11 @@
     2. 对[@Botfather](https://t.me/botfather)输入指令/setdomain
     3. 选择你的bot，然后输入http(s)://你的网站地址/login
     4. Telegram Bot 名称是bot username 去掉@后的字符串
+13. 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口的支持，[对接文档](Suno.md)，支持的接口如下：
+    + [x] /suno/submit/music
+    + [x] /suno/submit/lyrics
+    + [x] /suno/fetch
+    + [x] /suno/fetch/:id
 
 ## 模型支持
 此版本额外支持以下模型：
@@ -57,6 +62,7 @@
 5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
 6. [零一万物](https://platform.lingyiwanwu.com/)
 7. 自定义渠道，支持填入完整调用地址
+8. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
@@ -104,6 +110,9 @@ docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 
 ## Midjourney接口设置文档
 [对接文档](Midjourney.md)
+
+## Suno接口设置文档
+[对接文档](Suno.md)
 
 ## 交流群
 <img src="https://github.com/Calcium-Ion/new-api/assets/61247483/de536a8a-0161-47a7-a0a2-66ef6de81266" width="300">

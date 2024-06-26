@@ -126,6 +126,12 @@ const EditChannel = (props) => {
             'mj_uploads',
           ];
           break;
+        case 36:
+          localModels = [
+            'suno_music',
+            'suno_lyrics',
+          ];
+          break;
         default:
           localModels = getChannelModels(value);
           break;
@@ -209,7 +215,7 @@ const EditChannel = (props) => {
             }
           })
           if (res.data && res.data?.success) {
-            models.push(...es.data.data.map((model) => model.id))
+            models.push(...res.data.data.map((model) => model.id))
           } else {
             err = true
           }
@@ -513,12 +519,32 @@ const EditChannel = (props) => {
               />
             </>
           )}
-          <div style={{ marginTop: 10 }}>
+          {inputs.type === 36 && (
+              <>
+                <div style={{marginTop: 10}}>
+                  <Typography.Text strong>
+                    注意非Chat API，请务必填写正确的API地址，否则可能导致无法使用
+                  </Typography.Text>
+                </div>
+                <Input
+                    name='base_url'
+                    placeholder={
+                      '请输入到 /suno 前的路径，通常就是域名，例如：https://api.example.com '
+                    }
+                    onChange={(value) => {
+                      handleInputChange('base_url', value);
+                    }}
+                    value={inputs.base_url}
+                    autoComplete='new-password'
+                />
+              </>
+          )}
+          <div style={{marginTop: 10}}>
             <Typography.Text strong>名称：</Typography.Text>
           </div>
           <Input
-            required
-            name='name'
+              required
+              name='name'
             placeholder={'请为渠道命名'}
             onChange={(value) => {
               handleInputChange('name', value);
@@ -758,7 +784,7 @@ const EditChannel = (props) => {
               </Space>
             </div>
           )}
-          {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && (
+          {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && inputs.type !== 36 && (
             <>
               <div style={{ marginTop: 10 }}>
                 <Typography.Text strong>代理：</Typography.Text>

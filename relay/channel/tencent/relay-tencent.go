@@ -54,6 +54,7 @@ func requestOpenAI2Tencent(request dto.GeneralOpenAIRequest) *TencentChatRequest
 		TopP:        request.TopP,
 		Stream:      stream,
 		Messages:    messages,
+		Model:       request.Model,
 	}
 }
 
