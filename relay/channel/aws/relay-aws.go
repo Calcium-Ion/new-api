@@ -14,6 +14,7 @@ import (
 	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -156,6 +157,7 @@ func awsStreamHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode i
 	var usage relaymodel.Usage
 	var id string
 	var model string
+	isFirst := true
 	createdTime := common.GetTimestamp()
 	c.Stream(func(w io.Writer) bool {
 		event, ok := <-stream.Events()
@@ -166,6 +168,10 @@ func awsStreamHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode i
 
 		switch v := event.(type) {
 		case *types.ResponseStreamMemberChunk:
+			if isFirst {
+				isFirst = false
+				info.FirstResponseTime = time.Now()
+			}
 			claudeResp := new(claude.ClaudeResponse)
 			err := json.NewDecoder(bytes.NewReader(v.Value.Bytes)).Decode(claudeResp)
 			if err != nil {
