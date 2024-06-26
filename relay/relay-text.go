@@ -332,14 +332,7 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, textRe
 		logModel = "gpt-4-gizmo-*"
 		logContent += fmt.Sprintf("，模型 %s", textRequest.Model)
 	}
-	other := make(map[string]interface{})
-	other["model_ratio"] = modelRatio
-	other["group_ratio"] = groupRatio
-	other["completion_ratio"] = completionRatio
-	other["model_price"] = modelPrice
-	adminInfo := make(map[string]interface{})
-	adminInfo["use_channel"] = ctx.GetStringSlice("use_channel")
-	other["admin_info"] = adminInfo
+	other := service.GenerateTextOtherInfo(ctx, relayInfo, modelRatio, groupRatio, completionRatio, modelPrice)
 	model.RecordConsumeLog(ctx, relayInfo.UserId, relayInfo.ChannelId, promptTokens, completionTokens, logModel, tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, other)
 
 	//if quota != 0 {

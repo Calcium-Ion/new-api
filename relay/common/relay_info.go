@@ -16,6 +16,7 @@ type RelayInfo struct {
 	Group             string
 	TokenUnlimited    bool
 	StartTime         time.Time
+	FirstResponseTime time.Time
 	ApiType           int
 	IsStream          bool
 	RelayMode         int
