@@ -19,9 +19,6 @@ import (
 )
 
 func UpdateMidjourneyTaskBulk() {
-	if !common.IsMasterNode {
-		return
-	}
 	//imageModel := "midjourney"
 	ctx := context.TODO()
 	for {
