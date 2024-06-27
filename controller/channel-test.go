@@ -222,16 +222,18 @@ func testAllChannels(notify bool) error {
 			if channel.AutoBan != nil && *channel.AutoBan == 0 {
 				ban = false
 			}
-			openAiErrWithStatus := dto.OpenAIErrorWithStatusCode{
-				StatusCode: -1,
-				Error:      *openaiErr,
-				LocalError: false,
-			}
-			if isChannelEnabled && service.ShouldDisableChannel(&openAiErrWithStatus) && ban {
-				service.DisableChannel(channel.Id, channel.Name, err.Error())
-			}
-			if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
-				service.EnableChannel(channel.Id, channel.Name)
+			if openaiErr != nil {
+				openAiErrWithStatus := dto.OpenAIErrorWithStatusCode{
+					StatusCode: -1,
+					Error:      *openaiErr,
+					LocalError: false,
+				}
+				if isChannelEnabled && service.ShouldDisableChannel(&openAiErrWithStatus) && ban {
+					service.DisableChannel(channel.Id, channel.Name, err.Error())
+				}
+				if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
+					service.EnableChannel(channel.Id, channel.Name)
+				}
 			}
 			channel.UpdateResponseTime(milliseconds)
 			time.Sleep(common.RequestInterval)
