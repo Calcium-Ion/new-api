@@ -115,6 +115,7 @@ var defaultModelRatio = map[string]float64{
 	"SparkDesk-v2.1":                 1.2858, // ￥0.018 / 1k tokens
 	"SparkDesk-v3.1":                 1.2858, // ￥0.018 / 1k tokens
 	"SparkDesk-v3.5":                 1.2858, // ￥0.018 / 1k tokens
+	"SparkDesk-v4.0":                 1.2858,
 	"360GPT_S2_V9":                   0.8572, // ¥0.012 / 1k tokens
 	"360gpt-turbo":                   0.0858, // ¥0.0012 / 1k tokens
 	"360gpt-turbo-responsibility-8k": 0.8572, // ¥0.012 / 1k tokens
