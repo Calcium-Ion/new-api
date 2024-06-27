@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
@@ -267,8 +268,8 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 		}
 		return 0, nil, nil
 	})
-	dataChan := make(chan string)
-	stopChan := make(chan bool)
+	dataChan := make(chan string, 5)
+	stopChan := make(chan bool, 2)
 	go func() {
 		for scanner.Scan() {
 			data := scanner.Text()
@@ -276,7 +277,11 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 				continue
 			}
 			data = strings.TrimPrefix(data, "data: ")
-			dataChan <- data
+			if !common.SafeSendStringTimeout(dataChan, data, constant.StreamingTimeout) {
+				// send data timeout, stop the stream
+				common.LogError(c, "send data timeout, stop the stream")
+				break
+			}
 		}
 		stopChan <- true
 	}()

@@ -54,7 +54,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 			}
 			if !common.SafeSendStringTimeout(dataChan, data, constant.StreamingTimeout) {
 				// send data timeout, stop the stream
-				common.LogInfo(c, "send data timeout, stop the stream")
+				common.LogError(c, "send data timeout, stop the stream")
 				break
 			}
 			data = data[6:]
