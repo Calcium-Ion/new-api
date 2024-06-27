@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"one-api/common"
 	"one-api/constant"
 	"one-api/dto"
 	"strings"
@@ -62,7 +61,7 @@ func SensitiveWordContains(text string) (bool, []string) {
 	}
 	checkText := strings.ToLower(text)
 	// 构建一个AC自动机
-	m := common.InitAc()
+	m := InitAc()
 	hits := m.MultiPatternSearch([]rune(checkText), false)
 	if len(hits) > 0 {
 		words := make([]string, 0)
@@ -80,7 +79,7 @@ func SensitiveWordReplace(text string, returnImmediately bool) (bool, []string, 
 		return false, nil, text
 	}
 	checkText := strings.ToLower(text)
-	m := common.InitAc()
+	m := InitAc()
 	hits := m.MultiPatternSearch([]rune(checkText), returnImmediately)
 	if len(hits) > 0 {
 		words := make([]string, 0)

@@ -56,6 +56,11 @@ func getPriority(group string, model string, retry int) (int, error) {
 		return 0, err
 	}
 
+	if len(priorities) == 0 {
+		// 如果没有查询到优先级，则返回错误
+		return 0, errors.New("数据库一致性被破坏")
+	}
+
 	// 确定要使用的优先级
 	var priorityToUse int
 	if retry >= len(priorities) {
@@ -199,7 +204,7 @@ func FixAbility() (int, error) {
 
 	// Use channelIds to find channel not in abilities table
 	var abilityChannelIds []int
-	err = DB.Model(&Ability{}).Pluck("channel_id", &abilityChannelIds).Error
+	err = DB.Table("abilities").Distinct("channel_id").Pluck("channel_id", &abilityChannelIds).Error
 	if err != nil {
 		common.SysError(fmt.Sprintf("Get channel ids from abilities table failed: %s", err.Error()))
 		return 0, err

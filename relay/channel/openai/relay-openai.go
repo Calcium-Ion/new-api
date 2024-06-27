@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
@@ -51,7 +52,11 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 			if data[:6] != "data: " && data[:6] != "[DONE]" {
 				continue
 			}
-			common.SafeSendString(dataChan, data)
+			if !common.SafeSendStringTimeout(dataChan, data, constant.StreamingTimeout) {
+				// send data timeout, stop the stream
+				common.LogError(c, "send data timeout, stop the stream")
+				break
+			}
 			data = data[6:]
 			if !strings.HasPrefix(data, "[DONE]") {
 				streamItems = append(streamItems, data)

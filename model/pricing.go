@@ -2,18 +2,28 @@ package model
 
 import (
 	"one-api/common"
-	"one-api/dto"
 	"sync"
 	"time"
 )
 
+type Pricing struct {
+	Available       bool     `json:"available"`
+	ModelName       string   `json:"model_name"`
+	QuotaType       int      `json:"quota_type"`
+	ModelRatio      float64  `json:"model_ratio"`
+	ModelPrice      float64  `json:"model_price"`
+	OwnerBy         string   `json:"owner_by"`
+	CompletionRatio float64  `json:"completion_ratio"`
+	EnableGroup     []string `json:"enable_group,omitempty"`
+}
+
 var (
-	pricingMap         []dto.ModelPricing
+	pricingMap         []Pricing
 	lastGetPricingTime time.Time
 	updatePricingLock  sync.Mutex
 )
 
-func GetPricing(group string) []dto.ModelPricing {
+func GetPricing(group string) []Pricing {
 	updatePricingLock.Lock()
 	defer updatePricingLock.Unlock()
 
@@ -21,7 +31,7 @@ func GetPricing(group string) []dto.ModelPricing {
 		updatePricing()
 	}
 	if group != "" {
-		userPricingMap := make([]dto.ModelPricing, 0)
+		userPricingMap := make([]Pricing, 0)
 		models := GetGroupModels(group)
 		for _, pricing := range pricingMap {
 			if !common.StringsContains(models, pricing.ModelName) {
@@ -42,9 +52,9 @@ func updatePricing() {
 		allModels[model] = i
 	}
 
-	pricingMap = make([]dto.ModelPricing, 0)
+	pricingMap = make([]Pricing, 0)
 	for model, _ := range allModels {
-		pricing := dto.ModelPricing{
+		pricing := Pricing{
 			Available: true,
 			ModelName: model,
 		}

@@ -8,9 +8,12 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
+	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
+	"time"
 )
 
 func stopReasonClaude2OpenAI(reason string) string {
@@ -246,7 +249,7 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	return &fullTextResponse
 }
 
-func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, requestMode int) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	responseId := fmt.Sprintf("chatcmpl-%s", common.GetUUID())
 	var usage *dto.Usage
 	usage = &dto.Usage{}
@@ -265,8 +268,8 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 		}
 		return 0, nil, nil
 	})
-	dataChan := make(chan string)
-	stopChan := make(chan bool)
+	dataChan := make(chan string, 5)
+	stopChan := make(chan bool, 2)
 	go func() {
 		for scanner.Scan() {
 			data := scanner.Text()
@@ -274,14 +277,23 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 				continue
 			}
 			data = strings.TrimPrefix(data, "data: ")
-			dataChan <- data
+			if !common.SafeSendStringTimeout(dataChan, data, constant.StreamingTimeout) {
+				// send data timeout, stop the stream
+				common.LogError(c, "send data timeout, stop the stream")
+				break
+			}
 		}
 		stopChan <- true
 	}()
+	isFirst := true
 	service.SetEventStreamHeaders(c)
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case data := <-dataChan:
+			if isFirst {
+				isFirst = false
+				info.FirstResponseTime = time.Now()
+			}
 			// some implementations may add \r at the end of data
 			data = strings.TrimSuffix(data, "\r")
 			var claudeResponse ClaudeResponse
@@ -302,7 +314,7 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 				if claudeResponse.Type == "message_start" {
 					// message_start, 获取usage
 					responseId = claudeResponse.Message.Id
-					modelName = claudeResponse.Message.Model
+					info.UpstreamModelName = claudeResponse.Message.Model
 					usage.PromptTokens = claudeUsage.InputTokens
 				} else if claudeResponse.Type == "content_block_delta" {
 					responseText += claudeResponse.Delta.Text
@@ -316,7 +328,7 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 			//response.Id = responseId
 			response.Id = responseId
 			response.Created = createdTime
-			response.Model = modelName
+			response.Model = info.UpstreamModelName
 
 			jsonStr, err := json.Marshal(response)
 			if err != nil {
@@ -335,13 +347,13 @@ func claudeStreamHandler(requestMode int, modelName string, promptTokens int, c 
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
 	if requestMode == RequestModeCompletion {
-		usage, _ = service.ResponseText2Usage(responseText, modelName, promptTokens)
+		usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 	} else {
 		if usage.PromptTokens == 0 {
-			usage.PromptTokens = promptTokens
+			usage.PromptTokens = info.PromptTokens
 		}
 		if usage.CompletionTokens == 0 {
-			usage, _ = service.ResponseText2Usage(responseText, modelName, usage.PromptTokens)
+			usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, usage.PromptTokens)
 		}
 	}
 	return nil, usage

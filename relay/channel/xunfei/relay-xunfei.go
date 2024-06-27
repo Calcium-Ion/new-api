@@ -252,6 +252,8 @@ func apiVersion2domain(apiVersion string) string {
 		return "generalv3"
 	case "v3.5":
 		return "generalv3.5"
+	case "v4.0":
+		return "4.0Ultra"
 	}
 	return "general" + apiVersion
 }

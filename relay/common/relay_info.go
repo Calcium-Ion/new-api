@@ -38,24 +38,26 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	group := c.GetString("group")
 	tokenUnlimited := c.GetBool("token_unlimited_quota")
 	startTime := time.Now()
+	// firstResponseTime = time.Now() - 1 second
 
 	apiType, _ := constant.ChannelType2APIType(channelType)
 
 	info := &RelayInfo{
-		RelayMode:      constant.Path2RelayMode(c.Request.URL.Path),
-		BaseUrl:        c.GetString("base_url"),
-		RequestURLPath: c.Request.URL.String(),
-		ChannelType:    channelType,
-		ChannelId:      channelId,
-		TokenId:        tokenId,
-		UserId:         userId,
-		Group:          group,
-		TokenUnlimited: tokenUnlimited,
-		StartTime:      startTime,
-		ApiType:        apiType,
-		ApiVersion:     c.GetString("api_version"),
-		ApiKey:         strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
-		Organization:   c.GetString("channel_organization"),
+		RelayMode:         constant.Path2RelayMode(c.Request.URL.Path),
+		BaseUrl:           c.GetString("base_url"),
+		RequestURLPath:    c.Request.URL.String(),
+		ChannelType:       channelType,
+		ChannelId:         channelId,
+		TokenId:           tokenId,
+		UserId:            userId,
+		Group:             group,
+		TokenUnlimited:    tokenUnlimited,
+		StartTime:         startTime,
+		FirstResponseTime: startTime.Add(-time.Second),
+		ApiType:           apiType,
+		ApiVersion:        c.GetString("api_version"),
+		ApiKey:            strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
+		Organization:      c.GetString("channel_organization"),
 	}
 	if info.BaseUrl == "" {
 		info.BaseUrl = common.ChannelBaseURLs[channelType]
