@@ -228,7 +228,7 @@ func testAllChannels(notify bool) error {
 					Error:      *openaiErr,
 					LocalError: false,
 				}
-				if isChannelEnabled && service.ShouldDisableChannel(&openAiErrWithStatus) && ban {
+				if isChannelEnabled && service.ShouldDisableChannel(channel.Type, &openAiErrWithStatus) && ban {
 					service.DisableChannel(channel.Id, channel.Name, err.Error())
 				}
 				if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
