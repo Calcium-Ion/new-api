@@ -250,11 +250,9 @@ func PreConsumeTokenQuota(tokenId int, quota int) (userQuota int, err error) {
 	if userQuota < quota {
 		return 0, errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
 	}
-	if !token.UnlimitedQuota {
-		err = DecreaseTokenQuota(tokenId, quota)
-		if err != nil {
-			return 0, err
-		}
+	err = DecreaseTokenQuota(tokenId, quota)
+	if err != nil {
+		return 0, err
 	}
 	err = DecreaseUserQuota(token.UserId, quota)
 	return userQuota - quota, err
