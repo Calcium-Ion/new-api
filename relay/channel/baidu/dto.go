@@ -11,9 +11,16 @@ type BaiduMessage struct {
 }
 
 type BaiduChatRequest struct {
-	Messages []BaiduMessage `json:"messages"`
-	Stream   bool           `json:"stream"`
-	UserId   string         `json:"user_id,omitempty"`
+	Messages        []BaiduMessage `json:"messages"`
+	Temperature     float64        `json:"temperature,omitempty"`
+	TopP            float64        `json:"top_p,omitempty"`
+	PenaltyScore    float64        `json:"penalty_score,omitempty"`
+	Stream          bool           `json:"stream,omitempty"`
+	System          string         `json:"system,omitempty"`
+	DisableSearch   bool           `json:"disable_search,omitempty"`
+	EnableCitation  bool           `json:"enable_citation,omitempty"`
+	MaxOutputTokens int            `json:"max_output_tokens,omitempty"`
+	UserId          string         `json:"user_id,omitempty"`
 }
 
 type Error struct {
