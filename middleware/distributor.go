@@ -169,6 +169,17 @@ func getModelRequest(c *gin.Context) (*ModelRequest, bool, error) {
 			modelRequest.Model = midjourneyModel
 		}
 		c.Set("relay_mode", relayMode)
+	} else if strings.Contains(c.Request.URL.Path, "/suno/") {
+		relayMode := relayconstant.Path2RelaySuno(c.Request.Method, c.Request.URL.Path)
+		if relayMode == relayconstant.RelayModeSunoFetch ||
+			relayMode == relayconstant.RelayModeSunoFetchByID {
+			shouldSelectChannel = false
+		} else {
+			modelName := service.CoverTaskActionToModelName(constant.TaskPlatformSuno, c.Param("action"))
+			modelRequest.Model = modelName
+		}
+		c.Set("platform", string(constant.TaskPlatformSuno))
+		c.Set("relay_mode", relayMode)
 	} else if !strings.HasPrefix(c.Request.URL.Path, "/v1/audio/transcriptions") {
 		err = common.UnmarshalBodyReusable(c, &modelRequest)
 	}
@@ -211,6 +222,7 @@ func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, mode
 	c.Set("channel", channel.Type)
 	c.Set("channel_id", channel.Id)
 	c.Set("channel_name", channel.Name)
+	c.Set("channel_type", channel.Type)
 	ban := true
 	// parse *int to bool
 	if channel.AutoBan != nil && *channel.AutoBan == 0 {

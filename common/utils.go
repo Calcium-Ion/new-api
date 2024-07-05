@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -189,25 +188,6 @@ func Max(a int, b int) int {
 	} else {
 		return b
 	}
-}
-
-func GetOrDefault(env string, defaultValue int) int {
-	if env == "" || os.Getenv(env) == "" {
-		return defaultValue
-	}
-	num, err := strconv.Atoi(os.Getenv(env))
-	if err != nil {
-		SysError(fmt.Sprintf("failed to parse %s: %s, using default value: %d", env, err.Error(), defaultValue))
-		return defaultValue
-	}
-	return num
-}
-
-func GetOrDefaultString(env string, defaultValue string) string {
-	if env == "" || os.Getenv(env) == "" {
-		return defaultValue
-	}
-	return os.Getenv(env)
 }
 
 func MessageWithRequestId(message string, id string) string {

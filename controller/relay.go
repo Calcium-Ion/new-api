@@ -44,12 +44,13 @@ func Relay(c *gin.Context) {
 	retryTimes := common.RetryTimes
 	requestId := c.GetString(common.RequestIdKey)
 	channelId := c.GetInt("channel_id")
+	channelType := c.GetInt("channel_type")
 	group := c.GetString("group")
 	originalModel := c.GetString("original_model")
 	openaiErr := relayHandler(c, relayMode)
 	c.Set("use_channel", []string{fmt.Sprintf("%d", channelId)})
 	if openaiErr != nil {
-		go processChannelError(c, channelId, openaiErr)
+		go processChannelError(c, channelId, channelType, openaiErr)
 	} else {
 		retryTimes = 0
 	}
@@ -110,7 +111,7 @@ func Relay(c *gin.Context) {
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 		openaiErr = relayHandler(c, relayMode)
 		if openaiErr != nil {
-			go processChannelError(c, channelId, openaiErr)
+			go processChannelError(c, channelId, channel.Type, openaiErr)
 		}
 	}
 	useChannel := c.GetStringSlice("use_channel")
@@ -179,10 +180,10 @@ func shouldRetry(c *gin.Context, channelId int, openaiErr *dto.OpenAIErrorWithSt
 	return true
 }
 
-func processChannelError(c *gin.Context, channelId int, err *dto.OpenAIErrorWithStatusCode) {
+func processChannelError(c *gin.Context, channelId int, channelType int, err *dto.OpenAIErrorWithStatusCode) {
 	autoBan := c.GetBool("auto_ban")
 	common.LogError(c.Request.Context(), fmt.Sprintf("relay error (channel #%d, status code: %d): %s", channelId, err.StatusCode, err.Error.Message))
-	if service.ShouldDisableChannel(&err.Error, err.StatusCode) && autoBan {
+	if service.ShouldDisableChannel(channelType, err) && autoBan {
 		channelName := c.GetString("channel_name")
 		service.DisableChannel(channelId, channelName, err.Error.Message)
 	}
@@ -243,4 +244,95 @@ func RelayNotFound(c *gin.Context) {
 	c.JSON(http.StatusNotFound, gin.H{
 		"error": err,
 	})
+}
+
+func RelayTask(c *gin.Context) {
+	retryTimes := common.RetryTimes
+	channelId := c.GetInt("channel_id")
+	relayMode := c.GetInt("relay_mode")
+	group := c.GetString("group")
+	originalModel := c.GetString("original_model")
+	c.Set("use_channel", []string{fmt.Sprintf("%d", channelId)})
+	taskErr := taskRelayHandler(c, relayMode)
+	if taskErr == nil {
+		retryTimes = 0
+	}
+	for i := 0; shouldRetryTaskRelay(c, channelId, taskErr, retryTimes) && i < retryTimes; i++ {
+		channel, err := model.CacheGetRandomSatisfiedChannel(group, originalModel, i)
+		if err != nil {
+			common.LogError(c.Request.Context(), fmt.Sprintf("CacheGetRandomSatisfiedChannel failed: %s", err.Error()))
+			break
+		}
+		channelId = channel.Id
+		useChannel := c.GetStringSlice("use_channel")
+		useChannel = append(useChannel, fmt.Sprintf("%d", channelId))
+		c.Set("use_channel", useChannel)
+		common.LogInfo(c.Request.Context(), fmt.Sprintf("using channel #%d to retry (remain times %d)", channel.Id, i))
+		middleware.SetupContextForSelectedChannel(c, channel, originalModel)
+
+		requestBody, err := common.GetRequestBody(c)
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+		taskErr = taskRelayHandler(c, relayMode)
+	}
+	useChannel := c.GetStringSlice("use_channel")
+	if len(useChannel) > 1 {
+		retryLogStr := fmt.Sprintf("重试：%s", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(useChannel)), "->"), "[]"))
+		common.LogInfo(c.Request.Context(), retryLogStr)
+	}
+	if taskErr != nil {
+		if taskErr.StatusCode == http.StatusTooManyRequests {
+			taskErr.Message = "当前分组上游负载已饱和，请稍后再试"
+		}
+		c.JSON(taskErr.StatusCode, taskErr)
+	}
+}
+
+func taskRelayHandler(c *gin.Context, relayMode int) *dto.TaskError {
+	var err *dto.TaskError
+	switch relayMode {
+	case relayconstant.RelayModeSunoFetch, relayconstant.RelayModeSunoFetchByID:
+		err = relay.RelayTaskFetch(c, relayMode)
+	default:
+		err = relay.RelayTaskSubmit(c, relayMode)
+	}
+	return err
+}
+
+func shouldRetryTaskRelay(c *gin.Context, channelId int, taskErr *dto.TaskError, retryTimes int) bool {
+	if taskErr == nil {
+		return false
+	}
+	if retryTimes <= 0 {
+		return false
+	}
+	if _, ok := c.Get("specific_channel_id"); ok {
+		return false
+	}
+	if taskErr.StatusCode == http.StatusTooManyRequests {
+		return true
+	}
+	if taskErr.StatusCode == 307 {
+		return true
+	}
+	if taskErr.StatusCode/100 == 5 {
+		// 超时不重试
+		if taskErr.StatusCode == 504 || taskErr.StatusCode == 524 {
+			return false
+		}
+		return true
+	}
+	if taskErr.StatusCode == http.StatusBadRequest {
+		return false
+	}
+	if taskErr.StatusCode == 408 {
+		// azure处理超时不重试
+		return false
+	}
+	if taskErr.LocalError {
+		return false
+	}
+	if taskErr.StatusCode/100 == 2 {
+		return false
+	}
+	return true
 }

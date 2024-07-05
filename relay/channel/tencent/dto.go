@@ -31,6 +31,7 @@ type TencentChatRequest struct {
 	// Messages 会话内容, 长度最多为40, 按对话时间从旧到新在数组中排列
 	// 输入 content 总数最大支持 3000 token。
 	Messages []TencentMessage `json:"messages"`
+	Model    string           `json:"model"` // 模型名称
 }
 
 type TencentError struct {

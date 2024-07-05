@@ -5,8 +5,6 @@
 > 本项目为开源项目，在[One API](https://github.com/songquanpeng/one-api)的基础上进行二次开发，感谢原作者的无私奉献。 
 > 使用者必须在遵循 OpenAI 的[使用条款](https://openai.com/policies/terms-of-use)以及**法律法规**的情况下使用，不得用于非法用途。
 
-
-> [!WARNING]
 > 本项目为个人学习使用，不保证稳定性，且不提供任何技术支持，使用者必须在遵循 OpenAI 的使用条款以及法律法规的情况下使用，不得用于非法用途。  
 > 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
 
@@ -47,6 +45,11 @@
     2. 对[@Botfather](https://t.me/botfather)输入指令/setdomain
     3. 选择你的bot，然后输入http(s)://你的网站地址/login
     4. Telegram Bot 名称是bot username 去掉@后的字符串
+13. 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口的支持，[对接文档](Suno.md)，支持的接口如下：
+    + [x] /suno/submit/music
+    + [x] /suno/submit/lyrics
+    + [x] /suno/fetch
+    + [x] /suno/fetch/:id
 
 ## 模型支持
 此版本额外支持以下模型：
@@ -57,6 +60,7 @@
 5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
 6. [零一万物](https://platform.lingyiwanwu.com/)
 7. 自定义渠道，支持填入完整调用地址
+8. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
@@ -79,8 +83,13 @@
 ```
 可以实现400错误转为500错误，从而重试
 
+## 比原版One API多出的配置
+- `STREAMING_TIMEOUT`：设置流式一次回复的超时时间，默认为 30 秒
 
 ## 部署
+### 部署要求
+- 本地数据库（默认）：SQLite（Docker 部署默认使用 SQLite，必须挂载 `/data` 目录到宿主机）
+- 远程数据库：MySQL 版本 >= 5.7.8，PgSQL 版本 >= 9.6
 ### 基于 Docker 进行部署
 ```shell
 # 使用 SQLite 的部署命令：
@@ -104,6 +113,9 @@ docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 
 ## Midjourney接口设置文档
 [对接文档](Midjourney.md)
+
+## Suno接口设置文档
+[对接文档](Suno.md)
 
 ## 交流群
 <img src="https://github.com/Calcium-Ion/new-api/assets/61247483/de536a8a-0161-47a7-a0a2-66ef6de81266" width="300">

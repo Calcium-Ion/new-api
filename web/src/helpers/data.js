@@ -6,6 +6,7 @@ export function setStatusData(data) {
   localStorage.setItem('quota_per_unit', data.quota_per_unit);
   localStorage.setItem('display_in_currency', data.display_in_currency);
   localStorage.setItem('enable_drawing', data.enable_drawing);
+  localStorage.setItem('enable_task', data.enable_task);
   localStorage.setItem('enable_data_export', data.enable_data_export);
   localStorage.setItem(
     'data_export_default_time',

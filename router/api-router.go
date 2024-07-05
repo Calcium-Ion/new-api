@@ -140,5 +140,11 @@ func SetApiRouter(router *gin.Engine) {
 		mjRoute := apiRouter.Group("/mj")
 		mjRoute.GET("/self", middleware.UserAuth(), controller.GetUserMidjourney)
 		mjRoute.GET("/", middleware.AdminAuth(), controller.GetAllMidjourney)
+
+		taskRoute := apiRouter.Group("/task")
+		{
+			taskRoute.GET("/self", middleware.UserAuth(), controller.GetUserTask)
+			taskRoute.GET("/", middleware.AdminAuth(), controller.GetAllTask)
+		}
 	}
 }

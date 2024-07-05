@@ -72,11 +72,12 @@ var defaultModelRatio = map[string]float64{
 	"text-search-ada-doc-001":        10,
 	"text-moderation-stable":         0.1,
 	"text-moderation-latest":         0.1,
-	"claude-instant-1":               0.4,    // $0.8 / 1M tokens
-	"claude-2.0":                     4,      // $8 / 1M tokens
-	"claude-2.1":                     4,      // $8 / 1M tokens
-	"claude-3-haiku-20240307":        0.125,  // $0.25 / 1M tokens
-	"claude-3-sonnet-20240229":       1.5,    // $3 / 1M tokens
+	"claude-instant-1":               0.4,   // $0.8 / 1M tokens
+	"claude-2.0":                     4,     // $8 / 1M tokens
+	"claude-2.1":                     4,     // $8 / 1M tokens
+	"claude-3-haiku-20240307":        0.125, // $0.25 / 1M tokens
+	"claude-3-sonnet-20240229":       1.5,   // $3 / 1M tokens
+	"claude-3-5-sonnet-20240620":     1.5,
 	"claude-3-opus-20240229":         7.5,    // $15 / 1M tokens
 	"ERNIE-Bot":                      0.8572, // ￥0.012 / 1k tokens //renamed to ERNIE-3.5-8K
 	"ERNIE-Bot-turbo":                0.5715, // ￥0.008 / 1k tokens //renamed to ERNIE-Lite-8K
@@ -114,6 +115,7 @@ var defaultModelRatio = map[string]float64{
 	"SparkDesk-v2.1":                 1.2858, // ￥0.018 / 1k tokens
 	"SparkDesk-v3.1":                 1.2858, // ￥0.018 / 1k tokens
 	"SparkDesk-v3.5":                 1.2858, // ￥0.018 / 1k tokens
+	"SparkDesk-v4.0":                 1.2858,
 	"360GPT_S2_V9":                   0.8572, // ¥0.012 / 1k tokens
 	"360gpt-turbo":                   0.0858, // ¥0.0012 / 1k tokens
 	"360gpt-turbo-responsibility-8k": 0.8572, // ¥0.012 / 1k tokens

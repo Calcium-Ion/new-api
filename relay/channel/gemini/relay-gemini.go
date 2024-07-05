@@ -7,10 +7,12 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -160,10 +162,10 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) *dto.Ch
 	return &response
 }
 
-func geminiChatStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatusCode, string) {
+func geminiChatStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, string) {
 	responseText := ""
-	dataChan := make(chan string)
-	stopChan := make(chan bool)
+	dataChan := make(chan string, 5)
+	stopChan := make(chan bool, 2)
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		if atEOF && len(data) == 0 {
@@ -186,14 +188,23 @@ func geminiChatStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIEr
 			}
 			data = strings.TrimPrefix(data, "\"text\": \"")
 			data = strings.TrimSuffix(data, "\"")
-			dataChan <- data
+			if !common.SafeSendStringTimeout(dataChan, data, constant.StreamingTimeout) {
+				// send data timeout, stop the stream
+				common.LogError(c, "send data timeout, stop the stream")
+				break
+			}
 		}
 		stopChan <- true
 	}()
+	isFirst := true
 	service.SetEventStreamHeaders(c)
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case data := <-dataChan:
+			if isFirst {
+				isFirst = false
+				info.FirstResponseTime = time.Now()
+			}
 			// this is used to prevent annoying \ related format bug
 			data = fmt.Sprintf("{\"content\": \"%s\"}", data)
 			type dummyStruct struct {

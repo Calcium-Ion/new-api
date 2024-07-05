@@ -36,7 +36,7 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
-		err, usage = cohereStreamHandler(c, resp, info.UpstreamModelName, info.PromptTokens)
+		err, usage = cohereStreamHandler(c, resp, info)
 	} else {
 		err, usage = cohereHandler(c, resp, info.UpstreamModelName, info.PromptTokens)
 	}

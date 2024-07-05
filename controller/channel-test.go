@@ -27,6 +27,9 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	if channel.Type == common.ChannelTypeMidjourney {
 		return errors.New("midjourney channel test is not supported"), nil
 	}
+	if channel.Type == common.ChannelTypeSunoAPI {
+		return errors.New("suno channel test is not supported"), nil
+	}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = &http.Request{
@@ -219,11 +222,18 @@ func testAllChannels(notify bool) error {
 			if channel.AutoBan != nil && *channel.AutoBan == 0 {
 				ban = false
 			}
-			if isChannelEnabled && service.ShouldDisableChannel(openaiErr, -1) && ban {
-				service.DisableChannel(channel.Id, channel.Name, err.Error())
-			}
-			if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
-				service.EnableChannel(channel.Id, channel.Name)
+			if openaiErr != nil {
+				openAiErrWithStatus := dto.OpenAIErrorWithStatusCode{
+					StatusCode: -1,
+					Error:      *openaiErr,
+					LocalError: false,
+				}
+				if isChannelEnabled && service.ShouldDisableChannel(channel.Type, &openAiErrWithStatus) && ban {
+					service.DisableChannel(channel.Id, channel.Name, err.Error())
+				}
+				if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
+					service.EnableChannel(channel.Id, channel.Name)
+				}
 			}
 			channel.UpdateResponseTime(milliseconds)
 			time.Sleep(common.RequestInterval)

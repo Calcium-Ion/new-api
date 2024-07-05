@@ -24,14 +24,3 @@ type OpenAIModels struct {
 	Root       string                  `json:"root"`
 	Parent     *string                 `json:"parent"`
 }
-
-type ModelPricing struct {
-	Available       bool     `json:"available"`
-	ModelName       string   `json:"model_name"`
-	QuotaType       int      `json:"quota_type"`
-	ModelRatio      float64  `json:"model_ratio"`
-	ModelPrice      float64  `json:"model_price"`
-	OwnerBy         string   `json:"owner_by"`
-	CompletionRatio float64  `json:"completion_ratio"`
-	EnableGroup     []string `json:"enable_group,omitempty"`
-}

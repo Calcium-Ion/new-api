@@ -1,6 +1,8 @@
 package common
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 var TopupGroupRatio = map[string]float64{
 	"default": 1,

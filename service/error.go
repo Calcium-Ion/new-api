@@ -105,3 +105,29 @@ func ResetStatusCode(openaiErr *dto.OpenAIErrorWithStatusCode, statusCodeMapping
 		openaiErr.StatusCode = intCode
 	}
 }
+
+func TaskErrorWrapperLocal(err error, code string, statusCode int) *dto.TaskError {
+	openaiErr := TaskErrorWrapper(err, code, statusCode)
+	openaiErr.LocalError = true
+	return openaiErr
+}
+
+func TaskErrorWrapper(err error, code string, statusCode int) *dto.TaskError {
+	text := err.Error()
+
+	// 定义一个正则表达式匹配URL
+	if strings.Contains(text, "Post") || strings.Contains(text, "dial") {
+		common.SysLog(fmt.Sprintf("error: %s", text))
+		text = "请求上游地址失败"
+	}
+	//避免暴露内部错误
+
+	taskError := &dto.TaskError{
+		Code:       code,
+		Message:    text,
+		StatusCode: statusCode,
+		Error:      err,
+	}
+
+	return taskError
+}

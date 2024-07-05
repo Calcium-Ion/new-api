@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
+	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"strings"
@@ -66,7 +68,11 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 			if data[:6] != "data: " && data[:6] != "[DONE]" {
 				continue
 			}
-
+			if !common.SafeSendStringTimeout(dataChan, data, constant.StreamingTimeout) {
+				// send data timeout, stop the stream
+				common.LogError(c, "send data timeout, stop the stream")
+				break
+			}
 			data = data[6:]
 			if strings.HasPrefix(data, "[DONE]") {
 				common.SafeSendString(dataChan, "data: [DONE]")
@@ -98,7 +104,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 			common.SafeSendString(dataChan, "data: "+string(modifiedData))
 		}
 		streamResp := "[" + strings.Join(streamItems, ",") + "]"
-		switch relayMode {
+		switch info.RelayMode {
 		case relayconstant.RelayModeChatCompletions:
 			var streamResponses []dto.ChatCompletionsStreamResponseSimple
 			err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
@@ -168,9 +174,14 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, relayMode int, mod
 		common.SafeSendBool(stopChan, true)
 	}()
 	service.SetEventStreamHeaders(c)
+	isFirst := true
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case data := <-dataChan:
+			if isFirst {
+				isFirst = false
+				info.FirstResponseTime = time.Now()
+			}
 			if strings.HasPrefix(data, "data: [DONE]") {
 				data = data[:12]
 			}
@@ -351,7 +362,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
 
-	if simpleResponse.Usage.TotalTokens == 0 {
+	if simpleResponse.Usage.TotalTokens == 0 || (simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.CompletionTokens == 0) {
 		completionTokens := 0
 		for _, choice := range simpleResponse.Choices {
 			ctkm, _ := service.CountTokenText(string(choice.Message.Content), model)

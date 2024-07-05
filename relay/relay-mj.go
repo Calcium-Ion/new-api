@@ -538,7 +538,16 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 		ChannelId:   c.GetInt("channel_id"),
 		Quota:       quota,
 	}
-
+	if midjResponse.Code == 3 {
+		//无实例账号自动禁用渠道（No available account instance）
+		channel, err := model.GetChannelById(midjourneyTask.ChannelId, true)
+		if err != nil {
+			common.SysError("get_channel_null: " + err.Error())
+		}
+		if channel.AutoBan != nil && *channel.AutoBan == 1 {
+			model.UpdateChannelStatusById(midjourneyTask.ChannelId, 2, "No available account instance")
+		}
+	}
 	if midjResponse.Code != 1 && midjResponse.Code != 21 && midjResponse.Code != 22 {
 		//非1-提交成功,21-任务已存在和22-排队中，则记录错误原因
 		midjourneyTask.FailReason = midjResponse.Description

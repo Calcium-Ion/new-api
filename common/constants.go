@@ -21,6 +21,7 @@ var QuotaPerUnit = 500 * 1000.0 // $0.002 / 1K tokens
 var DisplayInCurrencyEnabled = true
 var DisplayTokenStatEnabled = true
 var DrawingEnabled = true
+var TaskEnabled = true
 var DataExportEnabled = true
 var DataExportInterval = 5         // unit: minute
 var DataExportDefaultTime = "hour" // unit: minute
@@ -102,14 +103,14 @@ var IsMasterNode = os.Getenv("NODE_TYPE") != "slave"
 var requestInterval, _ = strconv.Atoi(os.Getenv("POLLING_INTERVAL"))
 var RequestInterval = time.Duration(requestInterval) * time.Second
 
-var SyncFrequency = GetOrDefault("SYNC_FREQUENCY", 60) // unit is second
+var SyncFrequency = GetEnvOrDefault("SYNC_FREQUENCY", 60) // unit is second
 
 var BatchUpdateEnabled = false
-var BatchUpdateInterval = GetOrDefault("BATCH_UPDATE_INTERVAL", 5)
+var BatchUpdateInterval = GetEnvOrDefault("BATCH_UPDATE_INTERVAL", 5)
 
-var RelayTimeout = GetOrDefault("RELAY_TIMEOUT", 0) // unit is second
+var RelayTimeout = GetEnvOrDefault("RELAY_TIMEOUT", 0) // unit is second
 
-var GeminiSafetySetting = GetOrDefaultString("GEMINI_SAFETY_SETTING", "BLOCK_NONE")
+var GeminiSafetySetting = GetEnvOrDefaultString("GEMINI_SAFETY_SETTING", "BLOCK_NONE")
 
 const (
 	RequestIdKey = "X-Oneapi-Request-Id"
@@ -132,10 +133,10 @@ var (
 // All duration's unit is seconds
 // Shouldn't larger then RateLimitKeyExpirationDuration
 var (
-	GlobalApiRateLimitNum            = GetOrDefault("GLOBAL_API_RATE_LIMIT", 180)
+	GlobalApiRateLimitNum            = GetEnvOrDefault("GLOBAL_API_RATE_LIMIT", 180)
 	GlobalApiRateLimitDuration int64 = 3 * 60
 
-	GlobalWebRateLimitNum            = GetOrDefault("GLOBAL_WEB_RATE_LIMIT", 60)
+	GlobalWebRateLimitNum            = GetEnvOrDefault("GLOBAL_WEB_RATE_LIMIT", 60)
 	GlobalWebRateLimitDuration int64 = 3 * 60
 
 	UploadRateLimitNum            = 10
@@ -208,8 +209,10 @@ const (
 	ChannelTypeAws            = 33
 	ChannelTypeCohere         = 34
 	ChannelTypeMiniMax        = 35
+	ChannelTypeSunoAPI        = 36
 
 	ChannelTypeDummy // this one is only for count, do not add any channel after this
+
 )
 
 var ChannelBaseURLs = []string{
@@ -249,4 +252,5 @@ var ChannelBaseURLs = []string{
 	"",                                          //33
 	"https://api.cohere.ai",                     //34
 	"https://api.minimax.chat",                  //35
+	"",                                          //36
 }
