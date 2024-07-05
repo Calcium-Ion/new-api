@@ -1,62 +1,71 @@
 package tencent
 
-import "one-api/dto"
-
 type TencentMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role    string `json:"Role"`
+	Content string `json:"Content"`
 }
 
 type TencentChatRequest struct {
-	AppId    int64  `json:"app_id"`    // 腾讯云账号的 APPID
-	SecretId string `json:"secret_id"` // 官网 SecretId
-	// Timestamp当前 UNIX 时间戳，单位为秒，可记录发起 API 请求的时间。
-	// 例如1529223702，如果与当前时间相差过大，会引起签名过期错误
-	Timestamp int64 `json:"timestamp"`
-	// Expired 签名的有效期，是一个符合 UNIX Epoch 时间戳规范的数值，
-	// 单位为秒；Expired 必须大于 Timestamp 且 Expired-Timestamp 小于90天
-	Expired int64  `json:"expired"`
-	QueryID string `json:"query_id"` //请求 Id，用于问题排查
-	// Temperature 较高的数值会使输出更加随机，而较低的数值会使其更加集中和确定
-	// 默认 1.0，取值区间为[0.0,2.0]，非必要不建议使用,不合理的取值会影响效果
-	// 建议该参数和 top_p 只设置1个，不要同时更改 top_p
-	Temperature float64 `json:"temperature"`
-	// TopP 影响输出文本的多样性，取值越大，生成文本的多样性越强
-	// 默认1.0，取值区间为[0.0, 1.0]，非必要不建议使用, 不合理的取值会影响效果
-	// 建议该参数和 temperature 只设置1个，不要同时更改
-	TopP float64 `json:"top_p"`
-	// Stream 0：同步，1：流式 （默认，协议：SSE)
-	// 同步请求超时：60s，如果内容较长建议使用流式
-	Stream int `json:"stream"`
-	// Messages 会话内容, 长度最多为40, 按对话时间从旧到新在数组中排列
-	// 输入 content 总数最大支持 3000 token。
-	Messages []TencentMessage `json:"messages"`
-	Model    string           `json:"model"` // 模型名称
+	// 模型名称，可选值包括 hunyuan-lite、hunyuan-standard、hunyuan-standard-256K、hunyuan-pro。
+	// 各模型介绍请阅读 [产品概述](https://cloud.tencent.com/document/product/1729/104753) 中的说明。
+	//
+	// 注意：
+	// 不同的模型计费不同，请根据 [购买指南](https://cloud.tencent.com/document/product/1729/97731) 按需调用。
+	Model *string `json:"Model"`
+	// 聊天上下文信息。
+	// 说明：
+	// 1. 长度最多为 40，按对话时间从旧到新在数组中排列。
+	// 2. Message.Role 可选值：system、user、assistant。
+	// 其中，system 角色可选，如存在则必须位于列表的最开始。user 和 assistant 需交替出现（一问一答），以 user 提问开始和结束，且 Content 不能为空。Role 的顺序示例：[system（可选） user assistant user assistant user ...]。
+	// 3. Messages 中 Content 总长度不能超过模型输入长度上限（可参考 [产品概述](https://cloud.tencent.com/document/product/1729/104753) 文档），超过则会截断最前面的内容，只保留尾部内容。
+	Messages []*TencentMessage `json:"Messages"`
+	// 流式调用开关。
+	// 说明：
+	// 1. 未传值时默认为非流式调用（false）。
+	// 2. 流式调用时以 SSE 协议增量返回结果（返回值取 Choices[n].Delta 中的值，需要拼接增量数据才能获得完整结果）。
+	// 3. 非流式调用时：
+	// 调用方式与普通 HTTP 请求无异。
+	// 接口响应耗时较长，**如需更低时延建议设置为 true**。
+	// 只返回一次最终结果（返回值取 Choices[n].Message 中的值）。
+	//
+	// 注意：
+	// 通过 SDK 调用时，流式和非流式调用需用**不同的方式**获取返回值，具体参考 SDK 中的注释或示例（在各语言 SDK 代码仓库的 examples/hunyuan/v20230901/ 目录中）。
+	Stream *bool `json:"Stream"`
+	// 说明：
+	// 1. 影响输出文本的多样性，取值越大，生成文本的多样性越强。
+	// 2. 取值区间为 [0.0, 1.0]，未传值时使用各模型推荐值。
+	// 3. 非必要不建议使用，不合理的取值会影响效果。
+	TopP *float64 `json:"TopP"`
+	// 说明：
+	// 1. 较高的数值会使输出更加随机，而较低的数值会使其更加集中和确定。
+	// 2. 取值区间为 [0.0, 2.0]，未传值时使用各模型推荐值。
+	// 3. 非必要不建议使用，不合理的取值会影响效果。
+	Temperature *float64 `json:"Temperature"`
 }
 
 type TencentError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Code    int    `json:"Code"`
+	Message string `json:"Message"`
 }
 
 type TencentUsage struct {
-	InputTokens  int `json:"input_tokens"`
-	OutputTokens int `json:"output_tokens"`
-	TotalTokens  int `json:"total_tokens"`
+	PromptTokens     int `json:"PromptTokens"`
+	CompletionTokens int `json:"CompletionTokens"`
+	TotalTokens      int `json:"TotalTokens"`
 }
 
 type TencentResponseChoices struct {
-	FinishReason string         `json:"finish_reason,omitempty"` // 流式结束标志位，为 stop 则表示尾包
-	Messages     TencentMessage `json:"messages,omitempty"`      // 内容，同步模式返回内容，流模式为 null 输出 content 内容总数最多支持 1024token。
-	Delta        TencentMessage `json:"delta,omitempty"`         // 内容，流模式返回内容，同步模式为 null 输出 content 内容总数最多支持 1024token。
+	FinishReason string         `json:"FinishReason,omitempty"` // 流式结束标志位，为 stop 则表示尾包
+	Messages     TencentMessage `json:"Message,omitempty"`      // 内容，同步模式返回内容，流模式为 null 输出 content 内容总数最多支持 1024token。
+	Delta        TencentMessage `json:"Delta,omitempty"`        // 内容，流模式返回内容，同步模式为 null 输出 content 内容总数最多支持 1024token。
 }
 
 type TencentChatResponse struct {
-	Choices []TencentResponseChoices `json:"choices,omitempty"` // 结果
-	Created string                   `json:"created,omitempty"` // unix 时间戳的字符串
-	Id      string                   `json:"id,omitempty"`      // 会话 id
-	Usage   dto.Usage                `json:"usage,omitempty"`   // token 数量
-	Error   TencentError             `json:"error,omitempty"`   // 错误信息 注意：此字段可能返回 null，表示取不到有效值
-	Note    string                   `json:"note,omitempty"`    // 注释
-	ReqID   string                   `json:"req_id,omitempty"`  // 唯一请求 Id，每次请求都会返回。用于反馈接口入参
+	Choices []TencentResponseChoices `json:"Choices,omitempty"` // 结果
+	Created int64                    `json:"Created,omitempty"` // unix 时间戳的字符串
+	Id      string                   `json:"Id,omitempty"`      // 会话 id
+	Usage   TencentUsage             `json:"Usage,omitempty"`   // token 数量
+	Error   TencentError             `json:"Error,omitempty"`   // 错误信息 注意：此字段可能返回 null，表示取不到有效值
+	Note    string                   `json:"Note,omitempty"`    // 注释
+	ReqID   string                   `json:"Req_id,omitempty"`  // 唯一请求 Id，每次请求都会返回。用于反馈接口入参
 }

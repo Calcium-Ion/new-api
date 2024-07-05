@@ -6,18 +6,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+	"one-api/common"
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+	"strconv"
 	"strings"
 )
 
 type Adaptor struct {
-	Sign string
+	Sign      string
+	Action    string
+	Version   string
+	Timestamp int64
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
+	a.Action = "ChatCompletions"
+	a.Version = "2023-09-01"
+	a.Timestamp = common.GetTimestamp()
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
@@ -27,7 +35,9 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
 	req.Header.Set("Authorization", a.Sign)
-	req.Header.Set("X-TC-Action", info.UpstreamModelName)
+	req.Header.Set("X-TC-Action", a.Action)
+	req.Header.Set("X-TC-Version", a.Version)
+	req.Header.Set("X-TC-Timestamp", strconv.FormatInt(a.Timestamp, 10))
 	return nil
 }
 
@@ -37,15 +47,13 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	}
 	apiKey := c.Request.Header.Get("Authorization")
 	apiKey = strings.TrimPrefix(apiKey, "Bearer ")
-	appId, secretId, secretKey, err := parseTencentConfig(apiKey)
+	_, secretId, secretKey, err := parseTencentConfig(apiKey)
 	if err != nil {
 		return nil, err
 	}
 	tencentRequest := requestOpenAI2Tencent(*request)
-	tencentRequest.AppId = appId
-	tencentRequest.SecretId = secretId
 	// we have to calculate the sign here
-	a.Sign = getTencentSign(*tencentRequest, secretKey)
+	a.Sign = getTencentSign(*tencentRequest, a, secretId, secretKey)
 	return tencentRequest, nil
 }
 
