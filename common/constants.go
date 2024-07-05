@@ -210,6 +210,7 @@ const (
 	ChannelTypeCohere         = 34
 	ChannelTypeMiniMax        = 35
 	ChannelTypeSunoAPI        = 36
+	ChannelTypeDify           = 37
 
 	ChannelTypeDummy // this one is only for count, do not add any channel after this
 
