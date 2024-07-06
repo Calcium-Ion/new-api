@@ -2,6 +2,13 @@
 
 **简介**:Suno API文档
 
+## 接口列表
+支持的接口如下：
++ [x] /suno/submit/music
++ [x] /suno/submit/lyrics
++ [x] /suno/fetch
++ [x] /suno/fetch/:id
+
 ## 模型列表
 
 ### Suno API支持

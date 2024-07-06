@@ -2,6 +2,21 @@
 
 **简介**:Midjourney Proxy API文档
 
+## 接口列表
+支持的接口如下：
++ [x] /mj/submit/imagine
++ [x] /mj/submit/change
++ [x] /mj/submit/blend
++ [x] /mj/submit/describe
++ [x] /mj/image/{id} （通过此接口获取图片，**请必须在系统设置中填写服务器地址！！**）
++ [x] /mj/task/{id}/fetch （此接口返回的图片地址为经过One API转发的地址）
++ [x] /task/list-by-condition
++ [x] /mj/submit/action （仅midjourney-proxy-plus支持，下同）
++ [x] /mj/submit/modal
++ [x] /mj/submit/shorten
++ [x] /mj/task/{id}/image-seed
++ [x] /mj/insight-face/swap （InsightFace）
+
 ## 模型列表
 
 ### midjourney-proxy支持
