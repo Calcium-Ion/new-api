@@ -133,7 +133,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 	}()
 	service.SetEventStreamHeaders(c)
 	isFirst := true
-	ticker := time.NewTicker(time.Duration(constant.StreamingTimeout))
+	ticker := time.NewTicker(time.Duration(constant.StreamingTimeout) * time.Second)
 	defer ticker.Stop()
 	c.Stream(func(w io.Writer) bool {
 		select {
@@ -145,7 +145,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 				isFirst = false
 				info.FirstResponseTime = time.Now()
 			}
-			ticker.Reset(time.Duration(constant.StreamingTimeout))
+			ticker.Reset(time.Duration(constant.StreamingTimeout) * time.Second)
 			if strings.HasPrefix(data, "data: [DONE]") {
 				data = data[:12]
 			}
