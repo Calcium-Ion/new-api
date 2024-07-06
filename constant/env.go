@@ -5,3 +5,4 @@ import (
 )
 
 var StreamingTimeout = common.GetEnvOrDefault("STREAMING_TIMEOUT", 30)
+var DifyDebug = common.GetEnvOrDefaultBool("DIFY_DEBUG", true)

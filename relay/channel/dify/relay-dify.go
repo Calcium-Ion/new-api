@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
@@ -48,9 +49,9 @@ func streamResponseDify2OpenAI(difyResponse DifyChunkChatCompletionResponse) *dt
 		Model:   "dify",
 	}
 	var choice dto.ChatCompletionsStreamResponseChoice
-	if difyResponse.Event == "workflow_started" {
+	if constant.DifyDebug && difyResponse.Event == "workflow_started" {
 		choice.Delta.SetContentString("Workflow: " + difyResponse.Data.WorkflowId + "\n")
-	} else if difyResponse.Event == "node_started" {
+	} else if constant.DifyDebug && difyResponse.Event == "node_started" {
 		choice.Delta.SetContentString("Node: " + difyResponse.Data.NodeId + "\n")
 	} else if difyResponse.Event == "message" {
 		choice.Delta.SetContentString(difyResponse.Answer)

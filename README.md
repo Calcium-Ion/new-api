@@ -72,6 +72,7 @@
 
 ## 比原版One API多出的配置
 - `STREAMING_TIMEOUT`：设置流式一次回复的超时时间，默认为 30 秒
+- `DIFY_DEBUG`：设置 Dify 渠道是否输出工作流和节点信息到客户端，默认为 `true`， 可选值为 `true` 和 `false`
 
 ## 部署
 ### 部署要求
