@@ -22,6 +22,11 @@ type Adaptor struct {
 	Timestamp int64
 }
 
+func (a *Adaptor) InitRerank(info *relaycommon.RelayInfo, request dto.RerankRequest) {
+	//TODO implement me
+
+}
+
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
 	a.Action = "ChatCompletions"
 	a.Version = "2023-09-01"
@@ -55,6 +60,10 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	// we have to calculate the sign here
 	a.Sign = getTencentSign(*tencentRequest, a, secretId, secretKey)
 	return tencentRequest, nil
+}
+
+func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
+	return nil, nil
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {

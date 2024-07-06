@@ -42,6 +42,7 @@ func SetRelayRouter(router *gin.Engine) {
 		relayV1Router.GET("/fine-tunes/:id/events", controller.RelayNotImplemented)
 		relayV1Router.DELETE("/models/:model", controller.RelayNotImplemented)
 		relayV1Router.POST("/moderations", controller.Relay)
+		relayV1Router.POST("/rerank", controller.Relay)
 	}
 
 	relayMjRouter := router.Group("/mj")

@@ -29,6 +29,8 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 		fallthrough
 	case relayconstant.RelayModeAudioTranscription:
 		err = relay.AudioHelper(c, relayMode)
+	case relayconstant.RelayModeRerank:
+		err = relay.RerankHelper(c, relayMode)
 	default:
 		err = relay.TextHelper(c)
 	}
