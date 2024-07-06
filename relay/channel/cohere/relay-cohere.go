@@ -48,15 +48,15 @@ func requestOpenAI2Cohere(textRequest dto.GeneralOpenAIRequest) *CohereRequest {
 }
 
 func requestConvertRerank2Cohere(rerankRequest dto.RerankRequest) *CohereRerankRequest {
+	if rerankRequest.TopN == 0 {
+		rerankRequest.TopN = 1
+	}
 	cohereReq := CohereRerankRequest{
 		Query:           rerankRequest.Query,
 		Documents:       rerankRequest.Documents,
 		Model:           rerankRequest.Model,
 		TopN:            rerankRequest.TopN,
 		ReturnDocuments: true,
-	}
-	for _, doc := range rerankRequest.Documents {
-		cohereReq.Documents = append(cohereReq.Documents, doc)
 	}
 	return &cohereReq
 }
