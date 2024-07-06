@@ -34,7 +34,7 @@
     3. 选择你的bot，然后输入http(s)://你的网站地址/login
     4. Telegram Bot 名称是bot username 去掉@后的字符串
 13. 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口的支持，[对接文档](Suno.md)
-14. 支持Rerank模型，目前仅兼容Cohere的rerank，可接入Dify，[对接文档](Rerank.md)
+14. 支持Rerank模型，目前仅兼容Cohere和Jina，可接入Dify，[对接文档](Rerank.md)
 
 ## 模型支持
 此版本额外支持以下模型：
@@ -46,7 +46,7 @@
 6. [零一万物](https://platform.lingyiwanwu.com/)
 7. 自定义渠道，支持填入完整调用地址
 8. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
-9. Rerank模型，目前仅支持[Cohere](https://cohere.ai/)
+9. Rerank模型，目前支持[Cohere](https://cohere.ai/)和[Jina](https://jina.ai/)，[对接文档](Rerank.md)
 10. Dify
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。

@@ -10,6 +10,7 @@ import (
 	"one-api/relay/channel/cohere"
 	"one-api/relay/channel/dify"
 	"one-api/relay/channel/gemini"
+	"one-api/relay/channel/jina"
 	"one-api/relay/channel/ollama"
 	"one-api/relay/channel/openai"
 	"one-api/relay/channel/palm"
@@ -56,6 +57,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &cohere.Adaptor{}
 	case constant.APITypeDify:
 		return &dify.Adaptor{}
+	case constant.APITypeJina:
+		return &jina.Adaptor{}
 	}
 	return nil
 }
