@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"log"
 	"net/http"
 	"one-api/dto"
 	"one-api/relay/channel"
@@ -40,7 +39,6 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
-	log.Printf("requestBody: %v", requestBody)
 	return channel.DoApiRequest(a, c, info, requestBody)
 }
 
