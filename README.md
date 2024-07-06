@@ -46,7 +46,8 @@
 6. [零一万物](https://platform.lingyiwanwu.com/)
 7. 自定义渠道，支持填入完整调用地址
 8. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
-9. ReRank模型，目前仅支持[Cohere](https://cohere.ai/)
+9. Rerank模型，目前仅支持[Cohere](https://cohere.ai/)
+10. Dify
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
