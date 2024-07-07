@@ -82,7 +82,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 		return nil, errors.New("request is nil")
 	}
 	// 如果不支持StreamOptions，将StreamOptions设置为nil
-	if !a.SupportStreamOptions {
+	if !a.SupportStreamOptions || !request.Stream {
 		request.StreamOptions = nil
 	} else {
 		// 如果支持StreamOptions，且请求中没有设置StreamOptions，根据配置文件设置StreamOptions
