@@ -349,13 +349,15 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 			usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, usage.PromptTokens)
 		}
 	}
-	response := service.GenerateFinalUsageResponse(responseId, createdTime, info.UpstreamModelName, *usage)
-	err := service.ObjectData(c, response)
-	if err != nil {
-		common.SysError("send final response failed: " + err.Error())
+	if info.ShouldIncludeUsage {
+		response := service.GenerateFinalUsageResponse(responseId, createdTime, info.UpstreamModelName, *usage)
+		err := service.ObjectData(c, response)
+		if err != nil {
+			common.SysError("send final response failed: " + err.Error())
+		}
 	}
 	service.Done(c)
-	err = resp.Body.Close()
+	err := resp.Body.Close()
 	if err != nil {
 		return service.OpenAIErrorWrapperLocal(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}

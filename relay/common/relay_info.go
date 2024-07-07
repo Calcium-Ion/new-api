@@ -28,6 +28,7 @@ type RelayInfo struct {
 	Organization         string
 	BaseUrl              string
 	SupportStreamOptions bool
+	ShouldIncludeUsage   bool
 }
 
 func GenRelayInfo(c *gin.Context) *RelayInfo {

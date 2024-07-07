@@ -214,10 +214,12 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			return false
 		}
 	})
-	response := service.GenerateFinalUsageResponse(id, createdTime, model, usage)
-	err = service.ObjectData(c, response)
-	if err != nil {
-		common.SysError("send final response failed: " + err.Error())
+	if info.ShouldIncludeUsage {
+		response := service.GenerateFinalUsageResponse(id, createdTime, info.UpstreamModelName, usage)
+		err := service.ObjectData(c, response)
+		if err != nil {
+			common.SysError("send final response failed: " + err.Error())
+		}
 	}
 	service.Done(c)
 	err = resp.Body.Close()

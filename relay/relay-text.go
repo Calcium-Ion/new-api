@@ -130,6 +130,22 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		return openaiErr
 	}
 
+	// 如果不支持StreamOptions，将StreamOptions设置为nil
+	if !relayInfo.SupportStreamOptions || !textRequest.Stream {
+		textRequest.StreamOptions = nil
+	} else {
+		// 如果支持StreamOptions，且请求中没有设置StreamOptions，根据配置文件设置StreamOptions
+		if constant.ForceStreamOption {
+			textRequest.StreamOptions = &dto.StreamOptions{
+				IncludeUsage: true,
+			}
+		}
+	}
+
+	if textRequest.StreamOptions != nil && textRequest.StreamOptions.IncludeUsage {
+		relayInfo.ShouldIncludeUsage = textRequest.StreamOptions.IncludeUsage
+	}
+
 	adaptor := GetAdaptor(relayInfo.ApiType)
 	if adaptor == nil {
 		return service.OpenAIErrorWrapperLocal(fmt.Errorf("invalid api type: %d", relayInfo.ApiType), "invalid_api_type", http.StatusBadRequest)

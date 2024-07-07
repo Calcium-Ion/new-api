@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
-	"one-api/constant"
 	"one-api/dto"
 	"one-api/relay/channel"
 	"one-api/relay/channel/ai360"
@@ -20,8 +19,7 @@ import (
 )
 
 type Adaptor struct {
-	ChannelType          int
-	SupportStreamOptions bool
+	ChannelType int
 }
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
@@ -33,7 +31,6 @@ func (a *Adaptor) InitRerank(info *relaycommon.RelayInfo, request dto.RerankRequ
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
 	a.ChannelType = info.ChannelType
-	a.SupportStreamOptions = info.SupportStreamOptions
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
@@ -80,17 +77,6 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *re
 func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.GeneralOpenAIRequest) (any, error) {
 	if request == nil {
 		return nil, errors.New("request is nil")
-	}
-	// 如果不支持StreamOptions，将StreamOptions设置为nil
-	if !a.SupportStreamOptions || !request.Stream {
-		request.StreamOptions = nil
-	} else {
-		// 如果支持StreamOptions，且请求中没有设置StreamOptions，根据配置文件设置StreamOptions
-		if constant.ForceStreamOption {
-			request.StreamOptions = &dto.StreamOptions{
-				IncludeUsage: true,
-			}
-		}
 	}
 	return request, nil
 }
