@@ -77,7 +77,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	// map model name
 	modelMapping := c.GetString("model_mapping")
-	isModelMapped := false
+	//isModelMapped := false
 	if modelMapping != "" && modelMapping != "{}" {
 		modelMap := make(map[string]string)
 		err := json.Unmarshal([]byte(modelMapping), &modelMap)
@@ -87,7 +87,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		if modelMap[textRequest.Model] != "" {
 			textRequest.Model = modelMap[textRequest.Model]
 			// set upstream model name
-			isModelMapped = true
+			//isModelMapped = true
 		}
 	}
 	relayInfo.UpstreamModelName = textRequest.Model
@@ -136,27 +136,16 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	}
 	adaptor.Init(relayInfo, *textRequest)
 	var requestBody io.Reader
-	if relayInfo.ApiType == relayconstant.APITypeOpenAI {
-		if isModelMapped {
-			jsonStr, err := json.Marshal(textRequest)
-			if err != nil {
-				return service.OpenAIErrorWrapperLocal(err, "marshal_text_request_failed", http.StatusInternalServerError)
-			}
-			requestBody = bytes.NewBuffer(jsonStr)
-		} else {
-			requestBody = c.Request.Body
-		}
-	} else {
-		convertedRequest, err := adaptor.ConvertRequest(c, relayInfo.RelayMode, textRequest)
-		if err != nil {
-			return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
-		}
-		jsonData, err := json.Marshal(convertedRequest)
-		if err != nil {
-			return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
-		}
-		requestBody = bytes.NewBuffer(jsonData)
+
+	convertedRequest, err := adaptor.ConvertRequest(c, relayInfo.RelayMode, textRequest)
+	if err != nil {
+		return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
 	}
+	jsonData, err := json.Marshal(convertedRequest)
+	if err != nil {
+		return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
+	}
+	requestBody = bytes.NewBuffer(jsonData)
 
 	statusCodeMappingStr := c.GetString("status_code_mapping")
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)

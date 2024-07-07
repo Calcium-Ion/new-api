@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"one-api/relay/channel"
 	"one-api/relay/channel/ai360"
@@ -19,7 +20,8 @@ import (
 )
 
 type Adaptor struct {
-	ChannelType int
+	ChannelType          int
+	SupportStreamOptions bool
 }
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
@@ -31,6 +33,7 @@ func (a *Adaptor) InitRerank(info *relaycommon.RelayInfo, request dto.RerankRequ
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
 	a.ChannelType = info.ChannelType
+	a.SupportStreamOptions = info.SupportStreamOptions
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
@@ -78,6 +81,17 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
+	// 如果不支持StreamOptions，将StreamOptions设置为nil
+	if !a.SupportStreamOptions {
+		request.StreamOptions = nil
+	} else {
+		// 如果支持StreamOptions，且请求中没有设置StreamOptions，根据配置文件设置StreamOptions
+		if constant.ForceStreamOption {
+			request.StreamOptions = &dto.StreamOptions{
+				IncludeUsage: true,
+			}
+		}
+	}
 	return request, nil
 }
 
@@ -89,9 +103,11 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	if info.IsStream {
 		var responseText string
 		var toolCount int
-		err, responseText, toolCount = OpenaiStreamHandler(c, resp, info)
-		usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
-		usage.CompletionTokens += toolCount * 7
+		err, usage, responseText, toolCount = OpenaiStreamHandler(c, resp, info)
+		if usage == nil || usage.TotalTokens == 0 || (usage.PromptTokens+usage.CompletionTokens) == 0 {
+			usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
+			usage.CompletionTokens += toolCount * 7
+		}
 	} else {
 		err, usage = OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
 	}

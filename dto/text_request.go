@@ -11,6 +11,7 @@ type GeneralOpenAIRequest struct {
 	Messages         []Message       `json:"messages,omitempty"`
 	Prompt           any             `json:"prompt,omitempty"`
 	Stream           bool            `json:"stream,omitempty"`
+	StreamOptions    *StreamOptions  `json:"stream_options,omitempty"`
 	MaxTokens        uint            `json:"max_tokens,omitempty"`
 	Temperature      float64         `json:"temperature,omitempty"`
 	TopP             float64         `json:"top_p,omitempty"`
@@ -41,6 +42,10 @@ type OpenAIFunction struct {
 	Description string `json:"description,omitempty"`
 	Name        string `json:"name"`
 	Parameters  any    `json:"parameters,omitempty"`
+}
+
+type StreamOptions struct {
+	IncludeUsage bool `json:"include_usage,omitempty"`
 }
 
 func (r GeneralOpenAIRequest) GetMaxTokens() int64 {
