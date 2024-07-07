@@ -1,4 +1,4 @@
-package zhipu
+package dify
 
 import (
 	"errors"
@@ -23,17 +23,12 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIReq
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	method := "invoke"
-	if info.IsStream {
-		method = "sse-invoke"
-	}
-	return fmt.Sprintf("%s/api/paas/v3/model-api/%s/%s", info.BaseUrl, info.UpstreamModelName, method), nil
+	return fmt.Sprintf("%s/v1/chat-messages", info.BaseUrl), nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
-	token := getZhipuToken(info.ApiKey)
-	req.Header.Set("Authorization", token)
+	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
 	return nil
 }
 
@@ -41,10 +36,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	if request.TopP >= 1 {
-		request.TopP = 0.99
-	}
-	return requestOpenAI2Zhipu(*request), nil
+	return requestOpenAI2Dify(*request), nil
 }
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
@@ -57,9 +49,9 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
-		err, usage = zhipuStreamHandler(c, resp)
+		err, usage = difyStreamHandler(c, resp, info)
 	} else {
-		err, usage = zhipuHandler(c, resp)
+		err, usage = difyHandler(c, resp, info)
 	}
 	return
 }

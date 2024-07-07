@@ -210,6 +210,8 @@ const (
 	ChannelTypeCohere         = 34
 	ChannelTypeMiniMax        = 35
 	ChannelTypeSunoAPI        = 36
+	ChannelTypeDify           = 37
+	ChannelTypeJina           = 38
 
 	ChannelTypeDummy // this one is only for count, do not add any channel after this
 
@@ -253,4 +255,6 @@ var ChannelBaseURLs = []string{
 	"https://api.cohere.ai",                     //34
 	"https://api.minimax.chat",                  //35
 	"",                                          //36
+	"",                                          //37
+	"https://api.jina.ai",                       //38
 }

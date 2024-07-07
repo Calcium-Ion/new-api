@@ -78,19 +78,23 @@ var defaultModelRatio = map[string]float64{
 	"claude-3-haiku-20240307":        0.125, // $0.25 / 1M tokens
 	"claude-3-sonnet-20240229":       1.5,   // $3 / 1M tokens
 	"claude-3-5-sonnet-20240620":     1.5,
-	"claude-3-opus-20240229":         7.5,    // $15 / 1M tokens
-	"ERNIE-Bot":                      0.8572, // ￥0.012 / 1k tokens //renamed to ERNIE-3.5-8K
-	"ERNIE-Bot-turbo":                0.5715, // ￥0.008 / 1k tokens //renamed to ERNIE-Lite-8K
-	"ERNIE-Bot-4":                    8.572,  // ￥0.12 / 1k tokens //renamed to ERNIE-4.0-8K
-	"ERNIE-4.0-8K":                   8.572,  // ￥0.12 / 1k tokens
-	"ERNIE-3.5-8K":                   0.8572, // ￥0.012 / 1k tokens
-	"ERNIE-Speed-8K":                 0.2858, // ￥0.004 / 1k tokens
-	"ERNIE-Speed-128K":               0.2858, // ￥0.004 / 1k tokens
-	"ERNIE-Lite-8K":                  0.2143, // ￥0.003 / 1k tokens
-	"ERNIE-Tiny-8K":                  0.0715, // ￥0.001 / 1k tokens
-	"ERNIE-Character-8K":             0.2858, // ￥0.004 / 1k tokens
-	"ERNIE-Functions-8K":             0.2858, // ￥0.004 / 1k tokens
-	"Embedding-V1":                   0.1429, // ￥0.002 / 1k tokens
+	"claude-3-opus-20240229":         7.5, // $15 / 1M tokens
+	"ERNIE-4.0-8K":                   0.120 * RMB,
+	"ERNIE-3.5-8K":                   0.012 * RMB,
+	"ERNIE-3.5-8K-0205":              0.024 * RMB,
+	"ERNIE-3.5-8K-1222":              0.012 * RMB,
+	"ERNIE-Bot-8K":                   0.024 * RMB,
+	"ERNIE-3.5-4K-0205":              0.012 * RMB,
+	"ERNIE-Speed-8K":                 0.004 * RMB,
+	"ERNIE-Speed-128K":               0.004 * RMB,
+	"ERNIE-Lite-8K-0922":             0.008 * RMB,
+	"ERNIE-Lite-8K-0308":             0.003 * RMB,
+	"ERNIE-Tiny-8K":                  0.001 * RMB,
+	"BLOOMZ-7B":                      0.004 * RMB,
+	"Embedding-V1":                   0.002 * RMB,
+	"bge-large-zh":                   0.002 * RMB,
+	"bge-large-en":                   0.002 * RMB,
+	"tao-8k":                         0.002 * RMB,
 	"PaLM-2":                         1,
 	"gemini-pro":                     1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
 	"gemini-pro-vision":              1, // $0.00025 / 1k characters -> $0.001 / 1k tokens

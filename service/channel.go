@@ -24,7 +24,7 @@ func EnableChannel(channelId int, channelName string) {
 	notifyRootUser(subject, content)
 }
 
-func ShouldDisableChannel(err *relaymodel.OpenAIErrorWithStatusCode) bool {
+func ShouldDisableChannel(channelType int, err *relaymodel.OpenAIErrorWithStatusCode) bool {
 	if !common.AutomaticDisableChannelEnabled {
 		return false
 	}
@@ -34,8 +34,14 @@ func ShouldDisableChannel(err *relaymodel.OpenAIErrorWithStatusCode) bool {
 	if err.LocalError {
 		return false
 	}
-	if err.StatusCode == http.StatusUnauthorized || err.StatusCode == http.StatusForbidden {
+	if err.StatusCode == http.StatusUnauthorized {
 		return true
+	}
+	if err.StatusCode == http.StatusForbidden {
+		switch channelType {
+		case common.ChannelTypeGemini:
+			return true
+		}
 	}
 	switch err.Error.Code {
 	case "invalid_api_key":

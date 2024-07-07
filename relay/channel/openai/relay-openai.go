@@ -133,13 +133,19 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 	}()
 	service.SetEventStreamHeaders(c)
 	isFirst := true
+	ticker := time.NewTicker(time.Duration(constant.StreamingTimeout) * time.Second)
+	defer ticker.Stop()
 	c.Stream(func(w io.Writer) bool {
 		select {
+		case <-ticker.C:
+			common.LogError(c, "reading data from upstream timeout")
+			return false
 		case data := <-dataChan:
 			if isFirst {
 				isFirst = false
 				info.FirstResponseTime = time.Now()
 			}
+			ticker.Reset(time.Duration(constant.StreamingTimeout) * time.Second)
 			if strings.HasPrefix(data, "data: [DONE]") {
 				data = data[:12]
 			}

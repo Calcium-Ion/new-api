@@ -144,28 +144,29 @@ export function renderModelPrice(
 ) {
   // 1 ratio = $0.002 / 1K tokens
   if (modelPrice !== -1) {
-    return '模型价格：$' + modelPrice * groupRatio;
+    return '模型价格：$' + modelPrice + ' * 分组倍率：' + groupRatio + ' = $' + modelPrice * groupRatio;
   } else {
     if (completionRatio === undefined) {
       completionRatio = 0;
     }
     // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
-    let inputRatioPrice = modelRatio * 2.0 * groupRatio;
-    let completionRatioPrice = modelRatio * 2.0 * completionRatio * groupRatio;
+    let inputRatioPrice = modelRatio * 2.0;
+    let completionRatioPrice = modelRatio * 2.0 * completionRatio;
     let price =
       (inputTokens / 1000000) * inputRatioPrice +
       (completionTokens / 1000000) * completionRatioPrice;
     return (
       <>
         <article>
-          <p>提示 ${inputRatioPrice} / 1M tokens</p>
-          <p>补全 ${completionRatioPrice} / 1M tokens</p>
+          <p>提示：${inputRatioPrice} * {groupRatio} = ${inputRatioPrice * groupRatio} / 1M tokens</p>
+          <p>补全：${completionRatioPrice} * {groupRatio} = ${completionRatioPrice * groupRatio} / 1M tokens</p>
           <p></p>
           <p>
             提示 {inputTokens} tokens / 1M tokens * ${inputRatioPrice} + 补全{' '}
-            {completionTokens} tokens / 1M tokens * ${completionRatioPrice} = $
-            {price.toFixed(6)}
+            {completionTokens} tokens / 1M tokens * ${completionRatioPrice} * 分组 {groupRatio} =
+            ${price.toFixed(6)}
           </p>
+          <p>仅供参考，以实际扣费为准</p>
         </article>
       </>
     );

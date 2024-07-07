@@ -1,5 +1,7 @@
 package cohere
 
+import "one-api/dto"
+
 type CohereRequest struct {
 	Model       string        `json:"model"`
 	ChatHistory []ChatHistory `json:"chat_history"`
@@ -26,6 +28,19 @@ type CohereResponseResult struct {
 	FinishReason string     `json:"finish_reason,omitempty"`
 	Text         string     `json:"text"`
 	Meta         CohereMeta `json:"meta"`
+}
+
+type CohereRerankRequest struct {
+	Documents       []any  `json:"documents"`
+	Query           string `json:"query"`
+	Model           string `json:"model"`
+	TopN            int    `json:"top_n"`
+	ReturnDocuments bool   `json:"return_documents"`
+}
+
+type CohereRerankResponseResult struct {
+	Results []dto.RerankResponseDocument `json:"results"`
+	Meta    CohereMeta                   `json:"meta"`
 }
 
 type CohereMeta struct {

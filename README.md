@@ -16,19 +16,7 @@
 此分叉版本的主要变更如下：
 
 1. 全新的UI界面（部分界面还待更新）
-2. 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口的支持，[对接文档](Midjourney.md)，支持的接口如下：
-   + [x] /mj/submit/imagine
-   + [x] /mj/submit/change
-   + [x] /mj/submit/blend
-   + [x] /mj/submit/describe
-   + [x] /mj/image/{id} （通过此接口获取图片，**请必须在系统设置中填写服务器地址！！**）
-   + [x] /mj/task/{id}/fetch （此接口返回的图片地址为经过One API转发的地址）
-   + [x] /task/list-by-condition
-   + [x] /mj/submit/action （仅midjourney-proxy-plus支持，下同）
-   + [x] /mj/submit/modal
-   + [x] /mj/submit/shorten
-   + [x] /mj/task/{id}/image-seed
-   + [x] /mj/insight-face/swap （InsightFace）
+2. 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口的支持，[对接文档](Midjourney.md)
 3. 支持在线充值功能，可在系统设置中设置，当前支持的支付接口：
    + [x] 易支付
 4. 支持用key查询使用额度:
@@ -45,22 +33,21 @@
     2. 对[@Botfather](https://t.me/botfather)输入指令/setdomain
     3. 选择你的bot，然后输入http(s)://你的网站地址/login
     4. Telegram Bot 名称是bot username 去掉@后的字符串
-13. 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口的支持，[对接文档](Suno.md)，支持的接口如下：
-    + [x] /suno/submit/music
-    + [x] /suno/submit/lyrics
-    + [x] /suno/fetch
-    + [x] /suno/fetch/:id
+13. 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口的支持，[对接文档](Suno.md)
+14. 支持Rerank模型，目前仅兼容Cohere和Jina，可接入Dify，[对接文档](Rerank.md)
 
 ## 模型支持
 此版本额外支持以下模型：
 1. 第三方模型 **gps** （gpt-4-gizmo-*）
 2. 智谱glm-4v，glm-4v识图
-3. Anthropic Claude 3 (claude-3-opus-20240229, claude-3-sonnet-20240229)
+3. Anthropic Claude 3
 4. [Ollama](https://github.com/ollama/ollama?tab=readme-ov-file)，添加渠道时，密钥可以随便填写，默认的请求地址是[http://localhost:11434](http://localhost:11434)，如果需要修改请在渠道中修改
 5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
 6. [零一万物](https://platform.lingyiwanwu.com/)
 7. 自定义渠道，支持填入完整调用地址
 8. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
+9. Rerank模型，目前支持[Cohere](https://cohere.ai/)和[Jina](https://jina.ai/)，[对接文档](Rerank.md)
+10. Dify
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
@@ -85,6 +72,7 @@
 
 ## 比原版One API多出的配置
 - `STREAMING_TIMEOUT`：设置流式一次回复的超时时间，默认为 30 秒
+- `DIFY_DEBUG`：设置 Dify 渠道是否输出工作流和节点信息到客户端，默认为 `true`， 可选值为 `true` 和 `false`
 
 ## 部署
 ### 部署要求

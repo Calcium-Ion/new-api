@@ -22,17 +22,27 @@ import (
 var baiduTokenStore sync.Map
 
 func requestOpenAI2Baidu(request dto.GeneralOpenAIRequest) *BaiduChatRequest {
-	messages := make([]BaiduMessage, 0, len(request.Messages))
+	baiduRequest := BaiduChatRequest{
+		Temperature:     request.Temperature,
+		TopP:            request.TopP,
+		PenaltyScore:    request.FrequencyPenalty,
+		Stream:          request.Stream,
+		DisableSearch:   false,
+		EnableCitation:  false,
+		MaxOutputTokens: int(request.MaxTokens),
+		UserId:          request.User,
+	}
 	for _, message := range request.Messages {
-		messages = append(messages, BaiduMessage{
-			Role:    message.Role,
-			Content: message.StringContent(),
-		})
+		if message.Role == "system" {
+			baiduRequest.System = message.StringContent()
+		} else {
+			baiduRequest.Messages = append(baiduRequest.Messages, BaiduMessage{
+				Role:    message.Role,
+				Content: message.StringContent(),
+			})
+		}
 	}
-	return &BaiduChatRequest{
-		Messages: messages,
-		Stream:   request.Stream,
-	}
+	return &baiduRequest
 }
 
 func responseBaidu2OpenAI(response *BaiduChatResponse) *dto.OpenAITextResponse {

@@ -8,16 +8,24 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/constant"
 )
 
 type Adaptor struct {
+}
+
+func (a *Adaptor) InitRerank(info *relaycommon.RelayInfo, request dto.RerankRequest) {
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	return fmt.Sprintf("%s/v1/chat", info.BaseUrl), nil
+	if info.RelayMode == constant.RelayModeRerank {
+		return fmt.Sprintf("%s/v1/rerank", info.BaseUrl), nil
+	} else {
+		return fmt.Sprintf("%s/v1/chat", info.BaseUrl), nil
+	}
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
@@ -34,11 +42,19 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 	return channel.DoApiRequest(a, c, info, requestBody)
 }
 
+func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
+	return requestConvertRerank2Cohere(request), nil
+}
+
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
-	if info.IsStream {
-		err, usage = cohereStreamHandler(c, resp, info.UpstreamModelName, info.PromptTokens)
+	if info.RelayMode == constant.RelayModeRerank {
+		err, usage = cohereRerankHandler(c, resp, info)
 	} else {
-		err, usage = cohereHandler(c, resp, info.UpstreamModelName, info.PromptTokens)
+		if info.IsStream {
+			err, usage = cohereStreamHandler(c, resp, info)
+		} else {
+			err, usage = cohereHandler(c, resp, info.UpstreamModelName, info.PromptTokens)
+		}
 	}
 	return
 }

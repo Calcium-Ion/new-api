@@ -104,6 +104,8 @@ export const CHANNEL_OPTIONS = [
   { key: 23, text: '腾讯混元', value: 23, color: 'teal', label: '腾讯混元' },
   { key: 31, text: '零一万物', value: 31, color: 'green', label: '零一万物' },
   { key: 35, text: 'MiniMax', value: 35, color: 'green', label: 'MiniMax' },
+  { key: 37, text: 'Dify', value: 37, color: 'teal', label: 'Dify' },
+  { key: 38, text: 'Jina', value: 38, color: 'blue', label: 'Jina' },
   { key: 8, text: '自定义渠道', value: 8, color: 'pink', label: '自定义渠道' },
   {
     key: 22,

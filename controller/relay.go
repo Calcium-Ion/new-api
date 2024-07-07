@@ -29,6 +29,8 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 		fallthrough
 	case relayconstant.RelayModeAudioTranscription:
 		err = relay.AudioHelper(c, relayMode)
+	case relayconstant.RelayModeRerank:
+		err = relay.RerankHelper(c, relayMode)
 	default:
 		err = relay.TextHelper(c)
 	}
@@ -40,12 +42,13 @@ func Relay(c *gin.Context) {
 	retryTimes := common.RetryTimes
 	requestId := c.GetString(common.RequestIdKey)
 	channelId := c.GetInt("channel_id")
+	channelType := c.GetInt("channel_type")
 	group := c.GetString("group")
 	originalModel := c.GetString("original_model")
 	openaiErr := relayHandler(c, relayMode)
 	c.Set("use_channel", []string{fmt.Sprintf("%d", channelId)})
 	if openaiErr != nil {
-		go processChannelError(c, channelId, openaiErr)
+		go processChannelError(c, channelId, channelType, openaiErr)
 	} else {
 		retryTimes = 0
 	}
@@ -66,7 +69,7 @@ func Relay(c *gin.Context) {
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 		openaiErr = relayHandler(c, relayMode)
 		if openaiErr != nil {
-			go processChannelError(c, channelId, openaiErr)
+			go processChannelError(c, channelId, channel.Type, openaiErr)
 		}
 	}
 	useChannel := c.GetStringSlice("use_channel")
@@ -125,10 +128,10 @@ func shouldRetry(c *gin.Context, channelId int, openaiErr *dto.OpenAIErrorWithSt
 	return true
 }
 
-func processChannelError(c *gin.Context, channelId int, err *dto.OpenAIErrorWithStatusCode) {
+func processChannelError(c *gin.Context, channelId int, channelType int, err *dto.OpenAIErrorWithStatusCode) {
 	autoBan := c.GetBool("auto_ban")
 	common.LogError(c.Request.Context(), fmt.Sprintf("relay error (channel #%d, status code: %d): %s", channelId, err.StatusCode, err.Error.Message))
-	if service.ShouldDisableChannel(err) && autoBan {
+	if service.ShouldDisableChannel(channelType, err) && autoBan {
 		channelName := c.GetString("channel_name")
 		service.DisableChannel(channelId, channelName, err.Error.Message)
 	}

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -24,6 +25,7 @@ import (
 )
 
 func testChannel(channel *model.Channel, testModel string) (err error, openaiErr *dto.OpenAIError) {
+	tik := time.Now()
 	if channel.Type == common.ChannelTypeMidjourney {
 		return errors.New("midjourney channel test is not supported"), nil
 	}
@@ -65,7 +67,11 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 		if channel.TestModel != nil && *channel.TestModel != "" {
 			testModel = *channel.TestModel
 		} else {
-			testModel = adaptor.GetModelList()[0]
+			if len(adaptor.GetModelList()) > 0 {
+				testModel = adaptor.GetModelList()[0]
+			} else {
+				testModel = "gpt-3.5-turbo"
+			}
 		}
 	} else {
 		modelMapping := *channel.ModelMapping
@@ -120,6 +126,25 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 	if err != nil {
 		return err, nil
 	}
+	modelPrice, usePrice := common.GetModelPrice(testModel, false)
+	modelRatio := common.GetModelRatio(testModel)
+	completionRatio := common.GetCompletionRatio(testModel)
+	ratio := modelRatio
+	quota := 0
+	if !usePrice {
+		quota = usage.PromptTokens + int(math.Round(float64(usage.CompletionTokens)*completionRatio))
+		quota = int(math.Round(float64(quota) * ratio))
+		if ratio != 0 && quota <= 0 {
+			quota = 1
+		}
+	} else {
+		quota = int(modelPrice * common.QuotaPerUnit)
+	}
+	tok := time.Now()
+	milliseconds := tok.Sub(tik).Milliseconds()
+	consumedTime := float64(milliseconds) / 1000.0
+	other := service.GenerateTextOtherInfo(c, meta, modelRatio, 1, completionRatio, modelPrice)
+	model.RecordConsumeLog(c, 1, channel.Id, usage.PromptTokens, usage.CompletionTokens, testModel, "模型测试", quota, "模型测试", 0, quota, int(consumedTime), false, other)
 	common.SysLog(fmt.Sprintf("testing channel #%d, response: \n%s", channel.Id, string(respBody)))
 	return nil, nil
 }
@@ -140,7 +165,7 @@ func buildTestRequest() *dto.GeneralOpenAIRequest {
 }
 
 func TestChannel(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	channelId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -148,7 +173,7 @@ func TestChannel(c *gin.Context) {
 		})
 		return
 	}
-	channel, err := model.GetChannelById(id, true)
+	channel, err := model.GetChannelById(channelId, true)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -228,7 +253,7 @@ func testAllChannels(notify bool) error {
 					Error:      *openaiErr,
 					LocalError: false,
 				}
-				if isChannelEnabled && service.ShouldDisableChannel(&openAiErrWithStatus) && ban {
+				if isChannelEnabled && service.ShouldDisableChannel(channel.Type, &openAiErrWithStatus) && ban {
 					service.DisableChannel(channel.Id, channel.Name, err.Error())
 				}
 				if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {

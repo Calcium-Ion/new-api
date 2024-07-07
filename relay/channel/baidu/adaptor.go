@@ -2,6 +2,7 @@ package baidu
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -15,44 +16,74 @@ import (
 type Adaptor struct {
 }
 
+func (a *Adaptor) InitRerank(info *relaycommon.RelayInfo, request dto.RerankRequest) {
+	//TODO implement me
+
+}
+
 func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
 
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	var fullRequestURL string
-	switch info.UpstreamModelName {
-	case "ERNIE-Bot-4":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro"
-	case "ERNIE-Bot-8K":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_bot_8k"
-	case "ERNIE-Bot":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions"
-	case "ERNIE-Speed":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed"
-	case "ERNIE-Bot-turbo":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant"
-	case "BLOOMZ-7B":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/bloomz_7b1"
-	case "ERNIE-4.0-8K":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro"
-	case "ERNIE-3.5-8K":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions"
-	case "ERNIE-Speed-8K":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed"
-	case "ERNIE-Character-8K":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-char-8k"
-	case "ERNIE-Functions-8K":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-func-8k"
-	case "ERNIE-Lite-8K-0922":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant"
-	case "Yi-34B-Chat":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/yi_34b_chat"
-	case "Embedding-V1":
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/embeddings/embedding-v1"
-	default:
-		fullRequestURL = "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/" + strings.ToLower(info.UpstreamModelName)
+	// https://cloud.baidu.com/doc/WENXINWORKSHOP/s/clntwmv7t
+	suffix := "chat/"
+	if strings.HasPrefix(info.UpstreamModelName, "Embedding") {
+		suffix = "embeddings/"
 	}
+	if strings.HasPrefix(info.UpstreamModelName, "bge-large") {
+		suffix = "embeddings/"
+	}
+	if strings.HasPrefix(info.UpstreamModelName, "tao-8k") {
+		suffix = "embeddings/"
+	}
+	switch info.UpstreamModelName {
+	case "ERNIE-4.0":
+		suffix += "completions_pro"
+	case "ERNIE-Bot-4":
+		suffix += "completions_pro"
+	case "ERNIE-Bot":
+		suffix += "completions"
+	case "ERNIE-Bot-turbo":
+		suffix += "eb-instant"
+	case "ERNIE-Speed":
+		suffix += "ernie_speed"
+	case "ERNIE-4.0-8K":
+		suffix += "completions_pro"
+	case "ERNIE-3.5-8K":
+		suffix += "completions"
+	case "ERNIE-3.5-8K-0205":
+		suffix += "ernie-3.5-8k-0205"
+	case "ERNIE-3.5-8K-1222":
+		suffix += "ernie-3.5-8k-1222"
+	case "ERNIE-Bot-8K":
+		suffix += "ernie_bot_8k"
+	case "ERNIE-3.5-4K-0205":
+		suffix += "ernie-3.5-4k-0205"
+	case "ERNIE-Speed-8K":
+		suffix += "ernie_speed"
+	case "ERNIE-Speed-128K":
+		suffix += "ernie-speed-128k"
+	case "ERNIE-Lite-8K-0922":
+		suffix += "eb-instant"
+	case "ERNIE-Lite-8K-0308":
+		suffix += "ernie-lite-8k"
+	case "ERNIE-Tiny-8K":
+		suffix += "ernie-tiny-8k"
+	case "BLOOMZ-7B":
+		suffix += "bloomz_7b1"
+	case "Embedding-V1":
+		suffix += "embedding-v1"
+	case "bge-large-zh":
+		suffix += "bge_large_zh"
+	case "bge-large-en":
+		suffix += "bge_large_en"
+	case "tao-8k":
+		suffix += "tao_8k"
+	default:
+		suffix += strings.ToLower(info.UpstreamModelName)
+	}
+	fullRequestURL := fmt.Sprintf("%s/rpc/2.0/ai_custom/v1/wenxinworkshop/%s", info.BaseUrl, suffix)
 	var accessToken string
 	var err error
 	if accessToken, err = getBaiduAccessToken(info.ApiKey); err != nil {
@@ -80,6 +111,10 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *dto.Gen
 		baiduRequest := requestOpenAI2Baidu(*request)
 		return baiduRequest, nil
 	}
+}
+
+func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
+	return nil, nil
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
