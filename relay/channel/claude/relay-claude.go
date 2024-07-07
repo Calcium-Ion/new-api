@@ -352,7 +352,7 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 	response := service.GenerateFinalUsageResponse(responseId, createdTime, info.UpstreamModelName, *usage)
 	err := service.ObjectData(c, response)
 	if err != nil {
-		common.SysError(err.Error())
+		common.SysError("send final response failed: " + err.Error())
 	}
 	service.Done(c)
 	err = resp.Body.Close()
