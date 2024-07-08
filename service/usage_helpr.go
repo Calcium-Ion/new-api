@@ -24,3 +24,15 @@ func ResponseText2Usage(responseText string, modeName string, promptTokens int) 
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
 	return usage, err
 }
+
+func GenerateFinalUsageResponse(id string, createAt int64, model string, usage dto.Usage) *dto.ChatCompletionsStreamResponse {
+	return &dto.ChatCompletionsStreamResponse{
+		Id:                id,
+		Object:            "chat.completion.chunk",
+		Created:           createAt,
+		Model:             model,
+		SystemFingerprint: nil,
+		Choices:           nil,
+		Usage:             &usage,
+	}
+}

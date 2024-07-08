@@ -102,10 +102,12 @@ type ChatCompletionsStreamResponse struct {
 	Model             string                                `json:"model"`
 	SystemFingerprint *string                               `json:"system_fingerprint"`
 	Choices           []ChatCompletionsStreamResponseChoice `json:"choices"`
+	Usage             *Usage                                `json:"usage"`
 }
 
 type ChatCompletionsStreamResponseSimple struct {
 	Choices []ChatCompletionsStreamResponseChoice `json:"choices"`
+	Usage   *Usage                                `json:"usage"`
 }
 
 type CompletionsStreamResponse struct {
