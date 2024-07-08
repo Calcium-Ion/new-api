@@ -33,6 +33,9 @@ func requestOpenAI2Baidu(request dto.GeneralOpenAIRequest) *BaiduChatRequest {
 	}
 	if request.MaxTokens != 0 {
 		maxTokens := int(request.MaxTokens)
+		if request.MaxTokens == 1 {
+			maxTokens = 2
+		}
 		baiduRequest.MaxOutputTokens = &maxTokens
 	}
 	for _, message := range request.Messages {
