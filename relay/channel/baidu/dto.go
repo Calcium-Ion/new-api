@@ -19,7 +19,7 @@ type BaiduChatRequest struct {
 	System          string         `json:"system,omitempty"`
 	DisableSearch   bool           `json:"disable_search,omitempty"`
 	EnableCitation  bool           `json:"enable_citation,omitempty"`
-	MaxOutputTokens int            `json:"max_output_tokens,omitempty"`
+	MaxOutputTokens *int           `json:"max_output_tokens,omitempty"`
 	UserId          string         `json:"user_id,omitempty"`
 }
 
