@@ -22,7 +22,7 @@ import (
 
 // https://cloud.tencent.com/document/product/1729/97732
 
-func requestOpenAI2Tencent(request dto.GeneralOpenAIRequest) *TencentChatRequest {
+func requestOpenAI2Tencent(a *Adaptor, request dto.GeneralOpenAIRequest) *TencentChatRequest {
 	messages := make([]*TencentMessage, 0, len(request.Messages))
 	for i := 0; i < len(request.Messages); i++ {
 		message := request.Messages[i]
@@ -31,17 +31,23 @@ func requestOpenAI2Tencent(request dto.GeneralOpenAIRequest) *TencentChatRequest
 			Role:    message.Role,
 		})
 	}
-	return &TencentChatRequest{
-		Temperature: &request.Temperature,
-		TopP:        &request.TopP,
-		Stream:      &request.Stream,
-		Messages:    messages,
-		Model:       &request.Model,
+	var req = TencentChatRequest{
+		Stream:   &request.Stream,
+		Messages: messages,
+		Model:    &request.Model,
 	}
+	if request.TopP != 0 {
+		req.TopP = &request.TopP
+	}
+	if request.Temperature != 0 {
+		req.Temperature = &request.Temperature
+	}
+	return &req
 }
 
 func responseTencent2OpenAI(response *TencentChatResponse) *dto.OpenAITextResponse {
 	fullTextResponse := dto.OpenAITextResponse{
+		Id:      response.Id,
 		Object:  "chat.completion",
 		Created: common.GetTimestamp(),
 		Usage: dto.Usage{
@@ -129,7 +135,7 @@ func tencentStreamHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIError
 }
 
 func tencentHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
-	var TencentResponse TencentChatResponse
+	var tencentSb TencentChatResponseSB
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
@@ -138,20 +144,20 @@ func tencentHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithSt
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
-	err = json.Unmarshal(responseBody, &TencentResponse)
+	err = json.Unmarshal(responseBody, &tencentSb)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
-	if TencentResponse.Error.Code != 0 {
+	if tencentSb.Response.Error.Code != 0 {
 		return &dto.OpenAIErrorWithStatusCode{
 			Error: dto.OpenAIError{
-				Message: TencentResponse.Error.Message,
-				Code:    TencentResponse.Error.Code,
+				Message: tencentSb.Response.Error.Message,
+				Code:    tencentSb.Response.Error.Code,
 			},
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
-	fullTextResponse := responseTencent2OpenAI(&TencentResponse)
+	fullTextResponse := responseTencent2OpenAI(&tencentSb.Response)
 	jsonResponse, err := json.Marshal(fullTextResponse)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil

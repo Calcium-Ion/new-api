@@ -121,7 +121,6 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 		return errors.New("usage is nil"), nil
 	}
 	result := w.Result()
-	// print result.Body
 	respBody, err := io.ReadAll(result.Body)
 	if err != nil {
 		return err, nil

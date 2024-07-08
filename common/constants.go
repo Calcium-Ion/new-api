@@ -218,30 +218,30 @@ const (
 )
 
 var ChannelBaseURLs = []string{
-	"",                                  // 0
-	"https://api.openai.com",            // 1
-	"https://oa.api2d.net",              // 2
-	"",                                  // 3
-	"http://localhost:11434",            // 4
-	"https://api.openai-sb.com",         // 5
-	"https://api.openaimax.com",         // 6
-	"https://api.ohmygpt.com",           // 7
-	"",                                  // 8
-	"https://api.caipacity.com",         // 9
-	"https://api.aiproxy.io",            // 10
-	"",                                  // 11
-	"https://api.api2gpt.com",           // 12
-	"https://api.aigc2d.com",            // 13
-	"https://api.anthropic.com",         // 14
-	"https://aip.baidubce.com",          // 15
-	"https://open.bigmodel.cn",          // 16
-	"https://dashscope.aliyuncs.com",    // 17
-	"",                                  // 18
-	"https://ai.360.cn",                 // 19
-	"https://openrouter.ai/api",         // 20
-	"https://api.aiproxy.io",            // 21
-	"https://fastgpt.run/api/openapi",   // 22
-	"https://hunyuan.cloud.tencent.com", //23
+	"",                                    // 0
+	"https://api.openai.com",              // 1
+	"https://oa.api2d.net",                // 2
+	"",                                    // 3
+	"http://localhost:11434",              // 4
+	"https://api.openai-sb.com",           // 5
+	"https://api.openaimax.com",           // 6
+	"https://api.ohmygpt.com",             // 7
+	"",                                    // 8
+	"https://api.caipacity.com",           // 9
+	"https://api.aiproxy.io",              // 10
+	"",                                    // 11
+	"https://api.api2gpt.com",             // 12
+	"https://api.aigc2d.com",              // 13
+	"https://api.anthropic.com",           // 14
+	"https://aip.baidubce.com",            // 15
+	"https://open.bigmodel.cn",            // 16
+	"https://dashscope.aliyuncs.com",      // 17
+	"",                                    // 18
+	"https://ai.360.cn",                   // 19
+	"https://openrouter.ai/api",           // 20
+	"https://api.aiproxy.io",              // 21
+	"https://fastgpt.run/api/openapi",     // 22
+	"https://hunyuan.tencentcloudapi.com", //23
 	"https://generativelanguage.googleapis.com", //24
 	"https://api.moonshot.cn",                   //25
 	"https://open.bigmodel.cn",                  //26
