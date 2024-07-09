@@ -78,9 +78,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 					if err == nil {
 						if streamResponse.Usage != nil {
 							if streamResponse.Usage.TotalTokens != 0 {
-								usage.PromptTokens += streamResponse.Usage.PromptTokens
-								usage.CompletionTokens += streamResponse.Usage.CompletionTokens
-								usage.TotalTokens += streamResponse.Usage.TotalTokens
+								usage = *streamResponse.Usage
 							}
 						}
 						for _, choice := range streamResponse.Choices {
@@ -101,9 +99,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 				for _, streamResponse := range streamResponses {
 					if streamResponse.Usage != nil {
 						if streamResponse.Usage.TotalTokens != 0 {
-							usage.PromptTokens += streamResponse.Usage.PromptTokens
-							usage.CompletionTokens += streamResponse.Usage.CompletionTokens
-							usage.TotalTokens += streamResponse.Usage.TotalTokens
+							usage = *streamResponse.Usage
 						}
 					}
 					for _, choice := range streamResponse.Choices {
