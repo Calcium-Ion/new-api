@@ -117,6 +117,7 @@ func difyStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Re
 func difyHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	var difyResponse DifyChatCompletionResponse
 	responseBody, err := io.ReadAll(resp.Body)
+
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
 	}
@@ -134,7 +135,7 @@ func difyHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInf
 		Created: common.GetTimestamp(),
 		Usage:   difyResponse.MetaData.Usage,
 	}
-	content, _ := json.Marshal(difyResponse.Answers)
+	content, _ := json.Marshal(difyResponse.Answer)
 	choice := dto.OpenAITextResponseChoice{
 		Index: 0,
 		Message: dto.Message{
