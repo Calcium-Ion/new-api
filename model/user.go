@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"one-api/common"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
+	"regexp"
+	
 	"gorm.io/gorm"
 )
 
@@ -306,11 +306,8 @@ func (user *User) ValidateAndFill() (err error) {
 	if user.Username == "" || password == "" {
 		return errors.New("用户名或密码为空")
 	}
-	// 检查是否使用邮箱作为用户名
-	if strings.Contains(user.Username, "@") {
-		return errors.New("本站仅支持使用用户名登录，不支持使用邮箱登录")
-	}
-	DB.Where(User{Username: user.Username}).First(user)
+	// find buy username or email
+	DB.Where("username = ? OR email = ?", user.Username, user.Username).First(user)
 	okay := common.ValidatePasswordAndHash(password, user.Password)
 	if !okay || user.Status != common.UserStatusEnabled {
 		return errors.New("用户名或密码错误，或用户已被封禁")
