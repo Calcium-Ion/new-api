@@ -72,6 +72,19 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	if claudeRequest.MaxTokens == 0 {
 		claudeRequest.MaxTokens = 4096
 	}
+	if textRequest.Stop != nil {
+		// stop maybe string/array string, convert to array string
+		switch textRequest.Stop.(type) {
+		case string:
+			claudeRequest.StopSequences = []string{textRequest.Stop.(string)}
+		case []interface{}:
+			stopSequences := make([]string, 0)
+			for _, stop := range textRequest.Stop.([]interface{}) {
+				stopSequences = append(stopSequences, stop.(string))
+			}
+			claudeRequest.StopSequences = stopSequences
+		}
+	}
 	formatMessages := make([]dto.Message, 0)
 	var lastMessage *dto.Message
 	for i, message := range textRequest.Messages {

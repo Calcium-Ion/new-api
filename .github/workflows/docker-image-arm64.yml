@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '*'
+      - '!*-alpha*'
   workflow_dispatch:
     inputs:
       name:

@@ -32,7 +32,7 @@ func GenerateFinalUsageResponse(id string, createAt int64, model string, usage d
 		Created:           createAt,
 		Model:             model,
 		SystemFingerprint: nil,
-		Choices:           nil,
+		Choices:           make([]dto.ChatCompletionsStreamResponseChoice, 0),
 		Usage:             &usage,
 	}
 }

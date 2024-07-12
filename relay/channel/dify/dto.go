@@ -21,7 +21,7 @@ type DifyData struct {
 
 type DifyChatCompletionResponse struct {
 	ConversationId string       `json:"conversation_id"`
-	Answers        string       `json:"answers"`
+	Answer         string       `json:"answer"`
 	CreateAt       int64        `json:"create_at"`
 	MetaData       DifyMetaData `json:"metadata"`
 }

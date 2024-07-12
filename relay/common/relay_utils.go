@@ -38,6 +38,7 @@ func RelayErrorHandler(resp *http.Response) (OpenAIErrorWithStatusCode *dto.Open
 	var textResponse dto.TextResponseWithError
 	err = json.Unmarshal(responseBody, &textResponse)
 	if err != nil {
+		OpenAIErrorWithStatusCode.Error.Message = fmt.Sprintf("error unmarshalling response body: %s", responseBody)
 		return
 	}
 	OpenAIErrorWithStatusCode.Error = textResponse.Error

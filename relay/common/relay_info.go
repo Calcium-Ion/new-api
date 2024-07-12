@@ -67,7 +67,8 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	if info.ChannelType == common.ChannelTypeAzure {
 		info.ApiVersion = GetAPIVersion(c)
 	}
-	if info.ChannelType == common.ChannelTypeOpenAI || info.ChannelType == common.ChannelTypeAnthropic || info.ChannelType == common.ChannelTypeAws {
+	if info.ChannelType == common.ChannelTypeOpenAI || info.ChannelType == common.ChannelTypeAnthropic ||
+		info.ChannelType == common.ChannelTypeAws || info.ChannelType == common.ChannelTypeGemini {
 		info.SupportStreamOptions = true
 	}
 	return info

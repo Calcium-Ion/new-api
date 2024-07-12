@@ -153,8 +153,8 @@ export function renderModelPrice(
     let inputRatioPrice = modelRatio * 2.0;
     let completionRatioPrice = modelRatio * 2.0 * completionRatio;
     let price =
-      (inputTokens / 1000000) * inputRatioPrice +
-      (completionTokens / 1000000) * completionRatioPrice;
+      (inputTokens / 1000000) * inputRatioPrice * groupRatio +
+      (completionTokens / 1000000) * completionRatioPrice * groupRatio;
     return (
       <>
         <article>

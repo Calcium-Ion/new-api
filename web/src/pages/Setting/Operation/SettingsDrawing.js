@@ -16,6 +16,7 @@ export default function SettingsDrawing(props) {
     MjAccountFilterEnabled: false,
     MjForwardUrlEnabled: false,
     MjModeClearEnabled: false,
+    MjActionCheckSuccessEnabled: false,
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -152,6 +153,25 @@ export default function SettingsDrawing(props) {
                     setInputs({
                       ...inputs,
                       MjModeClearEnabled: value,
+                    })
+                  }
+                />
+              </Col>
+              <Col span={8}>
+                <Form.Switch
+                  field={'MjActionCheckSuccessEnabled'}
+                  label={
+                    <>
+                      检测必须等待绘图成功才能进行放大等操作
+                    </>
+                  }
+                  size='large'
+                  checkedText='｜'
+                  uncheckedText='〇'
+                  onChange={(value) =>
+                    setInputs({
+                      ...inputs,
+                      MjActionCheckSuccessEnabled: value,
                     })
                   }
                 />

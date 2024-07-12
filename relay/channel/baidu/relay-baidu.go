@@ -23,14 +23,20 @@ var baiduTokenStore sync.Map
 
 func requestOpenAI2Baidu(request dto.GeneralOpenAIRequest) *BaiduChatRequest {
 	baiduRequest := BaiduChatRequest{
-		Temperature:     request.Temperature,
-		TopP:            request.TopP,
-		PenaltyScore:    request.FrequencyPenalty,
-		Stream:          request.Stream,
-		DisableSearch:   false,
-		EnableCitation:  false,
-		MaxOutputTokens: int(request.MaxTokens),
-		UserId:          request.User,
+		Temperature:    request.Temperature,
+		TopP:           request.TopP,
+		PenaltyScore:   request.FrequencyPenalty,
+		Stream:         request.Stream,
+		DisableSearch:  false,
+		EnableCitation: false,
+		UserId:         request.User,
+	}
+	if request.MaxTokens != 0 {
+		maxTokens := int(request.MaxTokens)
+		if request.MaxTokens == 1 {
+			maxTokens = 2
+		}
+		baiduRequest.MaxOutputTokens = &maxTokens
 	}
 	for _, message := range request.Messages {
 		if message.Role == "system" {

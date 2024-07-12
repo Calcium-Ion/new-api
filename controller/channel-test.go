@@ -67,8 +67,8 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 		if channel.TestModel != nil && *channel.TestModel != "" {
 			testModel = *channel.TestModel
 		} else {
-			if len(adaptor.GetModelList()) > 0 {
-				testModel = adaptor.GetModelList()[0]
+			if len(channel.GetModels()) > 0 {
+				testModel = channel.GetModels()[0]
 			} else {
 				testModel = "gpt-3.5-turbo"
 			}
@@ -121,7 +121,6 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 		return errors.New("usage is nil"), nil
 	}
 	result := w.Result()
-	// print result.Body
 	respBody, err := io.ReadAll(result.Body)
 	if err != nil {
 		return err, nil

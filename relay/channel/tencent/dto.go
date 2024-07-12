@@ -30,17 +30,17 @@ type TencentChatRequest struct {
 	//
 	// 注意：
 	// 通过 SDK 调用时，流式和非流式调用需用**不同的方式**获取返回值，具体参考 SDK 中的注释或示例（在各语言 SDK 代码仓库的 examples/hunyuan/v20230901/ 目录中）。
-	Stream *bool `json:"Stream"`
+	Stream *bool `json:"Stream,omitempty"`
 	// 说明：
 	// 1. 影响输出文本的多样性，取值越大，生成文本的多样性越强。
 	// 2. 取值区间为 [0.0, 1.0]，未传值时使用各模型推荐值。
 	// 3. 非必要不建议使用，不合理的取值会影响效果。
-	TopP *float64 `json:"TopP"`
+	TopP *float64 `json:"TopP,omitempty"`
 	// 说明：
 	// 1. 较高的数值会使输出更加随机，而较低的数值会使其更加集中和确定。
 	// 2. 取值区间为 [0.0, 2.0]，未传值时使用各模型推荐值。
 	// 3. 非必要不建议使用，不合理的取值会影响效果。
-	Temperature *float64 `json:"Temperature"`
+	Temperature *float64 `json:"Temperature,omitempty"`
 }
 
 type TencentError struct {
@@ -68,4 +68,8 @@ type TencentChatResponse struct {
 	Error   TencentError             `json:"Error,omitempty"`   // 错误信息 注意：此字段可能返回 null，表示取不到有效值
 	Note    string                   `json:"Note,omitempty"`    // 注释
 	ReqID   string                   `json:"Req_id,omitempty"`  // 唯一请求 Id，每次请求都会返回。用于反馈接口入参
+}
+
+type TencentChatResponseSB struct {
+	Response TencentChatResponse `json:"Response,omitempty"`
 }
