@@ -231,27 +231,33 @@ func testAllChannels(notify bool) error {
 				err = errors.New(fmt.Sprintf("响应时间 %.2fs 超过阈值 %.2fs", float64(milliseconds)/1000.0, float64(disableThreshold)/1000.0))
 				ban = true
 			}
+
+			// request error disables the channel
 			if openaiErr != nil {
 				err = errors.New(fmt.Sprintf("type %s, code %v, message %s", openaiErr.Type, openaiErr.Code, openaiErr.Message))
-				ban = true
-			}
-			// parse *int to bool
-			if channel.AutoBan != nil && *channel.AutoBan == 0 {
-				ban = false
-			}
-			if openaiErr != nil {
 				openAiErrWithStatus := dto.OpenAIErrorWithStatusCode{
 					StatusCode: -1,
 					Error:      *openaiErr,
 					LocalError: false,
 				}
-				if isChannelEnabled && service.ShouldDisableChannel(channel.Type, &openAiErrWithStatus) && ban {
-					service.DisableChannel(channel.Id, channel.Name, err.Error())
-				}
-				if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
-					service.EnableChannel(channel.Id, channel.Name)
-				}
+				ban = service.ShouldDisableChannel(channel.Type, &openAiErrWithStatus)
 			}
+
+			// parse *int to bool
+			if channel.AutoBan != nil && *channel.AutoBan == 0 {
+				ban = false
+			}
+
+			// disable channel
+			if ban && isChannelEnabled {
+				service.DisableChannel(channel.Id, channel.Name, err.Error())
+			}
+
+			// enable channel
+			if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
+				service.EnableChannel(channel.Id, channel.Name)
+			}
+
 			channel.UpdateResponseTime(milliseconds)
 			time.Sleep(common.RequestInterval)
 		}
