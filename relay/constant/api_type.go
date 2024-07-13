@@ -22,6 +22,7 @@ const (
 	APITypeCohere
 	APITypeDify
 	APITypeJina
+	APITypeCloudflare
 
 	APITypeDummy // this one is only for count, do not add any channel after this
 )
@@ -63,6 +64,8 @@ func ChannelType2APIType(channelType int) (int, bool) {
 		apiType = APITypeDify
 	case common.ChannelTypeJina:
 		apiType = APITypeJina
+	case common.ChannelCloudflare:
+		apiType = APITypeCloudflare
 	}
 	if apiType == -1 {
 		return APITypeOpenAI, false

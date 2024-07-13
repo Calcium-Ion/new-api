@@ -605,6 +605,24 @@ const EditChannel = (props) => {
               />
             </>
           )}
+          {inputs.type === 39 && (
+            <>
+              <div style={{ marginTop: 10 }}>
+                <Typography.Text strong>Account ID：</Typography.Text>
+              </div>
+              <Input
+                name='other'
+                placeholder={
+                  '请输入Account ID，例如：d6b5da8hk1awo8nap34ube6gh'
+                }
+                onChange={(value) => {
+                  handleInputChange('other', value);
+                }}
+                value={inputs.other}
+                autoComplete='new-password'
+              />
+            </>
+          )}
           <div style={{ marginTop: 10 }}>
             <Typography.Text strong>模型：</Typography.Text>
           </div>
