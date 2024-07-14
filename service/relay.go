@@ -35,3 +35,8 @@ func ObjectData(c *gin.Context, object interface{}) error {
 func Done(c *gin.Context) {
 	StringData(c, "[DONE]")
 }
+
+func GetResponseID(c *gin.Context) string {
+	logID := c.GetString("X-Oneapi-Request-Id")
+	return fmt.Sprintf("chatcmpl-%s", logID)
+}

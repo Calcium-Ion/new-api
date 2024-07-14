@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"one-api/common"
 	"one-api/dto"
+	"one-api/middleware"
 	"one-api/model"
 	"one-api/relay"
 	relaycommon "one-api/relay/common"
@@ -40,29 +41,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 		Body:   nil,
 		Header: make(http.Header),
 	}
-	c.Request.Header.Set("Authorization", "Bearer "+channel.Key)
-	c.Request.Header.Set("Content-Type", "application/json")
-	c.Set("channel", channel.Type)
-	c.Set("base_url", channel.GetBaseURL())
-	switch channel.Type {
-	case common.ChannelTypeAzure:
-		c.Set("api_version", channel.Other)
-	case common.ChannelTypeXunfei:
-		c.Set("api_version", channel.Other)
-	//case common.ChannelTypeAIProxyLibrary:
-	//	c.Set("library_id", channel.Other)
-	case common.ChannelTypeGemini:
-		c.Set("api_version", channel.Other)
-	case common.ChannelTypeAli:
-		c.Set("plugin", channel.Other)
-	}
 
-	meta := relaycommon.GenRelayInfo(c)
-	apiType, _ := constant.ChannelType2APIType(channel.Type)
-	adaptor := relay.GetAdaptor(apiType)
-	if adaptor == nil {
-		return fmt.Errorf("invalid api type: %d, adaptor is nil", apiType), nil
-	}
 	if testModel == "" {
 		if channel.TestModel != nil && *channel.TestModel != "" {
 			testModel = *channel.TestModel
@@ -86,6 +65,20 @@ func testChannel(channel *model.Channel, testModel string) (err error, openaiErr
 				testModel = modelMap[testModel]
 			}
 		}
+	}
+
+	c.Request.Header.Set("Authorization", "Bearer "+channel.Key)
+	c.Request.Header.Set("Content-Type", "application/json")
+	c.Set("channel", channel.Type)
+	c.Set("base_url", channel.GetBaseURL())
+
+	middleware.SetupContextForSelectedChannel(c, channel, testModel)
+
+	meta := relaycommon.GenRelayInfo(c)
+	apiType, _ := constant.ChannelType2APIType(channel.Type)
+	adaptor := relay.GetAdaptor(apiType)
+	if adaptor == nil {
+		return fmt.Errorf("invalid api type: %d, adaptor is nil", apiType), nil
 	}
 
 	request := buildTestRequest()
@@ -238,27 +231,33 @@ func testAllChannels(notify bool) error {
 				err = errors.New(fmt.Sprintf("响应时间 %.2fs 超过阈值 %.2fs", float64(milliseconds)/1000.0, float64(disableThreshold)/1000.0))
 				ban = true
 			}
+
+			// request error disables the channel
 			if openaiErr != nil {
 				err = errors.New(fmt.Sprintf("type %s, code %v, message %s", openaiErr.Type, openaiErr.Code, openaiErr.Message))
-				ban = true
-			}
-			// parse *int to bool
-			if channel.AutoBan != nil && *channel.AutoBan == 0 {
-				ban = false
-			}
-			if openaiErr != nil {
 				openAiErrWithStatus := dto.OpenAIErrorWithStatusCode{
 					StatusCode: -1,
 					Error:      *openaiErr,
 					LocalError: false,
 				}
-				if isChannelEnabled && service.ShouldDisableChannel(channel.Type, &openAiErrWithStatus) && ban {
-					service.DisableChannel(channel.Id, channel.Name, err.Error())
-				}
-				if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
-					service.EnableChannel(channel.Id, channel.Name)
-				}
+				ban = service.ShouldDisableChannel(channel.Type, &openAiErrWithStatus)
 			}
+
+			// parse *int to bool
+			if channel.AutoBan != nil && *channel.AutoBan == 0 {
+				ban = false
+			}
+
+			// disable channel
+			if ban && isChannelEnabled {
+				service.DisableChannel(channel.Id, channel.Name, err.Error())
+			}
+
+			// enable channel
+			if !isChannelEnabled && service.ShouldEnableChannel(err, openaiErr, channel.Status) {
+				service.EnableChannel(channel.Id, channel.Name)
+			}
+
 			channel.UpdateResponseTime(milliseconds)
 			time.Sleep(common.RequestInterval)
 		}

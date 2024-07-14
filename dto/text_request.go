@@ -48,8 +48,8 @@ type StreamOptions struct {
 	IncludeUsage bool `json:"include_usage,omitempty"`
 }
 
-func (r GeneralOpenAIRequest) GetMaxTokens() int64 {
-	return int64(r.MaxTokens)
+func (r GeneralOpenAIRequest) GetMaxTokens() int {
+	return int(r.MaxTokens)
 }
 
 func (r GeneralOpenAIRequest) ParseInput() []string {

@@ -99,6 +99,7 @@ export const CHANNEL_OPTIONS = [
     color: 'orange',
     label: 'Google PaLM2',
   },
+  { key: 39, text: 'Cloudflare', value: 39, color: 'grey', label: 'Cloudflare' },
   { key: 25, text: 'Moonshot', value: 25, color: 'green', label: 'Moonshot' },
   { key: 19, text: '360 智脑', value: 19, color: 'blue', label: '360 智脑' },
   { key: 23, text: '腾讯混元', value: 23, color: 'teal', label: '腾讯混元' },
