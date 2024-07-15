@@ -150,13 +150,8 @@ func UpdateMidjourneyTaskBulk() {
 				if (task.Progress != "100%" && responseItem.FailReason != "") || (task.Progress == "100%" && task.Status == "FAILURE") {
 					common.LogInfo(ctx, task.MjId+" 构建失败，"+task.FailReason)
 					task.Progress = "100%"
-					err = model.CacheUpdateUserQuota(task.UserId)
-					if err != nil {
-						common.LogError(ctx, "error update user quota cache: "+err.Error())
-					} else {
-						if task.Quota != 0 {
-							shouldReturnQuota = true
-						}
+					if task.Quota != 0 {
+						shouldReturnQuota = true
 					}
 				}
 				err = task.Update()
