@@ -367,7 +367,7 @@ const LogsTable = () => {
       dataIndex: 'content',
       render: (text, record, index) => {
         let other = getLogOther(record.other);
-        if (other == null) {
+        if (other == null || record.type !== 2) {
           return (
             <Paragraph
               ellipsis={{
