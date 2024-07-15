@@ -87,7 +87,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 
 	adaptor.Init(meta, *request)
 
-	convertedRequest, err := adaptor.ConvertRequest(c, constant.RelayModeChatCompletions, request)
+	convertedRequest, err := adaptor.ConvertRequest(c, meta, request)
 	if err != nil {
 		return err, nil
 	}

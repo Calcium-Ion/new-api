@@ -153,7 +153,7 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	adaptor.Init(relayInfo, *textRequest)
 	var requestBody io.Reader
 
-	convertedRequest, err := adaptor.ConvertRequest(c, relayInfo.RelayMode, textRequest)
+	convertedRequest, err := adaptor.ConvertRequest(c, relayInfo, textRequest)
 	if err != nil {
 		return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
 	}

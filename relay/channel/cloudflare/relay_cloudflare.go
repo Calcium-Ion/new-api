@@ -11,6 +11,7 @@ import (
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
+	"time"
 )
 
 func convertCf2CompletionsRequest(textRequest dto.GeneralOpenAIRequest) *CfRequest {
@@ -30,6 +31,7 @@ func cfStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 	service.SetEventStreamHeaders(c)
 	id := service.GetResponseID(c)
 	var responseText string
+	isFirst := true
 
 	for scanner.Scan() {
 		data := scanner.Text()
@@ -56,6 +58,10 @@ func cfStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 		response.Id = id
 		response.Model = info.UpstreamModelName
 		err = service.ObjectData(c, response)
+		if isFirst {
+			isFirst = false
+			info.FirstResponseTime = time.Now()
+		}
 		if err != nil {
 			common.LogError(c, "error_rendering_stream_response: "+err.Error())
 		}
