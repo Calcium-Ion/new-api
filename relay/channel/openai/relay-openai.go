@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage, string, int) {
+func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	hasStreamUsage := false
 	responseId := ""
 	var createAt int64 = 0
@@ -168,7 +168,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 	if err != nil {
 		common.LogError(c, "close_response_body_failed: "+err.Error())
 	}
-	return nil, usage, responseTextBuilder.String(), toolCount
+	return nil, usage
 }
 
 func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {

@@ -10,7 +10,6 @@ import (
 	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
-	"one-api/service"
 )
 
 type Adaptor struct {
@@ -58,11 +57,7 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
-		var responseText string
-		err, usage, responseText, _ = openai.OpenaiStreamHandler(c, resp, info)
-		if usage == nil || usage.TotalTokens == 0 || (usage.PromptTokens+usage.CompletionTokens) == 0 {
-			usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
-		}
+		err, usage = openai.OpenaiStreamHandler(c, resp, info)
 	} else {
 		if info.RelayMode == relayconstant.RelayModeEmbeddings {
 			err, usage = ollamaEmbeddingHandler(c, resp, info.PromptTokens, info.UpstreamModelName, info.RelayMode)
