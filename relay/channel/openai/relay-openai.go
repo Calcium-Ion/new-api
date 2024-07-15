@@ -40,6 +40,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 
 	go func() {
 		for scanner.Scan() {
+			info.SetFirstResponseTime()
 			ticker.Reset(time.Duration(constant.StreamingTimeout) * time.Second)
 			data := scanner.Text()
 			if len(data) < 6 { // ignore blank line or wrong format
