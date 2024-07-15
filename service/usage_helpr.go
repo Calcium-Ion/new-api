@@ -36,3 +36,7 @@ func GenerateFinalUsageResponse(id string, createAt int64, model string, usage d
 		Usage:             &usage,
 	}
 }
+
+func ValidUsage(usage *dto.Usage) bool {
+	return usage != nil && (usage.PromptTokens != 0 || usage.CompletionTokens != 0)
+}
