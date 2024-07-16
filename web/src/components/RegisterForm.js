@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Form,
-  Grid,
-  Header,
-  Image,
-  Message,
-  Segment,
-} from 'semantic-ui-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API, getLogo, showError, showInfo, showSuccess } from '../helpers';
 import Turnstile from 'react-turnstile';
+import { Button, Card, Form, Layout } from '@douyinfe/semi-ui';
+import Title from '@douyinfe/semi-ui/lib/es/typography/title';
+import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 
 const RegisterForm = () => {
   const [inputs, setInputs] = useState({
@@ -18,7 +12,7 @@ const RegisterForm = () => {
     password: '',
     password2: '',
     email: '',
-    verification_code: '',
+    verification_code: ''
   });
   const { username, password, password2 } = inputs;
   const [showEmailVerification, setShowEmailVerification] = useState(false);
@@ -46,9 +40,7 @@ const RegisterForm = () => {
 
   let navigate = useNavigate();
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    console.log(name, value);
+  function handleChange(name, value) {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
   }
 
@@ -73,7 +65,7 @@ const RegisterForm = () => {
       inputs.aff_code = affCode;
       const res = await API.post(
         `/api/user/register?turnstile=${turnstileToken}`,
-        inputs,
+        inputs
       );
       const { success, message } = res.data;
       if (success) {
@@ -94,7 +86,7 @@ const RegisterForm = () => {
     }
     setLoading(true);
     const res = await API.get(
-      `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`,
+      `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`
     );
     const { success, message } = res.data;
     if (success) {
@@ -106,96 +98,113 @@ const RegisterForm = () => {
   };
 
   return (
-    <Grid textAlign='center' style={{ marginTop: '48px' }}>
-      <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as='h2' color='' textAlign='center'>
-          <Image src={logo} /> 新用户注册
-        </Header>
-        <Form size='large'>
-          <Segment>
-            <Form.Input
-              fluid
-              icon='user'
-              iconPosition='left'
-              placeholder='输入用户名，最长 12 位'
-              onChange={handleChange}
-              name='username'
-            />
-            <Form.Input
-              fluid
-              icon='lock'
-              iconPosition='left'
-              placeholder='输入密码，最短 8 位，最长 20 位'
-              onChange={handleChange}
-              name='password'
-              type='password'
-            />
-            <Form.Input
-              fluid
-              icon='lock'
-              iconPosition='left'
-              placeholder='输入密码，最短 8 位，最长 20 位'
-              onChange={handleChange}
-              name='password2'
-              type='password'
-            />
-            {showEmailVerification ? (
-              <>
-                <Form.Input
-                  fluid
-                  icon='mail'
-                  iconPosition='left'
-                  placeholder='输入邮箱地址'
-                  onChange={handleChange}
-                  name='email'
-                  type='email'
-                  action={
-                    <Button onClick={sendVerificationCode} disabled={loading}>
-                      获取验证码
-                    </Button>
-                  }
+    <div>
+      <Layout>
+        <Layout.Header></Layout.Header>
+        <Layout.Content>
+          <div
+            style={{
+              justifyContent: 'center',
+              display: 'flex',
+              marginTop: 120
+            }}
+          >
+            <div style={{ width: 500 }}>
+              <Card>
+                <Title heading={2} style={{ textAlign: 'center' }}>
+                  新用户注册
+                </Title>
+                <Form size="large">
+                  <Form.Input
+                    field={'username'}
+                    label={'用户名'}
+                    placeholder="用户名"
+                    name="username"
+                    onChange={(value) => handleChange('username', value)}
+                  />
+                  <Form.Input
+                    field={'password'}
+                    label={'密码'}
+                    placeholder="密码，最短 8 位，最长 20 位"
+                    name="password"
+                    type="password"
+                    onChange={(value) => handleChange('password', value)}
+                  />
+                  <Form.Input
+                    field={'password2'}
+                    label={'确认密码'}
+                    placeholder="确认密码"
+                    name="password2"
+                    type="password"
+                    onChange={(value) => handleChange('password2', value)}
+                  />
+                  {showEmailVerification ? (
+                    <>
+                      <Form.Input
+                        field={'email'}
+                        label={'邮箱'}
+                        placeholder="输入邮箱地址"
+                        onChange={(value) => handleChange('email', value)}
+                        name="email"
+                        type="email"
+                        suffix={
+                          <Button onClick={sendVerificationCode} disabled={loading}>
+                            获取验证码
+                          </Button>
+                        }
+                      />
+                      <Form.Input
+                        field={'verification_code'}
+                        label={'验证码'}
+                        placeholder="输入验证码"
+                        onChange={(value) => handleChange('verification_code', value)}
+                        name="verification_code"
+                      />
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                  <Button
+                    theme='solid'
+                    style={{ width: '100%' }}
+                    type={'primary'}
+                    size='large'
+                    htmlType={'submit'}
+                    onClick={handleSubmit}
+                  >
+                    注册
+                  </Button>
+                </Form>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20
+                  }}
+                >
+                  <Text>
+                    已有账户？
+                    <Link to="/login">
+                      点击登录
+                    </Link>
+                  </Text>
+                </div>
+              </Card>
+              {turnstileEnabled ? (
+                <Turnstile
+                  sitekey={turnstileSiteKey}
+                  onVerify={(token) => {
+                    setTurnstileToken(token);
+                  }}
                 />
-                <Form.Input
-                  fluid
-                  icon='lock'
-                  iconPosition='left'
-                  placeholder='输入验证码'
-                  onChange={handleChange}
-                  name='verification_code'
-                />
-              </>
-            ) : (
-              <></>
-            )}
-            {turnstileEnabled ? (
-              <Turnstile
-                sitekey={turnstileSiteKey}
-                onVerify={(token) => {
-                  setTurnstileToken(token);
-                }}
-              />
-            ) : (
-              <></>
-            )}
-            <Button
-              color='green'
-              fluid
-              size='large'
-              onClick={handleSubmit}
-              loading={loading}
-            >
-              注册
-            </Button>
-          </Segment>
-        </Form>
-        <Message>
-          已有账户？
-          <Link to='/login' className='btn btn-link'>
-            点击登录
-          </Link>
-        </Message>
-      </Grid.Column>
-    </Grid>
+              ) : (
+                <></>
+              )}
+            </div>
+          </div>
+        </Layout.Content>
+      </Layout>
+    </div>
   );
 };
 
