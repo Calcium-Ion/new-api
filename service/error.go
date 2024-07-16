@@ -56,10 +56,9 @@ func RelayErrorHandler(resp *http.Response) (errWithStatusCode *dto.OpenAIErrorW
 	errWithStatusCode = &dto.OpenAIErrorWithStatusCode{
 		StatusCode: resp.StatusCode,
 		Error: dto.OpenAIError{
-			Message: "",
-			Type:    "upstream_error",
-			Code:    "bad_response_status_code",
-			Param:   strconv.Itoa(resp.StatusCode),
+			Type:  "upstream_error",
+			Code:  "bad_response_status_code",
+			Param: strconv.Itoa(resp.StatusCode),
 		},
 	}
 	responseBody, err := io.ReadAll(resp.Body)

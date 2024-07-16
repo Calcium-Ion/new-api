@@ -165,10 +165,7 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 
 	service.Done(c)
 
-	err := resp.Body.Close()
-	if err != nil {
-		common.LogError(c, "close_response_body_failed: "+err.Error())
-	}
+	resp.Body.Close()
 	return nil, usage
 }
 
@@ -206,11 +203,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
 	}
-	err = resp.Body.Close()
-	if err != nil {
-		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
-	}
-
+	resp.Body.Close()
 	if simpleResponse.Usage.TotalTokens == 0 || (simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.CompletionTokens == 0) {
 		completionTokens := 0
 		for _, choice := range simpleResponse.Choices {
@@ -257,7 +250,6 @@ func OpenaiTTSHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	usage := &dto.Usage{}
 	usage.PromptTokens = info.PromptTokens
 	usage.TotalTokens = info.PromptTokens
-
 	return nil, usage
 }
 
@@ -290,10 +282,7 @@ func OpenaiSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
 	}
-	err = resp.Body.Close()
-	if err != nil {
-		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
-	}
+	resp.Body.Close()
 
 	var text string
 	switch responseFormat {
@@ -313,7 +302,6 @@ func OpenaiSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	usage.PromptTokens = info.PromptTokens
 	usage.CompletionTokens, _ = service.CountTokenText(text, info.UpstreamModelName)
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
-
 	return nil, usage
 }
 

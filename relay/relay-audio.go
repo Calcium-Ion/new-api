@@ -105,6 +105,7 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 			audioRequest.Model = modelMap[audioRequest.Model]
 		}
 	}
+	relayInfo.UpstreamModelName = audioRequest.Model
 
 	adaptor := GetAdaptor(relayInfo.ApiType)
 	if adaptor == nil {
