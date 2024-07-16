@@ -85,7 +85,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	meta.UpstreamModelName = testModel
 	common.SysLog(fmt.Sprintf("testing channel %d with model %s", channel.Id, testModel))
 
-	adaptor.Init(meta, *request)
+	adaptor.Init(meta)
 
 	convertedRequest, err := adaptor.ConvertRequest(c, meta, request)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -223,4 +224,140 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 		}
 	}
 	return nil, &simpleResponse.Usage
+}
+
+func OpenaiTTSHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	// Reset response body
+	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+	// We shouldn't set the header before we parse the response body, because the parse part may fail.
+	// And then we will have to send an error response, but in this case, the header has already been set.
+	// So the httpClient will be confused by the response.
+	// For example, Postman will report error, and we cannot check the response at all.
+	for k, v := range resp.Header {
+		c.Writer.Header().Set(k, v[0])
+	}
+	c.Writer.WriteHeader(resp.StatusCode)
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	usage := &dto.Usage{}
+	usage.PromptTokens = info.PromptTokens
+	usage.TotalTokens = info.PromptTokens
+
+	return nil, usage
+}
+
+func OpenaiSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, responseFormat string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+	var audioResp dto.AudioResponse
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = json.Unmarshal(responseBody, &audioResp)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	// Reset response body
+	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+	// We shouldn't set the header before we parse the response body, because the parse part may fail.
+	// And then we will have to send an error response, but in this case, the header has already been set.
+	// So the httpClient will be confused by the response.
+	// For example, Postman will report error, and we cannot check the response at all.
+	for k, v := range resp.Header {
+		c.Writer.Header().Set(k, v[0])
+	}
+	c.Writer.WriteHeader(resp.StatusCode)
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	var text string
+	switch responseFormat {
+	case "json":
+		text, err = getTextFromJSON(responseBody)
+	case "text":
+		text, err = getTextFromText(responseBody)
+	case "srt":
+		text, err = getTextFromSRT(responseBody)
+	case "verbose_json":
+		text, err = getTextFromVerboseJSON(responseBody)
+	case "vtt":
+		text, err = getTextFromVTT(responseBody)
+	}
+
+	usage := &dto.Usage{}
+	usage.PromptTokens = info.PromptTokens
+	usage.CompletionTokens, _ = service.CountTokenText(text, info.UpstreamModelName)
+	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
+
+	return nil, usage
+}
+
+func getTextFromVTT(body []byte) (string, error) {
+	return getTextFromSRT(body)
+}
+
+func getTextFromVerboseJSON(body []byte) (string, error) {
+	var whisperResponse dto.WhisperVerboseJSONResponse
+	if err := json.Unmarshal(body, &whisperResponse); err != nil {
+		return "", fmt.Errorf("unmarshal_response_body_failed err :%w", err)
+	}
+	return whisperResponse.Text, nil
+}
+
+func getTextFromSRT(body []byte) (string, error) {
+	scanner := bufio.NewScanner(strings.NewReader(string(body)))
+	var builder strings.Builder
+	var textLine bool
+	for scanner.Scan() {
+		line := scanner.Text()
+		if textLine {
+			builder.WriteString(line)
+			textLine = false
+			continue
+		} else if strings.Contains(line, "-->") {
+			textLine = true
+			continue
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return builder.String(), nil
+}
+
+func getTextFromText(body []byte) (string, error) {
+	return strings.TrimSuffix(string(body), "\n"), nil
+}
+
+func getTextFromJSON(body []byte) (string, error) {
+	var whisperResponse dto.AudioResponse
+	if err := json.Unmarshal(body, &whisperResponse); err != nil {
+		return "", fmt.Errorf("unmarshal_response_body_failed err :%w", err)
+	}
+	return whisperResponse.Text, nil
 }

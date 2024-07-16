@@ -154,18 +154,20 @@ func getModelRequest(c *gin.Context) (*ModelRequest, bool, error) {
 		}
 	}
 	if strings.HasPrefix(c.Request.URL.Path, "/v1/images/generations") {
-		if modelRequest.Model == "" {
-			modelRequest.Model = "dall-e"
-		}
+		modelRequest.Model = common.GetStringIfEmpty(modelRequest.Model, "dall-e")
 	}
 	if strings.HasPrefix(c.Request.URL.Path, "/v1/audio") {
-		if modelRequest.Model == "" {
-			if strings.HasPrefix(c.Request.URL.Path, "/v1/audio/speech") {
-				modelRequest.Model = "tts-1"
-			} else {
-				modelRequest.Model = "whisper-1"
-			}
+		relayMode := relayconstant.RelayModeAudioSpeech
+		if strings.HasPrefix(c.Request.URL.Path, "/v1/audio/speech") {
+			modelRequest.Model = common.GetStringIfEmpty(modelRequest.Model, "tts-1")
+		} else if strings.HasPrefix(c.Request.URL.Path, "/v1/audio/translations") {
+			modelRequest.Model = common.GetStringIfEmpty(modelRequest.Model, "whisper-1")
+			relayMode = relayconstant.RelayModeAudioTranslation
+		} else if strings.HasPrefix(c.Request.URL.Path, "/v1/audio/transcriptions") {
+			modelRequest.Model = common.GetStringIfEmpty(modelRequest.Model, "whisper-1")
+			relayMode = relayconstant.RelayModeAudioTranscription
 		}
+		c.Set("relay_mode", relayMode)
 	}
 	return &modelRequest, shouldSelectChannel, nil
 }
