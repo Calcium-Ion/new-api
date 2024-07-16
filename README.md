@@ -72,8 +72,8 @@
 
 ## 比原版One API多出的配置
 - `STREAMING_TIMEOUT`：设置流式一次回复的超时时间，默认为 30 秒
-- `DIFY_DEBUG`：设置 Dify 渠道是否输出工作流和节点信息到客户端，默认为 `true`， 可选值为 `true` 和 `false`
-- `FORCE_STREAM_OPTION`：覆盖客户端stream_options参数，请求上游返回流模式usage，目前仅支持 `OpenAI` 渠道类型
+- `DIFY_DEBUG`：设置 Dify 渠道是否输出工作流和节点信息到客户端，默认为 `true`
+- `FORCE_STREAM_OPTION`：是否覆盖客户端stream_options参数，请求上游返回流模式usage，默认为 `true`
 ## 部署
 ### 部署要求
 - 本地数据库（默认）：SQLite（Docker 部署默认使用 SQLite，必须挂载 `/data` 目录到宿主机）
