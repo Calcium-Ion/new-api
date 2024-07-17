@@ -15,7 +15,7 @@ import { stringToColor } from '../helpers/render';
 // HeaderBar Buttons
 let headerButtons = [
   {
-    text: '令牌',
+    text: '对话',
     itemKey: 'token',
     to: '/token',
     icon: <IconComment />,
