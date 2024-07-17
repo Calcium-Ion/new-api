@@ -233,7 +233,7 @@ func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommo
 		return 0, 0, service.OpenAIErrorWrapperLocal(err, "get_user_quota_failed", http.StatusInternalServerError)
 	}
 	if userQuota <= 0 || userQuota-preConsumedQuota < 0 {
-		return 0, 0, service.OpenAIErrorWrapperLocal(errors.New("user quota is not enough"), "insufficient_user_quota", http.StatusForbidden)
+		return 0, 0, service.OpenAIErrorWrapperLocal(errors.New("你的余额不足，请去控制台充值，如果你确认你还有余额，请联系管理员q2411728460 进行处理：RJLAPI"), "insufficient_user_quota", http.StatusForbidden)
 	}
 	err = model.CacheDecreaseUserQuota(relayInfo.UserId, preConsumedQuota)
 	if err != nil {
