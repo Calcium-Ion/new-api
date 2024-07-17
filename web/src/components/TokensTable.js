@@ -73,7 +73,7 @@ const TokensTable = () => {
                 onOpenLink('next', record.key);
               }}
             >
-              开始AI对话
+              聊天
             </Button>
             <Dropdown
               trigger='click'
