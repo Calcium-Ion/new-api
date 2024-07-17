@@ -26,6 +26,7 @@ import {
   IconPriceTag,
   IconSetting,
   IconUser,
+  IconAt, // 新增导入
 } from '@douyinfe/semi-icons';
 import { Layout, Nav } from '@douyinfe/semi-ui';
 import { setStatusData } from '../helpers/data.js';
@@ -74,9 +75,8 @@ const SiderBar = () => {
         itemKey: 'channel',
         to: '/channel',
         icon: <IconLayers />,
-        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
+        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHidden',
       },
-      
       {
         text: '开始对话/令牌',
         itemKey: 'token',
@@ -88,21 +88,13 @@ const SiderBar = () => {
         itemKey: 'redemption',
         to: '/redemption',
         icon: <IconGift />,
-        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
+        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHidden',
       },
       {
         text: '钱包',
         itemKey: 'topup',
         to: '/topup',
         icon: <IconCreditCard />,
-      },
-      
-      {
-        text: '用户管理',
-        itemKey: 'user',
-        to: '/user',
-        icon: <IconUser />,
-        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
       {
         text: '日志',
@@ -111,26 +103,67 @@ const SiderBar = () => {
         icon: <IconHistogram />,
       },
       {
-        text: '模型价格',
-        itemKey: 'pricing',
-        to: '/pricing',
-        icon: <IconPriceTag />,
+        text: 'API文档',
+        itemKey: 'about',
+        to: '/about',
+        icon: <IconAt />,
       },
-      
-      
-     
       {
-        text: '设置',
-        itemKey: 'setting',
-        to: '/setting',
-        icon: <IconSetting />,
+        text: '用户管理',
+        itemKey: 'user',
+        to: '/user',
+        icon: <IconUser />,
+        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHidden',
       },
-       {
-           text: 'API文档',
-           itemKey: 'about',
-           to: '/about',
-           icon: <IconAt/>
-       }
+      {
+        text: '更多',
+        itemKey: 'more',
+        icon: <IconSetting />,
+        items: [
+          {
+            text: '模型价格',
+            itemKey: 'pricing',
+            to: '/pricing',
+            icon: <IconPriceTag />,
+          },
+          {
+            text: '数据看板',
+            itemKey: 'detail',
+            to: '/detail',
+            icon: <IconCalendarClock />,
+            className:
+              localStorage.getItem('enable_data_export') === 'true'
+                ? 'semi-navigation-item-normal'
+                : 'tableHidden',
+          },
+          {
+            text: '绘图',
+            itemKey: 'midjourney',
+            to: '/midjourney',
+            icon: <IconImage />,
+            className:
+              localStorage.getItem('enable_drawing') === 'true'
+                ? 'semi-navigation-item-normal'
+                : 'tableHidden',
+          },
+          {
+            text: '异步任务',
+            itemKey: 'task',
+            to: '/task',
+            icon: <IconChecklistStroked />,
+            className:
+                localStorage.getItem('enable_task') === 'true'
+                    ? 'semi-navigation-item-normal'
+                    : 'tableHidden',
+          },
+          {
+            text: '设置',
+            itemKey: 'setting',
+            to: '/setting',
+            icon: <IconSetting />,
+          },
+        ],
+      },
     ],
     [
       localStorage.getItem('enable_data_export'),
