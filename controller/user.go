@@ -622,30 +622,34 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	// Automatically generate a token for the new user
+	// 创建默认令牌
 	token := model.Token{
-		UserId:             cleanUser.Id,
-		Name:               "Default Token",
-		ExpiredTime:        -1, // Never expires
-		RemainQuota:        0,  // Unlimited quota
-		UnlimitedQuota:     true,
-		ModelLimitsEnabled: false,
-		ModelLimits:        "",
+		UserId:         cleanUser.Id, // 假设 Insert 方法会设置 Id
+		Name:           "默认令牌",
+		Key:            common.GenerateKey(),
+		CreatedTime:    common.GetTimestamp(),
+		AccessedTime:   common.GetTimestamp(),
+		ExpiredTime:    0, // 0 表示永不过期，您可以根据需要设置
+		RemainQuota:    1000, // 设置初始配额
+		UnlimitedQuota: false,
 	}
 
-	// Create a new context with the token data
-	newCtx := context.WithValue(c.Request.Context(), "token", token)
-	c.Request = c.Request.WithContext(newCtx)
-
-	// Call AddToken function
-	AddToken(c)
+	if err := token.Insert(); err != nil {
+		// 如果创建令牌失败，可以选择回滚用户创建或者只返回警告
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "用户创建成功，但默认令牌创建失败: " + err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "用户创建成功并自动生成令牌",
+		"message": "用户创建成功，并已生成默认令牌",
 	})
 	return
 }
+
 type ManageRequest struct {
 	Username string `json:"username"`
 	Action   string `json:"action"`
