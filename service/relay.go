@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"one-api/common"
 )
 
@@ -20,10 +21,10 @@ func StringData(c *gin.Context, str string) error {
 	//str = strings.TrimPrefix(str, "data: ")
 	//str = strings.TrimSuffix(str, "\r")
 	c.Render(-1, common.CustomEvent{Data: "data: " + str})
-	if c.Writer != nil {
-		c.Writer.Flush()
+	if flusher, ok := c.Writer.(http.Flusher); ok {
+		flusher.Flush()
 	} else {
-		return errors.New("writer is nil")
+		return errors.New("streaming error: flusher not found")
 	}
 	return nil
 }
