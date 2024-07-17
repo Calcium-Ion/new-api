@@ -68,7 +68,7 @@ const TokensTable = () => {
           >
             <Button
               theme='light'
-              style={{ color: 'rgba(var(--semi-teal-7), 1)' }}
+              style={{ color: 'rgba(var(--semi-teal-7), 1)', height: '2em' }}
               onClick={() => {
                 onOpenLink('next', record.key);
               }}
