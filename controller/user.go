@@ -631,7 +631,13 @@ func CreateUser(c *gin.Context) {
 		ModelLimitsEnabled: false,
 		ModelLimits:        "",
 	}
-	AddToken(c, token)
+
+	// Create a new context with the token data
+	newCtx := context.WithValue(c.Request.Context(), "token", token)
+	c.Request = c.Request.WithContext(newCtx)
+
+	// Call AddToken function
+	AddToken(c)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
