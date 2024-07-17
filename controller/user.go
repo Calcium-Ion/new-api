@@ -1,8 +1,6 @@
 package controller
 
 import (
-	
-	"log"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -186,17 +184,7 @@ func Register(c *gin.Context) {
 	if common.EmailVerificationEnabled {
 		cleanUser.Email = user.Email
 	}
-
-	// 开始数据库事务
-	tx := model.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	if err := cleanUser.InsertWithTx(tx); err != nil {
-		tx.Rollback()
+	if err := cleanUser.Insert(inviterId); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),
@@ -204,7 +192,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// 创建默认令牌（无限额度，无限时间）
+	// 创建默认令牌
 	token := model.Token{
 		UserId:         cleanUser.Id,
 		Name:           "默认令牌",
@@ -216,21 +204,11 @@ func Register(c *gin.Context) {
 		UnlimitedQuota: true,
 	}
 
-	if err := token.InsertWithTx(tx); err != nil {
-		tx.Rollback()
-		log.Printf("为新用户 %s 创建默认令牌失败: %v", cleanUser.Username, err)
+	if err := token.Insert(); err != nil {
+		// 如果创建令牌失败，可以选择回滚用户创建或者只返回警告
 		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "注册失败，无法创建默认令牌",
-		})
-		return
-	}
-
-	// 提交事务
-	if err := tx.Commit().Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "注册失败，无法完成数据库操作",
+			"success": true,
+			"message": "用户创建成功，但默认令牌创建失败: " + err.Error(),
 		})
 		return
 	}
@@ -239,6 +217,7 @@ func Register(c *gin.Context) {
 		"success": true,
 		"message": "注册成功，并已创建默认令牌",
 	})
+	return
 }
 
 
