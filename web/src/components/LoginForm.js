@@ -109,7 +109,7 @@ const LoginForm = () => {
             centered: true,
           });
         }
-        navigate('/token');
+        navigate('/topup');
       } else {
         showError(message);
       }
