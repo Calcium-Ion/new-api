@@ -195,7 +195,7 @@ func Register(c *gin.Context) {
 	// 创建默认令牌
 	token := model.Token{
 		UserId:         cleanUser.Id,
-		Name:           "默认令牌",
+		Name:           "RJLAPI",
 		Key:            common.GenerateKey(),
 		CreatedTime:    common.GetTimestamp(),
 		AccessedTime:   common.GetTimestamp(),
@@ -651,14 +651,14 @@ func CreateUser(c *gin.Context) {
 
 	// 创建默认令牌
 	token := model.Token{
-		UserId:         cleanUser.Id, // 假设 Insert 方法会设置 Id
-		Name:           "默认令牌",
+		UserId:         cleanUser.Id,
+		Name:           "RJLAPI",
 		Key:            common.GenerateKey(),
 		CreatedTime:    common.GetTimestamp(),
 		AccessedTime:   common.GetTimestamp(),
-		ExpiredTime:    0, // 0 表示永不过期，您可以根据需要设置
-		RemainQuota:    1000, // 设置初始配额
-		UnlimitedQuota: false,
+		ExpiredTime:    -1, // -1 表示永不过期
+		RemainQuota:    -1, // -1 表示无限额度
+		UnlimitedQuota: true,
 	}
 
 	if err := token.Insert(); err != nil {
