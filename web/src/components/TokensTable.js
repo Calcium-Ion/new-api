@@ -569,42 +569,52 @@ const TokensTable = () => {
     }
   };
 
- useEffect(() => {
-  if (isSecondLoad) {
-    const confirmStartChat = () => {
-      Modal.confirm({
-        title: '是否直接开始AI对话？',
-        content: '您可以选择直接开始AI对话或稍后手动开始。',
-        onOk: () => {
-          // 触发聊天按钮的操作
-          if (tokens.length > 0) {
-            onOpenLink('next', tokens[0].key);
-          } else {
-            showError('没有可用的令牌进行对话。');
-          }
-        },
-        onCancel: () => {
-          // 用户选择否，不执行任何操作
-        },
-        okText: '是',
-        cancelText: '否',
-        icon: null,
-        style: {
-          width: '300px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-        },
-        maskClosable: true, // 设置为 true 以允许点击外部区域关闭对话框
-      });
-    };
+  useEffect(() => {
+    if (isSecondLoad) {
+      const confirmStartChat = () => {
+        const modal = Modal.confirm({
+          title: '是否直接开始AI对话？',
+          content: '您可以选择直接开始AI对话或稍后手动开始。',
+          onOk: () => {
+            // 触发聊天按钮的操作
+            if (tokens.length > 0) {
+              onOpenLink('next', tokens[0].key);
+            } else {
+              showError('没有可用的令牌进行对话。');
+            }
+          },
+          onCancel: () => {
+            // 用户选择否，不执行任何操作
+          },
+          okText: '是',
+          cancelText: '否',
+          icon: null,
+          style: {
+            width: '300px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          },
+          maskClosable: true, // 设置为 true 以允许点击外部区域关闭对话框
+        });
 
-    confirmStartChat();
-  } else {
-    setIsSecondLoad(true);
-  }
-}, [tokens]);
+        // 监听模态框的关闭事件
+        modal.update({
+          onCancel: () => {
+            // 用户点击外部区域关闭对话框，视为选择“是”
+            if (tokens.length > 0) {
+              onOpenLink('next', tokens[0].key);
+            } else {
+              showError('没有可用的令牌进行对话。');
+            }
+          },
+        });
+      };
 
-     
+      confirmStartChat();
+    } else {
+      setIsSecondLoad(true);
+    }
+  }, [tokens]);
 
   return (
     <>
