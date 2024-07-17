@@ -57,7 +57,7 @@ func RelayTaskSubmit(c *gin.Context, relayMode int) (taskErr *dto.TaskError) {
 	}
 	quota := int(ratio * common.QuotaPerUnit)
 	if userQuota-quota < 0 {
-		taskErr = service.TaskErrorWrapperLocal(errors.New("user quota is not enough"), "quota_not_enough", http.StatusForbidden)
+		taskErr = service.TaskErrorWrapperLocal(errors.New("你的余额不足，请去控制台充值，如果你确认你还有余额，请联系管理员q2411728460 进行处理：RJLAPI"), "quota_not_enough", http.StatusForbidden)
 		return
 	}
 
