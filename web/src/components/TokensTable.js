@@ -397,7 +397,7 @@ const TokensTable = () => {
     }
   };
 
-  const onOpenLink = async (type, key) => {
+  export const onOpenLink = async (type, key) => {
     let status = localStorage.getItem('status');
     let serverAddress = '';
     if (status) {
