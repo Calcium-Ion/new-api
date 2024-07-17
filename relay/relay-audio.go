@@ -46,7 +46,7 @@ func getAndValidAudioRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	return audioRequest, nil
 }
 
-func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
+func AudioHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	relayInfo := relaycommon.GenRelayInfo(c)
 	audioRequest, err := getAndValidAudioRequest(c, relayInfo)
 
@@ -142,7 +142,7 @@ func AudioHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		return openaiErr
 	}
 
-	postConsumeQuota(c, relayInfo, audioRequest.Model, usage, ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, 0, false)
+	postConsumeQuota(c, relayInfo, audioRequest.Model, usage, ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, 0, false, "")
 
 	return nil
 }
