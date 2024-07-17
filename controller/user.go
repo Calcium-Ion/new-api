@@ -621,9 +621,31 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	// Automatically generate a token for the new user
+	token := model.Token{
+		UserId:             cleanUser.Id,
+		Name:               "Default Token",
+		Key:                common.GenerateKey(),
+		CreatedTime:        common.GetTimestamp(),
+		AccessedTime:       common.GetTimestamp(),
+		ExpiredTime:        -1, // Never expires
+		RemainQuota:        0,  // Unlimited quota
+		UnlimitedQuota:     true,
+		ModelLimitsEnabled: false,
+		ModelLimits:        "",
+	}
+	err = token.Insert()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "用户创建成功，但自动生成令牌失败: " + err.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "",
+		"message": "用户创建成功并自动生成令牌",
 	})
 	return
 }
