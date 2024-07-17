@@ -37,7 +37,7 @@ func OpenAIErrorWrapper(err error, code string, statusCode int) *dto.OpenAIError
 
 	openAIError := dto.OpenAIError{
 		Message: text,
-		Type:    "new_api_error",
+		Type:    "rjl_api_error",
 		Code:    code,
 	}
 	return &dto.OpenAIErrorWithStatusCode{
