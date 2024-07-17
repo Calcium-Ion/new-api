@@ -26,6 +26,7 @@ import {
   IconPriceTag,
   IconSetting,
   IconUser,
+  IconMore,
 } from '@douyinfe/semi-icons';
 import { Layout, Nav } from '@douyinfe/semi-ui';
 import { setStatusData } from '../helpers/data.js';
@@ -43,6 +44,7 @@ const SiderBar = () => {
   const systemName = getSystemName();
   const logo = getLogo();
   const [isCollapsed, setIsCollapsed] = useState(defaultIsCollapsed);
+  const [showMore, setShowMore] = useState(false);
 
   const routerMap = {
     home: '/',
@@ -77,19 +79,10 @@ const SiderBar = () => {
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
       {
-        text: '聊天',
-        itemKey: 'chat',
-        to: '/chat',
-        icon: <IconComment />,
-        className: localStorage.getItem('chat_link')
-          ? 'semi-navigation-item-normal'
-          : 'tableHiddle',
-      },
-      {
         text: '令牌',
         itemKey: 'token',
         to: '/token',
-        icon: <IconKey />,
+        icon: <IconComment />,
       },
       {
         text: '兑换码',
@@ -105,12 +98,6 @@ const SiderBar = () => {
         icon: <IconCreditCard />,
       },
       {
-        text: '模型价格',
-        itemKey: 'pricing',
-        to: '/pricing',
-        icon: <IconPriceTag />,
-      },
-      {
         text: '用户管理',
         itemKey: 'user',
         to: '/user',
@@ -122,6 +109,37 @@ const SiderBar = () => {
         itemKey: 'log',
         to: '/log',
         icon: <IconHistogram />,
+      },
+      {
+        text: 'API文档',
+        itemKey: 'about',
+        to: '/about',
+        icon: <IconKey />,
+      },
+      {
+        text: '更多',
+        itemKey: 'more',
+        icon: <IconMore />,
+        onClick: () => setShowMore(!showMore),
+      },
+    ],
+    [
+      localStorage.getItem('enable_data_export'),
+      localStorage.getItem('enable_drawing'),
+      localStorage.getItem('enable_task'),
+      localStorage.getItem('chat_link'),
+      isAdmin(),
+      showMore,
+    ],
+  );
+
+  const moreButtons = useMemo(
+    () => [
+      {
+        text: '模型价格',
+        itemKey: 'pricing',
+        to: '/pricing',
+        icon: <IconPriceTag />,
       },
       {
         text: '数据看板',
@@ -149,9 +167,9 @@ const SiderBar = () => {
         to: '/task',
         icon: <IconChecklistStroked />,
         className:
-            localStorage.getItem('enable_task') === 'true'
-                ? 'semi-navigation-item-normal'
-                : 'tableHiddle',
+          localStorage.getItem('enable_task') === 'true'
+            ? 'semi-navigation-item-normal'
+            : 'tableHiddle',
       },
       {
         text: '设置',
@@ -159,12 +177,6 @@ const SiderBar = () => {
         to: '/setting',
         icon: <IconSetting />,
       },
-      // {
-      //     text: '关于',
-      //     itemKey: 'about',
-      //     to: '/about',
-      //     icon: <IconAt/>
-      // }
     ],
     [
       localStorage.getItem('enable_data_export'),
@@ -245,6 +257,26 @@ const SiderBar = () => {
           >
             <Nav.Footer collapseButton={true}></Nav.Footer>
           </Nav>
+          {showMore && (
+            <Nav
+              style={{ maxWidth: 200 }}
+              selectedKeys={selectedKeys}
+              renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
+                return (
+                  <Link
+                    style={{ textDecoration: 'none' }}
+                    to={routerMap[props.itemKey]}
+                  >
+                    {itemElement}
+                  </Link>
+                );
+              }}
+              items={moreButtons}
+              onSelect={(key) => {
+                setSelectedKeys([key.itemKey]);
+              }}
+            />
+          )}
         </div>
       </Layout>
     </>
