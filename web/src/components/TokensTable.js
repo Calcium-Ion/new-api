@@ -331,7 +331,6 @@ const TokensTable = () => {
     id: undefined,
   });
   const [isSecondLoad, setIsSecondLoad] = useState(false);
-  const [startChat, setStartChat] = useState(true); // 新增状态
 
   const closeEdit = () => {
     setShowEdit(false);
@@ -571,40 +570,41 @@ const TokensTable = () => {
   };
 
   useEffect(() => {
-    if (isSecondLoad) {
-      const confirmStartChat = () => {
-        Modal.confirm({
-          title: '是否直接开始AI对话？',
-          content: '您可以选择直接开始AI对话或稍后手动开始。',
-          onOk: () => {
-            setStartChat(true); // 用户选择是，设置状态为开始聊天
-          },
-          onCancel: () => {
-            setStartChat(false); // 用户选择否，设置状态为不开始聊天
-          },
-          okText: '是',
-          cancelText: '否',
-          icon: null,
-          style: {
-            width: '300px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          },
-          maskClosable: false, // 设置为 false 以防止点击外部区域关闭对话框
-        });
-      };
+  if (isSecondLoad) {
+    const confirmStartChat = () => {
+      Modal.confirm({
+        title: '是否直接开始AI对话？',
+        content: '您可以选择直接开始AI对话或稍后手动开始。',
+        onOk: () => {
+          // 触发聊天按钮的操作
+          if (tokens.length > 0) {
+            onOpenLink('next', tokens[0].key);
+          } else {
+            showError('没有可用的令牌进行对话。');
+          }
+        },
+        onCancel: () => {
+          // 用户选择否，不执行任何操作
+        },
+        okText: '是',
+        cancelText: '否',
+        icon: null,
+        style: {
+          width: '300px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        },
+        maskClosable: false, // 设置为 false 以防止点击外部区域关闭对话框
+      });
+    };
 
-      confirmStartChat();
-    } else {
-      setIsSecondLoad(true);
-    }
-  }, [tokens]);
+    confirmStartChat();
+  } else {
+    setIsSecondLoad(true);
+  }
+}, [tokens]);
 
-  useEffect(() => {
-    if (startChat && tokens.length > 0) {
-      onOpenLink('next', tokens[0].key);
-    }
-  }, [startChat, tokens]);
+
 
   return (
     <>
