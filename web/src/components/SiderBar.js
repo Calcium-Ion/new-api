@@ -44,7 +44,6 @@ const SiderBar = () => {
   const systemName = getSystemName();
   const logo = getLogo();
   const [isCollapsed, setIsCollapsed] = useState(defaultIsCollapsed);
-  const [showMore, setShowMore] = useState(false);
 
   const routerMap = {
     home: '/',
@@ -79,7 +78,7 @@ const SiderBar = () => {
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
       {
-        text: '开始聊天/令牌',
+        text: '令牌',
         itemKey: 'token',
         to: '/token',
         icon: <IconComment />,
@@ -120,62 +119,50 @@ const SiderBar = () => {
         text: '更多',
         itemKey: 'more',
         icon: <IconMore />,
-        onClick: () => setShowMore(!showMore),
-      },
-    ],
-    [
-      localStorage.getItem('enable_data_export'),
-      localStorage.getItem('enable_drawing'),
-      localStorage.getItem('enable_task'),
-      localStorage.getItem('chat_link'),
-      isAdmin(),
-      showMore,
-    ],
-  );
-
-  const moreButtons = useMemo(
-    () => [
-      {
-        text: '模型价格',
-        itemKey: 'pricing',
-        to: '/pricing',
-        icon: <IconPriceTag />,
-      },
-      {
-        text: '数据看板',
-        itemKey: 'detail',
-        to: '/detail',
-        icon: <IconCalendarClock />,
-        className:
-          localStorage.getItem('enable_data_export') === 'true'
-            ? 'semi-navigation-item-normal'
-            : 'tableHiddle',
-      },
-      {
-        text: '绘图',
-        itemKey: 'midjourney',
-        to: '/midjourney',
-        icon: <IconImage />,
-        className:
-          localStorage.getItem('enable_drawing') === 'true'
-            ? 'semi-navigation-item-normal'
-            : 'tableHiddle',
-      },
-      {
-        text: '异步任务',
-        itemKey: 'task',
-        to: '/task',
-        icon: <IconChecklistStroked />,
-        className:
-          localStorage.getItem('enable_task') === 'true'
-            ? 'semi-navigation-item-normal'
-            : 'tableHiddle',
-      },
-      {
-        text: '设置',
-        itemKey: 'setting',
-        to: '/setting',
-        icon: <IconSetting />,
+        items: [
+          {
+            text: '模型价格',
+            itemKey: 'pricing',
+            to: '/pricing',
+            icon: <IconPriceTag />,
+          },
+          {
+            text: '数据看板',
+            itemKey: 'detail',
+            to: '/detail',
+            icon: <IconCalendarClock />,
+            className:
+              localStorage.getItem('enable_data_export') === 'true'
+                ? 'semi-navigation-item-normal'
+                : 'tableHiddle',
+          },
+          {
+            text: '绘图',
+            itemKey: 'midjourney',
+            to: '/midjourney',
+            icon: <IconImage />,
+            className:
+              localStorage.getItem('enable_drawing') === 'true'
+                ? 'semi-navigation-item-normal'
+                : 'tableHiddle',
+          },
+          {
+            text: '异步任务',
+            itemKey: 'task',
+            to: '/task',
+            icon: <IconChecklistStroked />,
+            className:
+              localStorage.getItem('enable_task') === 'true'
+                ? 'semi-navigation-item-normal'
+                : 'tableHiddle',
+          },
+          {
+            text: '设置',
+            itemKey: 'setting',
+            to: '/setting',
+            icon: <IconSetting />,
+          },
+        ],
       },
     ],
     [
@@ -257,26 +244,6 @@ const SiderBar = () => {
           >
             <Nav.Footer collapseButton={true}></Nav.Footer>
           </Nav>
-          {showMore && (
-            <Nav
-              style={{ maxWidth: 200 }}
-              selectedKeys={selectedKeys}
-              renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
-                return (
-                  <Link
-                    style={{ textDecoration: 'none' }}
-                    to={routerMap[props.itemKey]}
-                  >
-                    {itemElement}
-                  </Link>
-                );
-              }}
-              items={moreButtons}
-              onSelect={(key) => {
-                setSelectedKeys([key.itemKey]);
-              }}
-            />
-          )}
         </div>
       </Layout>
     </>
