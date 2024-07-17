@@ -1,6 +1,7 @@
 package cloudflare
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -15,10 +16,7 @@ import (
 type Adaptor struct {
 }
 
-func (a *Adaptor) InitRerank(info *relaycommon.RelayInfo, request dto.RerankRequest) {
-}
-
-func (a *Adaptor) Init(info *relaycommon.RelayInfo, request dto.GeneralOpenAIRequest) {
+func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
@@ -58,11 +56,42 @@ func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dt
 	return request, nil
 }
 
+func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.AudioRequest) (io.Reader, error) {
+	// 添加文件字段
+	file, _, err := c.Request.FormFile("file")
+	if err != nil {
+		return nil, errors.New("file is required")
+	}
+	defer file.Close()
+	// 打开临时文件用于保存上传的文件内容
+	requestBody := &bytes.Buffer{}
+
+	// 将上传的文件内容复制到临时文件
+	if _, err := io.Copy(requestBody, file); err != nil {
+		return nil, err
+	}
+	return requestBody, nil
+}
+
+func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.ImageRequest) (any, error) {
+	//TODO implement me
+	return nil, errors.New("not implemented")
+}
+
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
-	if info.IsStream {
-		err, usage = cfStreamHandler(c, resp, info)
-	} else {
-		err, usage = cfHandler(c, resp, info)
+	switch info.RelayMode {
+	case constant.RelayModeEmbeddings:
+		fallthrough
+	case constant.RelayModeChatCompletions:
+		if info.IsStream {
+			err, usage = cfStreamHandler(c, resp, info)
+		} else {
+			err, usage = cfHandler(c, resp, info)
+		}
+	case constant.RelayModeAudioTranslation:
+		fallthrough
+	case constant.RelayModeAudioTranscription:
+		err, usage = cfSTTHandler(c, resp, info)
 	}
 	return
 }

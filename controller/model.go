@@ -131,7 +131,7 @@ func init() {
 		}
 		meta := &relaycommon.RelayInfo{ChannelType: i}
 		adaptor := relay.GetAdaptor(apiType)
-		adaptor.Init(meta, dto.GeneralOpenAIRequest{})
+		adaptor.Init(meta)
 		channelId2Models[i] = adaptor.GetModelList()
 	}
 }

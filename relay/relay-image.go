@@ -180,7 +180,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusC
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return relaycommon.RelayErrorHandler(resp)
+		return service.RelayErrorHandler(resp)
 	}
 
 	var textResponse dto.ImageResponse
