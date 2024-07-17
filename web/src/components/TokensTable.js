@@ -604,11 +604,7 @@ const TokensTable = () => {
   }
 }, [tokens]);
 
-      confirmStartChat();
-    } else {
-      setIsSecondLoad(true);
-    }
-  }, [tokens]);
+     
 
   return (
     <>
