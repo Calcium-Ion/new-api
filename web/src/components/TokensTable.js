@@ -568,6 +568,28 @@ const TokensTable = () => {
     }
   };
 
+  useEffect(() => {
+    const confirmStartChat = () => {
+      Modal.confirm({
+        title: '是否直接开始AI对话？',
+        content: '您可以选择直接开始AI对话或稍后手动开始。',
+        onOk: () => {
+          // 触发聊天按钮的操作
+          if (tokens.length > 0) {
+            onOpenLink('next', tokens[0].key);
+          } else {
+            showError('没有可用的令牌进行对话。');
+          }
+        },
+        onCancel: () => {
+          // 用户选择否，不执行任何操作
+        },
+      });
+    };
+
+    confirmStartChat();
+  }, [tokens]);
+
   return (
     <>
       <EditToken
