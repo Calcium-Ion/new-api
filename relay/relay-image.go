@@ -179,7 +179,7 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		quality = "hd"
 	}
 
-	logContent := fmt.Sprintf(", 大小 %s, 品质 %s", imageRequest.Size, quality)
+	logContent := fmt.Sprintf("大小 %s, 品质 %s", imageRequest.Size, quality)
 	postConsumeQuota(c, relayInfo, imageRequest.Model, usage, 0, 0, userQuota, 0, groupRatio, modelPrice, true, logContent)
 
 	return nil
