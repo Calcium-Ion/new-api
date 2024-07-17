@@ -594,7 +594,7 @@ const TokensTable = () => {
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
         },
-        maskClosable: false, // 设置为 false 以防止点击外部区域关闭对话框
+        maskClosable: true, // 设置为 true 以允许点击外部区域关闭对话框
       });
     };
 
