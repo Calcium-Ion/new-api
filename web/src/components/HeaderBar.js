@@ -102,15 +102,6 @@ const HeaderBar = () => {
                     <Nav.Item itemKey={'new-year'} text={'🏮'} />
                   </Dropdown>
                 )}
-                <Switch
-                  checkedText='🌞'
-                  size={'large'}
-                  checked={theme === 'dark'}
-                  uncheckedText='🌙'
-                  onChange={(checked) => {
-                    setTheme(checked);
-                  }}
-                />
                 {userState.user ? (
                   <>
                     <Dropdown
