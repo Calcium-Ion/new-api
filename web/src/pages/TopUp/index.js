@@ -238,41 +238,7 @@ const TopUp = () => {
                 余额 {renderQuota(userQuota)}
               </Title>
               <div style={{ marginTop: 20 }}>
-                <Divider>兑换余额</Divider>
-                <Form>
-                  <Form.Input
-                    field={'redemptionCode'}
-                    label={'兑换码'}
-                    placeholder='兑换码'
-                    name='redemptionCode'
-                    value={redemptionCode}
-                    onChange={(value) => {
-                      setRedemptionCode(value);
-                    }}
-                  />
-                  <Space>
-                    {topUpLink ? (
-                      <Button
-                        type={'primary'}
-                        theme={'solid'}
-                        onClick={openTopUpLink}
-                      >
-                        获取兑换码
-                      </Button>
-                    ) : null}
-                    <Button
-                      type={'warning'}
-                      theme={'solid'}
-                      onClick={topUp}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? '兑换中...' : '兑换'}
-                    </Button>
-                  </Space>
-                </Form>
-              </div>
-              <div style={{ marginTop: 20 }}>
-                <Divider>在线充值</Divider>
+                <Divider>在线充值（推荐使用）</Divider>
                 <Form>
                   <Form.Input
                     disabled={!enableOnlineTopUp}
@@ -313,6 +279,40 @@ const TopUp = () => {
                       }}
                     >
                       微信
+                    </Button>
+                  </Space>
+                </Form>
+              </div>
+              <div style={{ marginTop: 20 }}>
+                <Divider>兑换余额（不推荐）</Divider>
+                <Form>
+                  <Form.Input
+                    field={'redemptionCode'}
+                    label={'兑换码'}
+                    placeholder='粘贴或输入兑换码'
+                    name='redemptionCode'
+                    value={redemptionCode}
+                    onChange={(value) => {
+                      setRedemptionCode(value);
+                    }}
+                  />
+                  <Space>
+                    {topUpLink ? (
+                      <Button
+                        type={'primary'}
+                        theme={'solid'}
+                        onClick={openTopUpLink}
+                      >
+                        获取兑换码
+                      </Button>
+                    ) : null}
+                    <Button
+                      type={'warning'}
+                      theme={'solid'}
+                      onClick={topUp}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? '兑换中...' : '兑换'}
                     </Button>
                   </Space>
                 </Form>
