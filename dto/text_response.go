@@ -86,9 +86,11 @@ type ToolCall struct {
 }
 
 type FunctionCall struct {
-	Name string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Name        string `json:"name,omitempty"`
 	// call function with arguments in JSON format
-	Arguments string `json:"arguments,omitempty"`
+	Parameters any    `json:"parameters,omitempty"` // request
+	Arguments  string `json:"arguments,omitempty"`
 }
 
 type ChatCompletionsStreamResponse struct {

@@ -26,7 +26,7 @@ type GeneralOpenAIRequest struct {
 	PresencePenalty  float64         `json:"presence_penalty,omitempty"`
 	ResponseFormat   *ResponseFormat `json:"response_format,omitempty"`
 	Seed             float64         `json:"seed,omitempty"`
-	Tools            any             `json:"tools,omitempty"`
+	Tools            []ToolCall      `json:"tools,omitempty"`
 	ToolChoice       any             `json:"tool_choice,omitempty"`
 	User             string          `json:"user,omitempty"`
 	LogProbs         bool            `json:"logprobs,omitempty"`
@@ -102,6 +102,11 @@ func (m Message) StringContent() string {
 		return stringContent
 	}
 	return string(m.Content)
+}
+
+func (m *Message) SetStringContent(content string) {
+	jsonContent, _ := json.Marshal(content)
+	m.Content = jsonContent
 }
 
 func (m Message) IsStringContent() bool {

@@ -30,6 +30,7 @@ func stopReasonClaude2OpenAI(reason string) string {
 }
 
 func RequestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeRequest {
+
 	claudeRequest := ClaudeRequest{
 		Model:         textRequest.Model,
 		Prompt:        "",
@@ -60,6 +61,22 @@ func RequestOpenAI2ClaudeComplete(textRequest dto.GeneralOpenAIRequest) *ClaudeR
 }
 
 func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeRequest, error) {
+	claudeTools := make([]Tool, 0, len(textRequest.Tools))
+
+	for _, tool := range textRequest.Tools {
+		if params, ok := tool.Function.Parameters.(map[string]any); ok {
+			claudeTools = append(claudeTools, Tool{
+				Name:        tool.Function.Name,
+				Description: tool.Function.Description,
+				InputSchema: InputSchema{
+					Type:       params["type"].(string),
+					Properties: params["properties"],
+					Required:   params["required"],
+				},
+			})
+		}
+	}
+
 	claudeRequest := ClaudeRequest{
 		Model:         textRequest.Model,
 		MaxTokens:     textRequest.MaxTokens,
@@ -68,6 +85,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		TopP:          textRequest.TopP,
 		TopK:          textRequest.TopK,
 		Stream:        textRequest.Stream,
+		Tools:         claudeTools,
 	}
 	if claudeRequest.MaxTokens == 0 {
 		claudeRequest.MaxTokens = 4096
@@ -184,6 +202,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 	response.Object = "chat.completion.chunk"
 	response.Model = claudeResponse.Model
 	response.Choices = make([]dto.ChatCompletionsStreamResponseChoice, 0)
+	tools := make([]dto.ToolCall, 0)
 	var choice dto.ChatCompletionsStreamResponseChoice
 	if reqMode == RequestModeCompletion {
 		choice.Delta.SetContentString(claudeResponse.Completion)
@@ -199,10 +218,33 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			choice.Delta.SetContentString("")
 			choice.Delta.Role = "assistant"
 		} else if claudeResponse.Type == "content_block_start" {
-			return nil, nil
+			if claudeResponse.ContentBlock != nil {
+				//choice.Delta.SetContentString(claudeResponse.ContentBlock.Text)
+				if claudeResponse.ContentBlock.Type == "tool_use" {
+					tools = append(tools, dto.ToolCall{
+						ID:   claudeResponse.ContentBlock.Id,
+						Type: "function",
+						Function: dto.FunctionCall{
+							Name:      claudeResponse.ContentBlock.Name,
+							Arguments: "",
+						},
+					})
+				}
+			} else {
+				return nil, nil
+			}
 		} else if claudeResponse.Type == "content_block_delta" {
-			choice.Index = claudeResponse.Index
-			choice.Delta.SetContentString(claudeResponse.Delta.Text)
+			if claudeResponse.Delta != nil {
+				choice.Index = claudeResponse.Index
+				choice.Delta.SetContentString(claudeResponse.Delta.Text)
+				if claudeResponse.Delta.Type == "input_json_delta" {
+					tools = append(tools, dto.ToolCall{
+						Function: dto.FunctionCall{
+							Arguments: claudeResponse.Delta.PartialJson,
+						},
+					})
+				}
+			}
 		} else if claudeResponse.Type == "message_delta" {
 			finishReason := stopReasonClaude2OpenAI(*claudeResponse.Delta.StopReason)
 			if finishReason != "null" {
@@ -218,6 +260,10 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 	if claudeUsage == nil {
 		claudeUsage = &ClaudeUsage{}
 	}
+	if len(tools) > 0 {
+		choice.Delta.Content = nil // compatible with other OpenAI derivative applications, like LobeOpenAICompatibleFactory ...
+		choice.Delta.ToolCalls = tools
+	}
 	response.Choices = append(response.Choices, choice)
 
 	return &response, claudeUsage
@@ -230,6 +276,11 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 		Object:  "chat.completion",
 		Created: common.GetTimestamp(),
 	}
+	var responseText string
+	if len(claudeResponse.Content) > 0 {
+		responseText = claudeResponse.Content[0].Text
+	}
+	tools := make([]dto.ToolCall, 0)
 	if reqMode == RequestModeCompletion {
 		content, _ := json.Marshal(strings.TrimPrefix(claudeResponse.Completion, " "))
 		choice := dto.OpenAITextResponseChoice{
@@ -244,20 +295,32 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 		choices = append(choices, choice)
 	} else {
 		fullTextResponse.Id = claudeResponse.Id
-		for i, message := range claudeResponse.Content {
-			content, _ := json.Marshal(message.Text)
-			choice := dto.OpenAITextResponseChoice{
-				Index: i,
-				Message: dto.Message{
-					Role:    "assistant",
-					Content: content,
-				},
-				FinishReason: stopReasonClaude2OpenAI(claudeResponse.StopReason),
+		for _, message := range claudeResponse.Content {
+			if message.Type == "tool_use" {
+				args, _ := json.Marshal(message.Input)
+				tools = append(tools, dto.ToolCall{
+					ID:   message.Id,
+					Type: "function", // compatible with other OpenAI derivative applications
+					Function: dto.FunctionCall{
+						Name:      message.Name,
+						Arguments: string(args),
+					},
+				})
 			}
-			choices = append(choices, choice)
 		}
 	}
-
+	choice := dto.OpenAITextResponseChoice{
+		Index: 0,
+		Message: dto.Message{
+			Role: "assistant",
+		},
+		FinishReason: stopReasonClaude2OpenAI(claudeResponse.StopReason),
+	}
+	choice.SetStringContent(responseText)
+	if len(tools) > 0 {
+		choice.Message.ToolCalls = tools
+	}
+	choices = append(choices, choice)
 	fullTextResponse.Choices = choices
 	return &fullTextResponse
 }
@@ -334,6 +397,8 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 				} else if claudeResponse.Type == "message_delta" {
 					usage.CompletionTokens = claudeUsage.OutputTokens
 					usage.TotalTokens = claudeUsage.InputTokens + claudeUsage.OutputTokens
+				} else if claudeResponse.Type == "content_block_start" {
+
 				} else {
 					return true
 				}
