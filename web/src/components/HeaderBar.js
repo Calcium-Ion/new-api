@@ -8,12 +8,19 @@ import '../index.css';
 
 import fireworks from 'react-fireworks';
 
-import { IconHelpCircle, IconKey, IconUser } from '@douyinfe/semi-icons';
+import { IconHelpCircle, IconKey, IconUser, IconComment } from '@douyinfe/semi-icons';
 import { Avatar, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render';
 
 // HeaderBar Buttons
-let headerButtons = [];
+let headerButtons = [
+  {
+    text: '令牌',
+    itemKey: 'token',
+    to: '/token',
+    icon: <IconComment />,
+  },
+];
 
 const HeaderBar = () => {
   const [userState, userDispatch] = useContext(UserContext);
@@ -73,6 +80,7 @@ const HeaderBar = () => {
               const routerMap = {
                 login: '/login',
                 register: '/register',
+                token: '/token',
               };
               return (
                 <Link
@@ -136,6 +144,14 @@ const HeaderBar = () => {
                     />
                   </>
                 )}
+                {headerButtons.map((button) => (
+                  <Nav.Item
+                    key={button.itemKey}
+                    itemKey={button.itemKey}
+                    text={button.text}
+                    icon={button.icon}
+                  />
+                ))}
               </>
             }
           ></Nav>
