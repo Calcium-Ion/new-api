@@ -106,6 +106,18 @@ func Logout(c *gin.Context) {
 	})
 }
 
+package controller
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"one-api/common"
+	"one-api/model"
+)
+
 func Register(c *gin.Context) {
 	if !common.RegisterEnabled {
 		c.JSON(http.StatusOK, gin.H{
@@ -179,19 +191,61 @@ func Register(c *gin.Context) {
 	if common.EmailVerificationEnabled {
 		cleanUser.Email = user.Email
 	}
-	if err := cleanUser.Insert(inviterId); err != nil {
+
+	// 开始数据库事务
+	tx := model.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := cleanUser.InsertWithTx(tx); err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),
 		})
 		return
 	}
+
+	// 创建默认令牌（无限额度，无限时间）
+	token := model.Token{
+		UserId:         cleanUser.Id,
+		Name:           "默认令牌",
+		Key:            common.GenerateKey(),
+		CreatedTime:    common.GetTimestamp(),
+		AccessedTime:   common.GetTimestamp(),
+		ExpiredTime:    -1, // -1 表示永不过期
+		RemainQuota:    -1, // -1 表示无限额度
+		UnlimitedQuota: true,
+	}
+
+	if err := token.InsertWithTx(tx); err != nil {
+		tx.Rollback()
+		log.Printf("为新用户 %s 创建默认令牌失败: %v", cleanUser.Username, err)
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "注册失败，无法创建默认令牌",
+		})
+		return
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "注册失败，无法完成数据库操作",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "",
+		"message": "注册成功，并已创建默认令牌",
 	})
-	return
 }
+
 
 func GetAllUsers(c *gin.Context) {
 	p, _ := strconv.Atoi(c.Query("p"))
