@@ -31,6 +31,7 @@ type GeneralOpenAIRequest struct {
 	User             string          `json:"user,omitempty"`
 	LogProbs         bool            `json:"logprobs,omitempty"`
 	TopLogProbs      int             `json:"top_logprobs,omitempty"`
+	Dimensions       int             `json:"dimensions,omitempty"`
 }
 
 type OpenAITools struct {
