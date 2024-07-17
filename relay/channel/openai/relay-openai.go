@@ -53,7 +53,10 @@ func OpenaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 			}
 			data = data[6:]
 			if !strings.HasPrefix(data, "[DONE]") {
-				service.StringData(c, data)
+				err := service.StringData(c, data)
+				if err != nil {
+					common.LogError(c, "streaming error: "+err.Error())
+				}
 				streamItems = append(streamItems, data)
 			}
 		}

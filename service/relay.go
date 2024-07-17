@@ -2,10 +2,10 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"one-api/common"
-	"strings"
 )
 
 func SetEventStreamHeaders(c *gin.Context) {
@@ -16,11 +16,16 @@ func SetEventStreamHeaders(c *gin.Context) {
 	c.Writer.Header().Set("X-Accel-Buffering", "no")
 }
 
-func StringData(c *gin.Context, str string) {
-	str = strings.TrimPrefix(str, "data: ")
-	str = strings.TrimSuffix(str, "\r")
+func StringData(c *gin.Context, str string) error {
+	//str = strings.TrimPrefix(str, "data: ")
+	//str = strings.TrimSuffix(str, "\r")
 	c.Render(-1, common.CustomEvent{Data: "data: " + str})
-	c.Writer.Flush()
+	if c.Writer != nil {
+		c.Writer.Flush()
+	} else {
+		return errors.New("writer is nil")
+	}
+	return nil
 }
 
 func ObjectData(c *gin.Context, object interface{}) error {
@@ -28,12 +33,11 @@ func ObjectData(c *gin.Context, object interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error marshalling object: %w", err)
 	}
-	StringData(c, string(jsonData))
-	return nil
+	return StringData(c, string(jsonData))
 }
 
 func Done(c *gin.Context) {
-	StringData(c, "[DONE]")
+	_ = StringData(c, "[DONE]")
 }
 
 func GetResponseID(c *gin.Context) string {
