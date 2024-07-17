@@ -168,8 +168,8 @@ const LoginForm = () => {
                 <Form>
                   <Form.Input
                     field={'username'}
-                    label={'用户名'}
-                    placeholder='用户名'
+                    label={'用户名/邮箱'}
+                    placeholder='用户名/邮箱'
                     name='username'
                     onChange={(value) => handleChange('username', value)}
                   />
