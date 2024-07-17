@@ -1,6 +1,8 @@
 package controller
 
 import (
+	
+	"log"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -106,17 +108,10 @@ func Logout(c *gin.Context) {
 	})
 }
 
-package controller
 
-import (
-	"encoding/json"
-	"log"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"one-api/common"
-	"one-api/model"
-)
+
+	
 
 func Register(c *gin.Context) {
 	if !common.RegisterEnabled {
