@@ -78,7 +78,7 @@ const SiderBar = () => {
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
       {
-        text: '令牌',
+        text: '开始对话/令牌',
         itemKey: 'token',
         to: '/token',
         icon: <IconComment />,
