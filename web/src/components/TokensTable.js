@@ -574,7 +574,7 @@ const TokensTable = () => {
       const confirmStartChat = () => {
         Modal.confirm({
           title: '是否直接开始AI对话？',
-          content: '您可以选择直接开始AI对话或稍后手动开始。',
+          content: '将所有最先进的AI聚合进行对话。',
           onOk: () => {
             // 触发聊天按钮的操作
             if (tokens.length > 0) {
