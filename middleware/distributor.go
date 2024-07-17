@@ -69,7 +69,7 @@ func Distribute() func(c *gin.Context) {
 			if shouldSelectChannel {
 				channel, err = model.CacheGetRandomSatisfiedChannel(userGroup, modelRequest.Model, 0)
 				if err != nil {
-					message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", userGroup, modelRequest.Model)
+					message := fmt.Sprintf("当前分组 %s 下管理员对于此模型配置出错，请联系管理员q2411728460 进行处理：RJLAPI", userGroup, modelRequest.Model)
 					// 如果错误，但是渠道不为空，说明是数据库一致性问题
 					if channel != nil {
 						common.SysError(fmt.Sprintf("渠道不存在：%d", channel.Id))
