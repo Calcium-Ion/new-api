@@ -4,6 +4,7 @@ import {
   copy,
   showError,
   showSuccess,
+  timestamp2string,
 } from '../helpers';
 
 import { ITEMS_PER_PAGE } from '../constants';
@@ -11,6 +12,7 @@ import { renderQuota } from '../helpers/render';
 import {
   Button,
   Dropdown,
+  Form,
   Modal,
   Popconfirm,
   Popover,
@@ -32,6 +34,57 @@ const OPEN_LINK_OPTIONS = [
   { key: 'ama', text: 'ChatGPT Web & Midjourney', value: 'ama' },
   { key: 'opencat', text: 'OpenCat', value: 'opencat' },
 ];
+
+function renderTimestamp(timestamp) {
+  return <>{timestamp2string(timestamp)}</>;
+}
+
+function renderStatus(status, model_limits_enabled = false) {
+  switch (status) {
+    case 1:
+      if (model_limits_enabled) {
+        return (
+          <Tag color='green' size='large'>
+            已启用：限制模型
+          </Tag>
+        );
+      } else {
+        return (
+          <Tag color='green' size='large'>
+            已启用
+          </Tag>
+        );
+      }
+    case 2:
+      return (
+        <Tag color='red' size='large'>
+          {' '}
+          已禁用{' '}
+        </Tag>
+      );
+    case 3:
+      return (
+        <Tag color='yellow' size='large'>
+          {' '}
+          已过期{' '}
+        </Tag>
+      );
+    case 4:
+      return (
+        <Tag color='grey' size='large'>
+          {' '}
+          已耗尽{' '}
+        </Tag>
+      );
+    default:
+      return (
+        <Tag color='black' size='large'>
+          {' '}
+          未知状态{' '}
+        </Tag>
+      );
+  }
+}
 
 const TokensTable = () => {
   const link_menu = [
@@ -58,17 +111,92 @@ const TokensTable = () => {
 
   const columns = [
     {
+      title: '名称',
+      dataIndex: 'name',
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (text, record, index) => {
+        return <div>{renderStatus(text, record.model_limits_enabled)}</div>;
+      },
+    },
+    {
+      title: '已用额度',
+      dataIndex: 'used_quota',
+      render: (text, record, index) => {
+        return <div>{renderQuota(parseInt(text))}</div>;
+      },
+    },
+    {
+      title: '剩余额度',
+      dataIndex: 'remain_quota',
+      render: (text, record, index) => {
+        return (
+          <div>
+            {record.unlimited_quota ? (
+              <Tag size={'large'} color={'white'}>
+                无限制
+              </Tag>
+            ) : (
+              <Tag size={'large'} color={'light-blue'}>
+                {renderQuota(parseInt(text))}
+              </Tag>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'created_time',
+      render: (text, record, index) => {
+        return <div>{renderTimestamp(text)}</div>;
+      },
+    },
+    {
+      title: '过期时间',
+      dataIndex: 'expired_time',
+      render: (text, record, index) => {
+        return (
+          <div>
+            {record.expired_time === -1 ? '永不过期' : renderTimestamp(text)}
+          </div>
+        );
+      },
+    },
+    {
       title: '',
       dataIndex: 'operate',
       render: (text, record, index) => (
         <div>
+          <Popover
+            content={'sk-' + record.key}
+            style={{ padding: 20 }}
+            position='top'
+          >
+            <Button theme='light' type='tertiary' style={{ marginRight: 1 }}>
+              查看
+            </Button>
+          </Popover>
+          <Button
+            theme='light'
+            type='secondary'
+            style={{ marginRight: 1 }}
+            onClick={async (text) => {
+              await copyText('sk-' + record.key);
+            }}
+          >
+            复制
+          </Button>
           <SplitButtonGroup
             style={{ marginRight: 1 }}
             aria-label='项目操作按钮组'
           >
             <Button
               theme='light'
-              style={{ color: 'rgba(var(--semi-teal-7), 1)', height: '2em' }}
+              style={{ color: 'rgba(var(--semi-teal-7), 1)' }}
               onClick={() => {
                 onOpenLink('next', record.key);
               }}
@@ -133,37 +261,6 @@ const TokensTable = () => {
               ></Button>
             </Dropdown>
           </SplitButtonGroup>
-        </div>
-      ),
-    },
-    {
-      title: '名称',
-      dataIndex: 'name',
-    },
-    {
-      title: '',
-      dataIndex: 'operate',
-      render: (text, record, index) => (
-        <div>
-          <Popover
-            content={'sk-' + record.key}
-            style={{ padding: 20 }}
-            position='top'
-          >
-            <Button theme='light' type='tertiary' style={{ marginRight: 1 }}>
-              查看
-            </Button>
-          </Popover>
-          <Button
-            theme='light'
-            type='secondary'
-            style={{ marginRight: 1 }}
-            onClick={async (text) => {
-              await copyText('sk-' + record.key);
-            }}
-          >
-            复制
-          </Button>
           <Popconfirm
             title='确定是否要删除此令牌？'
             content='此修改将不可逆'
@@ -225,6 +322,14 @@ const TokensTable = () => {
   const [tokenCount, setTokenCount] = useState(pageSize);
   const [loading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchToken, setSearchToken] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
+  const [targetTokenIdx, setTargetTokenIdx] = useState(0);
+  const [editingToken, setEditingToken] = useState({
+    id: undefined,
+  });
 
   const closeEdit = () => {
     setShowEdit(false);
@@ -379,14 +484,59 @@ const TokensTable = () => {
       showSuccess('操作成功完成！');
       let token = res.data.data;
       let newTokens = [...tokens];
+      // let realIdx = (activePage - 1) * ITEMS_PER_PAGE + idx;
       if (action === 'delete') {
       } else {
         record.status = token.status;
+        // newTokens[realIdx].status = token.status;
       }
       setTokensFormat(newTokens);
     } else {
       showError(message);
     }
+    setLoading(false);
+  };
+
+  const searchTokens = async () => {
+    if (searchKeyword === '' && searchToken === '') {
+      // if keyword is blank, load files instead.
+      await loadTokens(0);
+      setActivePage(1);
+      return;
+    }
+    setSearching(true);
+    const res = await API.get(
+      `/api/token/search?keyword=${searchKeyword}&token=${searchToken}`,
+    );
+    const { success, message, data } = res.data;
+    if (success) {
+      setTokensFormat(data);
+      setActivePage(1);
+    } else {
+      showError(message);
+    }
+    setSearching(false);
+  };
+
+  const handleKeywordChange = async (value) => {
+    setSearchKeyword(value.trim());
+  };
+
+  const handleSearchTokenChange = async (value) => {
+    setSearchToken(value.trim());
+  };
+
+  const sortToken = (key) => {
+    if (tokens.length === 0) return;
+    setLoading(true);
+    let sortedTokens = [...tokens];
+    sortedTokens.sort((a, b) => {
+      return ('' + a[key]).localeCompare(b[key]);
+    });
+    if (sortedTokens[0].id === tokens[0].id) {
+      sortedTokens.reverse();
+    }
+    setTokens(sortedTokens);
     setLoading(false);
   };
 
@@ -426,6 +576,38 @@ const TokensTable = () => {
         visiable={showEdit}
         handleClose={closeEdit}
       ></EditToken>
+      <Form
+        layout='horizontal'
+        style={{ marginTop: 10 }}
+        labelPosition={'left'}
+      >
+        <Form.Input
+          field='keyword'
+          label='搜索关键字'
+          placeholder='令牌名称'
+          value={searchKeyword}
+          loading={searching}
+          onChange={handleKeywordChange}
+        />
+        <Form.Input
+          field='token'
+          label='Key'
+          placeholder='密钥'
+          value={searchToken}
+          loading={searching}
+          onChange={handleSearchTokenChange}
+        />
+        <Button
+          label='查询'
+          type='primary'
+          htmlType='submit'
+          className='btn-margin-right'
+          onClick={searchTokens}
+          style={{ marginRight: 8 }}
+        >
+          查询
+        </Button>
+      </Form>
 
       <Table
         style={{ marginTop: 20 }}
