@@ -13,22 +13,7 @@ import { Avatar, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render';
 
 // HeaderBar Buttons
-let headerButtons = [
-  {
-    text: '关于',
-    itemKey: 'about',
-    to: '/about',
-    icon: <IconHelpCircle />,
-  },
-];
-
-if (localStorage.getItem('chat_link')) {
-  headerButtons.splice(1, 0, {
-    name: '聊天',
-    to: '/chat',
-    icon: 'comments',
-  });
-}
+let headerButtons = [];
 
 const HeaderBar = () => {
   const [userState, userDispatch] = useContext(UserContext);
@@ -84,10 +69,8 @@ const HeaderBar = () => {
         <div style={{ width: '100%' }}>
           <Nav
             mode={'horizontal'}
-            // bodyStyle={{ height: 100 }}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
-                about: '/about',
                 login: '/login',
                 register: '/register',
               };
@@ -101,7 +84,6 @@ const HeaderBar = () => {
               );
             }}
             selectedKeys={[]}
-            // items={headerButtons}
             onSelect={(key) => {}}
             footer={
               <>
@@ -120,7 +102,6 @@ const HeaderBar = () => {
                     <Nav.Item itemKey={'new-year'} text={'🏮'} />
                   </Dropdown>
                 )}
-                <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
                 <Switch
                   checkedText='🌞'
                   size={'large'}
