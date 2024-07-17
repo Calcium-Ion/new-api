@@ -331,6 +331,7 @@ const TokensTable = () => {
     id: undefined,
   });
   const [isSecondLoad, setIsSecondLoad] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const closeEdit = () => {
     setShowEdit(false);
@@ -571,50 +572,24 @@ const TokensTable = () => {
 
   useEffect(() => {
     if (isSecondLoad) {
-      const confirmStartChat = () => {
-        const modal = Modal.confirm({
-          title: '是否直接开始AI对话？',
-          content: '您可以选择直接开始AI对话或稍后手动开始。',
-          onOk: () => {
-            // 触发聊天按钮的操作
-            if (tokens.length > 0) {
-              onOpenLink('next', tokens[0].key);
-            } else {
-              showError('没有可用的令牌进行对话。');
-            }
-          },
-          onCancel: () => {
-            // 用户选择否，不执行任何操作
-          },
-          okText: '是',
-          cancelText: '否',
-          icon: null,
-          style: {
-            width: '300px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          },
-          maskClosable: true, // 设置为 true 以允许点击外部区域关闭对话框
-        });
-
-        // 监听模态框的关闭事件
-        modal.update({
-          onCancel: () => {
-            // 用户点击外部区域关闭对话框，视为选择“是”
-            if (tokens.length > 0) {
-              onOpenLink('next', tokens[0].key);
-            } else {
-              showError('没有可用的令牌进行对话。');
-            }
-          },
-        });
-      };
-
-      confirmStartChat();
+      setModalVisible(true);
     } else {
       setIsSecondLoad(true);
     }
   }, [tokens]);
+
+  const handleModalOk = () => {
+    if (tokens.length > 0) {
+      onOpenLink('next', tokens[0].key);
+    } else {
+      showError('没有可用的令牌进行对话。');
+    }
+    setModalVisible(false);
+  };
+
+  const handleModalCancel = () => {
+    setModalVisible(false);
+  };
 
   return (
     <>
@@ -710,6 +685,19 @@ const TokensTable = () => {
       >
         复制所选令牌到剪贴板
       </Button>
+
+      <Modal
+        title="是否直接开始AI对话？"
+        visible={modalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+        okText="是"
+        cancelText="否"
+        maskClosable={true}
+        afterClose={handleModalOk} // 点击外部区域关闭对话框时触发
+      >
+        <p>您可以选择直接开始AI对话或稍后手动开始。</p>
+      </Modal>
     </>
   );
 };
