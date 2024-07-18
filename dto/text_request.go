@@ -148,7 +148,7 @@ func (m Message) ParseContent() []MediaMessage {
 					if ok {
 						subObj["detail"] = detail.(string)
 					} else {
-						subObj["detail"] = "auto"
+						subObj["detail"] = "high"
 					}
 					contentList = append(contentList, MediaMessage{
 						Type: ContentTypeImageURL,
@@ -157,7 +157,16 @@ func (m Message) ParseContent() []MediaMessage {
 							Detail: subObj["detail"].(string),
 						},
 					})
+				} else if url, ok := contentMap["image_url"].(string); ok {
+					contentList = append(contentList, MediaMessage{
+						Type: ContentTypeImageURL,
+						ImageUrl: MessageImageUrl{
+							Url:    url,
+							Detail: "high",
+						},
+					})
 				}
+
 			}
 		}
 		return contentList
