@@ -123,7 +123,7 @@ const TokensTable = () => {
       loading={loading}
       disabled={loading}
     >
-      {loading ? '加载中...' : '开始聊天'}
+      {loading ? '加载中...' : '开始对话'}
     </Button>
   );
 };
