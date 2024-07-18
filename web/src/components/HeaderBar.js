@@ -80,7 +80,7 @@ const HeaderBar = () => {
               const routerMap = {
                 login: '/login',
                 register: '/register',
-                token: '/token',
+                tokensTable2: '/tokens-table-2',
               };
               return (
                 <Link
