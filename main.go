@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -91,10 +92,10 @@ func main() {
 		go controller.AutomaticallyTestChannels(frequency)
 	}
 	if common.IsMasterNode && constant.UpdateTask {
-		common.SafeGoroutine(func() {
+		gopool.Go(func() {
 			controller.UpdateMidjourneyTaskBulk()
 		})
-		common.SafeGoroutine(func() {
+		gopool.Go(func() {
 			controller.UpdateTaskBulk()
 		})
 	}

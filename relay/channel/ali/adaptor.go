@@ -84,7 +84,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		err, usage = aliEmbeddingHandler(c, resp)
 	default:
 		if info.IsStream {
-			err, usage = openai.OpenaiStreamHandler(c, resp, info)
+			err, usage = openai.OaiStreamHandler(c, resp, info)
 		} else {
 			err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
 		}

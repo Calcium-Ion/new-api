@@ -8,12 +8,10 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
-	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
-	"time"
 )
 
 func stopReasonClaude2OpenAI(reason string) string {
@@ -332,91 +330,59 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 	responseText := ""
 	createdTime := common.GetTimestamp()
 	scanner := bufio.NewScanner(resp.Body)
-	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		if atEOF && len(data) == 0 {
-			return 0, nil, nil
+	scanner.Split(bufio.ScanLines)
+	service.SetEventStreamHeaders(c)
+
+	for scanner.Scan() {
+		data := scanner.Text()
+		info.SetFirstResponseTime()
+		if len(data) < 6 || !strings.HasPrefix(data, "data:") {
+			continue
 		}
-		if i := strings.Index(string(data), "\n"); i >= 0 {
-			return i + 1, data[0:i], nil
+		data = strings.TrimPrefix(data, "data:")
+		data = strings.TrimSpace(data)
+		var claudeResponse ClaudeResponse
+		err := json.Unmarshal([]byte(data), &claudeResponse)
+		if err != nil {
+			common.SysError("error unmarshalling stream response: " + err.Error())
+			continue
 		}
-		if atEOF {
-			return len(data), data, nil
+
+		response, claudeUsage := StreamResponseClaude2OpenAI(requestMode, &claudeResponse)
+		if response == nil {
+			continue
 		}
-		return 0, nil, nil
-	})
-	dataChan := make(chan string, 5)
-	stopChan := make(chan bool, 2)
-	go func() {
-		for scanner.Scan() {
-			data := scanner.Text()
-			if !strings.HasPrefix(data, "data: ") {
+		if requestMode == RequestModeCompletion {
+			responseText += claudeResponse.Completion
+			responseId = response.Id
+		} else {
+			if claudeResponse.Type == "message_start" {
+				// message_start, 获取usage
+				responseId = claudeResponse.Message.Id
+				info.UpstreamModelName = claudeResponse.Message.Model
+				usage.PromptTokens = claudeUsage.InputTokens
+			} else if claudeResponse.Type == "content_block_delta" {
+				responseText += claudeResponse.Delta.Text
+			} else if claudeResponse.Type == "message_delta" {
+				usage.CompletionTokens = claudeUsage.OutputTokens
+				usage.TotalTokens = claudeUsage.InputTokens + claudeUsage.OutputTokens
+			} else if claudeResponse.Type == "content_block_start" {
+
+			} else {
 				continue
 			}
-			data = strings.TrimPrefix(data, "data: ")
-			if !common.SafeSendStringTimeout(dataChan, data, constant.StreamingTimeout) {
-				// send data timeout, stop the stream
-				common.LogError(c, "send data timeout, stop the stream")
-				break
-			}
 		}
-		stopChan <- true
-	}()
-	isFirst := true
-	service.SetEventStreamHeaders(c)
-	c.Stream(func(w io.Writer) bool {
-		select {
-		case data := <-dataChan:
-			if isFirst {
-				isFirst = false
-				info.FirstResponseTime = time.Now()
-			}
-			// some implementations may add \r at the end of data
-			data = strings.TrimSuffix(data, "\r")
-			var claudeResponse ClaudeResponse
-			err := json.Unmarshal([]byte(data), &claudeResponse)
-			if err != nil {
-				common.SysError("error unmarshalling stream response: " + err.Error())
-				return true
-			}
+		//response.Id = responseId
+		response.Id = responseId
+		response.Created = createdTime
+		response.Model = info.UpstreamModelName
 
-			response, claudeUsage := StreamResponseClaude2OpenAI(requestMode, &claudeResponse)
-			if response == nil {
-				return true
-			}
-			if requestMode == RequestModeCompletion {
-				responseText += claudeResponse.Completion
-				responseId = response.Id
-			} else {
-				if claudeResponse.Type == "message_start" {
-					// message_start, 获取usage
-					responseId = claudeResponse.Message.Id
-					info.UpstreamModelName = claudeResponse.Message.Model
-					usage.PromptTokens = claudeUsage.InputTokens
-				} else if claudeResponse.Type == "content_block_delta" {
-					responseText += claudeResponse.Delta.Text
-				} else if claudeResponse.Type == "message_delta" {
-					usage.CompletionTokens = claudeUsage.OutputTokens
-					usage.TotalTokens = claudeUsage.InputTokens + claudeUsage.OutputTokens
-				} else if claudeResponse.Type == "content_block_start" {
-
-				} else {
-					return true
-				}
-			}
-			//response.Id = responseId
-			response.Id = responseId
-			response.Created = createdTime
-			response.Model = info.UpstreamModelName
-
-			err = service.ObjectData(c, response)
-			if err != nil {
-				common.SysError(err.Error())
-			}
-			return true
-		case <-stopChan:
-			return false
+		err = service.ObjectData(c, response)
+		if err != nil {
+			common.LogError(c, "send_stream_response_failed: "+err.Error())
 		}
-	})
+	}
+
 	if requestMode == RequestModeCompletion {
 		usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 	} else {
@@ -435,10 +401,7 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 		}
 	}
 	service.Done(c)
-	err := resp.Body.Close()
-	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "close_response_body_failed", http.StatusInternalServerError), nil
-	}
+	resp.Body.Close()
 	return nil, usage
 }
 

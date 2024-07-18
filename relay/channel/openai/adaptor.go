@@ -145,7 +145,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		err, usage = OpenaiTTSHandler(c, resp, info)
 	default:
 		if info.IsStream {
-			err, usage = OpenaiStreamHandler(c, resp, info)
+			err, usage = OaiStreamHandler(c, resp, info)
 		} else {
 			err, usage = OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
 		}
