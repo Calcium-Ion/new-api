@@ -17,14 +17,22 @@ const TokensTable = () => {
 
   const loadTokens = async () => {
     setLoading(true);
-    const res = await API.get('/api/token/');
-    const { success, message, data } = res.data;
-    if (success) {
-      setTokens(data);
-    } else {
-      showError(message);
+    try {
+      const res = await API.get('/api/token/');
+      const { success, message, data } = res.data;
+      if (success) {
+        setTokens(data);
+        if (data.length === 0) {
+          showSuccess('初始化令牌成功！'); // 显示成功消息
+        }
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const onOpenLink = async (type, key) => {
@@ -78,8 +86,6 @@ const TokensTable = () => {
         if (tokens.length > 0 && !hasOpenedLink) {
           onOpenLink('next', tokens[0].key);
           setHasOpenedLink(true); // 设置状态以避免重复调用
-        } else if (tokens.length === 0) {
-          showError('没有可用的令牌进行对话。');
         }
       })
       .catch((reason) => {
