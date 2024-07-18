@@ -704,4 +704,4 @@ const TokensTable = () => {
   );
 };
 
-export default TokensTable;
+export default TokensTable2;
