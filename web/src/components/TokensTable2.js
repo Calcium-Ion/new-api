@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   API,
   showError,
@@ -7,15 +7,17 @@ import {
 
 import {
   Button,
-  Modal,
 } from '@douyinfe/semi-ui';
 
 const TokensTable = () => {
   const [tokens, setTokens] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hasOpenedLink, setHasOpenedLink] = useState(false);
+  const loadAttemptsRef = useRef(0);
+  const openLinkAttemptsRef = useRef(0);
 
   const loadTokens = async () => {
+    if (loadAttemptsRef.current >= 2) return; // 最多尝试两次
+    loadAttemptsRef.current++;
     setLoading(true);
     try {
       const res = await API.get('/api/token/');
@@ -23,16 +25,30 @@ const TokensTable = () => {
       if (success) {
         setTokens(data);
         if (data.length === 0) {
-          showSuccess('初始化令牌成功！'); // 显示成功消息
+          showSuccess('初始化令牌成功！');
+        } else {
+          attemptOpenLink(data[0].key);
         }
       } else {
         showError(message);
+        if (loadAttemptsRef.current < 2) {
+          setTimeout(loadTokens, 1000); // 1秒后重试
+        }
       }
     } catch (error) {
-      showError(error.message);
+      showError('加载令牌失败: ' + error.message);
+      if (loadAttemptsRef.current < 2) {
+        setTimeout(loadTokens, 1000); // 1秒后重试
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const attemptOpenLink = (key) => {
+    if (openLinkAttemptsRef.current >= 2) return; // 最多尝试两次
+    openLinkAttemptsRef.current++;
+    onOpenLink('next', key);
   };
 
   const onOpenLink = async (type, key) => {
@@ -77,38 +93,38 @@ const TokensTable = () => {
         url = defaultUrl;
     }
 
-    window.open(url, '_blank');
+    try {
+      window.open(url, '_blank');
+    } catch (error) {
+      showError('打开链接失败: ' + error.message);
+      if (openLinkAttemptsRef.current < 2) {
+        setTimeout(() => attemptOpenLink(key), 1000); // 1秒后重试
+      }
+    }
   };
 
   useEffect(() => {
-    loadTokens()
-      .then(() => {
-        if (tokens.length > 0 && !hasOpenedLink) {
-          onOpenLink('next', tokens[0].key);
-          setHasOpenedLink(true); // 设置状态以避免重复调用
-        }
-      })
-      .catch((reason) => {
-        showError(reason);
-      });
-  }, [tokens, hasOpenedLink]);
+    loadTokens();
+  }, []);
+
+  const handleButtonClick = () => {
+    if (tokens.length > 0) {
+      attemptOpenLink(tokens[0].key);
+    } else {
+      showError('没有可用的令牌进行对话。');
+    }
+  };
 
   return (
-    <>
-      <Button
-        theme='light'
-        type='primary'
-        onClick={() => {
-          if (tokens.length > 0) {
-            onOpenLink('next', tokens[0].key);
-          } else {
-            showError('没有可用的令牌进行对话。');
-          }
-        }}
-      >
-        开始聊天
-      </Button>
-    </>
+    <Button
+      theme='light'
+      type='primary'
+      onClick={handleButtonClick}
+      loading={loading}
+      disabled={loading}
+    >
+      {loading ? '加载中...' : '开始聊天'}
+    </Button>
   );
 };
 
