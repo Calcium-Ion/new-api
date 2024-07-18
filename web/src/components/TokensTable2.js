@@ -13,6 +13,7 @@ import {
 const TokensTable = () => {
   const [tokens, setTokens] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasOpenedLink, setHasOpenedLink] = useState(false);
 
   const loadTokens = async () => {
     setLoading(true);
@@ -74,16 +75,17 @@ const TokensTable = () => {
   useEffect(() => {
     loadTokens()
       .then(() => {
-        if (tokens.length > 0) {
+        if (tokens.length > 0 && !hasOpenedLink) {
           onOpenLink('next', tokens[0].key);
-        } else {
+          setHasOpenedLink(true); // 设置状态以避免重复调用
+        } else if (tokens.length === 0) {
           showError('没有可用的令牌进行对话。');
         }
       })
       .catch((reason) => {
         showError(reason);
       });
-  }, [tokens]);
+  }, [tokens, hasOpenedLink]);
 
   return (
     <>
