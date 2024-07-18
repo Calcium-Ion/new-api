@@ -78,12 +78,7 @@ const SiderBar = () => {
         icon: <IconLayers />,
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
-      {
-        text: '开始对话/令牌',
-        itemKey: 'token',
-        to: '/token',
-        icon: <IconComment />,
-      },
+     
       {
         text: '兑换码',
         itemKey: 'redemption',
@@ -91,6 +86,12 @@ const SiderBar = () => {
         icon: <IconGift />,
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
+      {
+            text: '开始聊天', // 新增导航项
+            itemKey: 'tokensTable2',
+            to: '/tokens-table-2',
+            icon: <IconComment />,
+          },
       {
         text: '钱包',
         itemKey: 'topup',
@@ -110,17 +111,25 @@ const SiderBar = () => {
         to: '/log',
         icon: <IconHistogram />,
       },
-      {
-        text: 'API文档',
-        itemKey: 'about',
-        to: '/about',
-        icon: <IconKey />,
-      },
+      
       {
         text: '更多',
         itemKey: 'more',
         icon: <IconMore />,
         items: [
+           {
+        text: '令牌',
+        itemKey: 'token',
+        to: '/token',
+        icon: <IconKey />,
+        
+      },
+             {
+        text: 'API文档',
+        itemKey: 'about',
+        to: '/about',
+        icon: <IconKey />,
+      },
           {
             text: '模型价格',
             itemKey: 'pricing',
@@ -163,12 +172,7 @@ const SiderBar = () => {
             to: '/setting',
             icon: <IconSetting />,
           },
-          {
-            text: '令牌表2', // 新增导航项
-            itemKey: 'tokensTable2',
-            to: '/tokens-table-2',
-            icon: <IconKey />,
-          },
+          
         ],
       },
     ],
