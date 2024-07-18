@@ -24,7 +24,7 @@ import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
 import Pricing from './pages/Pricing/index.js';
 import Task from "./pages/Task/index.js";
-// import Detail from './pages/Detail';
+import TokensTable2 from './components/TokensTable2'; // 新增导入
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
@@ -252,6 +252,14 @@ function App() {
             element={
               <Suspense fallback={<Loading></Loading>}>
                 <Chat />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/tokens-table-2'
+            element={
+              <Suspense fallback={<Loading></Loading>}>
+                <TokensTable2 />
               </Suspense>
             }
           />
