@@ -16,8 +16,8 @@ import { stringToColor } from '../helpers/render';
 let headerButtons = [
   {
     text: '对话',
-    itemKey: 'token',
-    to: '/token',
+    itemKey: 'tokensTable2',
+    to: '/tokens-table-2',
     icon: <IconComment />,
   },
 ];
