@@ -73,11 +73,17 @@ const TokensTable = () => {
 
   useEffect(() => {
     loadTokens()
-      .then()
+      .then(() => {
+        if (tokens.length > 0) {
+          onOpenLink('next', tokens[0].key);
+        } else {
+          showError('没有可用的令牌进行对话。');
+        }
+      })
       .catch((reason) => {
         showError(reason);
       });
-  }, []);
+  }, [tokens]);
 
   return (
     <>
