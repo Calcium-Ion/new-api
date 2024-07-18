@@ -12,9 +12,11 @@ type ImageRequest struct {
 }
 
 type ImageResponse struct {
-	Created int `json:"created"`
-	Data    []struct {
-		Url     string `json:"url"`
-		B64Json string `json:"b64_json"`
-	}
+	Data    []ImageData `json:"data"`
+	Created int64       `json:"created"`
+}
+type ImageData struct {
+	Url           string `json:"url"`
+	B64Json       string `json:"b64_json"`
+	RevisedPrompt string `json:"revised_prompt"`
 }
