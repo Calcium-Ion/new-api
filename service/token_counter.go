@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"strings"
 	"unicode/utf8"
@@ -81,12 +82,19 @@ func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
 }
 
 func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (int, error) {
-	// TODO: 非流模式下不计算图片token数量
 	if model == "glm-4v" {
 		return 1047, nil
 	}
 	if imageUrl.Detail == "low" {
 		return 85, nil
+	}
+	// TODO: 非流模式下不计算图片token数量
+	if !constant.GetMediaTokenNotStream && !stream {
+		return 1000, nil
+	}
+	// 是否统计图片token
+	if !constant.GetMediaToken {
+		return 1000, nil
 	}
 	// 同步One API的图片计费逻辑
 	if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
