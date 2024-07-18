@@ -170,8 +170,8 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	}
 
 	usage := &dto.Usage{
-		PromptTokens: relayInfo.PromptTokens,
-		TotalTokens:  relayInfo.PromptTokens,
+		PromptTokens: imageRequest.N,
+		TotalTokens:  imageRequest.N,
 	}
 
 	quality := "standard"
