@@ -76,7 +76,7 @@ const Home = () => {
                     </span>
                   }
                 >
-                  <p>名称：{statusState?.status?.system_name}</p>
+                  <p>名称：RJLAPI</p>
                   <p>
                     版本：
                     {statusState?.status?.version
@@ -86,7 +86,7 @@ const Home = () => {
                   <p>
                     源码：
                     <a
-                      href='https://github.com/Calcium-Ion/new-api'
+                      href='https://api.raojialong.space'
                       target='_blank'
                       rel='noreferrer'
                     >
