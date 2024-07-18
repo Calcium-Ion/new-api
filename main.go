@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/controller"
 	"one-api/middleware"
 	"one-api/model"
@@ -89,7 +90,7 @@ func main() {
 		}
 		go controller.AutomaticallyTestChannels(frequency)
 	}
-	if common.IsMasterNode {
+	if common.IsMasterNode && constant.UpdateTask {
 		common.SafeGoroutine(func() {
 			controller.UpdateMidjourneyTaskBulk()
 		})
