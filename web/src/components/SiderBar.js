@@ -60,6 +60,7 @@ const SiderBar = () => {
     detail: '/detail',
     pricing: '/pricing',
     task: '/task',
+    tokensTable2: '/tokens-table-2', // 新增路径
   };
 
   const headerButtons = useMemo(
@@ -161,6 +162,12 @@ const SiderBar = () => {
             itemKey: 'setting',
             to: '/setting',
             icon: <IconSetting />,
+          },
+          {
+            text: '令牌表2', // 新增导航项
+            itemKey: 'tokensTable2',
+            to: '/tokens-table-2',
+            icon: <IconKey />,
           },
         ],
       },
