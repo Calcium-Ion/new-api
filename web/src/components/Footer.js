@@ -18,27 +18,27 @@ const Footer = () => {
   const defaultFooter = (
     <div className='custom-footer'>
       <a
-        href='https://github.com/Calcium-Ion/new-api'
+        href='https://api.raojialong.space'
         target='_blank'
         rel='noreferrer'
       >
-        New API {import.meta.env.VITE_REACT_APP_VERSION}{' '}
+        RJL API {import.meta.env.VITE_REACT_APP_VERSION}{' '}
       </a>
       由{' '}
       <a
-        href='https://github.com/Calcium-Ion'
+        href='https://api.raojialong.space'
         target='_blank'
         rel='noreferrer'
       >
-        Calcium-Ion
+        RJL
       </a>{' '}
       开发，基于{' '}
       <a
-        href='https://github.com/songquanpeng/one-api'
+        href='https://api.raojialong.space'
         target='_blank'
         rel='noreferrer'
       >
-        One API
+        RJL API
       </a>
     </div>
   );
