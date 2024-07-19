@@ -198,7 +198,6 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) *dto.Ch
 			choice.Delta.SetContentString(respFirst.Text)
 		}
 	}
-	choice.FinishReason = &relaycommon.StopFinishReason
 	var response dto.ChatCompletionsStreamResponse
 	response.Object = "chat.completion.chunk"
 	response.Model = "gemini"
@@ -247,10 +246,14 @@ func geminiChatStreamHandler(c *gin.Context, resp *http.Response, info *relaycom
 			common.LogError(c, err.Error())
 		}
 	}
+
+	response := service.GenerateStopResponse(id, createAt, info.UpstreamModelName, relaycommon.StopFinishReason)
+	service.ObjectData(c, response)
+
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
 
 	if info.ShouldIncludeUsage {
-		response := service.GenerateFinalUsageResponse(id, createAt, info.UpstreamModelName, *usage)
+		response = service.GenerateFinalUsageResponse(id, createAt, info.UpstreamModelName, *usage)
 		err := service.ObjectData(c, response)
 		if err != nil {
 			common.SysError("send final response failed: " + err.Error())

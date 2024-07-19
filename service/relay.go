@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
+	"one-api/dto"
 )
 
 func SetEventStreamHeaders(c *gin.Context) {
@@ -44,4 +45,31 @@ func Done(c *gin.Context) {
 func GetResponseID(c *gin.Context) string {
 	logID := c.GetString("X-Oneapi-Request-Id")
 	return fmt.Sprintf("chatcmpl-%s", logID)
+}
+
+func GenerateStopResponse(id string, createAt int64, model string, finishReason string) *dto.ChatCompletionsStreamResponse {
+	return &dto.ChatCompletionsStreamResponse{
+		Id:                id,
+		Object:            "chat.completion.chunk",
+		Created:           createAt,
+		Model:             model,
+		SystemFingerprint: nil,
+		Choices: []dto.ChatCompletionsStreamResponseChoice{
+			{
+				FinishReason: &finishReason,
+			},
+		},
+	}
+}
+
+func GenerateFinalUsageResponse(id string, createAt int64, model string, usage dto.Usage) *dto.ChatCompletionsStreamResponse {
+	return &dto.ChatCompletionsStreamResponse{
+		Id:                id,
+		Object:            "chat.completion.chunk",
+		Created:           createAt,
+		Model:             model,
+		SystemFingerprint: nil,
+		Choices:           make([]dto.ChatCompletionsStreamResponseChoice, 0),
+		Usage:             &usage,
+	}
 }
