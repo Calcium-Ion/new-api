@@ -87,9 +87,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	err := json.Unmarshal(common.StringToByteSlice(lastStreamData), &lastStreamResponse)
 	if err == nil {
 		if lastStreamResponse.Usage != nil && service.ValidUsage(lastStreamResponse.Usage) {
-			if info.ShouldIncludeUsage {
-				containStreamUsage = true
-			} else {
+			if !info.ShouldIncludeUsage {
 				shouldSendLastResp = false
 			}
 		}
