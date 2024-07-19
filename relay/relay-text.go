@@ -130,6 +130,12 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		return openaiErr
 	}
 
+	includeUsage := false
+	// 判断用户是否需要返回使用情况
+	if textRequest.StreamOptions != nil && textRequest.StreamOptions.IncludeUsage {
+		includeUsage = true
+	}
+
 	// 如果不支持StreamOptions，将StreamOptions设置为nil
 	if !relayInfo.SupportStreamOptions || !textRequest.Stream {
 		textRequest.StreamOptions = nil
@@ -142,8 +148,8 @@ func TextHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		}
 	}
 
-	if textRequest.StreamOptions != nil && textRequest.StreamOptions.IncludeUsage {
-		relayInfo.ShouldIncludeUsage = textRequest.StreamOptions.IncludeUsage
+	if includeUsage {
+		relayInfo.ShouldIncludeUsage = true
 	}
 
 	adaptor := GetAdaptor(relayInfo.ApiType)
