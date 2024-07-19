@@ -102,7 +102,7 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 		tx = DB.Where("type = ?", logType)
 	}
 	if modelName != "" {
-		tx = tx.Where("model_name = ?", modelName)
+		tx = tx.Where("model_name like ?", "%"+modelName+"%")
 	}
 	if username != "" {
 		tx = tx.Where("username = ?", username)
