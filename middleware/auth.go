@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/model"
+	"strconv"
 	"strings"
 )
 
@@ -15,6 +16,7 @@ func authHelper(c *gin.Context, minRole int) {
 	role := session.Get("role")
 	id := session.Get("id")
 	status := session.Get("status")
+	useAccessToken := false
 	if username == nil {
 		// Check access token
 		accessToken := c.Request.Header.Get("Authorization")
@@ -33,10 +35,41 @@ func authHelper(c *gin.Context, minRole int) {
 			role = user.Role
 			id = user.Id
 			status = user.Status
+			useAccessToken = true
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": "无权进行此操作，access token 无效",
+			})
+			c.Abort()
+			return
+		}
+	}
+	if !useAccessToken {
+		// get header New-Api-User
+		apiUserIdStr := c.Request.Header.Get("New-Api-User")
+		if apiUserIdStr == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "无权进行此操作，请刷新页面或清空缓存后重试",
+			})
+			c.Abort()
+			return
+		}
+		apiUserId, err := strconv.Atoi(apiUserIdStr)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "无权进行此操作，登录信息无效，请重新登录",
+			})
+			c.Abort()
+			return
+
+		}
+		if id != apiUserId {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "无权进行此操作，与登录用户不匹配，请重新登录",
 			})
 			c.Abort()
 			return

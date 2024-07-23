@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"strings"
 	"unicode/utf8"
@@ -81,16 +82,30 @@ func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
 }
 
 func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (int, error) {
-	// TODO: 非流模式下不计算图片token数量
+	baseTokens := 85
 	if model == "glm-4v" {
 		return 1047, nil
 	}
 	if imageUrl.Detail == "low" {
-		return 85, nil
+		return baseTokens, nil
+	}
+	// TODO: 非流模式下不计算图片token数量
+	if !constant.GetMediaTokenNotStream && !stream {
+		return 1000, nil
+	}
+	// 是否统计图片token
+	if !constant.GetMediaToken {
+		return 1000, nil
 	}
 	// 同步One API的图片计费逻辑
 	if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
 		imageUrl.Detail = "high"
+	}
+
+	tileTokens := 170
+	if strings.HasPrefix(model, "gpt-4o-mini") {
+		tileTokens = 5667
+		baseTokens = 2833
 	}
 	var config image.Config
 	var err error
@@ -138,7 +153,7 @@ func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (in
 	// 计算图片的token数量(边的长度除以512，向上取整)
 	tiles := (shortSide + 511) / 512 * ((otherSide + 511) / 512)
 	log.Printf("tiles: %d", tiles)
-	return tiles*170 + 85, nil
+	return tiles*tileTokens + baseTokens, nil
 }
 
 func CountTokenChatRequest(request dto.GeneralOpenAIRequest, model string) (int, error) {

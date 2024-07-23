@@ -66,10 +66,6 @@ type ChatCompletionsStreamResponseChoiceDelta struct {
 	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
 }
 
-func (c *ChatCompletionsStreamResponseChoiceDelta) IsEmpty() bool {
-	return c.Content == nil && len(c.ToolCalls) == 0
-}
-
 func (c *ChatCompletionsStreamResponseChoiceDelta) SetContentString(s string) {
 	c.Content = &s
 }
@@ -90,9 +86,11 @@ type ToolCall struct {
 }
 
 type FunctionCall struct {
-	Name string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Name        string `json:"name,omitempty"`
 	// call function with arguments in JSON format
-	Arguments string `json:"arguments,omitempty"`
+	Parameters any    `json:"parameters,omitempty"` // request
+	Arguments  string `json:"arguments,omitempty"`
 }
 
 type ChatCompletionsStreamResponse struct {
@@ -103,6 +101,17 @@ type ChatCompletionsStreamResponse struct {
 	SystemFingerprint *string                               `json:"system_fingerprint"`
 	Choices           []ChatCompletionsStreamResponseChoice `json:"choices"`
 	Usage             *Usage                                `json:"usage"`
+}
+
+func (c *ChatCompletionsStreamResponse) GetSystemFingerprint() string {
+	if c.SystemFingerprint == nil {
+		return ""
+	}
+	return *c.SystemFingerprint
+}
+
+func (c *ChatCompletionsStreamResponse) SetSystemFingerprint(s string) {
+	c.SystemFingerprint = &s
 }
 
 type ChatCompletionsStreamResponseSimple struct {

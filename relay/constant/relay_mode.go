@@ -13,6 +13,7 @@ const (
 	RelayModeModerations
 	RelayModeImagesGenerations
 	RelayModeEdits
+
 	RelayModeMidjourneyImagine
 	RelayModeMidjourneyDescribe
 	RelayModeMidjourneyBlend
@@ -22,16 +23,19 @@ const (
 	RelayModeMidjourneyTaskFetch
 	RelayModeMidjourneyTaskImageSeed
 	RelayModeMidjourneyTaskFetchByCondition
-	RelayModeAudioSpeech
-	RelayModeAudioTranscription
-	RelayModeAudioTranslation
 	RelayModeMidjourneyAction
 	RelayModeMidjourneyModal
 	RelayModeMidjourneyShorten
 	RelayModeSwapFace
+
+	RelayModeAudioSpeech        // tts
+	RelayModeAudioTranscription // whisper
+	RelayModeAudioTranslation   // whisper
+
 	RelayModeSunoFetch
 	RelayModeSunoFetchByID
 	RelayModeSunoSubmit
+
 	RelayModeRerank
 )
 

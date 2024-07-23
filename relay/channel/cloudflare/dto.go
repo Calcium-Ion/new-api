@@ -11,3 +11,11 @@ type CfRequest struct {
 	Stream      bool          `json:"stream,omitempty"`
 	Temperature float64       `json:"temperature,omitempty"`
 }
+
+type CfAudioResponse struct {
+	Result CfSTTResult `json:"result"`
+}
+
+type CfSTTResult struct {
+	Text string `json:"text"`
+}

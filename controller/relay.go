@@ -22,13 +22,13 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	var err *dto.OpenAIErrorWithStatusCode
 	switch relayMode {
 	case relayconstant.RelayModeImagesGenerations:
-		err = relay.RelayImageHelper(c, relayMode)
+		err = relay.ImageHelper(c, relayMode)
 	case relayconstant.RelayModeAudioSpeech:
 		fallthrough
 	case relayconstant.RelayModeAudioTranslation:
 		fallthrough
 	case relayconstant.RelayModeAudioTranscription:
-		err = relay.AudioHelper(c, relayMode)
+		err = relay.AudioHelper(c)
 	case relayconstant.RelayModeRerank:
 		err = relay.RerankHelper(c, relayMode)
 	default:

@@ -222,9 +222,11 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		}
 	}
 	service.Done(c)
-	err = resp.Body.Close()
-	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	if resp != nil {
+		err = resp.Body.Close()
+		if err != nil {
+			return service.OpenAIErrorWrapperLocal(err, "close_response_body_failed", http.StatusInternalServerError), nil
+		}
 	}
 	return nil, &usage
 }

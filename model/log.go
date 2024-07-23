@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
 	"gorm.io/gorm"
 	"one-api/common"
 	"strings"
@@ -87,7 +88,7 @@ func RecordConsumeLog(ctx context.Context, userId int, channelId int, promptToke
 		common.LogError(ctx, "failed to record log: "+err.Error())
 	}
 	if common.DataExportEnabled {
-		common.SafeGoroutine(func() {
+		gopool.Go(func() {
 			LogQuotaData(userId, username, modelName, quota, common.GetTimestamp(), promptTokens+completionTokens)
 		})
 	}
@@ -101,7 +102,7 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 		tx = DB.Where("type = ?", logType)
 	}
 	if modelName != "" {
-		tx = tx.Where("model_name = ?", modelName)
+		tx = tx.Where("model_name like ?", "%"+modelName+"%")
 	}
 	if username != "" {
 		tx = tx.Where("username = ?", username)

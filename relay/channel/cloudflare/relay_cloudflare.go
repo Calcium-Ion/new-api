@@ -11,6 +11,7 @@ import (
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
+	"time"
 )
 
 func convertCf2CompletionsRequest(textRequest dto.GeneralOpenAIRequest) *CfRequest {
@@ -30,6 +31,7 @@ func cfStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 	service.SetEventStreamHeaders(c)
 	id := service.GetResponseID(c)
 	var responseText string
+	isFirst := true
 
 	for scanner.Scan() {
 		data := scanner.Text()
@@ -56,6 +58,10 @@ func cfStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 		response.Id = id
 		response.Model = info.UpstreamModelName
 		err = service.ObjectData(c, response)
+		if isFirst {
+			isFirst = false
+			info.FirstResponseTime = time.Now()
+		}
 		if err != nil {
 			common.LogError(c, "error_rendering_stream_response: "+err.Error())
 		}
@@ -111,5 +117,40 @@ func cfHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo)
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Writer.WriteHeader(resp.StatusCode)
 	_, _ = c.Writer.Write(jsonResponse)
+	return nil, usage
+}
+
+func cfSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+	var cfResp CfAudioResponse
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = json.Unmarshal(responseBody, &cfResp)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+
+	audioResp := &dto.AudioResponse{
+		Text: cfResp.Result.Text,
+	}
+
+	jsonResponse, err := json.Marshal(audioResp)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil
+	}
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(resp.StatusCode)
+	_, _ = c.Writer.Write(jsonResponse)
+
+	usage := &dto.Usage{}
+	usage.PromptTokens = info.PromptTokens
+	usage.CompletionTokens, _ = service.CountTokenText(cfResp.Result.Text, info.UpstreamModelName)
+	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
+
 	return nil, usage
 }

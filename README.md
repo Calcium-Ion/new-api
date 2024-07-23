@@ -2,15 +2,21 @@
 # New API
 
 > [!NOTE]
-> 本项目为开源项目，在[One API](https://github.com/songquanpeng/one-api)的基础上进行二次开发，感谢原作者的无私奉献。 
-> 使用者必须在遵循 OpenAI 的[使用条款](https://openai.com/policies/terms-of-use)以及**法律法规**的情况下使用，不得用于非法用途。
+> 本项目为开源项目，在[One API](https://github.com/songquanpeng/one-api)的基础上进行二次开发
 
-> 本项目为个人学习使用，不保证稳定性，且不提供任何技术支持，使用者必须在遵循 OpenAI 的使用条款以及法律法规的情况下使用，不得用于非法用途。  
+> [!IMPORTANT]
+> 使用者必须在遵循 OpenAI 的[使用条款](https://openai.com/policies/terms-of-use)以及**法律法规**的情况下使用，不得用于非法用途。
+> 本项目仅供个人学习使用，不保证稳定性，且不提供任何技术支持。
 > 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
 
-> [!NOTE]
-> 最新版Docker镜像 calciumion/new-api:latest  
-> 更新指令 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
+> [!TIP]
+> 最新版Docker镜像：`calciumion/new-api:latest`  
+> 默认账号root 密码123456  
+> 更新指令：
+> ```
+> docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
+> ```
+
 
 ## 主要变更
 此分叉版本的主要变更如下：
@@ -18,9 +24,9 @@
 1. 全新的UI界面（部分界面还待更新）
 2. 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口的支持，[对接文档](Midjourney.md)
 3. 支持在线充值功能，可在系统设置中设置，当前支持的支付接口：
-   + [x] 易支付
+    + [x] 易支付
 4. 支持用key查询使用额度:
-   + 配合项目[neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)可实现用key查询使用
+    + 配合项目[neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)可实现用key查询使用
 5. 渠道显示已使用额度，支持指定组织访问
 6. 分页支持选择每页显示数量
 7. 兼容原版One API的数据库，可直接使用原版数据库（one-api.db）
@@ -51,29 +57,14 @@
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
-## 渠道重试
-渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。  
-如果开启了重试功能，第一次重试使用同优先级，第二次重试使用下一个优先级，以此类推。  
-### 缓存设置方法
-1. `REDIS_CONN_STRING`：设置之后将使用 Redis 作为缓存使用。
-    + 例子：`REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
-2. `MEMORY_CACHE_ENABLED`：启用内存缓存（如果设置了`REDIS_CONN_STRING`，则无需手动设置），会导致用户额度的更新存在一定的延迟，可选值为 `true` 和 `false`，未设置则默认为 `false`。
-    + 例子：`MEMORY_CACHE_ENABLED=true`
-### 为什么有的时候没有重试
-这些错误码不会重试：400，504，524
-### 我想让400也重试
-在`渠道->编辑`中，将`状态码复写`改为
-```json
-{
-  "400": "500"
-}
-```
-可以实现400错误转为500错误，从而重试
-
 ## 比原版One API多出的配置
-- `STREAMING_TIMEOUT`：设置流式一次回复的超时时间，默认为 30 秒
-- `DIFY_DEBUG`：设置 Dify 渠道是否输出工作流和节点信息到客户端，默认为 `true`， 可选值为 `true` 和 `false`
-- `FORCE_STREAM_OPTION`：覆盖客户端stream_options参数，请求上游返回流模式usage，目前仅支持 `OpenAI` 渠道类型
+- `STREAMING_TIMEOUT`：设置流式一次回复的超时时间，默认为 30 秒。
+- `DIFY_DEBUG`：设置 Dify 渠道是否输出工作流和节点信息到客户端，默认为 `true`。
+- `FORCE_STREAM_OPTION`：是否覆盖客户端stream_options参数，请求上游返回流模式usage，默认为 `true`，建议开启，不影响客户端传入stream_options参数返回结果。
+- `GET_MEDIA_TOKEN`：是统计图片token，默认为 `true`，关闭后将不再在本地计算图片token，可能会导致和上游计费不同，此项覆盖 `GET_MEDIA_TOKEN_NOT_STREAM` 选项作用。
+- `GET_MEDIA_TOKEN_NOT_STREAM`：是否在非流（`stream=false`）情况下统计图片token，默认为 `true`。
+- `UPDATE_TASK`：是否更新异步任务（Midjourney、Suno），默认为 `true`，关闭后将不会更新任务进度。
+
 ## 部署
 ### 部署要求
 - 本地数据库（默认）：SQLite（Docker 部署默认使用 SQLite，必须挂载 `/data` 目录到宿主机）
@@ -96,8 +87,25 @@ docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -
 docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(宝塔的服务器地址:宝塔数据库端口)/宝塔数据库名称" -e TZ=Asia/Shanghai -v /www/wwwroot/new-api:/data calciumion/new-api:latest
 # 注意：数据库要开启远程访问，并且只允许服务器IP访问
 ```
-### 默认账号密码
-默认账号root 密码123456
+
+## 渠道重试
+渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。  
+如果开启了重试功能，第一次重试使用同优先级，第二次重试使用下一个优先级，以此类推。
+### 缓存设置方法
+1. `REDIS_CONN_STRING`：设置之后将使用 Redis 作为缓存使用。
+    + 例子：`REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
+2. `MEMORY_CACHE_ENABLED`：启用内存缓存（如果设置了`REDIS_CONN_STRING`，则无需手动设置），会导致用户额度的更新存在一定的延迟，可选值为 `true` 和 `false`，未设置则默认为 `false`。
+    + 例子：`MEMORY_CACHE_ENABLED=true`
+### 为什么有的时候没有重试
+这些错误码不会重试：400，504，524
+### 我想让400也重试
+在`渠道->编辑`中，将`状态码复写`改为
+```json
+{
+  "400": "500"
+}
+```
+可以实现400错误转为500错误，从而重试
 
 ## Midjourney接口设置文档
 [对接文档](Midjourney.md)

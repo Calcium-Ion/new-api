@@ -5,11 +5,18 @@ type ClaudeMetadata struct {
 }
 
 type ClaudeMediaMessage struct {
-	Type       string               `json:"type"`
-	Text       string               `json:"text,omitempty"`
-	Source     *ClaudeMessageSource `json:"source,omitempty"`
-	Usage      *ClaudeUsage         `json:"usage,omitempty"`
-	StopReason *string              `json:"stop_reason,omitempty"`
+	Type        string               `json:"type"`
+	Text        string               `json:"text,omitempty"`
+	Source      *ClaudeMessageSource `json:"source,omitempty"`
+	Usage       *ClaudeUsage         `json:"usage,omitempty"`
+	StopReason  *string              `json:"stop_reason,omitempty"`
+	PartialJson string               `json:"partial_json,omitempty"`
+	// tool_calls
+	Id        string `json:"id,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Input     any    `json:"input,omitempty"`
+	Content   string `json:"content,omitempty"`
+	ToolUseId string `json:"tool_use_id,omitempty"`
 }
 
 type ClaudeMessageSource struct {
@@ -21,6 +28,18 @@ type ClaudeMessageSource struct {
 type ClaudeMessage struct {
 	Role    string `json:"role"`
 	Content any    `json:"content"`
+}
+
+type Tool struct {
+	Name        string      `json:"name"`
+	Description string      `json:"description,omitempty"`
+	InputSchema InputSchema `json:"input_schema"`
+}
+
+type InputSchema struct {
+	Type       string `json:"type"`
+	Properties any    `json:"properties,omitempty"`
+	Required   any    `json:"required,omitempty"`
 }
 
 type ClaudeRequest struct {
@@ -35,7 +54,9 @@ type ClaudeRequest struct {
 	TopP              float64         `json:"top_p,omitempty"`
 	TopK              int             `json:"top_k,omitempty"`
 	//ClaudeMetadata    `json:"metadata,omitempty"`
-	Stream bool `json:"stream,omitempty"`
+	Stream     bool   `json:"stream,omitempty"`
+	Tools      []Tool `json:"tools,omitempty"`
+	ToolChoice any    `json:"tool_choice,omitempty"`
 }
 
 type ClaudeError struct {
@@ -44,23 +65,19 @@ type ClaudeError struct {
 }
 
 type ClaudeResponse struct {
-	Id         string               `json:"id"`
-	Type       string               `json:"type"`
-	Content    []ClaudeMediaMessage `json:"content"`
-	Completion string               `json:"completion"`
-	StopReason string               `json:"stop_reason"`
-	Model      string               `json:"model"`
-	Error      ClaudeError          `json:"error"`
-	Usage      ClaudeUsage          `json:"usage"`
-	Index      int                  `json:"index"`   // stream only
-	Delta      *ClaudeMediaMessage  `json:"delta"`   // stream only
-	Message    *ClaudeResponse      `json:"message"` // stream only: message_start
+	Id           string               `json:"id"`
+	Type         string               `json:"type"`
+	Content      []ClaudeMediaMessage `json:"content"`
+	Completion   string               `json:"completion"`
+	StopReason   string               `json:"stop_reason"`
+	Model        string               `json:"model"`
+	Error        ClaudeError          `json:"error"`
+	Usage        ClaudeUsage          `json:"usage"`
+	Index        int                  `json:"index"` // stream only
+	ContentBlock *ClaudeMediaMessage  `json:"content_block"`
+	Delta        *ClaudeMediaMessage  `json:"delta"`   // stream only
+	Message      *ClaudeResponse      `json:"message"` // stream only: message_start
 }
-
-//type ClaudeResponseChoice struct {
-//	Index   int                `json:"index"`
-//	Type    string             `json:"type"`
-//}
 
 type ClaudeUsage struct {
 	InputTokens  int `json:"input_tokens"`

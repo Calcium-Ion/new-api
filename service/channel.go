@@ -74,14 +74,14 @@ func ShouldDisableChannel(channelType int, err *relaymodel.OpenAIErrorWithStatus
 	return false
 }
 
-func ShouldEnableChannel(err error, openAIErr *relaymodel.OpenAIError, status int) bool {
+func ShouldEnableChannel(err error, openaiWithStatusErr *relaymodel.OpenAIErrorWithStatusCode, status int) bool {
 	if !common.AutomaticEnableChannelEnabled {
 		return false
 	}
 	if err != nil {
 		return false
 	}
-	if openAIErr != nil {
+	if openaiWithStatusErr != nil {
 		return false
 	}
 	if status != common.ChannelStatusAutoDisabled {

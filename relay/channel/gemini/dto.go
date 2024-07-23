@@ -12,9 +12,15 @@ type GeminiInlineData struct {
 	Data     string `json:"data"`
 }
 
+type FunctionCall struct {
+	FunctionName string `json:"name"`
+	Arguments    any    `json:"args"`
+}
+
 type GeminiPart struct {
-	Text       string            `json:"text,omitempty"`
-	InlineData *GeminiInlineData `json:"inlineData,omitempty"`
+	Text         string            `json:"text,omitempty"`
+	InlineData   *GeminiInlineData `json:"inlineData,omitempty"`
+	FunctionCall *FunctionCall     `json:"functionCall,omitempty"`
 }
 
 type GeminiChatContent struct {

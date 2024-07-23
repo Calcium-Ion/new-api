@@ -146,28 +146,26 @@ func UpdateMidjourneyTaskBulk() {
 					buttonStr, _ := json.Marshal(responseItem.Buttons)
 					task.Buttons = string(buttonStr)
 				}
-
+				shouldReturnQuota := false
 				if (task.Progress != "100%" && responseItem.FailReason != "") || (task.Progress == "100%" && task.Status == "FAILURE") {
 					common.LogInfo(ctx, task.MjId+" 构建失败，"+task.FailReason)
 					task.Progress = "100%"
-					err = model.CacheUpdateUserQuota(task.UserId)
-					if err != nil {
-						common.LogError(ctx, "error update user quota cache: "+err.Error())
-					} else {
-						quota := task.Quota
-						if quota != 0 {
-							err = model.IncreaseUserQuota(task.UserId, quota)
-							if err != nil {
-								common.LogError(ctx, "fail to increase user quota: "+err.Error())
-							}
-							logContent := fmt.Sprintf("构图失败 %s，补偿 %s", task.MjId, common.LogQuota(quota))
-							model.RecordLog(task.UserId, model.LogTypeSystem, logContent)
-						}
+					if task.Quota != 0 {
+						shouldReturnQuota = true
 					}
 				}
 				err = task.Update()
 				if err != nil {
 					common.LogError(ctx, "UpdateMidjourneyTask task error: "+err.Error())
+				} else {
+					if shouldReturnQuota {
+						err = model.IncreaseUserQuota(task.UserId, task.Quota)
+						if err != nil {
+							common.LogError(ctx, "fail to increase user quota: "+err.Error())
+						}
+						logContent := fmt.Sprintf("构图失败 %s，补偿 %s", task.MjId, common.LogQuota(task.Quota))
+						model.RecordLog(task.UserId, model.LogTypeSystem, logContent)
+					}
 				}
 			}
 		}
