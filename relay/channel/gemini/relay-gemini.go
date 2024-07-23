@@ -93,11 +93,10 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 							Data:     data,
 						},
 					})
-				}
-				else{
+				} else {
 					_, format, base64String, err := service.DecodeBase64ImageData(part.ImageUrl.(dto.MessageImageUrl).Url)
 					if err != nil {
-						return nil, err
+						continue
 					}
 					parts = append(parts, GeminiPart{
 						InlineData: &GeminiInlineData{
