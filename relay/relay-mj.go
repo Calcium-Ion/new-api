@@ -179,7 +179,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 	if userQuota-quota < 0 {
 		return &dto.MidjourneyResponse{
 			Code:        4,
-			Description: "quota_not_enough",
+			Description: "您的额度已不足，请在钱包里充值。免费额度将于每月1号刷新！",
 		}
 	}
 	requestURL := getMjRequestPath(c.Request.URL.String())
@@ -481,7 +481,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	if consumeQuota && userQuota-quota < 0 {
 		return &dto.MidjourneyResponse{
 			Code:        4,
-			Description: "quota_not_enough",
+			Description: "您的额度已不足，请在钱包里充值。免费额度将于每月1号刷新！",
 		}
 	}
 
