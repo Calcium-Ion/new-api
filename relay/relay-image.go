@@ -121,7 +121,8 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		}
 	}
 
-	quota := int(modelPrice*groupRatio*common.QuotaPerUnit*sizeRatio*qualityRatio) * imageRequest.N
+	imageRatio := modelPrice * sizeRatio * qualityRatio * float64(imageRequest.N)
+	quota := int(imageRatio * groupRatio * common.QuotaPerUnit)
 
 	if userQuota-quota < 0 {
 		return service.OpenAIErrorWrapperLocal(errors.New("user quota is not enough"), "insufficient_user_quota", http.StatusForbidden)
@@ -180,7 +181,7 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 	}
 
 	logContent := fmt.Sprintf("大小 %s, 品质 %s", imageRequest.Size, quality)
-	postConsumeQuota(c, relayInfo, imageRequest.Model, usage, 0, 0, userQuota, 0, groupRatio, modelPrice, true, logContent)
+	postConsumeQuota(c, relayInfo, imageRequest.Model, usage, 0, 0, userQuota, 0, groupRatio, imageRatio, true, logContent)
 
 	return nil
 }

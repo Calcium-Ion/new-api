@@ -28,14 +28,18 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
 		Stop, _ = request.Stop.([]string)
 	}
 	return &OllamaRequest{
-		Model:       request.Model,
-		Messages:    messages,
-		Stream:      request.Stream,
-		Temperature: request.Temperature,
-		Seed:        request.Seed,
-		Topp:        request.TopP,
-		TopK:        request.TopK,
-		Stop:        Stop,
+		Model:            request.Model,
+		Messages:         messages,
+		Stream:           request.Stream,
+		Temperature:      request.Temperature,
+		Seed:             request.Seed,
+		Topp:             request.TopP,
+		TopK:             request.TopK,
+		Stop:             Stop,
+		Tools:            request.Tools,
+		ResponseFormat:   request.ResponseFormat,
+		FrequencyPenalty: request.FrequencyPenalty,
+		PresencePenalty:  request.PresencePenalty,
 	}
 }
 
