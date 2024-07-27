@@ -22,7 +22,7 @@ import (
 
 func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	containStreamUsage := false
-	responseId := ""
+	var responseId string
 	var createAt int64 = 0
 	var systemFingerprint string
 	model := info.UpstreamModelName
@@ -86,7 +86,13 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	var lastStreamResponse dto.ChatCompletionsStreamResponse
 	err := json.Unmarshal(common.StringToByteSlice(lastStreamData), &lastStreamResponse)
 	if err == nil {
-		if lastStreamResponse.Usage != nil && service.ValidUsage(lastStreamResponse.Usage) {
+		responseId = lastStreamResponse.Id
+		createAt = lastStreamResponse.Created
+		systemFingerprint = lastStreamResponse.GetSystemFingerprint()
+		model = lastStreamResponse.Model
+		if service.ValidUsage(lastStreamResponse.Usage) {
+			containStreamUsage = true
+			usage = lastStreamResponse.Usage
 			if !info.ShouldIncludeUsage {
 				shouldSendLastResp = false
 			}
@@ -109,14 +115,9 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 				var streamResponse dto.ChatCompletionsStreamResponse
 				err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
 				if err == nil {
-					responseId = streamResponse.Id
-					createAt = streamResponse.Created
-					systemFingerprint = streamResponse.GetSystemFingerprint()
-					model = streamResponse.Model
-					if service.ValidUsage(streamResponse.Usage) {
-						usage = streamResponse.Usage
-						containStreamUsage = true
-					}
+					//if service.ValidUsage(streamResponse.Usage) {
+					//	usage = streamResponse.Usage
+					//}
 					for _, choice := range streamResponse.Choices {
 						responseTextBuilder.WriteString(choice.Delta.GetContentString())
 						if choice.Delta.ToolCalls != nil {
@@ -133,14 +134,10 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			}
 		} else {
 			for _, streamResponse := range streamResponses {
-				responseId = streamResponse.Id
-				createAt = streamResponse.Created
-				systemFingerprint = streamResponse.GetSystemFingerprint()
-				model = streamResponse.Model
-				if service.ValidUsage(streamResponse.Usage) {
-					usage = streamResponse.Usage
-					containStreamUsage = true
-				}
+				//if service.ValidUsage(streamResponse.Usage) {
+				//	usage = streamResponse.Usage
+				//	containStreamUsage = true
+				//}
 				for _, choice := range streamResponse.Choices {
 					responseTextBuilder.WriteString(choice.Delta.GetContentString())
 					if choice.Delta.ToolCalls != nil {
