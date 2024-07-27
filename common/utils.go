@@ -179,8 +179,8 @@ func Max(a int, b int) int {
 	}
 }
 
-func MessageWithRequestId(message string, id string) string {
-	return fmt.Sprintf("%s (request id: %s)", message, id)
+func MessageWithRequestId(message string, id string, userId int) string {
+	return fmt.Sprintf("%s (request id: %s, user id: %d)", message, id, userId)
 }
 
 func RandomSleep() {
