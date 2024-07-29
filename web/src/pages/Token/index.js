@@ -7,7 +7,7 @@ const Token = () => (
       <Layout.Header>
         <Banner
           type='warning'
-          description='令牌无法精确控制使用额度，请勿直接将令牌分发给用户。'
+          description='令牌无法精确计算使用额度，请勿直接将令牌分享他人。'
         />
       </Layout.Header>
       <Layout.Content>
