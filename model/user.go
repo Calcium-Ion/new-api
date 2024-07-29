@@ -310,7 +310,7 @@ func (user *User) ValidateAndFill() (err error) {
 	DB.Where("username = ? OR email = ?", user.Username, user.Username).First(user)
 	okay := common.ValidatePasswordAndHash(password, user.Password)
 	if !okay || user.Status != common.UserStatusEnabled {
-		return errors.New("用户名或密码错误，请检查您输入的用户民或密码！")
+		return errors.New("用户名或密码错误，请检查您输入的用户名或密码！")
 	}
 	return nil
 }

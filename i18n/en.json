@@ -98,7 +98,7 @@
   "使用邀请码赠送 %s": "Use invitation code to give %s",
   "邀请用户赠送 %s": "Invite users to give %s",
   "用户名或密码为空": "Username or password is empty",
-  "用户名或密码错误，请检查您输入的用户民或密码！": "Username or password is wrong, or user has been banned",
+  "用户名或密码错误，请检查您输入的用户名或密码！": "Username or password is wrong, or user has been banned",
   "email 为空！": "email is empty!",
   "GitHub id 为空！": "GitHub id is empty!",
   "WeChat id 为空！": "WeChat id is empty!",
