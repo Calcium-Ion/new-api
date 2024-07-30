@@ -53,7 +53,7 @@ func streamResponseDify2OpenAI(difyResponse DifyChunkChatCompletionResponse) *dt
 		choice.Delta.SetContentString("Workflow: " + difyResponse.Data.WorkflowId + "\n")
 	} else if constant.DifyDebug && difyResponse.Event == "node_started" {
 		choice.Delta.SetContentString("Node: " + difyResponse.Data.NodeId + "\n")
-	} else if difyResponse.Event == "message" {
+	} else if difyResponse.Event == "message" || difyResponse.Event == "agent_message" {
 		choice.Delta.SetContentString(difyResponse.Answer)
 	}
 	response.Choices = append(response.Choices, choice)
