@@ -43,12 +43,13 @@ func Relay(c *gin.Context) {
 	requestId := c.GetString(common.RequestIdKey)
 	channelId := c.GetInt("channel_id")
 	channelType := c.GetInt("channel_type")
+	channelName := c.GetString("channel_name")
 	group := c.GetString("group")
 	originalModel := c.GetString("original_model")
 	openaiErr := relayHandler(c, relayMode)
 	c.Set("use_channel", []string{fmt.Sprintf("%d", channelId)})
 	if openaiErr != nil {
-		go processChannelError(c, channelId, channelType, openaiErr)
+		go processChannelError(c, channelId, channelType, channelName, openaiErr)
 	} else {
 		retryTimes = 0
 	}
@@ -60,7 +61,7 @@ func Relay(c *gin.Context) {
 		}
 		channelId = channel.Id
 		useChannel := c.GetStringSlice("use_channel")
-		useChannel = append(useChannel, fmt.Sprintf("%d", channelId))
+		useChannel = append(useChannel, fmt.Sprintf("%d", channel.Id))
 		c.Set("use_channel", useChannel)
 		common.LogInfo(c.Request.Context(), fmt.Sprintf("using channel #%d to retry (remain times %d)", channel.Id, i))
 		middleware.SetupContextForSelectedChannel(c, channel, originalModel)
@@ -69,7 +70,7 @@ func Relay(c *gin.Context) {
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 		openaiErr = relayHandler(c, relayMode)
 		if openaiErr != nil {
-			go processChannelError(c, channelId, channel.Type, openaiErr)
+			go processChannelError(c, channel.Id, channel.Type, channel.Name, openaiErr)
 		}
 	}
 	useChannel := c.GetStringSlice("use_channel")
@@ -128,11 +129,10 @@ func shouldRetry(c *gin.Context, channelId int, openaiErr *dto.OpenAIErrorWithSt
 	return true
 }
 
-func processChannelError(c *gin.Context, channelId int, channelType int, err *dto.OpenAIErrorWithStatusCode) {
+func processChannelError(c *gin.Context, channelId int, channelType int, channelName string, err *dto.OpenAIErrorWithStatusCode) {
 	autoBan := c.GetBool("auto_ban")
 	common.LogError(c.Request.Context(), fmt.Sprintf("relay error (channel #%d, status code: %d): %s", channelId, err.StatusCode, err.Error.Message))
 	if service.ShouldDisableChannel(channelType, err) && autoBan {
-		channelName := c.GetString("channel_name")
 		service.DisableChannel(channelId, channelName, err.Error.Message)
 	}
 }
