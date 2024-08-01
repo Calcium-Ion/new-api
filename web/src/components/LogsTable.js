@@ -577,6 +577,7 @@ const LogsTable = () => {
   const refresh = async () => {
     // setLoading(true);
     setActivePage(1);
+    handleEyeClick();
     await loadLogs(0, pageSize, logType);
   };
 
@@ -740,7 +741,6 @@ const LogsTable = () => {
           onChange={(value) => {
             setLogType(parseInt(value));
             loadLogs(0, pageSize, parseInt(value));
-            handleEyeClick();
           }}
         >
           <Select.Option value='0'>全部</Select.Option>
