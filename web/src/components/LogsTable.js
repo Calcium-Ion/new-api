@@ -475,6 +475,9 @@ const LogsTable = () => {
   };
 
   const handleEyeClick = async () => {
+    if (loadingStat) {
+      return;
+    }
     setLoadingStat(true);
     if (isAdminUser) {
       await getLogStat();
@@ -596,6 +599,7 @@ const LogsTable = () => {
       .catch((reason) => {
         showError(reason);
       });
+    handleEyeClick();
   }, []);
 
   const searchLogs = async () => {
@@ -622,19 +626,17 @@ const LogsTable = () => {
       <Layout>
         <Header>
           <Spin spinning={loadingStat}>
-            <h3>
-              使用明细（总消耗额度：
-              <span
-                onClick={handleEyeClick}
-                style={{
-                  cursor: 'pointer',
-                  color: 'gray',
-                }}
-              >
-                {showStat ? renderQuota(stat.quota) : '点击查看'}
-              </span>
-              ）
-            </h3>
+            <Space>
+              <Tag color='green' size='large' style={{ padding: 15 }}>
+                总消耗额度: {renderQuota(stat.quota)}
+              </Tag>
+              <Tag color='blue' size='large' style={{ padding: 15 }}>
+                RPM: {stat.rpm}
+              </Tag>
+              <Tag color='purple' size='large' style={{ padding: 15 }}>
+                TPM: {stat.tpm}
+              </Tag>
+            </Space>
           </Spin>
         </Header>
         <Form layout='horizontal' style={{ marginTop: 10 }}>
@@ -700,17 +702,19 @@ const LogsTable = () => {
                 />
               </>
             )}
+            <Button
+              label='查询'
+              type='primary'
+              htmlType='submit'
+              className='btn-margin-right'
+              onClick={refresh}
+              loading={loading}
+              style={{ marginTop: 24 }}
+            >
+              查询
+            </Button>
             <Form.Section>
-              <Button
-                label='查询'
-                type='primary'
-                htmlType='submit'
-                className='btn-margin-right'
-                onClick={refresh}
-                loading={loading}
-              >
-                查询
-              </Button>
+
             </Form.Section>
           </>
         </Form>
@@ -736,6 +740,7 @@ const LogsTable = () => {
           onChange={(value) => {
             setLogType(parseInt(value));
             loadLogs(0, pageSize, parseInt(value));
+            handleEyeClick();
           }}
         >
           <Select.Option value='0'>全部</Select.Option>

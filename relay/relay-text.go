@@ -286,7 +286,14 @@ func returnPreConsumedQuota(c *gin.Context, tokenId int, userQuota int, preConsu
 func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, modelName string,
 	usage *dto.Usage, ratio float64, preConsumedQuota int, userQuota int, modelRatio float64, groupRatio float64,
 	modelPrice float64, usePrice bool, extraContent string) {
-
+	if usage == nil {
+		usage = &dto.Usage{
+			PromptTokens:     relayInfo.PromptTokens,
+			CompletionTokens: 0,
+			TotalTokens:      relayInfo.PromptTokens,
+		}
+		extraContent += "  ，（可能是请求出错）"
+	}
 	useTimeSeconds := time.Now().Unix() - relayInfo.StartTime.Unix()
 	promptTokens := usage.PromptTokens
 	completionTokens := usage.CompletionTokens
