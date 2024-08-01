@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   API,
-  copy,
+  copy, getTodayStartTimestamp,
   isAdmin,
   showError,
   showSuccess,
-  timestamp2string,
+  timestamp2string
 } from '../helpers';
 
 import {
@@ -419,12 +419,12 @@ const LogsTable = () => {
   const [logType, setLogType] = useState(0);
   const isAdminUser = isAdmin();
   let now = new Date();
-  // 初始化start_timestamp为前一天
+  // 初始化start_timestamp为今天0点
   const [inputs, setInputs] = useState({
     username: '',
     token_name: '',
     model_name: '',
-    start_timestamp: timestamp2string(now.getTime() / 1000 - 86400),
+    start_timestamp: timestamp2string(getTodayStartTimestamp()),
     end_timestamp: timestamp2string(now.getTime() / 1000 + 3600),
     channel: '',
   });

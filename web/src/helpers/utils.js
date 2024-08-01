@@ -140,6 +140,12 @@ export function removeTrailingSlash(url) {
   }
 }
 
+export function getTodayStartTimestamp() {
+  var now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.floor(now.getTime() / 1000);
+}
+
 export function timestamp2string(timestamp) {
   let date = new Date(timestamp * 1000);
   let year = date.getFullYear().toString();
