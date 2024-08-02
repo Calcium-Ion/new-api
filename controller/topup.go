@@ -101,8 +101,8 @@ func RequestEpay(c *gin.Context) {
 	}
 	uri, params, err := client.Purchase(&epay.PurchaseArgs{
 		Type:           payType,
-		ServiceTradeNo: "A" + tradeNo,
-		Name:           "B" + tradeNo,
+		ServiceTradeNo: fmt.Sprintf("USR%d-%s", id, tradeNo),
+		Name:           fmt.Sprintf("TUC%d", req.Amount),
 		Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
 		Device:         epay.PC,
 		NotifyUrl:      notifyUrl,
