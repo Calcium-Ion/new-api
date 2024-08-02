@@ -64,6 +64,7 @@
 - `GET_MEDIA_TOKEN`：是统计图片token，默认为 `true`，关闭后将不再在本地计算图片token，可能会导致和上游计费不同，此项覆盖 `GET_MEDIA_TOKEN_NOT_STREAM` 选项作用。
 - `GET_MEDIA_TOKEN_NOT_STREAM`：是否在非流（`stream=false`）情况下统计图片token，默认为 `true`。
 - `UPDATE_TASK`：是否更新异步任务（Midjourney、Suno），默认为 `true`，关闭后将不会更新任务进度。
+- `GEMINI_MODEL_API`：Gemini模型指定版本(v1/v1beta)，如果配置会覆盖默认配置需要完整给出全部v1beta模型，使用模型:版本指定，","分隔，例如：-e GEMINI_MODEL_API="gemini-1.5-pro-latest:v1beta,gemini-1.5-pro-001:v1beta"，为空则使用默认配置：gemini-1.5-pro-latest,gemini-1.5-pro-001,gemini-1.5-pro,gemini-1.5-pro-exp-0801,gemini-1.5-flash-latest,gemini-1.5-flash-001,gemini-1.5-flash,gemini-ultra模型为v1beta，其他为v1。
 
 ## 部署
 ### 部署要求
