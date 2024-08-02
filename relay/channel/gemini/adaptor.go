@@ -14,6 +14,7 @@ import (
 )
 
 type Adaptor struct {
+	ModelVersionMap map[string]string
 }
 
 func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.AudioRequest) (io.Reader, error) {
@@ -29,26 +30,26 @@ func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInf
 func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
-// 定义一个映射，存储模型名称和对应的版本，可从环境变量中获取
-var modelVersionMap map[string]string
-modelVersionMapStr := os.Getenv("GEMINI_MODEL_API")
-if modelVersionMapStr == "" {
-	modelVersionMap = map[string]string{
-		"gemini-1.5-pro-latest":   "v1beta",
-		"gemini-1.5-pro-001":      "v1beta",
-		"gemini-1.5-pro":          "v1beta",
-		"gemini-1.5-flash-latest": "v1beta",
-		"gemini-1.5-flash-001":    "v1beta",
-		"gemini-1.5-flash":        "v1beta",
-		"gemini-ultra":            "v1beta",
+func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
+	modelVersionMapStr := os.Getenv("GEMINI_MODEL_API")
+	if modelVersionMapStr == "" {
+		a.ModelVersionMap = map[string]string{ 
+			"gemini-1.5-pro-latest":   "v1beta",
+			"gemini-1.5-pro-001":      "v1beta",
+			"gemini-1.5-pro":          "v1beta",
+			"gemini-1.5-flash-latest": "v1beta",
+			"gemini-1.5-flash-001":    "v1beta",
+			"gemini-1.5-flash":        "v1beta",
+			"gemini-ultra":            "v1beta",
+		}
+		return
 	}
-	return
-}
-modelVersionMap = make(map[string]string)
-for _, pair := range strings.Split(modelVersionMapStr, ",") {
-	parts := strings.Split(pair, ":")
-	if len(parts) == 2 {
-		modelVersionMap[parts[0]] = parts[1]
+	a.ModelVersionMap = make(map[string]string) 
+	for _, pair := range strings.Split(modelVersionMapStr, ",") {
+		parts := strings.Split(pair, ":")
+		if len(parts) == 2 {
+			a.ModelVersionMap[parts[0]] = parts[1] 
+		}
 	}
 }
 
