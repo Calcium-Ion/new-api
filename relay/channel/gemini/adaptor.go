@@ -37,7 +37,6 @@ if modelVersionMapStr == "" {
 		"gemini-1.5-pro-latest":   "v1beta",
 		"gemini-1.5-pro-001":      "v1beta",
 		"gemini-1.5-pro":          "v1beta",
-		"gemini-1.5-pro-exp-0801": "v1beta",
 		"gemini-1.5-flash-latest": "v1beta",
 		"gemini-1.5-flash-001":    "v1beta",
 		"gemini-1.5-flash":        "v1beta",
