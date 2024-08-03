@@ -61,6 +61,13 @@ func (channel *Channel) SetOtherInfo(otherInfo map[string]interface{}) {
 	channel.OtherInfo = string(otherInfoBytes)
 }
 
+func (channel *Channel) GetAutoBan() bool {
+	if channel.AutoBan == nil {
+		return false
+	}
+	return *channel.AutoBan == 1
+}
+
 func (channel *Channel) Save() error {
 	return DB.Save(channel).Error
 }
