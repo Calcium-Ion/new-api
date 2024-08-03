@@ -163,7 +163,7 @@ func shouldRetry(c *gin.Context, openaiErr *dto.OpenAIErrorWithStatusCode, retry
 func processChannelError(c *gin.Context, channelId int, channelType int, channelName string, autoBan bool, err *dto.OpenAIErrorWithStatusCode) {
 	// 不要使用context获取渠道信息，异步处理时可能会出现渠道信息不一致的情况
 	// do not use context to get channel info, there may be inconsistent channel info when processing asynchronously
-	common.LogError(c.Request.Context(), fmt.Sprintf("relay error (channel #%d, status code: %d): %s", channelId, err.StatusCode, err.Error.Message))
+	common.LogError(c, fmt.Sprintf("relay error (channel #%d, status code: %d): %s", channelId, err.StatusCode, err.Error.Message))
 	if service.ShouldDisableChannel(channelType, err) && autoBan {
 		service.DisableChannel(channelId, channelName, err.Error.Message)
 	}
@@ -240,14 +240,14 @@ func RelayTask(c *gin.Context) {
 	for i := 0; shouldRetryTaskRelay(c, channelId, taskErr, retryTimes) && i < retryTimes; i++ {
 		channel, err := model.CacheGetRandomSatisfiedChannel(group, originalModel, i)
 		if err != nil {
-			common.LogError(c.Request.Context(), fmt.Sprintf("CacheGetRandomSatisfiedChannel failed: %s", err.Error()))
+			common.LogError(c, fmt.Sprintf("CacheGetRandomSatisfiedChannel failed: %s", err.Error()))
 			break
 		}
 		channelId = channel.Id
 		useChannel := c.GetStringSlice("use_channel")
 		useChannel = append(useChannel, fmt.Sprintf("%d", channelId))
 		c.Set("use_channel", useChannel)
-		common.LogInfo(c.Request.Context(), fmt.Sprintf("using channel #%d to retry (remain times %d)", channel.Id, i))
+		common.LogInfo(c, fmt.Sprintf("using channel #%d to retry (remain times %d)", channel.Id, i))
 		middleware.SetupContextForSelectedChannel(c, channel, originalModel)
 
 		requestBody, err := common.GetRequestBody(c)
@@ -257,7 +257,7 @@ func RelayTask(c *gin.Context) {
 	useChannel := c.GetStringSlice("use_channel")
 	if len(useChannel) > 1 {
 		retryLogStr := fmt.Sprintf("重试：%s", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(useChannel)), "->"), "[]"))
-		common.LogInfo(c.Request.Context(), retryLogStr)
+		common.LogInfo(c, retryLogStr)
 	}
 	if taskErr != nil {
 		if taskErr.StatusCode == http.StatusTooManyRequests {
