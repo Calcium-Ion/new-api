@@ -47,8 +47,14 @@ func Relay(c *gin.Context) {
 	for i := 0; i <= common.RetryTimes; i++ {
 		channel, err := getChannel(c, group, originalModel, i)
 		if err != nil {
-			common.LogError(c, fmt.Sprintf("Failed to get channel: %s", err.Error()))
-			break
+			errMsg := fmt.Sprintf("获取渠道出错: %s", err.Error())
+			common.LogError(c, errMsg)
+			openaiErr = service.OpenAIErrorWrapperLocal(err, "get_channel_failed", http.StatusInternalServerError)
+			openaiErr.Error.Message = common.MessageWithRequestId(errMsg, requestId)
+			c.JSON(openaiErr.StatusCode, gin.H{
+				"error": openaiErr.Error,
+			})
+			return
 		}
 
 		openaiErr = relayRequest(c, relayMode, channel)
