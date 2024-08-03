@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -47,14 +48,9 @@ func Relay(c *gin.Context) {
 	for i := 0; i <= common.RetryTimes; i++ {
 		channel, err := getChannel(c, group, originalModel, i)
 		if err != nil {
-			errMsg := fmt.Sprintf("获取渠道出错: %s", err.Error())
-			common.LogError(c, errMsg)
+			common.LogError(c, err.Error())
 			openaiErr = service.OpenAIErrorWrapperLocal(err, "get_channel_failed", http.StatusInternalServerError)
-			openaiErr.Error.Message = common.MessageWithRequestId(errMsg, requestId)
-			c.JSON(openaiErr.StatusCode, gin.H{
-				"error": openaiErr.Error,
-			})
-			return
+			break
 		}
 
 		openaiErr = relayRequest(c, relayMode, channel)
@@ -72,7 +68,7 @@ func Relay(c *gin.Context) {
 	useChannel := c.GetStringSlice("use_channel")
 	if len(useChannel) > 1 {
 		retryLogStr := fmt.Sprintf("重试：%s", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(useChannel)), "->"), "[]"))
-		common.LogInfo(c.Request.Context(), retryLogStr)
+		common.LogInfo(c, retryLogStr)
 	}
 
 	if openaiErr != nil {
@@ -109,7 +105,7 @@ func getChannel(c *gin.Context, group, originalModel string, retryCount int) (*m
 	}
 	channel, err := model.CacheGetRandomSatisfiedChannel(group, originalModel, retryCount)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("获取重试渠道失败: %s", err.Error()))
 	}
 	middleware.SetupContextForSelectedChannel(c, channel, originalModel)
 	return channel, nil
