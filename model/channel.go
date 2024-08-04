@@ -61,6 +61,13 @@ func (channel *Channel) SetOtherInfo(otherInfo map[string]interface{}) {
 	channel.OtherInfo = string(otherInfoBytes)
 }
 
+func (channel *Channel) GetAutoBan() bool {
+	if channel.AutoBan == nil {
+		return false
+	}
+	return *channel.AutoBan == 1
+}
+
 func (channel *Channel) Save() error {
 	return DB.Save(channel).Error
 }
@@ -100,8 +107,8 @@ func SearchChannels(keyword string, group string, model string) ([]*Channel, err
 	var whereClause string
 	var args []interface{}
 	if group != "" {
-		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + groupCol + " LIKE ? AND " + modelsCol + " LIKE ?"
-		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+group+"%", "%"+model+"%")
+		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + groupCol + " = ? AND " + modelsCol + " LIKE ?"
+		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, group, "%"+model+"%")
 	} else {
 		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + " LIKE ?"
 		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+model+"%")

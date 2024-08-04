@@ -55,6 +55,8 @@ func main() {
 		common.FatalLog("failed to initialize Redis: " + err.Error())
 	}
 
+	// Initialize constants
+	constant.InitEnv()
 	// Initialize options
 	model.InitOptionMap()
 	if common.RedisEnabled {

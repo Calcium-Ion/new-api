@@ -33,6 +33,12 @@ type MidjourneyResponse struct {
 	Result      string      `json:"result"`
 }
 
+type MidjourneyUploadResponse struct {
+	Code        int      `json:"code"`
+	Description string   `json:"description"`
+	Result      []string `json:"result"`
+}
+
 type MidjourneyResponseWithStatusCode struct {
 	StatusCode int `json:"statusCode"`
 	Response   MidjourneyResponse

@@ -94,6 +94,7 @@ func RequestEpay(c *gin.Context) {
 	returnUrl, _ := url.Parse(constant.ServerAddress + "/log")
 	notifyUrl, _ := url.Parse(callBackAddress + "/api/user/epay/notify")
 	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
+	tradeNo = fmt.Sprintf("USR%dNO%s", id, tradeNo)
 	client := GetEpayClient()
 	if client == nil {
 		c.JSON(200, gin.H{"message": "error", "data": "当前管理员未配置支付信息"})
@@ -101,8 +102,8 @@ func RequestEpay(c *gin.Context) {
 	}
 	uri, params, err := client.Purchase(&epay.PurchaseArgs{
 		Type:           payType,
-		ServiceTradeNo: "A" + tradeNo,
-		Name:           "B" + tradeNo,
+		ServiceTradeNo: tradeNo,
+		Name:           fmt.Sprintf("TUC%d", req.Amount),
 		Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
 		Device:         epay.PC,
 		NotifyUrl:      notifyUrl,
@@ -120,7 +121,7 @@ func RequestEpay(c *gin.Context) {
 		UserId:     id,
 		Amount:     amount,
 		Money:      payMoney,
-		TradeNo:    "A" + tradeNo,
+		TradeNo:    tradeNo,
 		CreateTime: time.Now().Unix(),
 		Status:     "pending",
 	}
