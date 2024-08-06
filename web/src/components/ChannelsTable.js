@@ -49,9 +49,9 @@ function renderType(type) {
     type2label[0] = { value: 0, text: '未知类型', color: 'grey' };
   }
   return (
-      <Tag size='large' color={type2label[type]?.color}>
-        {type2label[type]?.text}
-      </Tag>
+    <Tag size='large' color={type2label[type]?.color}>
+      {type2label[type]?.text}
+    </Tag>
   );
 }
 
@@ -75,13 +75,13 @@ const ChannelsTable = () => {
       dataIndex: 'group',
       render: (text, record, index) => {
         return (
-            <div>
-              <Space spacing={2}>
-                {text.split(',').map((item, index) => {
-                  return renderGroup(item);
-                })}
-              </Space>
-            </div>
+          <div>
+            <Space spacing={2}>
+              {text.split(',').map((item, index) => {
+                return renderGroup(item);
+              })}
+            </Space>
+          </div>
         );
       },
     },
@@ -104,11 +104,11 @@ const ChannelsTable = () => {
           let reason = otherInfo['status_reason'];
           let time = otherInfo['status_time'];
           return (
-              <div>
-                <Tooltip content={'原因：' + reason + '，时间：' + timestamp2string(time)}>
-                  {renderStatus(text)}
-                </Tooltip>
-              </div>
+            <div>
+              <Tooltip content={'原因：' + reason + '，时间：' + timestamp2string(time)}>
+                {renderStatus(text)}
+              </Tooltip>
+            </div>
           );
         } else {
           return renderStatus(text);
@@ -127,27 +127,27 @@ const ChannelsTable = () => {
       dataIndex: 'expired_time',
       render: (text, record, index) => {
         return (
-            <div>
-              <Space spacing={1}>
-                <Tooltip content={'已用额度'}>
-                  <Tag color='white' type='ghost' size='large'>
-                    {renderQuota(record.used_quota)}
-                  </Tag>
-                </Tooltip>
-                <Tooltip content={'剩余额度' + record.balance + '，点击更新'}>
-                  <Tag
-                      color='white'
-                      type='ghost'
-                      size='large'
-                      onClick={() => {
-                        updateChannelBalance(record);
-                      }}
-                  >
-                    ${renderNumberWithPoint(record.balance)}
-                  </Tag>
-                </Tooltip>
-              </Space>
-            </div>
+          <div>
+            <Space spacing={1}>
+              <Tooltip content={'已用额度'}>
+                <Tag color='white' type='ghost' size='large'>
+                  {renderQuota(record.used_quota)}
+                </Tag>
+              </Tooltip>
+              <Tooltip content={'剩余额度' + record.balance + '，点击更新'}>
+                <Tag
+                  color='white'
+                  type='ghost'
+                  size='large'
+                  onClick={() => {
+                    updateChannelBalance(record);
+                  }}
+                >
+                  ${renderNumberWithPoint(record.balance)}
+                </Tag>
+              </Tooltip>
+            </Space>
+          </div>
         );
       },
     },
@@ -156,19 +156,19 @@ const ChannelsTable = () => {
       dataIndex: 'priority',
       render: (text, record, index) => {
         return (
-            <div>
-              <InputNumber
-                  style={{ width: 70 }}
-                  name='priority'
-                  onBlur={(e) => {
-                    manageChannel(record.id, 'priority', record, e.target.value);
-                  }}
-                  keepFocus={true}
-                  innerButtons
-                  defaultValue={record.priority}
-                  min={-999}
-              />
-            </div>
+          <div>
+            <InputNumber
+              style={{ width: 70 }}
+              name='priority'
+              onBlur={(e) => {
+                manageChannel(record.id, 'priority', record, e.target.value);
+              }}
+              keepFocus={true}
+              innerButtons
+              defaultValue={record.priority}
+              min={-999}
+            />
+          </div>
         );
       },
     },
@@ -177,19 +177,19 @@ const ChannelsTable = () => {
       dataIndex: 'weight',
       render: (text, record, index) => {
         return (
-            <div>
-              <InputNumber
-                  style={{ width: 70 }}
-                  name='weight'
-                  onBlur={(e) => {
-                    manageChannel(record.id, 'weight', record, e.target.value);
-                  }}
-                  keepFocus={true}
-                  innerButtons
-                  defaultValue={record.weight}
-                  min={0}
-              />
-            </div>
+          <div>
+            <InputNumber
+              style={{ width: 70 }}
+              name='weight'
+              onBlur={(e) => {
+                manageChannel(record.id, 'weight', record, e.target.value);
+              }}
+              keepFocus={true}
+              innerButtons
+              defaultValue={record.weight}
+              min={0}
+            />
+          </div>
         );
       },
     },
@@ -197,95 +197,95 @@ const ChannelsTable = () => {
       title: '',
       dataIndex: 'operate',
       render: (text, record, index) => (
-          <div>
-            <SplitButtonGroup
-                style={{ marginRight: 1 }}
-                aria-label='测试操作项目组'
+        <div>
+          <SplitButtonGroup
+            style={{ marginRight: 1 }}
+            aria-label='测试操作项目组'
+          >
+            <Button
+              theme='light'
+              onClick={() => {
+                testChannel(record, '');
+              }}
+            >
+              测试
+            </Button>
+            <Dropdown
+              trigger='click'
+              position='bottomRight'
+              menu={record.test_models}
             >
               <Button
-                  theme='light'
-                  onClick={() => {
-                    testChannel(record, '');
-                  }}
-              >
-                测试
-              </Button>
-              <Dropdown
-                  trigger='click'
-                  position='bottomRight'
-                  menu={record.test_models}
-              >
-                <Button
-                    style={{ padding: '8px 4px' }}
-                    type='primary'
-                    icon={<IconTreeTriangleDown />}
-                ></Button>
-              </Dropdown>
-            </SplitButtonGroup>
-            {/*<Button theme='light' type='primary' style={{marginRight: 1}} onClick={()=>testChannel(record)}>测试</Button>*/}
-            <Popconfirm
-                title='确定是否要删除此渠道？'
-                content='此修改将不可逆'
-                okType={'danger'}
-                position={'left'}
-                onConfirm={() => {
-                  manageChannel(record.id, 'delete', record).then(() => {
-                    removeRecord(record.id);
-                  });
-                }}
-            >
-              <Button theme='light' type='danger' style={{ marginRight: 1 }}>
-                删除
-              </Button>
-            </Popconfirm>
-            {record.status === 1 ? (
-                <Button
-                    theme='light'
-                    type='warning'
-                    style={{ marginRight: 1 }}
-                    onClick={async () => {
-                      manageChannel(record.id, 'disable', record);
-                    }}
-                >
-                  禁用
-                </Button>
-            ) : (
-                <Button
-                    theme='light'
-                    type='secondary'
-                    style={{ marginRight: 1 }}
-                    onClick={async () => {
-                      manageChannel(record.id, 'enable', record);
-                    }}
-                >
-                  启用
-                </Button>
-            )}
-            <Button
-                theme='light'
-                type='tertiary'
-                style={{ marginRight: 1 }}
-                onClick={() => {
-                  setEditingChannel(record);
-                  setShowEdit(true);
-                }}
-            >
-              编辑
+                style={{ padding: '8px 4px' }}
+                type='primary'
+                icon={<IconTreeTriangleDown />}
+              ></Button>
+            </Dropdown>
+          </SplitButtonGroup>
+          {/*<Button theme='light' type='primary' style={{marginRight: 1}} onClick={()=>testChannel(record)}>测试</Button>*/}
+          <Popconfirm
+            title='确定是否要删除此渠道？'
+            content='此修改将不可逆'
+            okType={'danger'}
+            position={'left'}
+            onConfirm={() => {
+              manageChannel(record.id, 'delete', record).then(() => {
+                removeRecord(record.id);
+              });
+            }}
+          >
+            <Button theme='light' type='danger' style={{ marginRight: 1 }}>
+              删除
             </Button>
-            <Popconfirm
-                title='确定是否要复制此渠道？'
-                content='复制渠道的所有信息'
-                okType={'danger'}
-                position={'left'}
-                onConfirm={async () => {
-                  copySelectedChannel(record.id);
-                }}
+          </Popconfirm>
+          {record.status === 1 ? (
+            <Button
+              theme='light'
+              type='warning'
+              style={{ marginRight: 1 }}
+              onClick={async () => {
+                manageChannel(record.id, 'disable', record);
+              }}
             >
-              <Button theme='light' type='primary' style={{ marginRight: 1 }}>
-                复制
-              </Button>
-            </Popconfirm>
-          </div>
+              禁用
+            </Button>
+          ) : (
+            <Button
+              theme='light'
+              type='secondary'
+              style={{ marginRight: 1 }}
+              onClick={async () => {
+                manageChannel(record.id, 'enable', record);
+              }}
+            >
+              启用
+            </Button>
+          )}
+          <Button
+            theme='light'
+            type='tertiary'
+            style={{ marginRight: 1 }}
+            onClick={() => {
+              setEditingChannel(record);
+              setShowEdit(true);
+            }}
+          >
+            编辑
+          </Button>
+          <Popconfirm
+            title='确定是否要复制此渠道？'
+            content='复制渠道的所有信息'
+            okType={'danger'}
+            position={'left'}
+            onConfirm={async () => {
+              copySelectedChannel(record.id);
+            }}
+          >
+            <Button theme='light' type='primary' style={{ marginRight: 1 }}>
+              复制
+            </Button>
+          </Popconfirm>
+        </div>
       ),
     },
   ];
@@ -301,7 +301,7 @@ const ChannelsTable = () => {
   const [updatingBalance, setUpdatingBalance] = useState(false);
   const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [showPrompt, setShowPrompt] = useState(
-      shouldShowPrompt('channel-test'),
+    shouldShowPrompt('channel-test'),
   );
   const [channelCount, setChannelCount] = useState(pageSize);
   const [groupOptions, setGroupOptions] = useState([]);
@@ -357,7 +357,7 @@ const ChannelsTable = () => {
   const loadChannels = async (startIdx, pageSize, idSort) => {
     setLoading(true);
     const res = await API.get(
-        `/api/channel/?p=${startIdx}&page_size=${pageSize}&id_sort=${idSort}`,
+      `/api/channel/?p=${startIdx}&page_size=${pageSize}&id_sort=${idSort}`,
     );
     if (res === undefined) {
       return;
@@ -379,7 +379,7 @@ const ChannelsTable = () => {
 
   const copySelectedChannel = async (id) => {
     const channelToCopy = channels.find(
-        (channel) => String(channel.id) === String(id),
+      (channel) => String(channel.id) === String(id),
     );
     console.log(channelToCopy);
     channelToCopy.name += '_复制';
@@ -412,14 +412,14 @@ const ChannelsTable = () => {
     // console.log('default effect')
     const localIdSort = localStorage.getItem('id-sort') === 'true';
     const localPageSize =
-        parseInt(localStorage.getItem('page-size')) || ITEMS_PER_PAGE;
+      parseInt(localStorage.getItem('page-size')) || ITEMS_PER_PAGE;
     setIdSort(localIdSort);
     setPageSize(localPageSize);
     loadChannels(0, localPageSize, localIdSort)
-        .then()
-        .catch((reason) => {
-          showError(reason);
-        });
+      .then()
+      .catch((reason) => {
+        showError(reason);
+      });
     fetchGroups().then();
     loadChannelModels().then();
   }, []);
@@ -476,27 +476,27 @@ const ChannelsTable = () => {
     switch (status) {
       case 1:
         return (
-            <Tag size='large' color='green'>
-              已启用
-            </Tag>
+          <Tag size='large' color='green'>
+            已启用
+          </Tag>
         );
       case 2:
         return (
-            <Tag size='large' color='yellow'>
-              已禁用
-            </Tag>
+          <Tag size='large' color='yellow'>
+            已禁用
+          </Tag>
         );
       case 3:
         return (
-            <Tag size='large' color='yellow'>
-              自动禁用
-            </Tag>
+          <Tag size='large' color='yellow'>
+            自动禁用
+          </Tag>
         );
       default:
         return (
-            <Tag size='large' color='grey'>
-              未知状态
-            </Tag>
+          <Tag size='large' color='grey'>
+            未知状态
+          </Tag>
         );
     }
   };
@@ -506,33 +506,33 @@ const ChannelsTable = () => {
     time = time.toFixed(2) + ' 秒';
     if (responseTime === 0) {
       return (
-          <Tag size='large' color='grey'>
-            未测试
-          </Tag>
+        <Tag size='large' color='grey'>
+          未测试
+        </Tag>
       );
     } else if (responseTime <= 1000) {
       return (
-          <Tag size='large' color='green'>
-            {time}
-          </Tag>
+        <Tag size='large' color='green'>
+          {time}
+        </Tag>
       );
     } else if (responseTime <= 3000) {
       return (
-          <Tag size='large' color='lime'>
-            {time}
-          </Tag>
+        <Tag size='large' color='lime'>
+          {time}
+        </Tag>
       );
     } else if (responseTime <= 5000) {
       return (
-          <Tag size='large' color='yellow'>
-            {time}
-          </Tag>
+        <Tag size='large' color='yellow'>
+          {time}
+        </Tag>
       );
     } else {
       return (
-          <Tag size='large' color='red'>
-            {time}
-          </Tag>
+        <Tag size='large' color='red'>
+          {time}
+        </Tag>
       );
     }
   };
@@ -546,7 +546,7 @@ const ChannelsTable = () => {
     }
     setSearching(true);
     const res = await API.get(
-        `/api/channel/search?keyword=${searchKeyword}&group=${searchGroup}&model=${searchModel}`,
+      `/api/channel/search?keyword=${searchKeyword}&group=${searchGroup}&model=${searchModel}`,
     );
     const { success, message, data } = res.data;
     if (success) {
@@ -648,8 +648,8 @@ const ChannelsTable = () => {
   };
 
   let pageData = channels.slice(
-      (activePage - 1) * pageSize,
-      activePage * pageSize,
+    (activePage - 1) * pageSize,
+    activePage * pageSize,
   );
 
   const handlePageChange = (page) => {
@@ -665,10 +665,10 @@ const ChannelsTable = () => {
     setPageSize(size);
     setActivePage(1);
     loadChannels(0, size, idSort)
-        .then()
-        .catch((reason) => {
-          showError(reason);
-        });
+      .then()
+      .catch((reason) => {
+        showError(reason);
+      });
   };
 
   const fetchGroups = async () => {
@@ -680,10 +680,10 @@ const ChannelsTable = () => {
         return;
       }
       setGroupOptions(
-          res.data.data.map((group) => ({
-            label: group,
-            value: group,
-          })),
+        res.data.data.map((group) => ({
+          label: group,
+          value: group,
+        })),
       );
     } catch (error) {
       showError(error.message);
@@ -707,226 +707,226 @@ const ChannelsTable = () => {
   };
 
   return (
-      <>
-        <EditChannel
-            refresh={refresh}
-            visible={showEdit}
-            handleClose={closeEdit}
-            editingChannel={editingChannel}
-        />
-        <Form
-            onSubmit={() => {
-              searchChannels(searchKeyword, searchGroup, searchModel);
-            }}
-            labelPosition='left'
-        >
-          <div style={{ display: 'flex' }}>
-            <Space>
-              <Form.Input
-                  field='search_keyword'
-                  label='搜索渠道关键词'
-                  placeholder='ID，名称和密钥 ...'
-                  value={searchKeyword}
-                  loading={searching}
-                  onChange={(v) => {
-                    setSearchKeyword(v.trim());
-                  }}
-              />
-              <Form.Input
-                  field='search_model'
-                  label='模型'
-                  placeholder='模型关键字'
-                  value={searchModel}
-                  loading={searching}
-                  onChange={(v) => {
-                    setSearchModel(v.trim());
-                  }}
-              />
-              <Form.Select
-                  field='group'
-                  label='分组'
-                  optionList={[{ label: '选择分组', value: null}, ...groupOptions]}
-                  initValue={null}
-                  onChange={(v) => {
-                    setSearchGroup(v);
-                    searchChannels(searchKeyword, v, searchModel);
-                  }}
-              />
-              <Button
-                  label='查询'
-                  type='primary'
-                  htmlType='submit'
-                  className='btn-margin-right'
-                  style={{ marginRight: 8 }}
-              >
-                查询
-              </Button>
-            </Space>
-          </div>
-        </Form>
-        <div style={{ marginTop: 10, display: 'flex' }}>
+    <>
+      <EditChannel
+        refresh={refresh}
+        visible={showEdit}
+        handleClose={closeEdit}
+        editingChannel={editingChannel}
+      />
+      <Form
+        onSubmit={() => {
+          searchChannels(searchKeyword, searchGroup, searchModel);
+        }}
+        labelPosition='left'
+      >
+        <div style={{ display: 'flex' }}>
           <Space>
-            <Space>
-              <Typography.Text strong>使用ID排序</Typography.Text>
-              <Switch
-                  checked={idSort}
-                  label='使用ID排序'
-                  uncheckedText='关'
-                  aria-label='是否用ID排序'
-                  onChange={(v) => {
-                    localStorage.setItem('id-sort', v + '');
-                    setIdSort(v);
-                    loadChannels(0, pageSize, v)
-                        .then()
-                        .catch((reason) => {
-                          showError(reason);
-                        });
-                  }}
-              ></Switch>
-            </Space>
+            <Form.Input
+              field='search_keyword'
+              label='搜索渠道关键词'
+              placeholder='ID，名称和密钥 ...'
+              value={searchKeyword}
+              loading={searching}
+              onChange={(v) => {
+                setSearchKeyword(v.trim());
+              }}
+            />
+            <Form.Input
+              field='search_model'
+              label='模型'
+              placeholder='模型关键字'
+              value={searchModel}
+              loading={searching}
+              onChange={(v) => {
+                setSearchModel(v.trim());
+              }}
+            />
+            <Form.Select
+              field='group'
+              label='分组'
+              optionList=optionList={[{ label: '选择分组', value: null}, ...groupOptions]}
+              initValue={null}
+              onChange={(v) => {
+                setSearchGroup(v);
+                searchChannels(searchKeyword, v, searchModel);
+              }}
+            />
+            <Button
+              label='查询'
+              type='primary'
+              htmlType='submit'
+              className='btn-margin-right'
+              style={{ marginRight: 8 }}
+            >
+              查询
+            </Button>
           </Space>
         </div>
+      </Form>
+      <div style={{ marginTop: 10, display: 'flex' }}>
+        <Space>
+          <Space>
+            <Typography.Text strong>使用ID排序</Typography.Text>
+            <Switch
+              checked={idSort}
+              label='使用ID排序'
+              uncheckedText='关'
+              aria-label='是否用ID排序'
+              onChange={(v) => {
+                localStorage.setItem('id-sort', v + '');
+                setIdSort(v);
+                loadChannels(0, pageSize, v)
+                  .then()
+                  .catch((reason) => {
+                    showError(reason);
+                  });
+              }}
+            ></Switch>
+          </Space>
+        </Space>
+      </div>
 
-        <Table
-            className={'channel-table'}
-            style={{ marginTop: 15 }}
-            columns={columns}
-            dataSource={pageData}
-            pagination={{
-              currentPage: activePage,
-              pageSize: pageSize,
-              total: channelCount,
-              pageSizeOpts: [10, 20, 50, 100],
-              showSizeChanger: true,
-              formatPageText: (page) => '',
-              onPageSizeChange: (size) => {
-                handlePageSizeChange(size).then();
-              },
-              onPageChange: handlePageChange,
-            }}
-            loading={loading}
-            onRow={handleRow}
-            rowSelection={
-              enableBatchDelete
-                  ? {
-                    onChange: (selectedRowKeys, selectedRows) => {
-                      // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-                      setSelectedChannels(selectedRows);
-                    },
-                  }
-                  : null
-            }
-        />
-        <div
-            style={{
-              display: isMobile() ? '' : 'flex',
-              marginTop: isMobile() ? 0 : -45,
-              zIndex: 999,
-              position: 'relative',
-              pointerEvents: 'none',
-            }}
+      <Table
+        className={'channel-table'}
+        style={{ marginTop: 15 }}
+        columns={columns}
+        dataSource={pageData}
+        pagination={{
+          currentPage: activePage,
+          pageSize: pageSize,
+          total: channelCount,
+          pageSizeOpts: [10, 20, 50, 100],
+          showSizeChanger: true,
+          formatPageText: (page) => '',
+          onPageSizeChange: (size) => {
+            handlePageSizeChange(size).then();
+          },
+          onPageChange: handlePageChange,
+        }}
+        loading={loading}
+        onRow={handleRow}
+        rowSelection={
+          enableBatchDelete
+            ? {
+                onChange: (selectedRowKeys, selectedRows) => {
+                  // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+                  setSelectedChannels(selectedRows);
+                },
+              }
+            : null
+        }
+      />
+      <div
+        style={{
+          display: isMobile() ? '' : 'flex',
+          marginTop: isMobile() ? 0 : -45,
+          zIndex: 999,
+          position: 'relative',
+          pointerEvents: 'none',
+        }}
+      >
+        <Space
+          style={{ pointerEvents: 'auto', marginTop: isMobile() ? 0 : 45 }}
         >
-          <Space
-              style={{ pointerEvents: 'auto', marginTop: isMobile() ? 0 : 45 }}
+          <Button
+            theme='light'
+            type='primary'
+            style={{ marginRight: 8 }}
+            onClick={() => {
+              setEditingChannel({
+                id: undefined,
+              });
+              setShowEdit(true);
+            }}
+          >
+            添加渠道
+          </Button>
+          <Popconfirm
+            title='确定？'
+            okType={'warning'}
+            onConfirm={testAllChannels}
+            position={isMobile() ? 'top' : 'top'}
+          >
+            <Button theme='light' type='warning' style={{ marginRight: 8 }}>
+              测试所有通道
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title='确定？'
+            okType={'secondary'}
+            onConfirm={updateAllChannelsBalance}
+          >
+            <Button theme='light' type='secondary' style={{ marginRight: 8 }}>
+              更新所有已启用通道余额
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title='确定是否要删除禁用通道？'
+            content='此修改将不可逆'
+            okType={'danger'}
+            onConfirm={deleteAllDisabledChannels}
+          >
+            <Button theme='light' type='danger' style={{ marginRight: 8 }}>
+              删除禁用通道
+            </Button>
+          </Popconfirm>
+
+          <Button
+            theme='light'
+            type='primary'
+            style={{ marginRight: 8 }}
+            onClick={refresh}
+          >
+            刷新
+          </Button>
+        </Space>
+        {/*<div style={{width: '100%', pointerEvents: 'none', position: 'absolute'}}>*/}
+
+        {/*</div>*/}
+      </div>
+      <div style={{ marginTop: 20 }}>
+        <Space>
+          <Typography.Text strong>开启批量删除</Typography.Text>
+          <Switch
+            label='开启批量删除'
+            uncheckedText='关'
+            aria-label='是否开启批量删除'
+            onChange={(v) => {
+              setEnableBatchDelete(v);
+            }}
+          ></Switch>
+          <Popconfirm
+            title='确定是否要删除所选通道？'
+            content='此修改将不可逆'
+            okType={'danger'}
+            onConfirm={batchDeleteChannels}
+            disabled={!enableBatchDelete}
+            position={'top'}
           >
             <Button
-                theme='light'
-                type='primary'
-                style={{ marginRight: 8 }}
-                onClick={() => {
-                  setEditingChannel({
-                    id: undefined,
-                  });
-                  setShowEdit(true);
-                }}
+              disabled={!enableBatchDelete}
+              theme='light'
+              type='danger'
+              style={{ marginRight: 8 }}
             >
-              添加渠道
+              删除所选通道
             </Button>
-            <Popconfirm
-                title='确定？'
-                okType={'warning'}
-                onConfirm={testAllChannels}
-                position={isMobile() ? 'top' : 'top'}
-            >
-              <Button theme='light' type='warning' style={{ marginRight: 8 }}>
-                测试所有通道
-              </Button>
-            </Popconfirm>
-            <Popconfirm
-                title='确定？'
-                okType={'secondary'}
-                onConfirm={updateAllChannelsBalance}
-            >
-              <Button theme='light' type='secondary' style={{ marginRight: 8 }}>
-                更新所有已启用通道余额
-              </Button>
-            </Popconfirm>
-            <Popconfirm
-                title='确定是否要删除禁用通道？'
-                content='此修改将不可逆'
-                okType={'danger'}
-                onConfirm={deleteAllDisabledChannels}
-            >
-              <Button theme='light' type='danger' style={{ marginRight: 8 }}>
-                删除禁用通道
-              </Button>
-            </Popconfirm>
-
-            <Button
-                theme='light'
-                type='primary'
-                style={{ marginRight: 8 }}
-                onClick={refresh}
-            >
-              刷新
+          </Popconfirm>
+          <Popconfirm
+            title='确定是否要修复数据库一致性？'
+            content='进行该操作时，可能导致渠道访问错误，请仅在数据库出现问题时使用'
+            okType={'warning'}
+            onConfirm={fixChannelsAbilities}
+            position={'top'}
+          >
+            <Button theme='light' type='secondary' style={{ marginRight: 8 }}>
+              修复数据库一致性
             </Button>
-          </Space>
-          {/*<div style={{width: '100%', pointerEvents: 'none', position: 'absolute'}}>*/}
-
-          {/*</div>*/}
-        </div>
-        <div style={{ marginTop: 20 }}>
-          <Space>
-            <Typography.Text strong>开启批量删除</Typography.Text>
-            <Switch
-                label='开启批量删除'
-                uncheckedText='关'
-                aria-label='是否开启批量删除'
-                onChange={(v) => {
-                  setEnableBatchDelete(v);
-                }}
-            ></Switch>
-            <Popconfirm
-                title='确定是否要删除所选通道？'
-                content='此修改将不可逆'
-                okType={'danger'}
-                onConfirm={batchDeleteChannels}
-                disabled={!enableBatchDelete}
-                position={'top'}
-            >
-              <Button
-                  disabled={!enableBatchDelete}
-                  theme='light'
-                  type='danger'
-                  style={{ marginRight: 8 }}
-              >
-                删除所选通道
-              </Button>
-            </Popconfirm>
-            <Popconfirm
-                title='确定是否要修复数据库一致性？'
-                content='进行该操作时，可能导致渠道访问错误，请仅在数据库出现问题时使用'
-                okType={'warning'}
-                onConfirm={fixChannelsAbilities}
-                position={'top'}
-            >
-              <Button theme='light' type='secondary' style={{ marginRight: 8 }}>
-                修复数据库一致性
-              </Button>
-            </Popconfirm>
-          </Space>
-        </div>
-      </>
+          </Popconfirm>
+        </Space>
+      </div>
+    </>
   );
 };
 
