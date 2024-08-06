@@ -745,7 +745,7 @@ const ChannelsTable = () => {
             <Form.Select
               field='group'
               label='分组'
-              optionList=optionList={[{ label: '选择分组', value: null}, ...groupOptions]}
+              optionList={[{ label: '选择分组', value: null}, ...groupOptions]}
               initValue={null}
               onChange={(v) => {
                 setSearchGroup(v);
