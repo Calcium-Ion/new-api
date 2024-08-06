@@ -146,7 +146,7 @@ func TokenAuth() func(c *gin.Context) {
 		if token != nil {
 			id := c.GetInt("id")
 			if id == 0 {
-				c.Set("id", token.Id)
+				c.Set("id", token.UserId)
 			}
 		}
 		if err != nil {
