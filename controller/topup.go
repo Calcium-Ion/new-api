@@ -41,12 +41,12 @@ func GetEpayClient() *epay.Client {
 	return withUrl
 }
 
-func getPayMoney(amount float64, user model.User) float64 {
+func getPayMoney(amount float64, group string) float64 {
 	if !common.DisplayInCurrencyEnabled {
 		amount = amount / common.QuotaPerUnit
 	}
 	// 别问为什么用float64，问就是这么点钱没必要
-	topupGroupRatio := common.GetTopupGroupRatio(user.Group)
+	topupGroupRatio := common.GetTopupGroupRatio(group)
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
 	}
@@ -75,8 +75,12 @@ func RequestEpay(c *gin.Context) {
 	}
 
 	id := c.GetInt("id")
-	user, _ := model.GetUserById(id, false)
-	payMoney := getPayMoney(float64(req.Amount), *user)
+	group, err := model.CacheGetUserGroup(id)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
+		return
+	}
+	payMoney := getPayMoney(float64(req.Amount), group)
 	if payMoney < 0.01 {
 		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
 		return
@@ -94,6 +98,7 @@ func RequestEpay(c *gin.Context) {
 	returnUrl, _ := url.Parse(constant.ServerAddress + "/log")
 	notifyUrl, _ := url.Parse(callBackAddress + "/api/user/epay/notify")
 	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
+	tradeNo = fmt.Sprintf("USR%dNO%s", id, tradeNo)
 	client := GetEpayClient()
 	if client == nil {
 		c.JSON(200, gin.H{"message": "error", "data": "当前管理员未配置支付信息"})
@@ -101,8 +106,8 @@ func RequestEpay(c *gin.Context) {
 	}
 	uri, params, err := client.Purchase(&epay.PurchaseArgs{
 		Type:           payType,
-		ServiceTradeNo: "A" + tradeNo,
-		Name:           "B" + tradeNo,
+		ServiceTradeNo: tradeNo,
+		Name:           fmt.Sprintf("TUC%d", req.Amount),
 		Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
 		Device:         epay.PC,
 		NotifyUrl:      notifyUrl,
@@ -120,7 +125,7 @@ func RequestEpay(c *gin.Context) {
 		UserId:     id,
 		Amount:     amount,
 		Money:      payMoney,
-		TradeNo:    "A" + tradeNo,
+		TradeNo:    tradeNo,
 		CreateTime: time.Now().Unix(),
 		Status:     "pending",
 	}
@@ -232,8 +237,12 @@ func RequestAmount(c *gin.Context) {
 		return
 	}
 	id := c.GetInt("id")
-	user, _ := model.GetUserById(id, false)
-	payMoney := getPayMoney(float64(req.Amount), *user)
+	group, err := model.CacheGetUserGroup(id)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
+		return
+	}
+	payMoney := getPayMoney(float64(req.Amount), group)
 	if payMoney <= 0.01 {
 		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
 		return

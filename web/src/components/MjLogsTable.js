@@ -90,6 +90,12 @@ function renderType(type) {
           图混合
         </Tag>
       );
+    case 'UPLOAD':
+      return (
+          <Tag color='blue' size='large'>
+            上传文件
+          </Tag>
+      );
     case 'SHORTEN':
       return (
         <Tag color='pink' size='large'>
@@ -239,7 +245,7 @@ const renderTimestamp = (timestampInSeconds) => {
 // 修改renderDuration函数以包含颜色逻辑
 function renderDuration(submit_time, finishTime) {
   // 确保startTime和finishTime都是有效的时间戳
-  if (!submit_time || !finishTime) return 'N/A'; 
+  if (!submit_time || !finishTime) return 'N/A';
 
   // 将时间戳转换为Date对象
   const start = new Date(submit_time);

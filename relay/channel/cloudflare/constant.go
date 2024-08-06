@@ -1,6 +1,7 @@
 package cloudflare
 
 var ModelList = []string{
+	"@cf/meta/llama-3.1-8b-instruct",
 	"@cf/meta/llama-2-7b-chat-fp16",
 	"@cf/meta/llama-2-7b-chat-int8",
 	"@cf/mistral/mistral-7b-instruct-v0.1",

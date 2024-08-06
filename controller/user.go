@@ -791,11 +791,11 @@ type topUpRequest struct {
 	Key string `json:"key"`
 }
 
-var lock = sync.Mutex{}
+var topUpLock = sync.Mutex{}
 
 func TopUp(c *gin.Context) {
-	lock.Lock()
-	defer lock.Unlock()
+	topUpLock.Lock()
+	defer topUpLock.Unlock()
 	req := topUpRequest{}
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
