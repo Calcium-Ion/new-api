@@ -339,3 +339,20 @@ func CacheGetChannel(id int) (*Channel, error) {
 	}
 	return c, nil
 }
+
+func CacheGetChannelAll() (map[int]*Channel, error) {
+	if !common.MemoryCacheEnabled {
+		channelMap := make(map[int]*Channel, 0)
+		channels, err := GetAllChannels(0, 0, true, false)
+		if err != nil {
+			return channelMap, err
+		}
+		for _, channel := range channels {
+			channelMap[channel.Id] = channel
+		}
+		return channelMap, nil
+	}
+	channelSyncLock.RLock()
+	defer channelSyncLock.RUnlock()
+	return channelsIDM, nil
+}

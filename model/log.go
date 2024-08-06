@@ -27,6 +27,7 @@ type Log struct {
 	ChannelId        int    `json:"channel" gorm:"index"`
 	TokenId          int    `json:"token_id" gorm:"default:0;index"`
 	Other            string `json:"other"`
+	ChannelName      string `json:"channel_name" gorm:"-"`
 }
 
 const (

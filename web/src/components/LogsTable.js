@@ -183,15 +183,18 @@ const LogsTable = () => {
         return isAdminUser ? (
           record.type === 0 || record.type === 2 ? (
             <div>
-              {
-                <Tag
-                  color={colors[parseInt(text) % colors.length]}
-                  size='large'
-                >
-                  {' '}
-                  {text}{' '}
-                </Tag>
-              }
+                {
+                  <Tooltip content={record.channel_name}>
+                    <Tag
+                        color={colors[parseInt(text) % colors.length]}
+                        size='large'
+                    >
+                    {' '}
+                    {text}{' '}
+                  </Tag>
+                  </Tooltip>
+
+                }
             </div>
           ) : (
             <></>

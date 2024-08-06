@@ -32,6 +32,26 @@ func GetAllLogs(c *gin.Context) {
 		})
 		return
 	}
+
+	channelMap, err := model.CacheGetChannelAll()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	for _, log := range logs {
+		if log.ChannelId == 0 {
+			continue
+		}
+		info, ok := channelMap[log.ChannelId]
+		if ok {
+			log.ChannelName = info.Name
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
