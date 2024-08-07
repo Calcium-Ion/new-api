@@ -41,12 +41,12 @@ func GetEpayClient() *epay.Client {
 	return withUrl
 }
 
-func getPayMoney(amount float64, user model.User) float64 {
+func getPayMoney(amount float64, group string) float64 {
 	if !common.DisplayInCurrencyEnabled {
 		amount = amount / common.QuotaPerUnit
 	}
 	// 别问为什么用float64，问就是这么点钱没必要
-	topupGroupRatio := common.GetTopupGroupRatio(user.Group)
+	topupGroupRatio := common.GetTopupGroupRatio(group)
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
 	}
@@ -75,8 +75,12 @@ func RequestEpay(c *gin.Context) {
 	}
 
 	id := c.GetInt("id")
-	user, _ := model.GetUserById(id, false)
-	payMoney := getPayMoney(float64(req.Amount), *user)
+	group, err := model.CacheGetUserGroup(id)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
+		return
+	}
+	payMoney := getPayMoney(float64(req.Amount), group)
 	if payMoney < 0.01 {
 		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
 		return
@@ -233,8 +237,12 @@ func RequestAmount(c *gin.Context) {
 		return
 	}
 	id := c.GetInt("id")
-	user, _ := model.GetUserById(id, false)
-	payMoney := getPayMoney(float64(req.Amount), *user)
+	group, err := model.CacheGetUserGroup(id)
+	if err != nil {
+		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
+		return
+	}
+	payMoney := getPayMoney(float64(req.Amount), group)
 	if payMoney <= 0.01 {
 		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
 		return
