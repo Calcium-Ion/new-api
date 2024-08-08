@@ -90,11 +90,13 @@ func GetAllChannels(startIdx int, num int, selectAll bool, idSort bool) ([]*Chan
 func SearchChannels(keyword string, group string, model string) ([]*Channel, error) {
 	var channels []*Channel
 	keyCol := "`key`"
+	groupCol := "`group`"
 	modelsCol := "`models`"
 
 	// 如果是 PostgreSQL，使用双引号
 	if common.UsingPostgreSQL {
 		keyCol = `"key"`
+		groupCol = `"group"`
 		modelsCol = `"models"`
 	}
 
@@ -105,7 +107,13 @@ func SearchChannels(keyword string, group string, model string) ([]*Channel, err
 	var whereClause string
 	var args []interface{}
 	if group != "" && group != "null" {
-		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + ` LIKE ? AND (',' || "group" || ',') LIKE ?`
+		var groupCondition string
+		if common.UsingPostgreSQL {
+			groupCondition = `(',' || ` + groupCol + ` || ',') LIKE ?`
+		} else {
+			groupCondition = `CONCAT(',', ` + groupCol + `, ',') LIKE ?`
+		}
+		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + ` LIKE ? AND ` + groupCondition
 		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+model+"%", "%,"+group+",%")
 	} else {
 		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + " LIKE ?"
