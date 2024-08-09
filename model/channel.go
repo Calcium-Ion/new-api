@@ -106,9 +106,15 @@ func SearchChannels(keyword string, group string, model string) ([]*Channel, err
 	// 构造WHERE子句
 	var whereClause string
 	var args []interface{}
-	if group != "" {
-		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + groupCol + " = ? AND " + modelsCol + " LIKE ?"
-		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, group, "%"+model+"%")
+	if group != "" && group != "null" {
+		var groupCondition string
+		if common.UsingPostgreSQL {
+			groupCondition = `(',' || ` + groupCol + ` || ',') LIKE ?`
+		} else {
+			groupCondition = `CONCAT(',', ` + groupCol + `, ',') LIKE ?`
+		}
+		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + ` LIKE ? AND ` + groupCondition
+		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+model+"%", "%,"+group+",%")
 	} else {
 		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + " LIKE ?"
 		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+model+"%")
