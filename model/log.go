@@ -193,8 +193,8 @@ func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelNa
 		tx = tx.Where("created_at <= ?", endTimestamp)
 	}
 	if modelName != "" {
-		tx = tx.Where("model_name = ?", modelName)
-		rpmTpmQuery = rpmTpmQuery.Where("model_name = ?", modelName)
+		tx = tx.Where("model_name like ?", modelName)
+		rpmTpmQuery = rpmTpmQuery.Where("model_name like ?", modelName)
 	}
 	if channel != 0 {
 		tx = tx.Where("channel_id = ?", channel)
