@@ -20,6 +20,7 @@ import (
 	"one-api/relay/constant"
 	"one-api/service"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -219,6 +220,8 @@ func testAllChannels(notify bool) error {
 		disableThreshold = 10000000 // a impossible value
 	}
 	gopool.Go(func() {
+		enableMails := make([]*dto.ChannelMailInfo, 0)
+		disableMails := make([]*dto.ChannelMailInfo, 0)
 		for _, channel := range channels {
 			isChannelEnabled := channel.Status == common.ChannelStatusEnabled
 			tik := time.Now()
@@ -246,12 +249,14 @@ func testAllChannels(notify bool) error {
 
 			// disable channel
 			if ban && isChannelEnabled {
-				service.DisableChannel(channel.Id, channel.Name, err.Error())
+				model.UpdateChannelStatusById(channel.Id, common.ChannelStatusAutoDisabled, err.Error())
+				disableMails = append(disableMails, dto.NewChannelMailInfo(channel.Id, channel.Name, err.Error()))
 			}
 
 			// enable channel
 			if !isChannelEnabled && service.ShouldEnableChannel(err, openaiWithStatusErr, channel.Status) {
-				service.EnableChannel(channel.Id, channel.Name)
+				model.UpdateChannelStatusById(channel.Id, common.ChannelStatusEnabled, "")
+				enableMails = append(enableMails, dto.NewChannelMailInfo(channel.Id, channel.Name, ""))
 			}
 
 			channel.UpdateResponseTime(milliseconds)
@@ -261,13 +266,51 @@ func testAllChannels(notify bool) error {
 		testAllChannelsRunning = false
 		testAllChannelsLock.Unlock()
 		if notify {
-			err := common.SendEmail("通道测试完成", common.RootUserEmail, "通道测试完成，如果没有收到禁用通知，说明所有通道都正常")
+			subject, content := buildTestChannelsMail(enableMails, disableMails)
+			err := common.SendEmail(subject, common.RootUserEmail, content)
 			if err != nil {
 				common.SysError(fmt.Sprintf("failed to send email: %s", err.Error()))
 			}
 		}
 	})
 	return nil
+}
+
+func buildTestChannelsMail(enables, disables []*dto.ChannelMailInfo) (subject, content string) {
+	var b strings.Builder
+	b.WriteString("通道测试完成")
+	enableLen := len(enables)
+	disableLen := len(disables)
+	if enableLen == 0 && disableLen == 0 {
+		b.WriteString("，所有通道都正常")
+	}
+	if enableLen > 0 {
+		b.WriteString(fmt.Sprintf("，启用 %d 个通道", enableLen))
+	}
+	if disableLen > 0 {
+		b.WriteString(fmt.Sprintf("，禁用 %d 个通道", disableLen))
+	}
+
+	subject = b.String()
+	b.WriteString("<br><br>")
+
+	if enableLen > 0 {
+		b.WriteString("<b>已启用通道：</b><br>")
+		for _, info := range enables {
+			_, c := info.ToChannelMailInfo("已被启用")
+			b.WriteString(c + "<br>")
+		}
+		b.WriteString("<br><br>")
+	}
+	if disableLen > 0 {
+		b.WriteString("<b>已禁用通道：</b><br>")
+		for _, info := range disables {
+			_, c := info.ToChannelMailInfo("已被禁用")
+			b.WriteString(c + "<br>")
+		}
+	}
+	content = b.String()
+	return
 }
 
 func TestAllChannels(c *gin.Context) {
@@ -290,7 +333,7 @@ func AutomaticallyTestChannels(frequency int) {
 	for {
 		time.Sleep(time.Duration(frequency) * time.Minute)
 		common.SysLog("testing all channels")
-		_ = testAllChannels(false)
+		_ = testAllChannels(true)
 		common.SysLog("channel test finished")
 	}
 }

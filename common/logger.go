@@ -75,7 +75,11 @@ func logHelper(ctx context.Context, level string, msg string) {
 	}
 	id := ctx.Value(RequestIdKey)
 	now := time.Now()
-	_, _ = fmt.Fprintf(writer, "[%s] %v | %s | %s \n", level, now.Format("2006/01/02 - 15:04:05"), id, msg)
+	if id == nil {
+		_, _ = fmt.Fprintf(writer, "[%s] %v | %s \n", level, now.Format("2006/01/02 - 15:04:05"), msg)
+	} else {
+		_, _ = fmt.Fprintf(writer, "[%s] %v | %s | %s \n", level, now.Format("2006/01/02 - 15:04:05"), id, msg)
+	}
 	logCount++ // we don't need accurate count, so no lock here
 	if logCount > maxLogCount && !setupLogWorking {
 		logCount = 0
