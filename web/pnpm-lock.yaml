@@ -13,10 +13,10 @@ importers:
         version: 2.53.2(react@18.2.0)
       '@douyinfe/semi-ui':
         specifier: ^2.55.3
-        version: 2.55.3(react-dom@18.2.0)(react@18.2.0)
+        version: 2.55.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@visactor/react-vchart':
         specifier: ~1.8.8
-        version: 1.8.11(react-dom@18.2.0)(react@18.2.0)
+        version: 1.8.11(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@visactor/vchart':
         specifier: ~1.8.8
         version: 1.8.11
@@ -49,26 +49,26 @@ importers:
         version: 1.0.4
       react-router-dom:
         specifier: ^6.3.0
-        version: 6.22.2(react-dom@18.2.0)(react@18.2.0)
+        version: 6.22.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react-telegram-login:
         specifier: ^1.1.2
         version: 1.1.2(react@18.2.0)
       react-toastify:
         specifier: ^9.0.8
-        version: 9.1.3(react-dom@18.2.0)(react@18.2.0)
+        version: 9.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react-turnstile:
         specifier: ^1.0.5
-        version: 1.1.3(react-dom@18.2.0)(react@18.2.0)
+        version: 1.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       semantic-ui-offline:
         specifier: ^2.5.0
         version: 2.5.0
       semantic-ui-react:
         specifier: ^2.1.3
-        version: 2.1.5(react-dom@18.2.0)(react@18.2.0)
+        version: 2.1.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
     devDependencies:
       '@so1ve/prettier-config':
-        specifier: ^2.0.0
-        version: 2.0.0(prettier@3.2.5)
+        specifier: ^3.1.0
+        version: 3.1.0(prettier@3.2.5)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
         version: 4.2.1(vite@5.2.5)
@@ -88,8 +88,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@astrojs/compiler@1.8.2':
-    resolution: {integrity: sha512-o/ObKgtMzl8SlpIdzaxFnt7SATKPxu4oIP/1NL+HDJRzxfJcAkOTAb/ZKMRyULbz4q+1t2/DAebs2Z1QairkZw==}
+  '@astrojs/compiler@2.10.2':
+    resolution: {integrity: sha512-bvH+v8AirwpRWCkYJEyWYdc5Cs/BjG2ZTxIJzttHilXgfKJAdW2496KsUQKzf5j2tOHtaHXKKn9hb9WZiBGpEg==}
 
   '@babel/code-frame@7.23.5':
     resolution: {integrity: sha512-CgH3s1a96LipHCmSUmYFPwY7MNx8C3avkq7i4Wl3cfa662ldtUe4VM1TPXX70pfmrlWTb6jLqTYrZyT2ZTJBgA==}
@@ -578,13 +578,13 @@ packages:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
 
-  '@so1ve/prettier-config@2.0.0':
-    resolution: {integrity: sha512-s6qsH5Rf4Bl+J0LU9rKmSWe/rYRdsYw0ELyXhDDDqEaTWtah4NpHKJuVWARuKqj0TWLBeWmyWUoIH/Bkp/DHaw==}
+  '@so1ve/prettier-config@3.1.0':
+    resolution: {integrity: sha512-9GJ1yXKBC4DzqCTTaZoBf8zw7WWkVuXcccZt1Aqk4lj6ab/GiNUnjPGajUVYLjaqAEOKqM7jUSUfTjk2JTjCAg==}
     peerDependencies:
       prettier: ^3.0.0
 
-  '@so1ve/prettier-plugin-toml@2.0.0':
-    resolution: {integrity: sha512-GvuFdTqhs3qxbhKTiCXWMXITmNLSdndUp7ql1yJbzzWaGqAdb3UH+R+0ZhtAEctBSx90MWAWW3kkW/Iba02tCg==}
+  '@so1ve/prettier-plugin-toml@3.1.0':
+    resolution: {integrity: sha512-8WZAGjAVNIJlkfWL6wHKxlUuEBY45fdd5qY5bR/Z6r/txgzKXk/r9qi1DTwc17gi/WcNuRrcRugecRT+mWbIYg==}
     peerDependencies:
       prettier: ^3.0.0
 
@@ -1127,12 +1127,12 @@ packages:
     resolution: {integrity: sha512-WxtodH/wWavfw3MR7yK/GrS4pASEQ+iSTkdtSxPJWvqzG55ir5nvbLt9rw5AOiEcqqPCRM92WCtR1rk3TG3JSQ==}
     hasBin: true
 
-  prettier-plugin-astro@0.13.0:
-    resolution: {integrity: sha512-5HrJNnPmZqTUNoA97zn4gNQv9BgVhv+et03314WpQ9H9N8m2L9OSV798olwmG2YLXPl1iSstlJCR1zB3x5xG4g==}
+  prettier-plugin-astro@0.14.1:
+    resolution: {integrity: sha512-RiBETaaP9veVstE4vUwSIcdATj6dKmXljouXc/DDNwBSPTp8FRkLGDSGFClKsAFeeg+13SB0Z1JZvbD76bigJw==}
     engines: {node: ^14.15.0 || >=16.0.0}
 
-  prettier-plugin-curly-and-jsdoc@2.0.0:
-    resolution: {integrity: sha512-uSjWOWmX8+yrCrfhJSI58ODqtX7lXx07M8JYeOC1hfRv+vCttfiDlZoM27mNChGitJNKI+pCBvMMBYh8JiV0HQ==}
+  prettier-plugin-curly-and-jsdoc@3.1.0:
+    resolution: {integrity: sha512-4QMOHnLlkP2jTRWS0MFH6j+cuOiXLvXOqCLKbtwwVd8PPyq8NenW5AAwfwqiTNHBQG/DmzViPphRrwgN0XkUVQ==}
     peerDependencies:
       prettier: ^3.0.0
 
@@ -1442,7 +1442,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.24
 
-  '@astrojs/compiler@1.8.2': {}
+  '@astrojs/compiler@2.10.2': {}
 
   '@babel/code-frame@7.23.5':
     dependencies:
@@ -1590,7 +1590,7 @@ snapshots:
       react: 18.2.0
       tslib: 2.6.2
 
-  '@dnd-kit/core@6.1.0(react-dom@18.2.0)(react@18.2.0)':
+  '@dnd-kit/core@6.1.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@dnd-kit/accessibility': 3.1.0(react@18.2.0)
       '@dnd-kit/utilities': 3.2.2(react@18.2.0)
@@ -1598,9 +1598,9 @@ snapshots:
       react-dom: 18.2.0(react@18.2.0)
       tslib: 2.6.2
 
-  '@dnd-kit/sortable@7.0.2(@dnd-kit/core@6.1.0)(react@18.2.0)':
+  '@dnd-kit/sortable@7.0.2(@dnd-kit/core@6.1.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)':
     dependencies:
-      '@dnd-kit/core': 6.1.0(react-dom@18.2.0)(react@18.2.0)
+      '@dnd-kit/core': 6.1.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@dnd-kit/utilities': 3.2.2(react@18.2.0)
       react: 18.2.0
       tslib: 2.6.2
@@ -1652,10 +1652,10 @@ snapshots:
     dependencies:
       glob: 7.2.3
 
-  '@douyinfe/semi-ui@2.55.3(react-dom@18.2.0)(react@18.2.0)':
+  '@douyinfe/semi-ui@2.55.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
-      '@dnd-kit/core': 6.1.0(react-dom@18.2.0)(react@18.2.0)
-      '@dnd-kit/sortable': 7.0.2(@dnd-kit/core@6.1.0)(react@18.2.0)
+      '@dnd-kit/core': 6.1.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@dnd-kit/sortable': 7.0.2(@dnd-kit/core@6.1.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
       '@dnd-kit/utilities': 3.2.2(react@18.2.0)
       '@douyinfe/semi-animation': 2.55.3
       '@douyinfe/semi-animation-react': 2.55.3
@@ -1673,8 +1673,8 @@ snapshots:
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      react-resizable: 3.0.5(react-dom@18.2.0)(react@18.2.0)
-      react-window: 1.8.10(react-dom@18.2.0)(react@18.2.0)
+      react-resizable: 3.0.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-window: 1.8.10(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       scroll-into-view-if-needed: 2.2.31
       utility-types: 3.11.0
 
@@ -1747,13 +1747,13 @@ snapshots:
   '@esbuild/win32-x64@0.20.2':
     optional: true
 
-  '@fluentui/react-component-event-listener@0.63.1(react-dom@18.2.0)(react@18.2.0)':
+  '@fluentui/react-component-event-listener@0.63.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.24.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  '@fluentui/react-component-ref@0.63.1(react-dom@18.2.0)(react@18.2.0)':
+  '@fluentui/react-component-ref@0.63.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.24.0
       react: 18.2.0
@@ -1871,22 +1871,22 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.13.0':
     optional: true
 
-  '@semantic-ui-react/event-stack@3.1.3(react-dom@18.2.0)(react@18.2.0)':
+  '@semantic-ui-react/event-stack@3.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       exenv: 1.2.2
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  '@so1ve/prettier-config@2.0.0(prettier@3.2.5)':
+  '@so1ve/prettier-config@3.1.0(prettier@3.2.5)':
     dependencies:
-      '@so1ve/prettier-plugin-toml': 2.0.0(prettier@3.2.5)
+      '@so1ve/prettier-plugin-toml': 3.1.0(prettier@3.2.5)
       prettier: 3.2.5
-      prettier-plugin-astro: 0.13.0
-      prettier-plugin-curly-and-jsdoc: 2.0.0(prettier@3.2.5)
+      prettier-plugin-astro: 0.14.1
+      prettier-plugin-curly-and-jsdoc: 3.1.0(prettier@3.2.5)
       prettier-plugin-pkgsort: 0.2.1(prettier@3.2.5)
 
-  '@so1ve/prettier-plugin-toml@2.0.0(prettier@3.2.5)':
+  '@so1ve/prettier-plugin-toml@3.1.0(prettier@3.2.5)':
     dependencies:
       prettier: 3.2.5
 
@@ -1951,7 +1951,7 @@ snapshots:
 
   '@types/parse-json@4.0.2': {}
 
-  '@visactor/react-vchart@1.8.11(react-dom@18.2.0)(react@18.2.0)':
+  '@visactor/react-vchart@1.8.11(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@visactor/vchart': 1.8.11
       '@visactor/vgrammar-core': 0.10.11
@@ -2528,13 +2528,13 @@ snapshots:
       sort-object-keys: 1.1.3
       sort-order: 1.1.2
 
-  prettier-plugin-astro@0.13.0:
+  prettier-plugin-astro@0.14.1:
     dependencies:
-      '@astrojs/compiler': 1.8.2
+      '@astrojs/compiler': 2.10.2
       prettier: 3.2.5
       sass-formatter: 0.7.9
 
-  prettier-plugin-curly-and-jsdoc@2.0.0(prettier@3.2.5):
+  prettier-plugin-curly-and-jsdoc@3.1.0(prettier@3.2.5):
     dependencies:
       prettier: 3.2.5
 
@@ -2559,7 +2559,7 @@ snapshots:
       react: 18.2.0
       scheduler: 0.23.0
 
-  react-draggable@4.4.6(react-dom@18.2.0)(react@18.2.0):
+  react-draggable@4.4.6(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       clsx: 1.2.1
       prop-types: 15.8.1
@@ -2581,7 +2581,7 @@ snapshots:
 
   react-is@18.2.0: {}
 
-  react-popper@2.3.0(@popperjs/core@2.11.8)(react-dom@18.2.0)(react@18.2.0):
+  react-popper@2.3.0(@popperjs/core@2.11.8)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       '@popperjs/core': 2.11.8
       react: 18.2.0
@@ -2591,15 +2591,15 @@ snapshots:
 
   react-refresh@0.14.0: {}
 
-  react-resizable@3.0.5(react-dom@18.2.0)(react@18.2.0):
+  react-resizable@3.0.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       prop-types: 15.8.1
       react: 18.2.0
-      react-draggable: 4.4.6(react-dom@18.2.0)(react@18.2.0)
+      react-draggable: 4.4.6(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
     transitivePeerDependencies:
       - react-dom
 
-  react-router-dom@6.22.2(react-dom@18.2.0)(react@18.2.0):
+  react-router-dom@6.22.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       '@remix-run/router': 1.15.2
       react: 18.2.0
@@ -2615,18 +2615,18 @@ snapshots:
     dependencies:
       react: 18.2.0
 
-  react-toastify@9.1.3(react-dom@18.2.0)(react@18.2.0):
+  react-toastify@9.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       clsx: 1.2.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  react-turnstile@1.1.3(react-dom@18.2.0)(react@18.2.0):
+  react-turnstile@1.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  react-window@1.8.10(react-dom@18.2.0)(react@18.2.0):
+  react-window@1.8.10(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       '@babel/runtime': 7.24.0
       memoize-one: 5.2.1
@@ -2708,13 +2708,13 @@ snapshots:
       fs-extra: 4.0.3
       jquery: 3.7.1
 
-  semantic-ui-react@2.1.5(react-dom@18.2.0)(react@18.2.0):
+  semantic-ui-react@2.1.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       '@babel/runtime': 7.24.0
-      '@fluentui/react-component-event-listener': 0.63.1(react-dom@18.2.0)(react@18.2.0)
-      '@fluentui/react-component-ref': 0.63.1(react-dom@18.2.0)(react@18.2.0)
+      '@fluentui/react-component-event-listener': 0.63.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@fluentui/react-component-ref': 0.63.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@popperjs/core': 2.11.8
-      '@semantic-ui-react/event-stack': 3.1.3(react-dom@18.2.0)(react@18.2.0)
+      '@semantic-ui-react/event-stack': 3.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       clsx: 1.2.1
       keyboard-key: 1.1.0
       lodash: 4.17.21
@@ -2723,7 +2723,7 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-is: 18.2.0
-      react-popper: 2.3.0(@popperjs/core@2.11.8)(react-dom@18.2.0)(react@18.2.0)
+      react-popper: 2.3.0(@popperjs/core@2.11.8)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       shallowequal: 1.1.0
 
   semver@6.3.1: {}
