@@ -32,13 +32,14 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4-32k":  30,
 	//"gpt-4-32k-0314":               30, //deprecated
 	"gpt-4-32k-0613":            30,
-	"gpt-4-1106-preview":        5,   // $0.01 / 1K tokens
-	"gpt-4-0125-preview":        5,   // $0.01 / 1K tokens
-	"gpt-4-turbo-preview":       5,   // $0.01 / 1K tokens
-	"gpt-4-vision-preview":      5,   // $0.01 / 1K tokens
-	"gpt-4-1106-vision-preview": 5,   // $0.01 / 1K tokens
-	"gpt-4o":                    2.5, // $0.01 / 1K tokens
-	"gpt-4o-2024-05-13":         2.5, // $0.01 / 1K tokens
+	"gpt-4-1106-preview":        5,    // $0.01 / 1K tokens
+	"gpt-4-0125-preview":        5,    // $0.01 / 1K tokens
+	"gpt-4-turbo-preview":       5,    // $0.01 / 1K tokens
+	"gpt-4-vision-preview":      5,    // $0.01 / 1K tokens
+	"gpt-4-1106-vision-preview": 5,    // $0.01 / 1K tokens
+	"gpt-4o":                    2.5,  // $0.01 / 1K tokens
+	"gpt-4o-2024-05-13":         2.5,  // $0.01 / 1K tokens
+	"gpt-4o-2024-08-06":         1.25, // $0.01 / 1K tokens
 	"gpt-4o-mini":               0.075,
 	"gpt-4o-mini-2024-07-18":    0.075,
 	"gpt-4-turbo":               5,    // $0.01 / 1K tokens
@@ -326,7 +327,7 @@ func GetCompletionRatio(name string) float64 {
 			return 3
 		}
 		if strings.HasPrefix(name, "gpt-4o") {
-			if strings.Contains(name, "mini") {
+			if strings.HasPrefix(name, "gpt-4o-mini") || name == "gpt-4o-2024-08-06" {
 				return 4
 			}
 			return 3

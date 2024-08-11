@@ -143,6 +143,12 @@ func TokenAuth() func(c *gin.Context) {
 			key = parts[0]
 		}
 		token, err := model.ValidateUserToken(key)
+		if token != nil {
+			id := c.GetInt("id")
+			if id == 0 {
+				c.Set("id", token.UserId)
+			}
+		}
 		if err != nil {
 			abortWithOpenAiMessage(c, http.StatusUnauthorized, err.Error())
 			return
