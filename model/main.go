@@ -15,6 +15,8 @@ import (
 
 var DB *gorm.DB
 
+var LOG_DB *gorm.DB
+
 func createRootAccountIfNeed() error {
 	var user User
 	//if user.Status != common.UserStatusEnabled {
@@ -38,9 +40,9 @@ func createRootAccountIfNeed() error {
 	return nil
 }
 
-func chooseDB() (*gorm.DB, error) {
-	if os.Getenv("SQL_DSN") != "" {
-		dsn := os.Getenv("SQL_DSN")
+func chooseDB(envName string) (*gorm.DB, error) {
+	dsn := os.Getenv(envName)
+	if dsn != "" {
 		if strings.HasPrefix(dsn, "postgres://") {
 			// Use PostgreSQL
 			common.SysLog("using PostgreSQL as database")
@@ -49,6 +51,13 @@ func chooseDB() (*gorm.DB, error) {
 				DSN:                  dsn,
 				PreferSimpleProtocol: true, // disables implicit prepared statement usage
 			}), &gorm.Config{
+				PrepareStmt: true, // precompile SQL
+			})
+		}
+		if strings.HasPrefix(dsn, "local") {
+			common.SysLog("SQL_DSN not set, using SQLite as database")
+			common.UsingSQLite = true
+			return gorm.Open(sqlite.Open(common.SQLitePath), &gorm.Config{
 				PrepareStmt: true, // precompile SQL
 			})
 		}
@@ -76,7 +85,7 @@ func chooseDB() (*gorm.DB, error) {
 }
 
 func InitDB() (err error) {
-	db, err := chooseDB()
+	db, err := chooseDB("SQL_DSN")
 	if err == nil {
 		if common.DebugEnabled {
 			db = db.Debug()
@@ -100,52 +109,7 @@ func InitDB() (err error) {
 		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY status VARCHAR(20);")   // TODO: delete this line when most users have upgraded
 		//}
 		common.SysLog("database migration started")
-		err = db.AutoMigrate(&Channel{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&Token{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&User{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&Option{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&Redemption{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&Ability{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&Log{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&Midjourney{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&TopUp{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&QuotaData{})
-		if err != nil {
-			return err
-		}
-		err = db.AutoMigrate(&Task{})
-		if err != nil {
-			return err
-		}
-		common.SysLog("database migrated")
-		err = createRootAccountIfNeed()
+		err = migrateDB()
 		return err
 	} else {
 		common.FatalLog(err)
@@ -153,13 +117,118 @@ func InitDB() (err error) {
 	return err
 }
 
-func CloseDB() error {
-	sqlDB, err := DB.DB()
+func InitLogDB() (err error) {
+	if os.Getenv("LOG_SQL_DSN") == "" {
+		LOG_DB = DB
+		return
+	}
+	db, err := chooseDB("LOG_SQL_DSN")
+	if err == nil {
+		if common.DebugEnabled {
+			db = db.Debug()
+		}
+		LOG_DB = db
+		sqlDB, err := LOG_DB.DB()
+		if err != nil {
+			return err
+		}
+		sqlDB.SetMaxIdleConns(common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 100))
+		sqlDB.SetMaxOpenConns(common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 1000))
+		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_LIFETIME", 60)))
+
+		if !common.IsMasterNode {
+			return nil
+		}
+		//if common.UsingMySQL {
+		//	_, _ = sqlDB.Exec("DROP INDEX idx_channels_key ON channels;")             // TODO: delete this line when most users have upgraded
+		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY action VARCHAR(40);")   // TODO: delete this line when most users have upgraded
+		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY progress VARCHAR(30);") // TODO: delete this line when most users have upgraded
+		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY status VARCHAR(20);")   // TODO: delete this line when most users have upgraded
+		//}
+		common.SysLog("database migration started")
+		err = migrateLOGDB()
+		return err
+	} else {
+		common.FatalLog(err)
+	}
+	return err
+}
+
+func migrateDB() error {
+	err := DB.AutoMigrate(&Channel{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&Token{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&User{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&Option{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&Redemption{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&Ability{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&Log{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&Midjourney{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&TopUp{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&QuotaData{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&Task{})
+	if err != nil {
+		return err
+	}
+	common.SysLog("database migrated")
+	err = createRootAccountIfNeed()
+	return err
+}
+
+func migrateLOGDB() error {
+	var err error
+	if err = LOG_DB.AutoMigrate(&Log{}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func closeDB(db *gorm.DB) error {
+	sqlDB, err := db.DB()
 	if err != nil {
 		return err
 	}
 	err = sqlDB.Close()
 	return err
+}
+
+func CloseDB() error {
+	if LOG_DB != DB {
+		err := closeDB(LOG_DB)
+		if err != nil {
+			return err
+		}
+	}
+	return closeDB(DB)
 }
 
 var (
