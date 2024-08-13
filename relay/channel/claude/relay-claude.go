@@ -63,15 +63,21 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 
 	for _, tool := range textRequest.Tools {
 		if params, ok := tool.Function.Parameters.(map[string]any); ok {
-			claudeTools = append(claudeTools, Tool{
+			claudeTool := Tool{
 				Name:        tool.Function.Name,
 				Description: tool.Function.Description,
-				InputSchema: InputSchema{
-					Type:       params["type"].(string),
-					Properties: params["properties"],
-					Required:   params["required"],
-				},
-			})
+			}
+			claudeTool.InputSchema = make(map[string]interface{})
+			claudeTool.InputSchema["type"] = params["type"].(string)
+			claudeTool.InputSchema["properties"] = params["properties"]
+			claudeTool.InputSchema["required"] = params["required"]
+			for s, a := range params {
+				if s == "type" || s == "properties" || s == "required" {
+					continue
+				}
+				claudeTool.InputSchema[s] = a
+			}
+			claudeTools = append(claudeTools, claudeTool)
 		}
 	}
 
