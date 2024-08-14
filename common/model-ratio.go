@@ -37,6 +37,7 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4-turbo-preview":       5,    // $0.01 / 1K tokens
 	"gpt-4-vision-preview":      5,    // $0.01 / 1K tokens
 	"gpt-4-1106-vision-preview": 5,    // $0.01 / 1K tokens
+	"chatgpt-4o-latest":         2.5,  // $0.01 / 1K tokens
 	"gpt-4o":                    2.5,  // $0.01 / 1K tokens
 	"gpt-4o-2024-05-13":         2.5,  // $0.01 / 1K tokens
 	"gpt-4o-2024-08-06":         1.25, // $0.01 / 1K tokens
@@ -333,6 +334,9 @@ func GetCompletionRatio(name string) float64 {
 			return 3
 		}
 		return 2
+	}
+	if name == "chatgpt-4o-latest" {
+		return 3
 	}
 	if strings.Contains(name, "claude-instant-1") {
 		return 3
