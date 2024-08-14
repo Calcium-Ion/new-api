@@ -534,7 +534,6 @@ const LogsTable = () => {
     const res = await API.get(url);
     const { success, message, data } = res.data;
     if (success) {
-      console.log(data);
       const newPageData = data.items;
       setActivePage(data.page);
       setPageSize(data.page_size);
