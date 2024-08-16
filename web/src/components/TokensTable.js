@@ -425,7 +425,7 @@ const TokensTable = () => {
         url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
         break;
       case 'lobe':
-        url = `https://chat-preview.lobehub.com/?settings={"keyVaults":{"openai":{"apiKey":"sk-${key}","baseURL":"${encodedServerAddress}"}}}`;
+        url = `https://chat-preview.lobehub.com/?settings={"keyVaults":{"openai":{"apiKey":"sk-${key}","baseURL":"${encodedServerAddress}/v1"}}}`;
         break;
       case 'next-mj':
         url =
