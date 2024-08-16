@@ -354,6 +354,10 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, modelN
 		logModel = "gpt-4-gizmo-*"
 		logContent += fmt.Sprintf("，模型 %s", modelName)
 	}
+	if strings.HasPrefix(logModel, "gpt-4o-gizmo") {
+		logModel = "gpt-4o-gizmo-*"
+		logContent += fmt.Sprintf("，模型 %s", modelName)
+	}
 	if extraContent != "" {
 		logContent += ", " + extraContent
 	}
