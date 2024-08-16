@@ -16,6 +16,7 @@ import (
 	"one-api/relay/channel/openai"
 	"one-api/relay/channel/palm"
 	"one-api/relay/channel/perplexity"
+	"one-api/relay/channel/siliconflow"
 	"one-api/relay/channel/task/suno"
 	"one-api/relay/channel/tencent"
 	"one-api/relay/channel/xunfei"
@@ -62,6 +63,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &jina.Adaptor{}
 	case constant.APITypeCloudflare:
 		return &cloudflare.Adaptor{}
+	case constant.APITypeSiliconFlow:
+		return &siliconflow.Adaptor{}
 	}
 	return nil
 }
