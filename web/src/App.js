@@ -20,6 +20,7 @@ import Redemption from './pages/Redemption';
 import TopUp from './pages/TopUp';
 import Log from './pages/Log';
 import Chat from './pages/Chat';
+import Chat2Link from './pages/Chat2Link'; //新增
 import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
 import Pricing from './pages/Pricing/index.js';
@@ -253,6 +254,17 @@ function App() {
               <Suspense fallback={<Loading></Loading>}>
                 <Chat />
               </Suspense>
+            }
+          />
+          {/* 方便使用外链... */}
+          <Route
+            path='/chat2link'
+            element={
+              <PrivateRoute>
+                <Suspense fallback={<Loading></Loading>}>
+                    <Chat2Link />
+                </Suspense>
+              </PrivateRoute>
             }
           />
           <Route path='*' element={<NotFound />} />
