@@ -68,7 +68,7 @@ func SendEmail(subject string, receiver string, content string) error {
 		if err != nil {
 			return err
 		}
-	} else if strings.HasSuffix(SMTPAccount, "outlook.com") {
+	} else if isOutlookServer(SMTPAccount) {
 		auth = LoginAuth(SMTPAccount, SMTPToken)
 		err = smtp.SendMail(addr, auth, SMTPAccount, to, mail)
 	} else {
