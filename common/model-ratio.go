@@ -23,10 +23,11 @@ const (
 
 var defaultModelRatio = map[string]float64{
 	//"midjourney":                50,
-	"gpt-4-gizmo-*": 15,
-	"gpt-4-all":     15,
-	"gpt-4o-all":    15,
-	"gpt-4":         15,
+	"gpt-4-gizmo-*":  15,
+	"gpt-4o-gizmo-*": 2.5,
+	"gpt-4-all":      15,
+	"gpt-4o-all":     15,
+	"gpt-4":          15,
 	//"gpt-4-0314":                   15, //deprecated
 	"gpt-4-0613": 15,
 	"gpt-4-32k":  30,
@@ -37,6 +38,7 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4-turbo-preview":       5,    // $0.01 / 1K tokens
 	"gpt-4-vision-preview":      5,    // $0.01 / 1K tokens
 	"gpt-4-1106-vision-preview": 5,    // $0.01 / 1K tokens
+	"chatgpt-4o-latest":         2.5,  // $0.01 / 1K tokens
 	"gpt-4o":                    2.5,  // $0.01 / 1K tokens
 	"gpt-4o-2024-05-13":         2.5,  // $0.01 / 1K tokens
 	"gpt-4o-2024-08-06":         1.25, // $0.01 / 1K tokens
@@ -186,8 +188,8 @@ var defaultModelPrice = map[string]float64{
 }
 
 var (
-	modelPriceMap      = make(map[string]float64)
-	modelPriceMapMutex = sync.RWMutex{}
+	modelPriceMap      map[string]float64 = nil
+	modelPriceMapMutex                    = sync.RWMutex{}
 )
 var (
 	modelRatioMap      map[string]float64 = nil
@@ -196,8 +198,9 @@ var (
 
 var CompletionRatio map[string]float64 = nil
 var defaultCompletionRatio = map[string]float64{
-	"gpt-4-gizmo-*": 2,
-	"gpt-4-all":     2,
+	"gpt-4-gizmo-*":  2,
+	"gpt-4o-gizmo-*": 3,
+	"gpt-4-all":      2,
 }
 
 func GetModelPriceMap() map[string]float64 {
@@ -230,6 +233,9 @@ func GetModelPrice(name string, printErr bool) (float64, bool) {
 	GetModelPriceMap()
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
+	}
+	if strings.HasPrefix(name, "gpt-4o-gizmo") {
+		name = "gpt-4o-gizmo-*"
 	}
 	price, ok := modelPriceMap[name]
 	if !ok {
@@ -311,6 +317,9 @@ func GetCompletionRatio(name string) float64 {
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
+	if strings.HasPrefix(name, "gpt-4o-gizmo") {
+		name = "gpt-4o-gizmo-*"
+	}
 	if strings.HasPrefix(name, "gpt-3.5") {
 		if name == "gpt-3.5-turbo" || strings.HasSuffix(name, "0125") {
 			// https://openai.com/blog/new-embedding-models-and-api-updates
@@ -333,6 +342,9 @@ func GetCompletionRatio(name string) float64 {
 			return 3
 		}
 		return 2
+	}
+	if name == "chatgpt-4o-latest" {
+		return 3
 	}
 	if strings.Contains(name, "claude-instant-1") {
 		return 3

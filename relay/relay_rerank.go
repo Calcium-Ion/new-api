@@ -38,6 +38,23 @@ func RerankHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	if len(rerankRequest.Documents) == 0 {
 		return service.OpenAIErrorWrapperLocal(fmt.Errorf("documents is empty"), "invalid_documents", http.StatusBadRequest)
 	}
+
+	// map model name
+	modelMapping := c.GetString("model_mapping")
+	//isModelMapped := false
+	if modelMapping != "" && modelMapping != "{}" {
+		modelMap := make(map[string]string)
+		err := json.Unmarshal([]byte(modelMapping), &modelMap)
+		if err != nil {
+			return service.OpenAIErrorWrapperLocal(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
+		}
+		if modelMap[rerankRequest.Model] != "" {
+			rerankRequest.Model = modelMap[rerankRequest.Model]
+			// set upstream model name
+			//isModelMapped = true
+		}
+	}
+
 	relayInfo.UpstreamModelName = rerankRequest.Model
 	modelPrice, success := common.GetModelPrice(rerankRequest.Model, false)
 	groupRatio := common.GetGroupRatio(relayInfo.Group)

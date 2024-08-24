@@ -28,13 +28,11 @@ func MidjourneyErrorWithStatusCodeWrapper(code int, desc string, statusCode int)
 // OpenAIErrorWrapper wraps an error into an OpenAIErrorWithStatusCode
 func OpenAIErrorWrapper(err error, code string, statusCode int) *dto.OpenAIErrorWithStatusCode {
 	text := err.Error()
-	// 定义一个正则表达式匹配URL
-	if strings.Contains(text, "Post") || strings.Contains(text, "dial") {
+	lowerText := strings.ToLower(text)
+	if strings.Contains(lowerText, "post") || strings.Contains(lowerText, "dial") || strings.Contains(lowerText, "http") {
 		common.SysLog(fmt.Sprintf("error: %s", text))
 		text = "请求上游地址失败"
 	}
-	//避免暴露内部错误
-
 	openAIError := dto.OpenAIError{
 		Message: text,
 		Type:    "new_api_error",
@@ -113,14 +111,12 @@ func TaskErrorWrapperLocal(err error, code string, statusCode int) *dto.TaskErro
 
 func TaskErrorWrapper(err error, code string, statusCode int) *dto.TaskError {
 	text := err.Error()
-
-	// 定义一个正则表达式匹配URL
-	if strings.Contains(text, "Post") || strings.Contains(text, "dial") {
+	lowerText := strings.ToLower(text)
+	if strings.Contains(lowerText, "post") || strings.Contains(lowerText, "dial") || strings.Contains(lowerText, "http") {
 		common.SysLog(fmt.Sprintf("error: %s", text))
 		text = "请求上游地址失败"
 	}
 	//避免暴露内部错误
-
 	taskError := &dto.TaskError{
 		Code:       code,
 		Message:    text,
