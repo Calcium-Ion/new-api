@@ -139,6 +139,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	}
 
 	claudeMessages := make([]ClaudeMessage, 0)
+	isFirstMessage := true
 	for _, message := range formatMessages {
 		if message.Role == "system" {
 			if message.IsStringContent() {
@@ -154,6 +155,22 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 				claudeRequest.System = content
 			}
 		} else {
+			if isFirstMessage {
+				isFirstMessage = false
+				if message.Role != "user" {
+					// fix: first message is assistant, add user message
+					claudeMessage := ClaudeMessage{
+						Role: "user",
+						Content: []ClaudeMediaMessage{
+							{
+								Type: "text",
+								Text: "...",
+							},
+						},
+					}
+					claudeMessages = append(claudeMessages, claudeMessage)
+				}
+			}
 			claudeMessage := ClaudeMessage{
 				Role: message.Role,
 			}
