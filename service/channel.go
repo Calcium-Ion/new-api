@@ -54,6 +54,8 @@ func ShouldDisableChannel(channelType int, err *relaymodel.OpenAIErrorWithStatus
 	switch err.Error.Type {
 	case "insufficient_quota":
 		return true
+	case "insufficient_user_quota":
+		return true
 	// https://docs.anthropic.com/claude/reference/errors
 	case "authentication_error":
 		return true
