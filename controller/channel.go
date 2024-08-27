@@ -198,6 +198,9 @@ func AddChannel(c *gin.Context) {
 	}
 	channel.CreatedTime = common.GetTimestamp()
 	keys := strings.Split(channel.Key, "\n")
+	if channel.Type == common.ChannelTypeVertexAi {
+		keys = []string{channel.Key}
+	}
 	channels := make([]model.Channel, 0, len(keys))
 	for _, key := range keys {
 		if key == "" {

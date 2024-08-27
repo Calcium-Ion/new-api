@@ -588,6 +588,24 @@ const EditChannel = (props) => {
               />
             </>
           )}
+          {inputs.type === 41 && (
+            <>
+              <div style={{ marginTop: 10 }}>
+                <Typography.Text strong>部署地区：</Typography.Text>
+              </div>
+              <Input
+                name='other'
+                placeholder={
+                  '请输入部署地区，例如：us-central1'
+                }
+                onChange={(value) => {
+                  handleInputChange('other', value);
+                }}
+                value={inputs.other}
+                autoComplete='new-password'
+              />
+            </>
+          )}
           {inputs.type === 21 && (
             <>
               <div style={{ marginTop: 10 }}>
@@ -734,17 +752,47 @@ const EditChannel = (props) => {
               autoComplete='new-password'
             />
           ) : (
-            <Input
-              label='密钥'
-              name='key'
-              required
-              placeholder={type2secretPrompt(inputs.type)}
-              onChange={(value) => {
-                handleInputChange('key', value);
-              }}
-              value={inputs.key}
-              autoComplete='new-password'
-            />
+            <>
+              {inputs.type === 41 ? (
+                <TextArea
+                  label='鉴权json'
+                  name='key'
+                  required
+                  placeholder={'{\n' +
+                    '  "type": "service_account",\n' +
+                    '  "project_id": "abc-bcd-123-456",\n' +
+                    '  "private_key_id": "123xxxxx456",\n' +
+                    '  "private_key": "-----BEGIN PRIVATE KEY-----xxxx\n' +
+                    '  "client_email": "xxx@developer.gserviceaccount.com",\n' +
+                    '  "client_id": "111222333",\n' +
+                    '  "auth_uri": "https://accounts.google.com/o/oauth2/auth",\n' +
+                    '  "token_uri": "https://oauth2.googleapis.com/token",\n' +
+                    '  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",\n' +
+                    '  "client_x509_cert_url": "https://xxxxx.gserviceaccount.com",\n' +
+                    '  "universe_domain": "googleapis.com"\n' +
+                    '}'}
+                  onChange={(value) => {
+                    handleInputChange('key', value);
+                  }}
+                  autosize={{ minRows: 10 }}
+                  value={inputs.key}
+                  autoComplete='new-password'
+                />
+              ) : (
+                <Input
+                  label='密钥'
+                  name='key'
+                  required
+                  placeholder={type2secretPrompt(inputs.type)}
+                  onChange={(value) => {
+                    handleInputChange('key', value);
+                  }}
+                  value={inputs.key}
+                  autoComplete='new-password'
+                />
+              )
+              }
+              </>
           )}
           {inputs.type === 1 && (
             <>
