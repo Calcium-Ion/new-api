@@ -36,6 +36,7 @@ export const CHANNEL_OPTIONS = [
     color: 'indigo',
     label: 'AWS Claude'
   },
+  { key: 41, text: 'Vertex AI', value: 41, color: 'blue', label: 'Vertex AI' },
   {
     key: 3,
     text: 'Azure OpenAI',
