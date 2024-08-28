@@ -70,9 +70,9 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
-		err, usage = geminiChatStreamHandler(c, resp, info)
+		err, usage = GeminiChatStreamHandler(c, resp, info)
 	} else {
-		err, usage = geminiChatHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+		err, usage = GeminiChatHandler(c, resp)
 	}
 	return
 }

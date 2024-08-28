@@ -346,7 +346,7 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	return &fullTextResponse
 }
 
-func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, requestMode int) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, requestMode int) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	responseId := fmt.Sprintf("chatcmpl-%s", common.GetUUID())
 	var usage *dto.Usage
 	usage = &dto.Usage{}
@@ -428,7 +428,7 @@ func claudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 	return nil, usage
 }
 
-func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+func ClaudeHandler(c *gin.Context, resp *http.Response, requestMode int, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
@@ -454,15 +454,15 @@ func claudeHandler(requestMode int, c *gin.Context, resp *http.Response, promptT
 		}, nil
 	}
 	fullTextResponse := ResponseClaude2OpenAI(requestMode, &claudeResponse)
-	completionTokens, err := service.CountTokenText(claudeResponse.Completion, model)
+	completionTokens, err := service.CountTokenText(claudeResponse.Completion, info.OriginModelName)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "count_token_text_failed", http.StatusInternalServerError), nil
 	}
 	usage := dto.Usage{}
 	if requestMode == RequestModeCompletion {
-		usage.PromptTokens = promptTokens
+		usage.PromptTokens = info.PromptTokens
 		usage.CompletionTokens = completionTokens
-		usage.TotalTokens = promptTokens + completionTokens
+		usage.TotalTokens = info.PromptTokens + completionTokens
 	} else {
 		usage.PromptTokens = claudeResponse.Usage.InputTokens
 		usage.CompletionTokens = claudeResponse.Usage.OutputTokens
