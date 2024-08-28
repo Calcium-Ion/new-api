@@ -62,6 +62,7 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	if err := json.Unmarshal([]byte(info.ApiKey), adc); err != nil {
 		return "", fmt.Errorf("failed to decode credentials file: %w", err)
 	}
+	region := GetModelRegion(info.ApiVersion, info.OriginModelName)
 	a.AccountCredentials = *adc
 	suffix := ""
 	if a.RequestMode == RequestModeGemini {
@@ -72,9 +73,9 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		}
 		return fmt.Sprintf(
 			"https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:%s",
-			info.ApiVersion,
+			region,
 			adc.ProjectID,
-			info.ApiVersion,
+			region,
 			info.UpstreamModelName,
 			suffix,
 		), nil
@@ -89,18 +90,18 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		}
 		return fmt.Sprintf(
 			"https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/anthropic/models/%s:%s",
-			info.ApiVersion,
+			region,
 			adc.ProjectID,
-			info.ApiVersion,
+			region,
 			info.UpstreamModelName,
 			suffix,
 		), nil
 	} else if a.RequestMode == RequestModeLlama {
 		return fmt.Sprintf(
 			"https://%s-aiplatform.googleapis.com/v1beta1/projects/%s/locations/%s/endpoints/openapi/chat/completions",
-			info.ApiVersion,
+			region,
 			adc.ProjectID,
-			info.ApiVersion,
+			region,
 		), nil
 	}
 	return "", errors.New("unsupported request mode")
