@@ -199,6 +199,25 @@ func AddChannel(c *gin.Context) {
 	channel.CreatedTime = common.GetTimestamp()
 	keys := strings.Split(channel.Key, "\n")
 	if channel.Type == common.ChannelTypeVertexAi {
+		if channel.Other == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "部署地区不能为空",
+			})
+			return
+		} else {
+			if common.IsJsonStr(channel.Other) {
+				// must have default
+				regionMap := common.StrToMap(channel.Other)
+				if regionMap["default"] == nil {
+					c.JSON(http.StatusOK, gin.H{
+						"success": false,
+						"message": "部署地区必须包含default字段",
+					})
+					return
+				}
+			}
+		}
 		keys = []string{channel.Key}
 	}
 	channels := make([]model.Channel, 0, len(keys))
@@ -299,6 +318,27 @@ func UpdateChannel(c *gin.Context) {
 			"message": err.Error(),
 		})
 		return
+	}
+	if channel.Type == common.ChannelTypeVertexAi {
+		if channel.Other == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "部署地区不能为空",
+			})
+			return
+		} else {
+			if common.IsJsonStr(channel.Other) {
+				// must have default
+				regionMap := common.StrToMap(channel.Other)
+				if regionMap["default"] == nil {
+					c.JSON(http.StatusOK, gin.H{
+						"success": false,
+						"message": "部署地区必须包含default字段",
+					})
+					return
+				}
+			}
+		}
 	}
 	err = channel.Update()
 	if err != nil {

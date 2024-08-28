@@ -83,7 +83,7 @@ func createSignedJWT(email, privateKeyPEM string) (string, error) {
 		"iss":   email,
 		"scope": "https://www.googleapis.com/auth/cloud-platform",
 		"aud":   "https://www.googleapis.com/oauth2/v4/token",
-		"exp":   now.Add(time.Minute * 30).Unix(),
+		"exp":   now.Add(time.Minute * 35).Unix(),
 		"iat":   now.Unix(),
 	}
 

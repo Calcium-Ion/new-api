@@ -37,6 +37,11 @@ const STATUS_CODE_MAPPING_EXAMPLE = {
   400: '500',
 };
 
+const REGION_EXAMPLE = {
+  "default": "us-central1",
+  "claude-3-5-sonnet-20240620": "europe-west1"
+}
+
 const fetchButtonTips = "1. 新建渠道时，请求通过当前浏览器发出；2. 编辑已有渠道，请求通过后端服务器发出"
 
 function type2secretPrompt(type) {
@@ -593,17 +598,37 @@ const EditChannel = (props) => {
               <div style={{ marginTop: 10 }}>
                 <Typography.Text strong>部署地区：</Typography.Text>
               </div>
-              <Input
+              <TextArea
                 name='other'
                 placeholder={
-                  '请输入部署地区，例如：us-central1'
+                  '请输入部署地区，例如：us-central1\n支持使用模型映射格式\n' +
+                  '{\n' +
+                  '    "default": "us-central1",\n' +
+                  '    "claude-3-5-sonnet-20240620": "europe-west1"\n' +
+                  '}'
                 }
+                autosize={{ minRows: 2 }}
                 onChange={(value) => {
                   handleInputChange('other', value);
                 }}
                 value={inputs.other}
                 autoComplete='new-password'
               />
+              <Typography.Text
+                style={{
+                  color: 'rgba(var(--semi-blue-5), 1)',
+                  userSelect: 'none',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  handleInputChange(
+                    'other',
+                    JSON.stringify(REGION_EXAMPLE, null, 2),
+                  );
+                }}
+              >
+                填入模板
+              </Typography.Text>
             </>
           )}
           {inputs.type === 21 && (

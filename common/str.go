@@ -31,14 +31,6 @@ func MapToJsonStr(m map[string]interface{}) string {
 	return string(bytes)
 }
 
-func MapToJsonStrFloat(m map[string]float64) string {
-	bytes, err := json.Marshal(m)
-	if err != nil {
-		return ""
-	}
-	return string(bytes)
-}
-
 func StrToMap(str string) map[string]interface{} {
 	m := make(map[string]interface{})
 	err := json.Unmarshal([]byte(str), &m)
@@ -46,6 +38,11 @@ func StrToMap(str string) map[string]interface{} {
 		return nil
 	}
 	return m
+}
+
+func IsJsonStr(str string) bool {
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(str), &js) == nil
 }
 
 func String2Int(str string) int {
