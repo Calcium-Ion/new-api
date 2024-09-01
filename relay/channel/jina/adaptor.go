@@ -32,7 +32,7 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	if info.RelayMode == constant.RelayModeRerank {
 		return fmt.Sprintf("%s/v1/rerank", info.BaseUrl), nil
 	} else if info.RelayMode == constant.RelayModeEmbeddings {
-		return fmt.Sprintf("%s/v1/embeddings ", info.BaseUrl), nil
+		return fmt.Sprintf("%s/v1/embeddings", info.BaseUrl), nil
 	}
 	return "", errors.New("invalid relay mode")
 }
@@ -58,6 +58,8 @@ func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dt
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
 	if info.RelayMode == constant.RelayModeRerank {
 		err, usage = jinaRerankHandler(c, resp)
+	} else if info.RelayMode == constant.RelayModeEmbeddings {
+		err, usage = jinaEmbeddingHandler(c, resp)
 	}
 	return
 }
