@@ -52,7 +52,7 @@ func getAndValidateTextRequest(c *gin.Context, relayInfo *relaycommon.RelayInfo)
 		}
 	case relayconstant.RelayModeEmbeddings:
 	case relayconstant.RelayModeModerations:
-		if textRequest.Input == "" {
+		if textRequest.Input == "" || textRequest.Input == nil {
 			return nil, errors.New("field input is required")
 		}
 	case relayconstant.RelayModeEdits:
