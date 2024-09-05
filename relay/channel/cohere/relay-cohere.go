@@ -22,6 +22,7 @@ func requestOpenAI2Cohere(textRequest dto.GeneralOpenAIRequest) *CohereRequest {
 		Message:     "",
 		Stream:      textRequest.Stream,
 		MaxTokens:   textRequest.GetMaxTokens(),
+		SafetyMode:  common.CohereSafetySetting,
 	}
 	if cohereReq.MaxTokens == 0 {
 		cohereReq.MaxTokens = 4000
@@ -44,6 +45,7 @@ func requestOpenAI2Cohere(textRequest dto.GeneralOpenAIRequest) *CohereRequest {
 			})
 		}
 	}
+
 	return &cohereReq
 }
 
