@@ -225,14 +225,14 @@ const TokensTable = () => {
                     onOpenLink('next-mj', record.key);
                   },
                 },
-                {
-                  node: 'item',
-                  key: 'lobe',
-                  name: 'Lobe Chat',
-                  onClick: () => {
-                    onOpenLink('lobe', record.key);
-                  },
-                },
+                // {
+                //   node: 'item',
+                //   key: 'lobe',
+                //   name: 'Lobe Chat',
+                //   onClick: () => {
+                //     onOpenLink('lobe', record.key);
+                //   },
+                // },
                 {
                   node: 'item',
                   key: 'ama',
