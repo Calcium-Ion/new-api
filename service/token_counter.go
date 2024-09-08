@@ -52,7 +52,7 @@ func InitTokenEncoders() {
 }
 
 func getModelDefaultTokenEncoder(model string) *tiktoken.Tiktoken {
-	if strings.HasPrefix(model, "gpt-4o") {
+	if strings.HasPrefix(model, "gpt-4o") || strings.HasPrefix(model, "chatgpt-4o") {
 		return cl200kTokenEncoder
 	}
 	return defaultTokenEncoder
