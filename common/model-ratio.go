@@ -106,8 +106,10 @@ var defaultModelRatio = map[string]float64{
 	"gemini-pro-vision":              1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
 	"gemini-1.0-pro-vision-001":      1,
 	"gemini-1.0-pro-001":             1,
-	"gemini-1.5-pro-latest":          1,
+	"gemini-1.5-pro-latest":          1.75, // $3.5 / 1M tokens
+	"gemini-1.5-pro-exp-0827":        1.75, // $3.5 / 1M tokens
 	"gemini-1.5-flash-latest":        1,
+	"gemini-1.5-flash-exp-0827":      1,
 	"gemini-1.0-pro-latest":          1,
 	"gemini-1.0-pro-vision-latest":   1,
 	"gemini-ultra":                   1,
