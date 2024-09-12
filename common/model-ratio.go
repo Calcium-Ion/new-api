@@ -42,6 +42,10 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4o":                    2.5,  // $0.01 / 1K tokens
 	"gpt-4o-2024-05-13":         2.5,  // $0.01 / 1K tokens
 	"gpt-4o-2024-08-06":         1.25, // $0.01 / 1K tokens
+	"o1-preview":                7.5,
+	"o1-preview-2024-09-12":     7.5,
+	"o1-mini":                   1.5,
+	"o1-mini-2024-09-12":        1.5,
 	"gpt-4o-mini":               0.075,
 	"gpt-4o-mini-2024-07-18":    0.075,
 	"gpt-4-turbo":               5,    // $0.01 / 1K tokens
@@ -331,17 +335,6 @@ func GetCompletionRatio(name string) float64 {
 	if strings.HasPrefix(name, "gpt-4o-gizmo") {
 		name = "gpt-4o-gizmo-*"
 	}
-	if strings.HasPrefix(name, "gpt-3.5") {
-		if name == "gpt-3.5-turbo" || strings.HasSuffix(name, "0125") {
-			// https://openai.com/blog/new-embedding-models-and-api-updates
-			// Updated GPT-3.5 Turbo model and lower pricing
-			return 3
-		}
-		if strings.HasSuffix(name, "1106") {
-			return 2
-		}
-		return 4.0 / 3.0
-	}
 	if strings.HasPrefix(name, "gpt-4") && !strings.HasSuffix(name, "-all") && !strings.HasSuffix(name, "-gizmo-*") {
 		if strings.HasPrefix(name, "gpt-4-turbo") || strings.HasSuffix(name, "preview") {
 			return 3
@@ -354,6 +347,9 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 2
 	}
+	if strings.HasPrefix(name, "o1-") {
+		return 4
+	}
 	if name == "chatgpt-4o-latest" {
 		return 3
 	}
@@ -363,6 +359,17 @@ func GetCompletionRatio(name string) float64 {
 		return 3
 	} else if strings.Contains(name, "claude-3") {
 		return 5
+	}
+	if strings.HasPrefix(name, "gpt-3.5") {
+		if name == "gpt-3.5-turbo" || strings.HasSuffix(name, "0125") {
+			// https://openai.com/blog/new-embedding-models-and-api-updates
+			// Updated GPT-3.5 Turbo model and lower pricing
+			return 3
+		}
+		if strings.HasSuffix(name, "1106") {
+			return 2
+		}
+		return 4.0 / 3.0
 	}
 	if strings.HasPrefix(name, "mistral-") {
 		return 3
