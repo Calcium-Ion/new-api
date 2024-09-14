@@ -78,6 +78,12 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 	if info.ChannelType != common.ChannelTypeOpenAI {
 		request.StreamOptions = nil
 	}
+	if strings.HasPrefix(request.Model, "o1-") {
+		if request.MaxCompletionTokens == 0 && request.MaxTokens != 0 {
+			request.MaxCompletionTokens = request.MaxTokens
+			request.MaxTokens = 0
+		}
+	}
 	return request, nil
 }
 

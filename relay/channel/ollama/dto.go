@@ -17,11 +17,25 @@ type OllamaRequest struct {
 	PresencePenalty  float64        `json:"presence_penalty,omitempty"`
 }
 
+type Options struct {
+	Seed             int     `json:"seed,omitempty"`
+	Temperature      float64 `json:"temperature,omitempty"`
+	TopK             int     `json:"top_k,omitempty"`
+	TopP             float64 `json:"top_p,omitempty"`
+	FrequencyPenalty float64 `json:"frequency_penalty,omitempty"`
+	PresencePenalty  float64 `json:"presence_penalty,omitempty"`
+	NumPredict       int     `json:"num_predict,omitempty"`
+	NumCtx           int     `json:"num_ctx,omitempty"`
+}
+
 type OllamaEmbeddingRequest struct {
-	Model  string `json:"model,omitempty"`
-	Prompt any    `json:"prompt,omitempty"`
+	Model   string   `json:"model,omitempty"`
+	Input   []string `json:"input"`
+	Options *Options `json:"options,omitempty"`
 }
 
 type OllamaEmbeddingResponse struct {
+	Error     string    `json:"error,omitempty"`
+	Model     string    `json:"model"`
 	Embedding []float64 `json:"embedding,omitempty"`
 }
