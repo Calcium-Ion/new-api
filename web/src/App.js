@@ -20,12 +20,11 @@ import Redemption from './pages/Redemption';
 import TopUp from './pages/TopUp';
 import Log from './pages/Log';
 import Chat from './pages/Chat';
+import Chat2Link from './pages/Chat2Link';
 import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
 import Pricing from './pages/Pricing/index.js';
 import Task from "./pages/Task/index.js";
-import FooterBar from './components/Footer.js';
-// import Detail from './pages/Detail';
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
@@ -255,9 +254,20 @@ function App() {
             </Suspense>
           }
         />
-        <Route path='*' element={<NotFound />} />
-      </Routes>
-    </>
+        {/* 方便使用chat2link直接跳转聊天... */}
+          <Route
+            path='/chat2link'
+            element={
+              <PrivateRoute>
+                <Suspense fallback={<Loading></Loading>}>
+                    <Chat2Link />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route path='*' element={<NotFound />} />
+        </Routes>
+      </>
   );
 }
 

@@ -46,3 +46,6 @@ func InitEnv() {
 		}
 	}
 }
+
+// 是否生成初始令牌，默认关闭。
+var GenerateDefaultToken = common.GetEnvOrDefaultBool("GENERATE_DEFAULT_TOKEN", false)
