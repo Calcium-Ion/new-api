@@ -16,7 +16,8 @@ export default function SettingsMagnification(props) {
     ModelPrice: '',
     ModelRatio: '',
     CompletionRatio: '',
-    GroupRatio: ''
+    GroupRatio: '',
+    UserUsableGroups: ''
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -210,6 +211,33 @@ export default function SettingsMagnification(props) {
                     GroupRatio: value
                   })
                 }
+              />
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={16}>
+              <Form.TextArea
+                  label={'用户可选分组'}
+                  extraText={''}
+                  placeholder={'为一个 JSON 文本，键为分组名称，值为倍率'}
+                  field={'UserUsableGroups'}
+                  autosize={{ minRows: 6, maxRows: 12 }}
+                  trigger='blur'
+                  stopValidateWithError
+                  rules={[
+                    {
+                      validator: (rule, value) => {
+                        return verifyJSON(value);
+                      },
+                      message: '不是合法的 JSON 字符串'
+                    }
+                  ]}
+                  onChange={(value) =>
+                      setInputs({
+                        ...inputs,
+                        UserUsableGroups: value
+                      })
+                  }
               />
             </Col>
           </Row>

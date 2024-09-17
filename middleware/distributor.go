@@ -39,6 +39,15 @@ func Distribute() func(c *gin.Context) {
 			return
 		}
 		userGroup, _ := model.CacheGetUserGroup(userId)
+		tokenGroup := c.GetString("token_group")
+		if tokenGroup != "" {
+			// check group in common.GroupRatio
+			if _, ok := common.GroupRatio[tokenGroup]; !ok {
+				abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("分组 %s 已被禁用", tokenGroup))
+				return
+			}
+			userGroup = tokenGroup
+		}
 		c.Set("group", userGroup)
 		if ok {
 			id, err := strconv.Atoi(channelId.(string))

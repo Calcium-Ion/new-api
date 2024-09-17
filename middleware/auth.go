@@ -176,6 +176,7 @@ func TokenAuth() func(c *gin.Context) {
 			c.Set("token_model_limit_enabled", false)
 		}
 		c.Set("allow_ips", token.GetIpLimitsMap())
+		c.Set("token_group", token.Group)
 		if len(parts) > 1 {
 			if model.IsAdmin(token.UserId) {
 				c.Set("specific_channel_id", parts[1])

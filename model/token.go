@@ -25,6 +25,7 @@ type Token struct {
 	ModelLimits        string         `json:"model_limits" gorm:"type:varchar(1024);default:''"`
 	AllowIps           *string        `json:"allow_ips" gorm:"default:''"`
 	UsedQuota          int            `json:"used_quota" gorm:"default:0"` // used quota
+	Group              string         `json:"group" gorm:"default:''"`
 	DeletedAt          gorm.DeletedAt `gorm:"index"`
 }
 
@@ -153,7 +154,8 @@ func (token *Token) Insert() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (token *Token) Update() error {
 	var err error
-	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "model_limits_enabled", "model_limits", "allow_ips").Updates(token).Error
+	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota",
+		"model_limits_enabled", "model_limits", "allow_ips", "group").Updates(token).Error
 	return err
 }
 

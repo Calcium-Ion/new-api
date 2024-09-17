@@ -17,3 +17,18 @@ func GetGroups(c *gin.Context) {
 		"data":    groupNames,
 	})
 }
+
+func GetUserGroups(c *gin.Context) {
+	usableGroups := make(map[string]string)
+	for groupName, _ := range common.GroupRatio {
+		// UserUsableGroups contains the groups that the user can use
+		if _, ok := common.UserUsableGroups[groupName]; ok {
+			usableGroups[groupName] = common.UserUsableGroups[groupName]
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    usableGroups,
+	})
+}
