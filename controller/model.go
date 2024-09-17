@@ -146,22 +146,49 @@ func ListModels(c *gin.Context) {
 		})
 		return
 	}
-	models := model.GetGroupModels(user.Group)
 	userOpenAiModels := make([]dto.OpenAIModels, 0)
 	permission := getPermission()
-	for _, s := range models {
-		if _, ok := openAIModelsMap[s]; ok {
-			userOpenAiModels = append(userOpenAiModels, openAIModelsMap[s])
+
+	modelLimitEnable := c.GetBool("token_model_limit_enabled")
+	if modelLimitEnable {
+		s, ok := c.Get("token_model_limit")
+		var tokenModelLimit map[string]bool
+		if ok {
+			tokenModelLimit = s.(map[string]bool)
 		} else {
-			userOpenAiModels = append(userOpenAiModels, dto.OpenAIModels{
-				Id:         s,
-				Object:     "model",
-				Created:    1626777600,
-				OwnedBy:    "custom",
-				Permission: permission,
-				Root:       s,
-				Parent:     nil,
-			})
+			tokenModelLimit = map[string]bool{}
+		}
+		for allowModel, _ := range tokenModelLimit {
+			if _, ok := openAIModelsMap[allowModel]; ok {
+				userOpenAiModels = append(userOpenAiModels, openAIModelsMap[allowModel])
+			} else {
+				userOpenAiModels = append(userOpenAiModels, dto.OpenAIModels{
+					Id:         allowModel,
+					Object:     "model",
+					Created:    1626777600,
+					OwnedBy:    "custom",
+					Permission: permission,
+					Root:       allowModel,
+					Parent:     nil,
+				})
+			}
+		}
+	} else {
+		models := model.GetGroupModels(user.Group)
+		for _, s := range models {
+			if _, ok := openAIModelsMap[s]; ok {
+				userOpenAiModels = append(userOpenAiModels, openAIModelsMap[s])
+			} else {
+				userOpenAiModels = append(userOpenAiModels, dto.OpenAIModels{
+					Id:         s,
+					Object:     "model",
+					Created:    1626777600,
+					OwnedBy:    "custom",
+					Permission: permission,
+					Root:       s,
+					Parent:     nil,
+				})
+			}
 		}
 	}
 	c.JSON(200, gin.H{
