@@ -18,8 +18,8 @@ import {
   Select,
   SideSheet,
   Space,
-  Spin,
-  Typography,
+  Spin, TextArea,
+  Typography
 } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import { Divider } from 'semantic-ui-react';
@@ -34,6 +34,7 @@ const EditToken = (props) => {
     unlimited_quota: false,
     model_limits_enabled: false,
     model_limits: [],
+    allow_ips: '',
   };
   const [inputs, setInputs] = useState(originInputs);
   const {
@@ -43,6 +44,7 @@ const EditToken = (props) => {
     unlimited_quota,
     model_limits_enabled,
     model_limits,
+    allow_ips
   } = inputs;
   // const [visible, setVisible] = useState(false);
   const [models, setModels] = useState({});
@@ -374,6 +376,19 @@ const EditToken = (props) => {
             </Button>
           </div>
           <Divider />
+          <div style={{ marginTop: 10 }}>
+            <Typography.Text>IP白名单（请勿过度信任此功能）</Typography.Text>
+          </div>
+          <TextArea
+            label='IP白名单'
+            name='allow_ips'
+            placeholder={'允许的IP，一行一个'}
+            onChange={(value) => {
+              handleInputChange('allow_ips', value);
+            }}
+            value={inputs.allow_ips}
+            style={{ fontFamily: 'JetBrains Mono, Consolas' }}
+          />
           <div style={{ marginTop: 10, display: 'flex' }}>
             <Space>
               <Checkbox
