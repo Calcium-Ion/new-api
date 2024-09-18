@@ -12,6 +12,7 @@ import {
   IconHelpCircle,
   IconHome,
   IconHomeStroked,
+  IconComment,
   IconKey,
   IconNoteMoneyStroked,
   IconPriceTag,
@@ -37,6 +38,28 @@ let buttons = [
     itemKey: 'home',
     to: '/',
     icon: <IconHomeStroked />,
+    onMouseEnter: (e) => {
+      e.currentTarget.querySelector('svg').style.color = '#0064FA';
+    },
+    onMouseLeave: (e) => {
+      e.currentTarget.querySelector('svg').style.color = 'black';
+    },
+  },
+  // 增加 聊天 按钮
+  {
+    text: '聊天',
+    itemKey: 'chat',
+    to: '/chat',
+    icon: <IconComment />,
+    onMouseEnter: (e) => {
+      e.currentTarget.querySelector('svg').style.color = '#0064FA';
+    },
+    onMouseLeave: (e) => {
+      e.currentTarget.querySelector('svg').style.color = 'black';
+    },
+    className: localStorage.getItem('chat_link')
+      ? 'semi-navigation-item-normal'
+      : 'tableHiddle',
   },
   // {
   //   text: '模型价格',
@@ -115,6 +138,7 @@ const HeaderBar = () => {
                 login: '/login',
                 register: '/register',
                 home: '/',
+                chat: '/chat',
               };
               return (
                 <Link
