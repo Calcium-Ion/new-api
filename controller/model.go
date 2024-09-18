@@ -137,15 +137,6 @@ func init() {
 }
 
 func ListModels(c *gin.Context) {
-	userId := c.GetInt("id")
-	user, err := model.GetUserById(userId, true)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
-	}
 	userOpenAiModels := make([]dto.OpenAIModels, 0)
 	permission := getPermission()
 
@@ -174,7 +165,21 @@ func ListModels(c *gin.Context) {
 			}
 		}
 	} else {
-		models := model.GetGroupModels(user.Group)
+		userId := c.GetInt("id")
+		userGroup, err := model.GetUserGroup(userId)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "get user group failed",
+			})
+			return
+		}
+		group := userGroup
+		tokenGroup := c.GetString("token_group")
+		if tokenGroup != "" {
+			group = tokenGroup
+		}
+		models := model.GetGroupModels(group)
 		for _, s := range models {
 			if _, ok := openAIModelsMap[s]; ok {
 				userOpenAiModels = append(userOpenAiModels, openAIModelsMap[s])
