@@ -441,11 +441,11 @@ const EditToken = (props) => {
           />
 
           <div style={{marginTop: 10}}>
-            <Typography.Text>令牌分组，不选为默认分组</Typography.Text>
+            <Typography.Text>令牌分组，默认为用户的分组</Typography.Text>
           </div>
           <Select
               style={{marginTop: 8}}
-              placeholder={'令牌分组，不选为默认分组'}
+              placeholder={'令牌分组，默认为用户的分组'}
               name='gruop'
               required
               selection
