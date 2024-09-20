@@ -35,7 +35,7 @@ func GetGroupRatio(name string) float64 {
 
 func CheckGroupRatio(jsonStr string) error {
 	checkGroupRatio := make(map[string]float64)
-	err := json.Unmarshal([]byte(jsonStr), &GroupRatio)
+	err := json.Unmarshal([]byte(jsonStr), &checkGroupRatio)
 	if err != nil {
 		return err
 	}
