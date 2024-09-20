@@ -86,16 +86,16 @@ const SiderBar = () => {
         icon: <IconLayers />,
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
-      // 去掉侧边栏的聊天，换到HeaderBar
-      // {
-      //   text: '聊天',
-      //   itemKey: 'chat',
-      //   to: '/chat',
-      //   icon: <IconComment />,
-      //   className: localStorage.getItem('chat_link')
-      //     ? 'semi-navigation-item-normal'
-      //     : 'tableHiddle',
-      // },
+      // 修改侧边栏的聊天按钮，当移动端的时候才显示。
+      {
+        text: '聊天',
+        itemKey: 'chat',
+        to: '/chat',
+        icon: <IconComment />,
+        className: isMobile() && localStorage.getItem('chat_link')
+          ? 'semi-navigation-item-normal'
+          : 'tableHiddle',
+      },
       {
         text: '令牌',
         itemKey: 'token',

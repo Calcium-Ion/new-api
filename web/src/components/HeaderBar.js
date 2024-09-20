@@ -57,7 +57,7 @@ let buttons = [
     onMouseLeave: (e) => {
       e.currentTarget.querySelector('svg').style.color = 'black';
     },
-    className: localStorage.getItem('chat_link')
+    className: localStorage.getItem('chat_link') && !isMobile() //移动端不显示
       ? 'semi-navigation-item-normal'
       : 'tableHiddle',
   },
