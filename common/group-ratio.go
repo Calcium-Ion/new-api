@@ -41,7 +41,7 @@ func CheckGroupRatio(jsonStr string) error {
 	}
 	for name, ratio := range checkGroupRatio {
 		if ratio < 0 {
-			return errors.New("group ratio must be greater than 0: " + name)
+			return errors.New("group ratio must be not less than 0: " + name)
 		}
 	}
 	return nil
