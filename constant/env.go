@@ -32,7 +32,26 @@ var GeminiModelMap = map[string]string{
 	"gemini-ultra":              "v1beta",
 }
 
+// GeminiChatSafetySettingsArray 用于设置Gemini的安全性设置
+// https://ai.google.dev/api/generate-content#v1beta.HarmCategory
+var GeminiChatSafetySettingsMap map[string]string
+
+var GeminiExpChatSafetySettingsMap map[string]string
+
+// 是否生成初始令牌，默认关闭。
+var GenerateDefaultToken = common.GetEnvOrDefaultBool("GENERATE_DEFAULT_TOKEN", false)
+
 func InitEnv() {
+	InitGeminiEnv()
+}
+
+func InitGeminiEnv() {
+	InitGeminiModelMap()
+	InitGeminiChatSafetySettings()
+	InitGeminiExpChatSafetySettings()
+}
+
+func InitGeminiModelMap() {
 	modelVersionMapStr := strings.TrimSpace(os.Getenv("GEMINI_MODEL_MAP"))
 	if modelVersionMapStr == "" {
 		return
@@ -47,5 +66,76 @@ func InitEnv() {
 	}
 }
 
-// 是否生成初始令牌，默认关闭。
-var GenerateDefaultToken = common.GetEnvOrDefaultBool("GENERATE_DEFAULT_TOKEN", false)
+func InitGeminiChatSafetySettings() {
+	geminiSafetySettingArrayStr := strings.TrimSpace(os.Getenv("GEMINI_SAFETY_SETTINGS"))
+
+	constants := []string{
+		"HARM_CATEGORY_HARASSMENT",
+		"HARM_CATEGORY_HATE_SPEECH",
+		"HARM_CATEGORY_SEXUALLY_EXPLICIT",
+		"HARM_CATEGORY_DANGEROUS_CONTENT",
+	}
+
+	if geminiSafetySettingArrayStr != "" {
+		for _, pair := range strings.Split(geminiSafetySettingArrayStr, ",") {
+			parts := strings.Split(pair, ":")
+			category := parts[0]
+
+			if found, index := Contains(constants, category); found {
+				// remove from constants
+				constants = append(constants[:index], constants[index+1:]...)
+			}
+
+			if len(parts) == 2 {
+				GeminiChatSafetySettingsMap[category] = parts[1]
+
+			} else {
+				GeminiChatSafetySettingsMap[category] = common.GeminiSafetySetting
+			}
+		}
+	}
+	for _, category := range constants {
+		GeminiChatSafetySettingsMap[category] = common.GeminiSafetySetting
+	}
+}
+
+func InitGeminiExpChatSafetySettings() {
+
+	geminiSafetySettingArrayStr := strings.TrimSpace(os.Getenv("GEMINI_EXP_SAFETY_SETTINGS"))
+
+	constants := []string{
+		"HARM_CATEGORY_CIVIC_INTEGRITY",
+		"HARM_CATEGORY_VIOLENCE",
+	}
+
+	if geminiSafetySettingArrayStr != "" {
+		for _, pair := range strings.Split(geminiSafetySettingArrayStr, ",") {
+			parts := strings.Split(pair, ":")
+			category := parts[0]
+
+			if found, index := Contains(constants, category); found {
+				// remove from constants
+				constants = append(constants[:index], constants[index+1:]...)
+			}
+
+			if len(parts) == 2 {
+				GeminiExpChatSafetySettingsMap[category] = parts[1]
+
+			} else {
+				GeminiExpChatSafetySettingsMap[category] = common.GeminiSafetySetting
+			}
+		}
+	}
+	for _, category := range constants {
+		GeminiExpChatSafetySettingsMap[category] = common.GeminiSafetySetting
+	}
+}
+
+func Contains(slice []string, item string) (bool, int) {
+	for index, a := range slice {
+		if a == item {
+			return true, index
+		}
+	}
+	return false, -1
+}

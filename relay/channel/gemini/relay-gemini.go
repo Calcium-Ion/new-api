@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
@@ -15,33 +16,30 @@ import (
 )
 
 // Setting safety to the lowest possible values since Gemini is already powerless enough
-func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatRequest {
+func ConvertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest, model string) *GeminiChatRequest {
 	geminiRequest := GeminiChatRequest{
 		Contents: make([]GeminiChatContent, 0, len(textRequest.Messages)),
-		SafetySettings: []GeminiChatSafetySettings{
-			{
-				Category:  "HARM_CATEGORY_HARASSMENT",
-				Threshold: common.GeminiSafetySetting,
-			},
-			{
-				Category:  "HARM_CATEGORY_HATE_SPEECH",
-				Threshold: common.GeminiSafetySetting,
-			},
-			{
-				Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-				Threshold: common.GeminiSafetySetting,
-			},
-			{
-				Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
-				Threshold: common.GeminiSafetySetting,
-			},
-		},
 		GenerationConfig: GeminiChatGenerationConfig{
 			Temperature:     textRequest.Temperature,
 			TopP:            textRequest.TopP,
 			MaxOutputTokens: textRequest.MaxTokens,
 		},
 	}
+	for category, threshold := range constant.GeminiChatSafetySettingsMap {
+		geminiRequest.SafetySettings = append(geminiRequest.SafetySettings, GeminiChatSafetySettings{
+			Category:  category,
+			Threshold: threshold,
+		})
+	}
+	if model == "exp" {
+		for category, threshold := range constant.GeminiExpChatSafetySettingsMap {
+			geminiRequest.SafetySettings = append(geminiRequest.SafetySettings, GeminiChatSafetySettings{
+				Category:  category,
+				Threshold: threshold,
+			})
+		}
+	}
+
 	if textRequest.Tools != nil {
 		functions := make([]dto.FunctionCall, 0, len(textRequest.Tools))
 		for _, tool := range textRequest.Tools {

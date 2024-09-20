@@ -135,7 +135,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		c.Set("request_model", request.Model)
 		return vertexClaudeReq, nil
 	} else if a.RequestMode == RequestModeGemini {
-		geminiRequest := gemini.CovertGemini2OpenAI(*request)
+		geminiRequest := gemini.ConvertGemini2OpenAI(*request)
 		c.Set("request_model", request.Model)
 		return geminiRequest, nil
 	} else if a.RequestMode == RequestModeLlama {
