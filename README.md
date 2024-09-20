@@ -74,6 +74,8 @@
 - `GET_MEDIA_TOKEN_NOT_STREAM`：是否在非流（`stream=false`）情况下统计图片token，默认为 `true`。
 - `UPDATE_TASK`：是否更新异步任务（Midjourney、Suno），默认为 `true`，关闭后将不会更新任务进度。
 - `GEMINI_MODEL_MAP`：Gemini模型指定版本(v1/v1beta)，使用“模型:版本”指定，","分隔，例如：-e GEMINI_MODEL_MAP="gemini-1.5-pro-latest:v1beta,gemini-1.5-pro-001:v1beta"，为空则使用默认配置
+- `GEMINI_SAFETY_SETTINGS`: Gemini模型[安全设置](https://ai.google.dev/api/generate-content#v1beta.HarmCategory)，使用"类别:安全模式"指定，","分隔，例如：-e GEMINI_SAFETY_SETTINGS="HARM_CATEGORY_HARASSMENT:STRICT,HARM_CATEGORY_HATE_SPEECH"，为空则使用默认配置
+- `GEMINI_EXP_SAFETY_SETTINGS` : Gemini EXP模型[实验性安全设置](https://ai.google.dev/api/generate-content#v1beta.HarmCategory),使用"类别:安全模式"指定，","分隔，例如：-e GEMINI_EXP_SAFETY_SETTINGS="HARM_CATEGORY_HARASSMENT:STRICT,HARM_CATEGORY_HATE_SPEECH"，为空则使用默认配置
 - `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`，`STRICT`，默认为 `NONE`。
 ## 部署
 ### 部署要求
