@@ -20,14 +20,8 @@ func GroupRatio2JSONString() string {
 }
 
 func UpdateGroupRatioByJSONString(jsonStr string) error {
-	tempGroupRatio := make(map[string]float64)
-	err := json.Unmarshal([]byte(jsonStr), &tempGroupRatio)
-	err = checkGroupRatio(tempGroupRatio)
-	if err != nil {
-		return err
-	}
-	GroupRatio = tempGroupRatio
-	return err
+	GroupRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &GroupRatio)
 }
 
 func GetGroupRatio(name string) float64 {
@@ -39,7 +33,12 @@ func GetGroupRatio(name string) float64 {
 	return ratio
 }
 
-func checkGroupRatio(checkGroupRatio map[string]float64) error {
+func CheckGroupRatio(jsonStr string) error {
+	checkGroupRatio := make(map[string]float64)
+	err := json.Unmarshal([]byte(jsonStr), &GroupRatio)
+	if err != nil {
+		return err
+	}
 	for name, ratio := range checkGroupRatio {
 		if ratio < 0 {
 			return errors.New("group ratio must be greater than 0: " + name)
