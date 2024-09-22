@@ -48,6 +48,7 @@
     4. Telegram Bot 名称是bot username 去掉@后的字符串
 13. 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口的支持，[对接文档](Suno.md)
 14. 支持Rerank模型，目前仅兼容Cohere和Jina，可接入Dify，[对接文档](Rerank.md)
+15. 支持使用路由/chat2link 进入聊天界面
 
 ## 模型支持
 此版本额外支持以下模型：
