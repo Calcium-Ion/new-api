@@ -15,8 +15,8 @@ export function renderText(text, limit) {
 export function renderGroup(group) {
   if (group === '') {
     return (
-      <Tag size='large' key='default' color={stringToColor('default')}>
-        default
+      <Tag size='large' key='default' color='orange'>
+        用户分组
       </Tag>
     );
   }
