@@ -36,7 +36,7 @@ let buttons = [
     text: '首页',
     itemKey: 'home',
     to: '/',
-    icon: <IconHomeStroked />,
+    // icon: <IconHomeStroked />,
   },
   // {
   //   text: '模型价格',

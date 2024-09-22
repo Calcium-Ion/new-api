@@ -7,18 +7,11 @@ import (
 )
 
 func GetPricing(c *gin.Context) {
-	userId := c.GetInt("id")
-	// if no login, get default group ratio
-	groupRatio := common.GetGroupRatio("default")
-	group, err := model.CacheGetUserGroup(userId)
-	if err == nil {
-		groupRatio = common.GetGroupRatio(group)
-	}
-	pricing := model.GetPricing(group)
+	pricing := model.GetPricing()
 	c.JSON(200, gin.H{
 		"success":     true,
 		"data":        pricing,
-		"group_ratio": groupRatio,
+		"group_ratio": common.GroupRatio,
 	})
 }
 
