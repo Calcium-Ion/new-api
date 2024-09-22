@@ -118,13 +118,19 @@ const HeaderBar = () => {
   useEffect(() => {
     if (theme === 'dark') {
       document.body.setAttribute('theme-mode', 'dark');
+    } else {
+      document.body.removeAttribute('theme-mode');
+    }
+    // 发送当前主题模式给子页面
+    const iframe = document.querySelector('iframe');
+    if (iframe) {
+      iframe.contentWindow.postMessage({ themeMode: theme }, '*');
     }
 
     if (isNewYear) {
       console.log('Happy New Year!');
     }
-  }, []);
-
+  }, [theme]); // 监听 theme-mode 的变化
   return (
     <>
       <Layout>
