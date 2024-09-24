@@ -200,11 +200,20 @@ func Register(c *gin.Context) {
 	}
 	// 生成默认令牌
 	if constant.GenerateDefaultToken {
+		key, err := common.GenerateKey()
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "生成默认令牌失败",
+			})
+			common.SysError("failed to generate token key: " + err.Error())
+			return
+		}
 		// 生成默认令牌
 		token := model.Token{
 			UserId:             insertedUser.Id, // 使用插入后的用户ID
 			Name:               cleanUser.Username + "的初始令牌",
-			Key:                common.GenerateKey(),
+			Key:                key,
 			CreatedTime:        common.GetTimestamp(),
 			AccessedTime:       common.GetTimestamp(),
 			ExpiredTime:        -1,     // 永不过期
@@ -311,7 +320,18 @@ func GenerateAccessToken(c *gin.Context) {
 		})
 		return
 	}
-	user.SetAccessToken(common.GetUUID())
+	// get rand int 28-32
+	randI := common.GetRandomInt(4)
+	key, err := common.GenerateRandomKey(29 + randI)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "生成失败",
+		})
+		common.SysError("failed to generate key: " + err.Error())
+		return
+	}
+	user.SetAccessToken(key)
 
 	if model.DB.Where("access_token = ?", user.AccessToken).First(user).RowsAffected != 0 {
 		c.JSON(http.StatusOK, gin.H{

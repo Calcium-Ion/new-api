@@ -1,10 +1,12 @@
 package common
 
 import (
+	crand "crypto/rand"
 	"fmt"
 	"github.com/google/uuid"
 	"html/template"
 	"log"
+	"math/big"
 	"math/rand"
 	"net"
 	"os/exec"
@@ -145,21 +147,24 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func GenerateKey() string {
-	//rand.Seed(time.Now().UnixNano())
-	key := make([]byte, 48)
-	for i := 0; i < 16; i++ {
-		key[i] = keyChars[rand.Intn(len(keyChars))]
-	}
-	uuid_ := GetUUID()
-	for i := 0; i < 32; i++ {
-		c := uuid_[i]
-		if i%2 == 0 && c >= 'a' && c <= 'z' {
-			c = c - 'a' + 'A'
+func GenerateRandomKey(length int) (string, error) {
+	b := make([]byte, length)
+	maxI := big.NewInt(int64(len(keyChars)))
+
+	for i := range b {
+		n, err := crand.Int(crand.Reader, maxI)
+		if err != nil {
+			return "", err
 		}
-		key[i+16] = c
+		b[i] = keyChars[n.Int64()]
 	}
-	return string(key)
+
+	return string(b), nil
+}
+
+func GenerateKey() (string, error) {
+	//rand.Seed(time.Now().UnixNano())
+	return GenerateRandomKey(48)
 }
 
 func GetRandomInt(max int) int {
