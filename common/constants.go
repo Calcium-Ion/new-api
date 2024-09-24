@@ -126,6 +126,10 @@ const (
 	RoleRootUser   = 100
 )
 
+func IsValidateRole(role int) bool {
+	return role == RoleGuestUser || role == RoleCommonUser || role == RoleAdminUser || role == RoleRootUser
+}
+
 var (
 	FileUploadPermission    = RoleGuestUser
 	FileDownloadPermission  = RoleGuestUser

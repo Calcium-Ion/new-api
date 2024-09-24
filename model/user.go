@@ -295,11 +295,12 @@ func (user *User) ValidateAndFill() (err error) {
 	// that means if your field’s value is 0, '', false or other zero values,
 	// it won’t be used to build query conditions
 	password := user.Password
-	if user.Username == "" || password == "" {
+	username := strings.TrimSpace(user.Username)
+	if username == "" || password == "" {
 		return errors.New("用户名或密码为空")
 	}
 	// find buy username or email
-	DB.Where("username = ? OR email = ?", user.Username, user.Username).First(user)
+	DB.Where("username = ? OR email = ?", username, username).First(user)
 	okay := common.ValidatePasswordAndHash(password, user.Password)
 	if !okay || user.Status != common.UserStatusEnabled {
 		return errors.New("用户名或密码错误，或用户已被封禁")
