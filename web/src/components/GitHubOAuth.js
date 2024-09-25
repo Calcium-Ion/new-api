@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Dimmer, Loader, Segment } from 'semantic-ui-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { API, showError, showSuccess } from '../helpers';
+import { API, showError, showSuccess, updateAPI } from '../helpers';
 import { UserContext } from '../context/User';
+import { setUserData } from '../helpers/data.js';
 
 const GitHubOAuth = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,8 +24,10 @@ const GitHubOAuth = () => {
       } else {
         userDispatch({ type: 'login', payload: data });
         localStorage.setItem('user', JSON.stringify(data));
+        setUserData(data);
+        updateAPI()
         showSuccess('登录成功！');
-        navigate('/');
+        navigate('/token');
       }
     } else {
       showError(message);

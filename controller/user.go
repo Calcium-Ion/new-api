@@ -159,8 +159,9 @@ func Register(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
-			"message": err.Error(),
+			"message": "数据库错误，请稍后重试",
 		})
+		common.SysError(fmt.Sprintf("CheckUserExistOrDeleted error: %v", err))
 		return
 	}
 	if exist {

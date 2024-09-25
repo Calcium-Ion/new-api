@@ -112,12 +112,22 @@ func GitHubOAuth(c *gin.Context) {
 	user := model.User{
 		GitHubId: githubUser.Login,
 	}
+	// IsGitHubIdAlreadyTaken is unscoped
 	if model.IsGitHubIdAlreadyTaken(user.GitHubId) {
+		// FillUserByGitHubId is scoped
 		err := user.FillUserByGitHubId()
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": err.Error(),
+			})
+			return
+		}
+		// if user.Id == 0 , user has been deleted
+		if user.Id == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "用户已注销",
 			})
 			return
 		}

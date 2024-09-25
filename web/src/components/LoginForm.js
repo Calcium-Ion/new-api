@@ -71,6 +71,8 @@ const LoginForm = () => {
     if (success) {
       userDispatch({ type: 'login', payload: data });
       localStorage.setItem('user', JSON.stringify(data));
+      setUserData(data);
+      updateAPI()
       navigate('/');
       showSuccess('登录成功！');
       setShowWeChatLoginModal(false);
@@ -143,6 +145,8 @@ const LoginForm = () => {
       userDispatch({ type: 'login', payload: data });
       localStorage.setItem('user', JSON.stringify(data));
       showSuccess('登录成功！');
+      setUserData(data);
+      updateAPI()
       navigate('/');
     } else {
       showError(message);

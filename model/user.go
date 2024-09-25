@@ -351,14 +351,6 @@ func (user *User) FillUserByWeChatId() error {
 	return nil
 }
 
-func (user *User) FillUserByUsername() error {
-	if user.Username == "" {
-		return errors.New("username 为空！")
-	}
-	DB.Where(User{Username: user.Username}).First(user)
-	return nil
-}
-
 func (user *User) FillUserByTelegramId() error {
 	if user.TelegramId == "" {
 		return errors.New("Telegram id 为空！")
@@ -371,23 +363,19 @@ func (user *User) FillUserByTelegramId() error {
 }
 
 func IsEmailAlreadyTaken(email string) bool {
-	return DB.Where("email = ?", email).Find(&User{}).RowsAffected == 1
+	return DB.Unscoped().Where("email = ?", email).Find(&User{}).RowsAffected == 1
 }
 
 func IsWeChatIdAlreadyTaken(wechatId string) bool {
-	return DB.Where("wechat_id = ?", wechatId).Find(&User{}).RowsAffected == 1
+	return DB.Unscoped().Where("wechat_id = ?", wechatId).Find(&User{}).RowsAffected == 1
 }
 
 func IsGitHubIdAlreadyTaken(githubId string) bool {
-	return DB.Where("github_id = ?", githubId).Find(&User{}).RowsAffected == 1
-}
-
-func IsUsernameAlreadyTaken(username string) bool {
-	return DB.Where("username = ?", username).Find(&User{}).RowsAffected == 1
+	return DB.Unscoped().Where("github_id = ?", githubId).Find(&User{}).RowsAffected == 1
 }
 
 func IsTelegramIdAlreadyTaken(telegramId string) bool {
-	return DB.Where("telegram_id = ?", telegramId).Find(&User{}).RowsAffected == 1
+	return DB.Unscoped().Where("telegram_id = ?", telegramId).Find(&User{}).RowsAffected == 1
 }
 
 func ResetUserPasswordByEmail(email string, password string) error {
