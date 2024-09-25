@@ -101,7 +101,7 @@ func RerankHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	}
 	if resp != nil {
 		if resp.StatusCode != http.StatusOK {
-			returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
+			returnPreConsumedQuota(c, relayInfo, userQuota, preConsumedQuota)
 			openaiErr := service.RelayErrorHandler(resp)
 			// reset status code 重置状态码
 			service.ResetStatusCode(openaiErr, statusCodeMappingStr)
@@ -111,7 +111,7 @@ func RerankHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 
 	usage, openaiErr := adaptor.DoResponse(c, resp, relayInfo)
 	if openaiErr != nil {
-		returnPreConsumedQuota(c, relayInfo.TokenId, userQuota, preConsumedQuota)
+		returnPreConsumedQuota(c, relayInfo, userQuota, preConsumedQuota)
 		// reset status code 重置状态码
 		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 		return openaiErr

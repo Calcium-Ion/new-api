@@ -15,7 +15,7 @@ import '../index.css';
 
 import {
   IconCalendarClock, IconChecklistStroked,
-  IconComment,
+  IconComment, IconCommentStroked,
   IconCreditCard,
   IconGift, IconHelpCircle,
   IconHistogram,
@@ -63,6 +63,7 @@ const SiderBar = () => {
     detail: '/detail',
     pricing: '/pricing',
     task: '/task',
+    playground: '/playground',
   };
 
   const headerButtons = useMemo(
@@ -73,6 +74,12 @@ const SiderBar = () => {
       //   to: '/',
       //   icon: <IconHome />,
       // },
+      {
+        text: 'Playground',
+        itemKey: 'playground',
+        to: '/playground',
+        icon: <IconCommentStroked />,
+      },
       {
         text: '模型价格',
         itemKey: 'pricing',

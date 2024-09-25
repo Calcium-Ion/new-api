@@ -38,6 +38,46 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	return err
 }
 
+func Playground(c *gin.Context) {
+	var openaiErr *dto.OpenAIErrorWithStatusCode
+
+	defer func() {
+		if openaiErr != nil {
+			c.JSON(openaiErr.StatusCode, gin.H{
+				"error": openaiErr.Error,
+			})
+		}
+	}()
+
+	playgroundRequest := &dto.PlayGroundRequest{}
+	err := common.UnmarshalBodyReusable(c, playgroundRequest)
+	if err != nil {
+		openaiErr = service.OpenAIErrorWrapperLocal(err, "unmarshal_request_failed", http.StatusBadRequest)
+		return
+	}
+
+	if playgroundRequest.Model == "" {
+		openaiErr = service.OpenAIErrorWrapperLocal(errors.New("请选择模型"), "model_required", http.StatusBadRequest)
+		return
+	}
+	c.Set("original_model", playgroundRequest.Model)
+	group := playgroundRequest.Group
+	if group == "" {
+		group = c.GetString("group")
+	} else {
+		c.Set("group", group)
+	}
+	log.Printf("group: %s", group)
+	log.Printf("model: %s", playgroundRequest.Model)
+	channel, err := model.CacheGetRandomSatisfiedChannel(group, playgroundRequest.Model, 0)
+	if err != nil {
+		openaiErr = service.OpenAIErrorWrapperLocal(err, "get_playground_channel_failed", http.StatusInternalServerError)
+		return
+	}
+	middleware.SetupContextForSelectedChannel(c, channel, playgroundRequest.Model)
+	Relay(c)
+}
+
 func Relay(c *gin.Context) {
 	relayMode := constant.Path2RelayMode(c.Request.URL.Path)
 	requestId := c.GetString(common.RequestIdKey)

@@ -55,6 +55,10 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
+      '/pg': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
   },
 });
