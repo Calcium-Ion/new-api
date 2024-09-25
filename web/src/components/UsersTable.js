@@ -151,7 +151,7 @@ const UsersTable = () => {
                 title='确定？'
                 okType={'warning'}
                 onConfirm={() => {
-                  manageUser(record.username, 'promote', record);
+                  manageUser(record.id, 'promote', record);
                 }}
               >
                 <Button theme='light' type='warning' style={{ marginRight: 1 }}>
@@ -162,7 +162,7 @@ const UsersTable = () => {
                 title='确定？'
                 okType={'warning'}
                 onConfirm={() => {
-                  manageUser(record.username, 'demote', record);
+                  manageUser(record.id, 'demote', record);
                 }}
               >
                 <Button
@@ -179,7 +179,7 @@ const UsersTable = () => {
                   type='warning'
                   style={{ marginRight: 1 }}
                   onClick={async () => {
-                    manageUser(record.username, 'disable', record);
+                    manageUser(record.id, 'disable', record);
                   }}
                 >
                   禁用
@@ -190,7 +190,7 @@ const UsersTable = () => {
                   type='secondary'
                   style={{ marginRight: 1 }}
                   onClick={async () => {
-                    manageUser(record.username, 'enable', record);
+                    manageUser(record.id, 'enable', record);
                   }}
                   disabled={record.status === 3}
                 >
@@ -214,7 +214,7 @@ const UsersTable = () => {
                 okType={'danger'}
                 position={'left'}
                 onConfirm={() => {
-                  manageUser(record.username, 'delete', record).then(() => {
+                  manageUser(record.id, 'delete', record).then(() => {
                     removeRecord(record.id);
                   });
                 }}
@@ -303,9 +303,9 @@ const UsersTable = () => {
     fetchGroups().then();
   }, []);
 
-  const manageUser = async (username, action, record) => {
+  const manageUser = async (userId, action, record) => {
     const res = await API.post('/api/user/manage', {
-      username,
+      id: userId,
       action,
     });
     const { success, message } = res.data;

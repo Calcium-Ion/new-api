@@ -7,6 +7,7 @@ import (
 	"one-api/common"
 	"one-api/model"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gin-contrib/sessions"
@@ -616,6 +617,7 @@ func DeleteSelf(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	var user model.User
 	err := json.NewDecoder(c.Request.Body).Decode(&user)
+	user.Username = strings.TrimSpace(user.Username)
 	if err != nil || user.Username == "" || user.Password == "" {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -663,8 +665,8 @@ func CreateUser(c *gin.Context) {
 }
 
 type ManageRequest struct {
-	Username string `json:"username"`
-	Action   string `json:"action"`
+	Id     int    `json:"id"`
+	Action string `json:"action"`
 }
 
 // ManageUser Only admin user can do this
@@ -680,7 +682,7 @@ func ManageUser(c *gin.Context) {
 		return
 	}
 	user := model.User{
-		Username: req.Username,
+		Id: req.Id,
 	}
 	// Fill attributes
 	model.DB.Unscoped().Where(&user).First(&user)
