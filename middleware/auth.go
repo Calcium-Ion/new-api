@@ -122,6 +122,7 @@ func authHelper(c *gin.Context, minRole int) {
 	c.Set("role", role)
 	c.Set("id", id)
 	c.Set("group", session.Get("group"))
+	c.Set("use_access_token", useAccessToken)
 	c.Next()
 }
 

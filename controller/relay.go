@@ -49,6 +49,12 @@ func Playground(c *gin.Context) {
 		}
 	}()
 
+	useAccessToken := c.GetBool("use_access_token")
+	if useAccessToken {
+		openaiErr = service.OpenAIErrorWrapperLocal(errors.New("暂不支持使用 access token"), "access_token_not_supported", http.StatusBadRequest)
+		return
+	}
+
 	playgroundRequest := &dto.PlayGroundRequest{}
 	err := common.UnmarshalBodyReusable(c, playgroundRequest)
 	if err != nil {
@@ -67,8 +73,6 @@ func Playground(c *gin.Context) {
 	} else {
 		c.Set("group", group)
 	}
-	log.Printf("group: %s", group)
-	log.Printf("model: %s", playgroundRequest.Model)
 	channel, err := model.CacheGetRandomSatisfiedChannel(group, playgroundRequest.Model, 0)
 	if err != nil {
 		openaiErr = service.OpenAIErrorWrapperLocal(err, "get_playground_channel_failed", http.StatusInternalServerError)
