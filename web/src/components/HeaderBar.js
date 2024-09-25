@@ -39,10 +39,10 @@ let buttons = [
     // icon: <IconHomeStroked />,
   },
   // {
-  //   text: '模型价格',
-  //   itemKey: 'pricing',
-  //   to: '/pricing',
-  //   icon: <IconNoteMoneyStroked />,
+  //   text: 'Playground',
+  //   itemKey: 'playground',
+  //   to: '/playground',
+  //   // icon: <IconNoteMoneyStroked />,
   // },
 ];
 

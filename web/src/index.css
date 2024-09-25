@@ -59,6 +59,12 @@ body {
   display: revert;
 }
 
+.semi-chat {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 100%;
+}
+
 .tableHiddle {
   display: none !important;
 }

@@ -12,6 +12,7 @@ import (
 	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
+	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"strconv"
@@ -146,6 +147,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 	userId := c.GetInt("id")
 	group := c.GetString("group")
 	channelId := c.GetInt("channel_id")
+	relayInfo := relaycommon.GenRelayInfo(c)
 	var swapFaceRequest dto.SwapFaceRequest
 	err := common.UnmarshalBodyReusable(c, &swapFaceRequest)
 	if err != nil {
@@ -191,7 +193,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 	}
 	defer func(ctx context.Context) {
 		if mjResp.StatusCode == 200 && mjResp.Response.Code == 1 {
-			err := model.PostConsumeTokenQuota(tokenId, userQuota, quota, 0, true)
+			err := model.PostConsumeTokenQuota(relayInfo, userQuota, quota, 0, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}
@@ -356,6 +358,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	userId := c.GetInt("id")
 	group := c.GetString("group")
 	channelId := c.GetInt("channel_id")
+	relayInfo := relaycommon.GenRelayInfo(c)
 	consumeQuota := true
 	var midjRequest dto.MidjourneyRequest
 	err := common.UnmarshalBodyReusable(c, &midjRequest)
@@ -495,7 +498,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 
 	defer func(ctx context.Context) {
 		if consumeQuota && midjResponseWithStatus.StatusCode == 200 {
-			err := model.PostConsumeTokenQuota(tokenId, userQuota, quota, 0, true)
+			err := model.PostConsumeTokenQuota(relayInfo, userQuota, quota, 0, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}

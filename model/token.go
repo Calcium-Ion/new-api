@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"one-api/common"
 	"one-api/constant"
+	relaycommon "one-api/relay/common"
 	"strconv"
 	"strings"
 )
@@ -257,51 +258,56 @@ func decreaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-func PreConsumeTokenQuota(tokenId int, quota int) (userQuota int, err error) {
+func PreConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, quota int) (userQuota int, err error) {
 	if quota < 0 {
 		return 0, errors.New("quota 不能为负数！")
 	}
-	token, err := GetTokenById(tokenId)
-	if err != nil {
-		return 0, err
+	if !relayInfo.IsPlayground {
+		token, err := GetTokenById(relayInfo.TokenId)
+		if err != nil {
+			return 0, err
+		}
+		if !token.UnlimitedQuota && token.RemainQuota < quota {
+			return 0, errors.New("令牌额度不足")
+		}
 	}
-	if !token.UnlimitedQuota && token.RemainQuota < quota {
-		return 0, errors.New("令牌额度不足")
-	}
-	userQuota, err = GetUserQuota(token.UserId)
+	userQuota, err = GetUserQuota(relayInfo.UserId)
 	if err != nil {
 		return 0, err
 	}
 	if userQuota < quota {
 		return 0, errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
 	}
-	err = DecreaseTokenQuota(tokenId, quota)
-	if err != nil {
-		return 0, err
+	if !relayInfo.IsPlayground {
+		err = DecreaseTokenQuota(relayInfo.TokenId, quota)
+		if err != nil {
+			return 0, err
+		}
 	}
-	err = DecreaseUserQuota(token.UserId, quota)
+	err = DecreaseUserQuota(relayInfo.UserId, quota)
 	return userQuota - quota, err
 }
 
-func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuota int, sendEmail bool) (err error) {
-	token, err := GetTokenById(tokenId)
+func PostConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, userQuota int, quota int, preConsumedQuota int, sendEmail bool) (err error) {
 
 	if quota > 0 {
-		err = DecreaseUserQuota(token.UserId, quota)
+		err = DecreaseUserQuota(relayInfo.UserId, quota)
 	} else {
-		err = IncreaseUserQuota(token.UserId, -quota)
+		err = IncreaseUserQuota(relayInfo.UserId, -quota)
 	}
 	if err != nil {
 		return err
 	}
 
-	if quota > 0 {
-		err = DecreaseTokenQuota(tokenId, quota)
-	} else {
-		err = IncreaseTokenQuota(tokenId, -quota)
-	}
-	if err != nil {
-		return err
+	if !relayInfo.IsPlayground {
+		if quota > 0 {
+			err = DecreaseTokenQuota(relayInfo.TokenId, quota)
+		} else {
+			err = IncreaseTokenQuota(relayInfo.TokenId, -quota)
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	if sendEmail {
@@ -310,7 +316,7 @@ func PostConsumeTokenQuota(tokenId int, userQuota int, quota int, preConsumedQuo
 			noMoreQuota := userQuota-(quota+preConsumedQuota) <= 0
 			if quotaTooLow || noMoreQuota {
 				go func() {
-					email, err := GetUserEmail(token.UserId)
+					email, err := GetUserEmail(relayInfo.UserId)
 					if err != nil {
 						common.SysError("failed to fetch user email: " + err.Error())
 					}

@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@douyinfe/semi-icons": "^2.46.1",
-    "@douyinfe/semi-ui": "^2.55.3",
+    "@douyinfe/semi-icons": "^2.63.1",
+    "@douyinfe/semi-ui": "^2.63.1",
     "@visactor/react-vchart": "~1.8.8",
     "@visactor/vchart": "~1.8.8",
     "@visactor/vchart-semi-theme": "~1.8.8",
@@ -22,7 +22,8 @@
     "react-toastify": "^9.0.8",
     "react-turnstile": "^1.0.5",
     "semantic-ui-offline": "^2.5.0",
-    "semantic-ui-react": "^2.1.3"
+    "semantic-ui-react": "^2.1.3",
+    "sse": "github:mpetazzoni/sse.js"
   },
   "scripts": {
     "dev": "vite",
