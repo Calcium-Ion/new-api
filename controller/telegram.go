@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
+	"net/http"
 	"one-api/common"
 	"one-api/model"
 	"sort"
@@ -45,6 +46,13 @@ func TelegramBind(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": err.Error(),
 			"success": false,
+		})
+		return
+	}
+	if user.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "用户已注销",
 		})
 		return
 	}

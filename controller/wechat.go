@@ -78,6 +78,13 @@ func WeChatAuth(c *gin.Context) {
 			})
 			return
 		}
+		if user.Id == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "用户已注销",
+			})
+			return
+		}
 	} else {
 		if common.RegisterEnabled {
 			user.Username = "wechat_" + strconv.Itoa(model.GetMaxUserId()+1)
