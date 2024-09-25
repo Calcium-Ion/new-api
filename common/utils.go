@@ -2,6 +2,7 @@ package common
 
 import (
 	crand "crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
 	"html/template"
@@ -144,10 +145,10 @@ func GetUUID() string {
 const keyChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-func GenerateRandomKey(length int) (string, error) {
+func GenerateRandomCharsKey(length int) (string, error) {
 	b := make([]byte, length)
 	maxI := big.NewInt(int64(len(keyChars)))
 
@@ -162,9 +163,17 @@ func GenerateRandomKey(length int) (string, error) {
 	return string(b), nil
 }
 
+func GenerateRandomKey(length int) (string, error) {
+	bytes := make([]byte, length*3/4) // 对于48位的输出，这里应该是36
+	if _, err := crand.Read(bytes); err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(bytes), nil
+}
+
 func GenerateKey() (string, error) {
 	//rand.Seed(time.Now().UnixNano())
-	return GenerateRandomKey(48)
+	return GenerateRandomCharsKey(48)
 }
 
 func GetRandomInt(max int) int {
