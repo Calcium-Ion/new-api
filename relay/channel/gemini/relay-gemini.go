@@ -118,6 +118,7 @@ func ConvertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReque
 		// Converting system prompt to prompt from user for the same reason
 		if content.Role == "system" {
 			if isFirstMessage {
+				content.Role = "model"
 				geminiRequest.SystemInstruction = &content
 				isFirstMessage = false
 			} else {
@@ -142,7 +143,7 @@ func ConvertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReque
 				Role: "model",
 				Parts: []GeminiPart{
 					{
-						Text: "Okay!(*^▽^*)",
+						Text: "Okay",
 					},
 				},
 			})
