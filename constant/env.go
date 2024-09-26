@@ -34,6 +34,7 @@ var GeminiModelMap = map[string]string{
 
 // GeminiChatSafetySettingsArray 用于设置Gemini的安全性设置 测试
 // https://ai.google.dev/api/generate-content#v1beta.HarmCategory
+// https://github.com/google/generative-ai-go/blob/2ec7e23d0c921b95b2ef733030715a298972724d/genai/internal/generativelanguage/v1beta/generativelanguage-api.json#L1856
 var GeminiChatSafetySettingsMap = map[string]string{}
 
 var GeminiExpChatSafetySettingsMap = map[string]string{}
