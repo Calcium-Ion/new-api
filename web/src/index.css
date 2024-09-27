@@ -65,6 +65,11 @@ body {
   height: 100%;
 }
 
+.semi-chat-chatBox-content {
+  min-width: auto;
+  word-break: break-word;
+}
+
 .tableHiddle {
   display: none !important;
 }
