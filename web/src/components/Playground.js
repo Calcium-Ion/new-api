@@ -133,7 +133,9 @@ const Playground = () => {
           completeMessage();
         } else {
           let text = payload.choices[0].delta.content;
-          generateMockResponse(text);
+          if (text) {
+            generateMockResponse(text);
+          }
         }
       } else {
         completeMessage();
@@ -186,7 +188,7 @@ const Playground = () => {
           stream: true,
           model: inputs.model,
           group: inputs.group,
-          max_tokens: inputs.max_tokens,
+          max_tokens: parseInt(inputs.max_tokens),
           temperature: inputs.temperature,
         };
       };

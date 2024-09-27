@@ -75,7 +75,8 @@ func Playground(c *gin.Context) {
 	}
 	channel, err := model.CacheGetRandomSatisfiedChannel(group, playgroundRequest.Model, 0)
 	if err != nil {
-		openaiErr = service.OpenAIErrorWrapperLocal(err, "get_playground_channel_failed", http.StatusInternalServerError)
+		message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", group, playgroundRequest.Model)
+		openaiErr = service.OpenAIErrorWrapperLocal(errors.New(message), "get_playground_channel_failed", http.StatusInternalServerError)
 		return
 	}
 	middleware.SetupContextForSelectedChannel(c, channel, playgroundRequest.Model)
