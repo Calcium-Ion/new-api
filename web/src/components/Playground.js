@@ -144,7 +144,7 @@ const Playground = () => {
 
     source.addEventListener("error", (e) => {
       generateMockResponse(e.data)
-      completeMessage();
+      completeMessage('error')
     });
 
     source.addEventListener("readystatechange", (e) => {
@@ -206,12 +206,17 @@ const Playground = () => {
     });
   }, [getSystemMessage]);
 
-  const completeMessage = useCallback(() => {
+  const completeMessage = useCallback((status = 'complete') => {
+    // console.log("Complete Message: ", status)
     setMessage((prevMessage) => {
       const lastMessage = prevMessage[prevMessage.length - 1];
+      // only change the status if the last message is not complete and not error
+      if (lastMessage.status === 'complete' || lastMessage.status === 'error') {
+        return prevMessage;
+      }
       return [
         ...prevMessage.slice(0, -1),
-        { ...lastMessage, status: 'complete' }
+        { ...lastMessage, status: status }
       ];
     });
   }, [])
