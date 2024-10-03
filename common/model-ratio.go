@@ -340,6 +340,9 @@ func GetCompletionRatio(name string) float64 {
 			return 3
 		}
 		if strings.HasPrefix(name, "gpt-4o") {
+			if name == "gpt-4o-2024-05-13" {
+				return 3
+			}
 			return 4
 		}
 		return 2
