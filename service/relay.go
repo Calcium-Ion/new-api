@@ -43,11 +43,25 @@ func Done(c *gin.Context) {
 	_ = StringData(c, "[DONE]")
 }
 
+func WssString(c *gin.Context, ws *websocket.Conn, str string) error {
+	if ws == nil {
+		common.LogError(c, "websocket connection is nil")
+		return errors.New("websocket connection is nil")
+	}
+	common.LogInfo(c, fmt.Sprintf("sending message: %s", str))
+	return ws.WriteMessage(1, []byte(str))
+}
+
 func WssObject(c *gin.Context, ws *websocket.Conn, object interface{}) error {
 	jsonData, err := json.Marshal(object)
 	if err != nil {
 		return fmt.Errorf("error marshalling object: %w", err)
 	}
+	if ws == nil {
+		common.LogError(c, "websocket connection is nil")
+		return errors.New("websocket connection is nil")
+	}
+	common.LogInfo(c, fmt.Sprintf("sending message: %s", jsonData))
 	return ws.WriteMessage(1, jsonData)
 }
 

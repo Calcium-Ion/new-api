@@ -31,6 +31,13 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
+	if info.RelayMode == constant.RelayModeRealtime {
+		// trim https
+		baseUrl := strings.TrimPrefix(info.BaseUrl, "https://")
+		baseUrl = strings.TrimPrefix(baseUrl, "http://")
+		baseUrl = "wss://" + baseUrl
+		info.BaseUrl = baseUrl
+	}
 	switch info.ChannelType {
 	case common.ChannelTypeAzure:
 		// https://learn.microsoft.com/en-us/azure/cognitive-services/openai/chatgpt-quickstart?pivots=rest-api&tabs=command-line#rest-api
@@ -54,16 +61,19 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	}
 }
 
-func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
+func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
 	if info.ChannelType == common.ChannelTypeAzure {
-		req.Header.Set("api-key", info.ApiKey)
+		req.Set("api-key", info.ApiKey)
 		return nil
 	}
 	if info.ChannelType == common.ChannelTypeOpenAI && "" != info.Organization {
-		req.Header.Set("OpenAI-Organization", info.Organization)
+		req.Set("OpenAI-Organization", info.Organization)
 	}
-	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
+	req.Set("Authorization", "Bearer "+info.ApiKey)
+	if info.RelayMode == constant.RelayModeRealtime {
+		req.Set("openai-beta", "realtime=v1")
+	}
 	//if info.ChannelType == common.ChannelTypeOpenRouter {
 	//	req.Header.Set("HTTP-Referer", "https://github.com/songquanpeng/one-api")
 	//	req.Header.Set("X-Title", "One API")
@@ -131,16 +141,20 @@ func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInf
 	return request, nil
 }
 
-func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
+func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	if info.RelayMode == constant.RelayModeAudioTranscription || info.RelayMode == constant.RelayModeAudioTranslation {
 		return channel.DoFormRequest(a, c, info, requestBody)
+	} else if info.RelayMode == constant.RelayModeRealtime {
+		return channel.DoWssRequest(a, c, info, requestBody)
 	} else {
 		return channel.DoApiRequest(a, c, info, requestBody)
 	}
 }
 
-func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
+func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
 	switch info.RelayMode {
+	case constant.RelayModeRealtime:
+		err, usage = OpenaiRealtimeHandler(c, info)
 	case constant.RelayModeAudioSpeech:
 		err, usage = OpenaiTTSHandler(c, resp, info)
 	case constant.RelayModeAudioTranslation:

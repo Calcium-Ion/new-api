@@ -39,6 +39,15 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	return err
 }
 
+func wsHandler(c *gin.Context, ws *websocket.Conn, relayMode int) *dto.OpenAIErrorWithStatusCode {
+	var err *dto.OpenAIErrorWithStatusCode
+	switch relayMode {
+	default:
+		err = relay.TextHelper(c)
+	}
+	return err
+}
+
 func Playground(c *gin.Context) {
 	var openaiErr *dto.OpenAIErrorWithStatusCode
 
@@ -143,12 +152,16 @@ var upgrader = websocket.Upgrader{
 
 func WssRelay(c *gin.Context) {
 	// 将 HTTP 连接升级为 WebSocket 连接
+
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	defer ws.Close()
+
 	if err != nil {
 		openaiErr := service.OpenAIErrorWrapper(err, "get_channel_failed", http.StatusInternalServerError)
 		service.WssError(c, ws, openaiErr.Error)
 		return
 	}
+
 	relayMode := constant.Path2RelayMode(c.Request.URL.Path)
 	requestId := c.GetString(common.RequestIdKey)
 	group := c.GetString("group")
@@ -164,7 +177,7 @@ func WssRelay(c *gin.Context) {
 			break
 		}
 
-		openaiErr = relayRequest(c, relayMode, channel)
+		openaiErr = wssRequest(c, ws, relayMode, channel)
 
 		if openaiErr == nil {
 			return // 成功处理请求，直接返回
@@ -196,6 +209,13 @@ func relayRequest(c *gin.Context, relayMode int, channel *model.Channel) *dto.Op
 	requestBody, _ := common.GetRequestBody(c)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 	return relayHandler(c, relayMode)
+}
+
+func wssRequest(c *gin.Context, ws *websocket.Conn, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {
+	addUsedChannel(c, channel.Id)
+	requestBody, _ := common.GetRequestBody(c)
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+	return relay.WssHelper(c, ws)
 }
 
 func addUsedChannel(c *gin.Context, channelId int) {

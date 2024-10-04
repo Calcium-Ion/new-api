@@ -421,6 +421,20 @@ func GetCompletionRatio(name string) float64 {
 	return 1
 }
 
+func GetAudioRatio(name string) float64 {
+	if strings.HasPrefix(name, "gpt-4o-realtime") {
+		return 20
+	}
+	return 20
+}
+
+func GetAudioCompletionRatio(name string) float64 {
+	if strings.HasPrefix(name, "gpt-4o-realtime") {
+		return 10
+	}
+	return 10
+}
+
 func GetCompletionRatioMap() map[string]float64 {
 	if CompletionRatio == nil {
 		CompletionRatio = defaultCompletionRatio

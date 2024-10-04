@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"io"
 	"net/http"
 	"one-api/common"
@@ -372,4 +373,107 @@ func getTextFromJSON(body []byte) (string, error) {
 		return "", fmt.Errorf("unmarshal_response_body_failed err :%w", err)
 	}
 	return whisperResponse.Text, nil
+}
+
+func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.RealtimeUsage) {
+	info.IsStream = true
+	clientConn := info.ClientWs
+	targetConn := info.TargetWs
+
+	clientClosed := make(chan struct{})
+	targetClosed := make(chan struct{})
+	sendChan := make(chan []byte, 100)
+	receiveChan := make(chan []byte, 100)
+	errChan := make(chan error, 2)
+
+	usage := &dto.RealtimeUsage{}
+
+	go func() {
+		for {
+			select {
+			case <-c.Done():
+				return
+			default:
+				_, message, err := clientConn.ReadMessage()
+				if err != nil {
+					if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+						errChan <- fmt.Errorf("error reading from client: %v", err)
+					}
+					close(clientClosed)
+					return
+				}
+
+				err = service.WssString(c, targetConn, string(message))
+				if err != nil {
+					errChan <- fmt.Errorf("error writing to target: %v", err)
+					return
+				}
+
+				select {
+				case sendChan <- message:
+				default:
+				}
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
+			case <-c.Done():
+				return
+			default:
+				_, message, err := targetConn.ReadMessage()
+				if err != nil {
+					if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+						errChan <- fmt.Errorf("error reading from target: %v", err)
+					}
+					close(targetClosed)
+					return
+				}
+				info.SetFirstResponseTime()
+				realtimeEvent := &dto.RealtimeEvent{}
+				err = json.Unmarshal(message, realtimeEvent)
+				if err != nil {
+					errChan <- fmt.Errorf("error unmarshalling message: %v", err)
+					return
+				}
+
+				if realtimeEvent.Type == dto.RealtimeEventTypeResponseDone {
+					realtimeUsage := realtimeEvent.Response.Usage
+					if realtimeUsage != nil {
+						usage.TotalTokens += realtimeUsage.TotalTokens
+						usage.InputTokens += realtimeUsage.InputTokens
+						usage.OutputTokens += realtimeUsage.OutputTokens
+						usage.InputTokenDetails.AudioTokens += realtimeUsage.InputTokenDetails.AudioTokens
+						usage.InputTokenDetails.CachedTokens += realtimeUsage.InputTokenDetails.CachedTokens
+						usage.InputTokenDetails.TextTokens += realtimeUsage.InputTokenDetails.TextTokens
+						usage.OutputTokenDetails.AudioTokens += realtimeUsage.OutputTokenDetails.AudioTokens
+						usage.OutputTokenDetails.TextTokens += realtimeUsage.OutputTokenDetails.TextTokens
+					}
+				}
+
+				err = service.WssString(c, clientConn, string(message))
+				if err != nil {
+					errChan <- fmt.Errorf("error writing to client: %v", err)
+					return
+				}
+
+				select {
+				case receiveChan <- message:
+				default:
+				}
+			}
+		}
+	}()
+
+	select {
+	case <-clientClosed:
+	case <-targetClosed:
+	case <-errChan:
+		//return service.OpenAIErrorWrapper(err, "realtime_error", http.StatusInternalServerError), nil
+	case <-c.Done():
+	}
+
+	return nil, usage
 }

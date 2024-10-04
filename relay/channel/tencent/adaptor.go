@@ -43,12 +43,12 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	return fmt.Sprintf("%s/", info.BaseUrl), nil
 }
 
-func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Request, info *relaycommon.RelayInfo) error {
+func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
-	req.Header.Set("Authorization", a.Sign)
-	req.Header.Set("X-TC-Action", a.Action)
-	req.Header.Set("X-TC-Version", a.Version)
-	req.Header.Set("X-TC-Timestamp", strconv.FormatInt(a.Timestamp, 10))
+	req.Set("Authorization", a.Sign)
+	req.Set("X-TC-Action", a.Action)
+	req.Set("X-TC-Version", a.Version)
+	req.Set("X-TC-Timestamp", strconv.FormatInt(a.Timestamp, 10))
 	return nil
 }
 
@@ -73,11 +73,11 @@ func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dt
 	return nil, nil
 }
 
-func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (*http.Response, error) {
+func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	return channel.DoApiRequest(a, c, info, requestBody)
 }
 
-func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage *dto.Usage, err *dto.OpenAIErrorWithStatusCode) {
+func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
 		var responseText string
 		err, responseText = tencentStreamHandler(c, resp)

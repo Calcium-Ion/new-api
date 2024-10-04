@@ -7,13 +7,41 @@ const (
 	RealtimeEventTypeResponseCreate     = "response.create"
 )
 
+const (
+	RealtimeEventTypeResponseDone = "response.done"
+)
+
 type RealtimeEvent struct {
 	EventId string `json:"event_id"`
 	Type    string `json:"type"`
 	//PreviousItemId string `json:"previous_item_id"`
-	Session *RealtimeSession `json:"session,omitempty"`
-	Item    *RealtimeItem    `json:"item,omitempty"`
-	Error   *OpenAIError     `json:"error,omitempty"`
+	Session  *RealtimeSession  `json:"session,omitempty"`
+	Item     *RealtimeItem     `json:"item,omitempty"`
+	Error    *OpenAIError      `json:"error,omitempty"`
+	Response *RealtimeResponse `json:"response,omitempty"`
+}
+
+type RealtimeResponse struct {
+	Usage *RealtimeUsage `json:"usage"`
+}
+
+type RealtimeUsage struct {
+	TotalTokens        int                `json:"total_tokens"`
+	InputTokens        int                `json:"input_tokens"`
+	OutputTokens       int                `json:"output_tokens"`
+	InputTokenDetails  InputTokenDetails  `json:"input_token_details"`
+	OutputTokenDetails OutputTokenDetails `json:"output_token_details"`
+}
+
+type InputTokenDetails struct {
+	CachedTokens int `json:"cached_tokens"`
+	TextTokens   int `json:"text_tokens"`
+	AudioTokens  int `json:"audio_tokens"`
+}
+
+type OutputTokenDetails struct {
+	TextTokens  int `json:"text_tokens"`
+	AudioTokens int `json:"audio_tokens"`
 }
 
 type RealtimeSession struct {
@@ -27,7 +55,7 @@ type RealtimeSession struct {
 	Tools                   []RealTimeTool          `json:"tools"`
 	ToolChoice              string                  `json:"tool_choice"`
 	Temperature             float64                 `json:"temperature"`
-	MaxResponseOutputTokens int                     `json:"max_response_output_tokens"`
+	//MaxResponseOutputTokens int                     `json:"max_response_output_tokens"`
 }
 
 type InputAudioTranscription struct {
@@ -42,14 +70,14 @@ type RealTimeTool struct {
 }
 
 type RealtimeItem struct {
-	Id        string          `json:"id"`
-	Type      string          `json:"type"`
-	Status    string          `json:"status"`
-	Role      string          `json:"role"`
-	Content   RealtimeContent `json:"content"`
-	Name      *string         `json:"name,omitempty"`
-	ToolCalls any             `json:"tool_calls,omitempty"`
-	CallId    string          `json:"call_id,omitempty"`
+	Id        string            `json:"id"`
+	Type      string            `json:"type"`
+	Status    string            `json:"status"`
+	Role      string            `json:"role"`
+	Content   []RealtimeContent `json:"content"`
+	Name      *string           `json:"name,omitempty"`
+	ToolCalls any               `json:"tool_calls,omitempty"`
+	CallId    string            `json:"call_id,omitempty"`
 }
 type RealtimeContent struct {
 	Type       string `json:"type"`

@@ -191,6 +191,45 @@ func CountTokenChatRequest(request dto.GeneralOpenAIRequest, model string) (int,
 	return tkm, nil
 }
 
+func CountTokenRealtime(request dto.RealtimeEvent, model string) (int, error) {
+	tkm := 0
+	ratio := 1
+	if request.Session != nil {
+		msgTokens, err := CountTokenText(request.Session.Instructions, model)
+		if err != nil {
+			return 0, err
+		}
+		ratio = len(request.Session.Modalities)
+		tkm += msgTokens
+		if request.Session.Tools != nil {
+			toolsData, _ := json.Marshal(request.Session.Tools)
+			var openaiTools []dto.OpenAITools
+			err := json.Unmarshal(toolsData, &openaiTools)
+			if err != nil {
+				return 0, errors.New(fmt.Sprintf("count_tools_token_fail: %s", err.Error()))
+			}
+			countStr := ""
+			for _, tool := range openaiTools {
+				countStr = tool.Function.Name
+				if tool.Function.Description != "" {
+					countStr += tool.Function.Description
+				}
+				if tool.Function.Parameters != nil {
+					countStr += fmt.Sprintf("%v", tool.Function.Parameters)
+				}
+			}
+			toolTokens, err := CountTokenInput(countStr, model)
+			if err != nil {
+				return 0, err
+			}
+			tkm += 8
+			tkm += toolTokens
+		}
+	}
+	tkm *= ratio
+	return tkm, nil
+}
+
 func CountTokenMessages(messages []dto.Message, model string, stream bool) (int, error) {
 	//recover when panic
 	tokenEncoder := getTokenEncoder(model)

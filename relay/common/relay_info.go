@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"one-api/common"
 	"one-api/relay/constant"
 	"strings"
@@ -32,6 +33,14 @@ type RelayInfo struct {
 	BaseUrl              string
 	SupportStreamOptions bool
 	ShouldIncludeUsage   bool
+	ClientWs             *websocket.Conn
+	TargetWs             *websocket.Conn
+}
+
+func GenRelayInfoWs(c *gin.Context, ws *websocket.Conn) *RelayInfo {
+	info := GenRelayInfo(c)
+	info.ClientWs = ws
+	return info
 }
 
 func GenRelayInfo(c *gin.Context) *RelayInfo {
