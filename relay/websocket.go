@@ -150,7 +150,7 @@ func postWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, mod
 	quota := 0
 	if !usePrice {
 		quota = textInputTokens + int(math.Round(float64(textOutTokens)*completionRatio))
-		quota += int(math.Round(float64(audioInputTokens)*audioRatio)) + int(math.Round(float64(audioOutTokens)*completionRatio*audioCompletionRatio))
+		quota += int(math.Round(float64(audioInputTokens)*audioRatio)) + int(math.Round(float64(audioOutTokens)*audioRatio*audioCompletionRatio))
 
 		quota = int(math.Round(float64(quota) * ratio))
 		if ratio != 0 && quota <= 0 {
@@ -215,16 +215,16 @@ func postWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, mod
 	//}
 }
 
-func getWssPromptTokens(textRequest *dto.RealtimeEvent, info *relaycommon.RelayInfo) (int, error) {
-	var promptTokens int
-	var err error
-	switch info.RelayMode {
-	default:
-		promptTokens, err = service.CountTokenRealtime(*textRequest, info.UpstreamModelName)
-	}
-	info.PromptTokens = promptTokens
-	return promptTokens, err
-}
+//func getWssPromptTokens(textRequest *dto.RealtimeEvent, info *relaycommon.RelayInfo) (int, error) {
+//	var promptTokens int
+//	var err error
+//	switch info.RelayMode {
+//	default:
+//		promptTokens, err = service.CountTokenRealtime(*textRequest, info.UpstreamModelName)
+//	}
+//	info.PromptTokens = promptTokens
+//	return promptTokens, err
+//}
 
 //func checkWssRequestSensitive(textRequest *dto.GeneralOpenAIRequest, info *relaycommon.RelayInfo) error {
 //	var err error

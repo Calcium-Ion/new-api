@@ -5,10 +5,18 @@ const (
 	RealtimeEventTypeSessionUpdate      = "session.update"
 	RealtimeEventTypeConversationCreate = "conversation.item.create"
 	RealtimeEventTypeResponseCreate     = "response.create"
+	RealtimeEventInputAudioBufferAppend = "input_audio_buffer.append"
 )
 
 const (
-	RealtimeEventTypeResponseDone = "response.done"
+	RealtimeEventTypeResponseDone                   = "response.done"
+	RealtimeEventTypeSessionUpdated                 = "session.updated"
+	RealtimeEventTypeSessionCreated                 = "session.created"
+	RealtimeEventResponseAudioDelta                 = "response.audio.delta"
+	RealtimeEventResponseAudioTranscriptionDelta    = "response.audio_transcript.delta"
+	RealtimeEventResponseFunctionCallArgumentsDelta = "response.function_call_arguments.delta"
+	RealtimeEventResponseFunctionCallArgumentsDone  = "response.function_call_arguments.done"
+	RealtimeEventConversationItemCreated            = "conversation.item.created"
 )
 
 type RealtimeEvent struct {
@@ -19,6 +27,8 @@ type RealtimeEvent struct {
 	Item     *RealtimeItem     `json:"item,omitempty"`
 	Error    *OpenAIError      `json:"error,omitempty"`
 	Response *RealtimeResponse `json:"response,omitempty"`
+	Delta    string            `json:"delta,omitempty"`
+	Audio    string            `json:"audio,omitempty"`
 }
 
 type RealtimeResponse struct {

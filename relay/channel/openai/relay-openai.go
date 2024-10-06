@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"io"
+	"log"
 	"net/http"
 	"one-api/common"
 	"one-api/constant"
@@ -232,7 +233,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if simpleResponse.Usage.TotalTokens == 0 || (simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.CompletionTokens == 0) {
 		completionTokens := 0
 		for _, choice := range simpleResponse.Choices {
-			ctkm, _ := service.CountTokenText(string(choice.Message.Content), model)
+			ctkm, _ := service.CountTextToken(string(choice.Message.Content), model)
 			completionTokens += ctkm
 		}
 		simpleResponse.Usage = dto.Usage{
@@ -325,7 +326,7 @@ func OpenaiSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 
 	usage := &dto.Usage{}
 	usage.PromptTokens = info.PromptTokens
-	usage.CompletionTokens, _ = service.CountTokenText(text, info.UpstreamModelName)
+	usage.CompletionTokens, _ = service.CountTextToken(text, info.UpstreamModelName)
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
 	return nil, usage
 }
@@ -387,6 +388,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 	errChan := make(chan error, 2)
 
 	usage := &dto.RealtimeUsage{}
+	localUsage := &dto.RealtimeUsage{}
 
 	go func() {
 		for {
@@ -402,6 +404,32 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 					close(clientClosed)
 					return
 				}
+
+				realtimeEvent := &dto.RealtimeEvent{}
+				err = json.Unmarshal(message, realtimeEvent)
+				if err != nil {
+					errChan <- fmt.Errorf("error unmarshalling message: %v", err)
+					return
+				}
+
+				if realtimeEvent.Type == dto.RealtimeEventTypeSessionUpdate {
+					if realtimeEvent.Session != nil {
+						if realtimeEvent.Session.Tools != nil {
+							info.RealtimeTools = realtimeEvent.Session.Tools
+						}
+					}
+				}
+
+				textToken, audioToken, err := service.CountTokenRealtime(info, *realtimeEvent, info.UpstreamModelName)
+				if err != nil {
+					errChan <- fmt.Errorf("error counting text token: %v", err)
+					return
+				}
+				log.Printf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken)
+				localUsage.TotalTokens += textToken + audioToken
+				localUsage.InputTokens += textToken
+				localUsage.InputTokenDetails.TextTokens += textToken
+				localUsage.InputTokenDetails.AudioTokens += audioToken
 
 				err = service.WssString(c, targetConn, string(message))
 				if err != nil {
@@ -451,6 +479,32 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 						usage.OutputTokenDetails.AudioTokens += realtimeUsage.OutputTokenDetails.AudioTokens
 						usage.OutputTokenDetails.TextTokens += realtimeUsage.OutputTokenDetails.TextTokens
 					}
+				} else if realtimeEvent.Type == dto.RealtimeEventTypeSessionUpdated || realtimeEvent.Type == dto.RealtimeEventTypeSessionCreated {
+					realtimeSession := realtimeEvent.Session
+					if realtimeSession != nil {
+						// update audio format
+						info.InputAudioFormat = common.GetStringIfEmpty(realtimeSession.InputAudioFormat, info.InputAudioFormat)
+						info.OutputAudioFormat = common.GetStringIfEmpty(realtimeSession.OutputAudioFormat, info.OutputAudioFormat)
+					}
+				} else {
+					textToken, audioToken, err := service.CountTokenRealtime(info, *realtimeEvent, info.UpstreamModelName)
+					if err != nil {
+						errChan <- fmt.Errorf("error counting text token: %v", err)
+						return
+					}
+					log.Printf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken)
+					localUsage.TotalTokens += textToken + audioToken
+
+					if realtimeEvent.Type == dto.RealtimeEventTypeResponseDone {
+						info.IsFirstRequest = false
+						localUsage.InputTokens += textToken + audioToken
+						localUsage.InputTokenDetails.TextTokens += textToken
+						localUsage.InputTokenDetails.AudioTokens += audioToken
+					} else {
+						localUsage.OutputTokens += textToken + audioToken
+						localUsage.OutputTokenDetails.TextTokens += textToken
+						localUsage.OutputTokenDetails.AudioTokens += audioToken
+					}
 				}
 
 				err = service.WssString(c, clientConn, string(message))
@@ -475,5 +529,10 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 	case <-c.Done():
 	}
 
+	// check usage total tokens, if 0, use local usage
+
+	if usage.TotalTokens == 0 {
+		usage = localUsage
+	}
 	return nil, usage
 }

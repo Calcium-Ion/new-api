@@ -48,7 +48,7 @@ func WssString(c *gin.Context, ws *websocket.Conn, str string) error {
 		common.LogError(c, "websocket connection is nil")
 		return errors.New("websocket connection is nil")
 	}
-	common.LogInfo(c, fmt.Sprintf("sending message: %s", str))
+	//common.LogInfo(c, fmt.Sprintf("sending message: %s", str))
 	return ws.WriteMessage(1, []byte(str))
 }
 
@@ -61,7 +61,7 @@ func WssObject(c *gin.Context, ws *websocket.Conn, object interface{}) error {
 		common.LogError(c, "websocket connection is nil")
 		return errors.New("websocket connection is nil")
 	}
-	common.LogInfo(c, fmt.Sprintf("sending message: %s", jsonData))
+	//common.LogInfo(c, fmt.Sprintf("sending message: %s", jsonData))
 	return ws.WriteMessage(1, jsonData)
 }
 

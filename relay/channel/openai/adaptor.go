@@ -47,8 +47,10 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		model_ := info.UpstreamModelName
 		model_ = strings.Replace(model_, ".", "", -1)
 		// https://github.com/songquanpeng/one-api/issues/67
-
 		requestURL = fmt.Sprintf("/openai/deployments/%s/%s", model_, task)
+		if info.RelayMode == constant.RelayModeRealtime {
+			requestURL = fmt.Sprintf("/openai/realtime?deployment=%s&api-version=%s", model_, info.ApiVersion)
+		}
 		return relaycommon.GetFullRequestURL(info.BaseUrl, requestURL, info.ChannelType), nil
 	case common.ChannelTypeMiniMax:
 		return minimax.GetRequestURL(info)
