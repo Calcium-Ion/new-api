@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"io"
-	"log"
 	"net/http"
 	"one-api/common"
 	"one-api/constant"
@@ -426,7 +425,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 					errChan <- fmt.Errorf("error counting text token: %v", err)
 					return
 				}
-				log.Printf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken)
+				common.LogInfo(c, fmt.Sprintf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken))
 				localUsage.TotalTokens += textToken + audioToken
 				localUsage.InputTokens += textToken
 				localUsage.InputTokenDetails.TextTokens += textToken
@@ -491,7 +490,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 							errChan <- fmt.Errorf("error counting text token: %v", err)
 							return
 						}
-						log.Printf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken)
+						common.LogInfo(c, fmt.Sprintf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken))
 						localUsage.TotalTokens += textToken + audioToken
 						info.IsFirstRequest = false
 						localUsage.InputTokens += textToken + audioToken
@@ -522,7 +521,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 						errChan <- fmt.Errorf("error counting text token: %v", err)
 						return
 					}
-					log.Printf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken)
+					common.LogInfo(c, fmt.Sprintf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken))
 					localUsage.TotalTokens += textToken + audioToken
 					localUsage.OutputTokens += textToken + audioToken
 					localUsage.OutputTokenDetails.TextTokens += textToken
