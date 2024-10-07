@@ -391,7 +391,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 	localUsage := &dto.RealtimeUsage{}
 	sumUsage := &dto.RealtimeUsage{}
 
-	go func() {
+	gopool.Go(func() {
 		for {
 			select {
 			case <-c.Done():
@@ -444,9 +444,9 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 				}
 			}
 		}
-	}()
+	})
 
-	go func() {
+	gopool.Go(func() {
 		for {
 			select {
 			case <-c.Done():
@@ -541,7 +541,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 				}
 			}
 		}
-	}()
+	})
 
 	select {
 	case <-clientClosed:
