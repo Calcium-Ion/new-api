@@ -225,6 +225,21 @@ func CountTokenRealtime(info *relaycommon.RelayInfo, request dto.RealtimeEvent, 
 			return 0, 0, fmt.Errorf("error counting audio token: %v", err)
 		}
 		audioToken += atk
+	case dto.RealtimeEventConversationItemCreated:
+		if request.Item != nil {
+			switch request.Item.Type {
+			case "message":
+				for _, content := range request.Item.Content {
+					if content.Type == "input_text" {
+						tokens, err := CountTextToken(content.Text, model)
+						if err != nil {
+							return 0, 0, err
+						}
+						textToken += tokens
+					}
+				}
+			}
+		}
 	case dto.RealtimeEventTypeResponseDone:
 		// count tools token
 		if !info.IsFirstRequest {

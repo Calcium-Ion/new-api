@@ -478,6 +478,18 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 						usage.InputTokenDetails.TextTokens += realtimeUsage.InputTokenDetails.TextTokens
 						usage.OutputTokenDetails.AudioTokens += realtimeUsage.OutputTokenDetails.AudioTokens
 						usage.OutputTokenDetails.TextTokens += realtimeUsage.OutputTokenDetails.TextTokens
+					} else {
+						textToken, audioToken, err := service.CountTokenRealtime(info, *realtimeEvent, info.UpstreamModelName)
+						if err != nil {
+							errChan <- fmt.Errorf("error counting text token: %v", err)
+							return
+						}
+						log.Printf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken)
+						localUsage.TotalTokens += textToken + audioToken
+						info.IsFirstRequest = false
+						localUsage.InputTokens += textToken + audioToken
+						localUsage.InputTokenDetails.TextTokens += textToken
+						localUsage.InputTokenDetails.AudioTokens += audioToken
 					}
 				} else if realtimeEvent.Type == dto.RealtimeEventTypeSessionUpdated || realtimeEvent.Type == dto.RealtimeEventTypeSessionCreated {
 					realtimeSession := realtimeEvent.Session
@@ -494,17 +506,9 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 					}
 					log.Printf("type: %s, textToken: %d, audioToken: %d", realtimeEvent.Type, textToken, audioToken)
 					localUsage.TotalTokens += textToken + audioToken
-
-					if realtimeEvent.Type == dto.RealtimeEventTypeResponseDone {
-						info.IsFirstRequest = false
-						localUsage.InputTokens += textToken + audioToken
-						localUsage.InputTokenDetails.TextTokens += textToken
-						localUsage.InputTokenDetails.AudioTokens += audioToken
-					} else {
-						localUsage.OutputTokens += textToken + audioToken
-						localUsage.OutputTokenDetails.TextTokens += textToken
-						localUsage.OutputTokenDetails.AudioTokens += audioToken
-					}
+					localUsage.OutputTokens += textToken + audioToken
+					localUsage.OutputTokenDetails.TextTokens += textToken
+					localUsage.OutputTokenDetails.AudioTokens += audioToken
 				}
 
 				err = service.WssString(c, clientConn, string(message))
