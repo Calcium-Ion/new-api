@@ -23,6 +23,7 @@ type RelayInfo struct {
 	ApiType              int
 	IsStream             bool
 	IsPlayground         bool
+	UsePrice             bool
 	RelayMode            int
 	UpstreamModelName    string
 	OriginModelName      string
