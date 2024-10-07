@@ -576,8 +576,5 @@ func preConsumeUsage(ctx *gin.Context, info *relaycommon.RelayInfo, usage *dto.R
 	totalUsage.OutputTokenDetails.AudioTokens += usage.OutputTokenDetails.AudioTokens
 	// clear usage
 	err := service.PreWssConsumeQuota(ctx, info, usage)
-	if err == nil {
-		common.LogInfo(ctx, "realtime streaming consume usage success")
-	}
 	return err
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"math"
@@ -15,6 +16,10 @@ import (
 func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usage *dto.RealtimeUsage) error {
 	if relayInfo.UsePrice {
 		return nil
+	}
+	userQuota, err := model.GetUserQuota(relayInfo.UserId)
+	if err != nil {
+		return err
 	}
 	modelName := relayInfo.UpstreamModelName
 	textInputTokens := usage.InputTokenDetails.TextTokens
@@ -38,10 +43,15 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 		quota = 1
 	}
 
-	err := model.PostConsumeTokenQuota(relayInfo, 0, quota, 0, false)
+	if userQuota < quota {
+		return errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
+	}
+
+	err = model.PostConsumeTokenQuota(relayInfo, 0, quota, 0, false)
 	if err != nil {
 		return err
 	}
+	common.LogInfo(ctx, "realtime streaming consume quota success, quota: "+fmt.Sprintf("%d", quota))
 	err = model.CacheUpdateUserQuota(relayInfo.UserId)
 	if err != nil {
 		return err
