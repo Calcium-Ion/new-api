@@ -218,7 +218,7 @@ func DashboardListModels(c *gin.Context) {
 }
 
 func RetrieveModel(c *gin.Context) {
-	var userOpenAiModelsMap map[string]dto.OpenAIModels
+	var userOpenAiModelsMap map[string]dto.OpenAIModels = make(map[string]dto.OpenAIModels)
 	permission := getPermission()
 	modelLimitEnable := c.GetBool("token_model_limit_enabled")
 	if modelLimitEnable {
