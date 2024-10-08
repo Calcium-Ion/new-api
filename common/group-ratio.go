@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 var GroupRatio = map[string]float64{
@@ -30,4 +31,18 @@ func GetGroupRatio(name string) float64 {
 		return 1
 	}
 	return ratio
+}
+
+func CheckGroupRatio(jsonStr string) error {
+	checkGroupRatio := make(map[string]float64)
+	err := json.Unmarshal([]byte(jsonStr), &checkGroupRatio)
+	if err != nil {
+		return err
+	}
+	for name, ratio := range checkGroupRatio {
+		if ratio < 0 {
+			return errors.New("group ratio must be not less than 0: " + name)
+		}
+	}
+	return nil
 }
