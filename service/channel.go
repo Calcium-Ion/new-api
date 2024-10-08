@@ -73,6 +73,15 @@ func ShouldDisableChannel(channelType int, err *relaymodel.OpenAIErrorWithStatus
 	} else if strings.HasPrefix(err.Error.Message, "Permission denied") {
 		return true
 	}
+
+	if strings.Contains(err.Error.Message, "The security token included in the request is invalid") { // anthropic
+		return true
+	} else if strings.Contains(err.Error.Message, "Operation not allowed") {
+		return true
+	} else if strings.Contains(err.Error.Message, "Your account is not authorized") {
+		return true
+	}
+
 	return false
 }
 
