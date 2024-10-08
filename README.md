@@ -9,6 +9,9 @@
 </div>
 
 > [!NOTE]
+> 本项目在[New API](https://github.com/Calcium-Ion/new-api)的基础上进行二次开发，修复了 /models/:model 接口找不到模型的问题
+
+> [!NOTE]
 > 本项目为开源项目，在[One API](https://github.com/songquanpeng/one-api)的基础上进行二次开发
 
 > [!IMPORTANT]
