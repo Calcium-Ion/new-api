@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
 	"one-api/constant"
@@ -15,6 +14,8 @@ import (
 	"one-api/relay/channel/moonshot"
 	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
+
+	"github.com/gin-gonic/gin"
 )
 
 // https://platform.openai.com/docs/api-reference/models/list
@@ -217,8 +218,67 @@ func DashboardListModels(c *gin.Context) {
 }
 
 func RetrieveModel(c *gin.Context) {
+	var userOpenAiModelsMap map[string]dto.OpenAIModels
+	permission := getPermission()
+	modelLimitEnable := c.GetBool("token_model_limit_enabled")
+	if modelLimitEnable {
+		s, ok := c.Get("token_model_limit")
+		var tokenModelLimit map[string]bool
+		if ok {
+			tokenModelLimit = s.(map[string]bool)
+		} else {
+			tokenModelLimit = map[string]bool{}
+		}
+		for allowModel, _ := range tokenModelLimit {
+			if _, ok := openAIModelsMap[allowModel]; ok {
+				userOpenAiModelsMap[allowModel] = openAIModelsMap[allowModel]
+			} else {
+				userOpenAiModelsMap[allowModel] = dto.OpenAIModels{
+					Id:         allowModel,
+					Object:     "model",
+					Created:    1626777600,
+					OwnedBy:    "custom",
+					Permission: permission,
+					Root:       allowModel,
+					Parent:     nil,
+				}
+			}
+		}
+	} else {
+		userId := c.GetInt("id")
+		userGroup, err := model.GetUserGroup(userId)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "get user group failed",
+			})
+			return
+		}
+		group := userGroup
+		tokenGroup := c.GetString("token_group")
+		if tokenGroup != "" {
+			group = tokenGroup
+		}
+		models := model.GetGroupModels(group)
+		for _, s := range models {
+			if _, ok := openAIModelsMap[s]; ok {
+				userOpenAiModelsMap[s] = openAIModelsMap[s]
+			} else {
+				userOpenAiModelsMap[s] = dto.OpenAIModels{
+					Id:         s,
+					Object:     "model",
+					Created:    1626777600,
+					OwnedBy:    "custom",
+					Permission: permission,
+					Root:       s,
+					Parent:     nil,
+				}
+			}
+		}
+	}
+
 	modelId := c.Param("model")
-	if aiModel, ok := openAIModelsMap[modelId]; ok {
+	if aiModel, ok := userOpenAiModelsMap[modelId]; ok {
 		c.JSON(200, aiModel)
 	} else {
 		openAIError := dto.OpenAIError{
