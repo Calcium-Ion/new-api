@@ -63,18 +63,33 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	}
 }
 
-func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
-	channel.SetupApiRequestHeader(info, c, req)
+func (a *Adaptor) SetupRequestHeader(c *gin.Context, header *http.Header, info *relaycommon.RelayInfo) error {
+	channel.SetupApiRequestHeader(info, c, header)
 	if info.ChannelType == common.ChannelTypeAzure {
-		req.Set("api-key", info.ApiKey)
+		header.Set("api-key", info.ApiKey)
 		return nil
 	}
 	if info.ChannelType == common.ChannelTypeOpenAI && "" != info.Organization {
-		req.Set("OpenAI-Organization", info.Organization)
+		header.Set("OpenAI-Organization", info.Organization)
 	}
-	req.Set("Authorization", "Bearer "+info.ApiKey)
 	if info.RelayMode == constant.RelayModeRealtime {
-		req.Set("openai-beta", "realtime=v1")
+		swp := c.Request.Header.Get("Sec-WebSocket-Protocol")
+		if swp != "" {
+			items := []string{
+				"realtime",
+				"openai-insecure-api-key." + info.ApiKey,
+				"openai-beta.realtime-v1",
+			}
+			header.Set("Sec-WebSocket-Protocol", strings.Join(items, ","))
+			//req.Header.Set("Sec-WebSocket-Key", c.Request.Header.Get("Sec-WebSocket-Key"))
+			//req.Header.Set("Sec-Websocket-Extensions", c.Request.Header.Get("Sec-Websocket-Extensions"))
+			//req.Header.Set("Sec-Websocket-Version", c.Request.Header.Get("Sec-Websocket-Version"))
+		} else {
+			header.Set("openai-beta", "realtime=v1")
+			header.Set("Authorization", "Bearer "+info.ApiKey)
+		}
+	} else {
+		header.Set("Authorization", "Bearer "+info.ApiKey)
 	}
 	//if info.ChannelType == common.ChannelTypeOpenRouter {
 	//	req.Header.Set("HTTP-Referer", "https://github.com/songquanpeng/one-api")

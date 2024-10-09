@@ -483,7 +483,10 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 							errChan <- fmt.Errorf("error consume usage: %v", err)
 							return
 						}
+						// 本次计费完成，清除
 						usage = &dto.RealtimeUsage{}
+
+						localUsage = &dto.RealtimeUsage{}
 					} else {
 						textToken, audioToken, err := service.CountTokenRealtime(info, *realtimeEvent, info.UpstreamModelName)
 						if err != nil {
@@ -501,6 +504,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 							errChan <- fmt.Errorf("error consume usage: %v", err)
 							return
 						}
+						// 本次计费完成，清除
 						localUsage = &dto.RealtimeUsage{}
 						// print now usage
 					}
