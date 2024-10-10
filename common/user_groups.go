@@ -21,3 +21,8 @@ func UpdateUserUsableGroupsByJSONString(jsonStr string) error {
 	UserUsableGroups = make(map[string]string)
 	return json.Unmarshal([]byte(jsonStr), &UserUsableGroups)
 }
+
+func GroupInUserUsableGroups(groupName string) bool {
+	_, ok := UserUsableGroups[groupName]
+	return ok
+}
