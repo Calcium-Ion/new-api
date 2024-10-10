@@ -73,6 +73,7 @@ func Playground(c *gin.Context) {
 	} else {
 		c.Set("group", group)
 	}
+	c.Set("token_name", "playground-"+group)
 	channel, err := model.CacheGetRandomSatisfiedChannel(group, playgroundRequest.Model, 0)
 	if err != nil {
 		message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", group, playgroundRequest.Model)
