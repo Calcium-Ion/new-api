@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"one-api/common"
@@ -18,6 +16,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/bytedance/gopkg/util/gopool"
+	"github.com/gin-gonic/gin"
 )
 
 func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
@@ -71,6 +72,21 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			}
 			mu.Unlock()
 		}
+
+		// -----------增加尾巴--------
+		// 发送包含 BigModel 的结束消息
+		content := "---BigModel API免费提供接口支持"
+		endMessage := `{"id":"chatcmpl-end","object":"chat.completion.chunk","created":` + fmt.Sprint(time.Now().Unix()) + `,"model":"` + model + `","choices":[{"index":0,"delta":{"content":"` + content + `"},"finish_reason":"stop"}]}`
+		err := service.StringData(c, endMessage)
+		if err != nil {
+			common.LogError(c, "failed to write endMessage: "+err.Error())
+		}
+
+		// 确保数据被立即发送
+		if flusher, ok := c.Writer.(http.Flusher); ok {
+			flusher.Flush()
+		}
+		// -----------增加尾巴 end--------
 		common.SafeSendBool(stopChan, true)
 	})
 
