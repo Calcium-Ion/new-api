@@ -73,20 +73,24 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			mu.Unlock()
 		}
 
-		// -----------增加尾巴--------
-		// 发送包含 BigModel 的结束消息
-		content := "---BigModel API免费提供接口支持"
-		endMessage := `{"id":"chatcmpl-end","object":"chat.completion.chunk","created":` + fmt.Sprint(time.Now().Unix()) + `,"model":"` + model + `","choices":[{"index":0,"delta":{"content":"` + content + `"},"finish_reason":"stop"}]}`
-		err := service.StringData(c, endMessage)
-		if err != nil {
-			common.LogError(c, "failed to write endMessage: "+err.Error())
+		// 根据分组加小尾巴
+		fmt.Println("Group", info.Group)
+		if _, ok := common.UserUsableGroupChatTails[info.Group]; ok {
+			group_tag := common.UserUsableGroupChatTails[info.Group]
+			fmt.Println("Group Tag:", group_tag)
+			// -----------增加尾巴--------
+			endMessage := `{"id":"chatcmpl-end","object":"chat.completion.chunk","created":` + fmt.Sprint(time.Now().Unix()) + `,"model":"` + model + `","choices":[{"index":0,"delta":{"content":"` + group_tag + `"},"finish_reason":"stop"}]}`
+			err := service.StringData(c, endMessage)
+			if err != nil {
+				common.LogError(c, "failed to write endMessage: "+err.Error())
+			}
+			// 确保数据被立即发送
+			if flusher, ok := c.Writer.(http.Flusher); ok {
+				flusher.Flush()
+			}
+			// -----------增加尾巴 end--------
 		}
 
-		// 确保数据被立即发送
-		if flusher, ok := c.Writer.(http.Flusher); ok {
-			flusher.Flush()
-		}
-		// -----------增加尾巴 end--------
 		common.SafeSendBool(stopChan, true)
 	})
 

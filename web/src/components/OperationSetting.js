@@ -24,6 +24,7 @@ const OperationSetting = () => {
     ModelPrice: '',
     GroupRatio: '',
     UserUsableGroups: '',
+    UserUsableGroupChatTails: '',
     TopUpLink: '',
     ChatLink: '',
     ChatLink2: '', // 添加的新状态变量

@@ -17,7 +17,8 @@ export default function SettingsMagnification(props) {
     ModelRatio: '',
     CompletionRatio: '',
     GroupRatio: '',
-    UserUsableGroups: ''
+    UserUsableGroups: '',
+    UserUsableGroupChatTails:''
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -236,6 +237,33 @@ export default function SettingsMagnification(props) {
                       setInputs({
                         ...inputs,
                         UserUsableGroups: value
+                      })
+                  }
+              />
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={16}>
+              <Form.TextArea
+                  label={'分组自定义小尾巴'}
+                  extraText={''}
+                  placeholder={'为一个 JSON 文本，键为分组名称，值为倍率'}
+                  field={'UserUsableGroupChatTails'}
+                  autosize={{ minRows: 6, maxRows: 12 }}
+                  trigger='blur'
+                  stopValidateWithError
+                  rules={[
+                    {
+                      validator: (rule, value) => {
+                        return verifyJSON(value);
+                      },
+                      message: '不是合法的 JSON 字符串'
+                    }
+                  ]}
+                  onChange={(value) =>
+                      setInputs({
+                        ...inputs,
+                        UserUsableGroupChatTails: value
                       })
                   }
               />
