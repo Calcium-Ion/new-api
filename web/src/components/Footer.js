@@ -18,19 +18,19 @@ const FooterBar = () => {
   const defaultFooter = (
     <div className='custom-footer'>
       <a
-        href='https://github.com/Calcium-Ion/new-api'
+        href='https://github.com/wmc1125/bigmodel-api'
         target='_blank'
         rel='noreferrer'
       >
-        New API {import.meta.env.VITE_REACT_APP_VERSION}{' '}
+        BigModel Api {import.meta.env.VITE_REACT_APP_VERSION}{' '}
       </a>
       由{' '}
       <a
-        href='https://github.com/Calcium-Ion'
+        href='https://github.com/wmc1125'
         target='_blank'
         rel='noreferrer'
       >
-        Calcium-Ion
+        子枫
       </a>{' '}
       开发，基于{' '}
       <a
@@ -39,6 +39,14 @@ const FooterBar = () => {
         rel='noreferrer'
       >
         One API
+      </a>{' '}
+      和{' '}
+      <a
+        href='https://github.com/Calcium-Ion/new-api'
+        target='_blank'
+        rel='noreferrer'
+      >
+        New Api
       </a>
     </div>
   );
