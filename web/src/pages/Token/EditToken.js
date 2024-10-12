@@ -49,7 +49,7 @@ const EditToken = (props) => {
     group
   } = inputs;
   // const [visible, setVisible] = useState(false);
-  const [models, setModels] = useState({});
+  const [models, setModels] = useState([]);
   const [groups, setGroups] = useState([]);
   const navigate = useNavigate();
   const handleInputChange = (name, value) => {

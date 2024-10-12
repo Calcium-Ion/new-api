@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { Banner, Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
 import {
   compareObjects,
   API,
@@ -74,6 +74,10 @@ export default function GeneralSettings(props) {
   return (
     <>
       <Spin spinning={loading}>
+        <Banner
+          type='warning'
+          description={'聊天链接功能已经弃用，请使用下方聊天设置功能'}
+        />
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
