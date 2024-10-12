@@ -117,7 +117,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	if usageA == nil {
 		return errors.New("usage is nil"), nil
 	}
-	usage := usageA.(dto.Usage)
+	usage := usageA.(*dto.Usage)
 	result := w.Result()
 	respBody, err := io.ReadAll(result.Body)
 	if err != nil {
