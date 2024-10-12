@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/samber/lo"
 	"io"
 	"net/http"
 	"one-api/common"
@@ -17,9 +15,21 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
 )
 
 func UpdateTaskBulk() {
+	//用户
+	userQueryTicker := time.NewTicker(1 * time.Minute) // 每5分钟查询一次用户信息
+	defer userQueryTicker.Stop()
+	go func() {
+		for range userQueryTicker.C {
+			QueryAndPrintUserInfo()
+		}
+	}()
+
 	//revocer
 	//imageModel := "midjourney"
 	for {
@@ -35,8 +45,10 @@ func UpdateTaskBulk() {
 			if len(tasks) == 0 {
 				continue
 			}
+			// 创建任务渠道映射和任务映射
 			taskChannelM := make(map[int][]string)
 			taskM := make(map[string]*model.Task)
+			// 存储TaskID为空的任务ID
 			nullTaskIds := make([]int64, 0)
 			for _, task := range tasks {
 				if task.TaskID == "" {
@@ -44,9 +56,11 @@ func UpdateTaskBulk() {
 					nullTaskIds = append(nullTaskIds, task.ID)
 					continue
 				}
+				// 将任务添加到任务映射和任务渠道映射中
 				taskM[task.TaskID] = task
 				taskChannelM[task.ChannelId] = append(taskChannelM[task.ChannelId], task.TaskID)
 			}
+			// 如果有TaskID为空的任务，更新其状态为失败
 			if len(nullTaskIds) > 0 {
 				err := model.TaskBulkUpdateByID(nullTaskIds, map[string]any{
 					"status":   "FAILURE",
@@ -58,23 +72,31 @@ func UpdateTaskBulk() {
 					common.LogInfo(ctx, fmt.Sprintf("Fix null task_id task success: %v", nullTaskIds))
 				}
 			}
+			// 如果任务渠道映射为空，跳过
 			if len(taskChannelM) == 0 {
 				continue
 			}
 
-			UpdateTaskByPlatform(platform, taskChannelM, taskM)
+			// 根据平台更新任务
+			UpdateTaskByPlatform(platform, taskChannelM, taskM) // 这三个参数分别是平台、任务渠道映射和任务映射
+
 		}
 		common.SysLog("任务进度轮询完成")
 	}
+
 }
 
+// 根据平台更新任务
 func UpdateTaskByPlatform(platform constant.TaskPlatform, taskChannelM map[int][]string, taskM map[string]*model.Task) {
 	switch platform {
 	case constant.TaskPlatformMidjourney:
+		// Midjourney 平台的任务更新逻辑
 		//_ = UpdateMidjourneyTaskAll(context.Background(), tasks)
 	case constant.TaskPlatformSuno:
+		// Suno 平台的任务更新逻辑
 		_ = UpdateSunoTaskAll(context.Background(), taskChannelM, taskM)
 	default:
+		// 未知平台处理
 		common.SysLog("未知平台")
 	}
 }
@@ -251,17 +273,22 @@ func GetAllTask(c *gin.Context) {
 	})
 }
 
+// GetUserTask 获取用户任务的处理函数
 func GetUserTask(c *gin.Context) {
+	// 获取分页参数 p
 	p, _ := strconv.Atoi(c.Query("p"))
 	if p < 0 {
 		p = 0
 	}
 
+	// 获取用户 ID
 	userId := c.GetInt("id")
 
+	// 获取开始和结束时间戳
 	startTimestamp, _ := strconv.ParseInt(c.Query("start_timestamp"), 10, 64)
 	endTimestamp, _ := strconv.ParseInt(c.Query("end_timestamp"), 10, 64)
 
+	// 构建查询参数
 	queryParams := model.SyncTaskQueryParams{
 		Platform:       constant.TaskPlatform(c.Query("platform")),
 		TaskID:         c.Query("task_id"),
@@ -271,14 +298,37 @@ func GetUserTask(c *gin.Context) {
 		EndTimestamp:   endTimestamp,
 	}
 
+	// 获取用户任务日志
 	logs := model.TaskGetAllUserTask(userId, p*common.ItemsPerPage, common.ItemsPerPage, queryParams)
 	if logs == nil {
 		logs = make([]*model.Task, 0)
 	}
 
+	// 返回 JSON 响应
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": "",
 		"data":    logs,
 	})
+}
+
+func QueryAndPrintUserInfo() {
+	startIdx := 0
+	batchSize := 100 // 每次处理100个用户
+	for {
+		users, err := model.GetAllUsers(startIdx, batchSize)
+		if err != nil {
+			common.SysError(fmt.Sprintf("获取用户批次失败: %v", err))
+			return
+		}
+		if len(users) == 0 {
+			break // 没有更多用户了
+		}
+
+		for _, user := range users {
+			common.SysError(fmt.Sprintf("用户ID: %d, 名称: %d", user.Id, user.Quota))
+		}
+
+		startIdx += batchSize
+	}
 }

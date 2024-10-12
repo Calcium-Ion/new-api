@@ -41,11 +41,13 @@ type Task struct {
 	Data json.RawMessage `json:"data" gorm:"type:json"`
 }
 
+// 设置任务数据
 func (t *Task) SetData(data any) {
 	b, _ := json.Marshal(data)
 	t.Data = json.RawMessage(b)
 }
 
+// 获取任务数据
 func (t *Task) GetData(v any) error {
 	err := json.Unmarshal(t.Data, &v)
 	return err
@@ -55,11 +57,13 @@ type Properties struct {
 	Input string `json:"input"`
 }
 
+// 扫描属性值
 func (m *Properties) Scan(val interface{}) error {
 	bytesValue, _ := val.([]byte)
 	return json.Unmarshal(bytesValue, m)
 }
 
+// 获取属性值
 func (m Properties) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
@@ -77,6 +81,7 @@ type SyncTaskQueryParams struct {
 	UserIDs        []int
 }
 
+// 初始化任务
 func InitTask(platform constant.TaskPlatform, relayInfo *commonRelay.TaskRelayInfo) *Task {
 	t := &Task{
 		UserId:     relayInfo.UserId,
@@ -89,6 +94,7 @@ func InitTask(platform constant.TaskPlatform, relayInfo *commonRelay.TaskRelayIn
 	return t
 }
 
+// 获取所有用户任务
 func TaskGetAllUserTask(userId int, startIdx int, num int, queryParams SyncTaskQueryParams) []*Task {
 	var tasks []*Task
 	var err error
@@ -96,6 +102,7 @@ func TaskGetAllUserTask(userId int, startIdx int, num int, queryParams SyncTaskQ
 	// 初始化查询构建器
 	query := DB.Where("user_id = ?", userId)
 
+	// 添加过滤条件
 	if queryParams.TaskID != "" {
 		query = query.Where("task_id = ?", queryParams.TaskID)
 	}
@@ -125,6 +132,7 @@ func TaskGetAllUserTask(userId int, startIdx int, num int, queryParams SyncTaskQ
 	return tasks
 }
 
+// 获取所有任务
 func TaskGetAllTasks(startIdx int, num int, queryParams SyncTaskQueryParams) []*Task {
 	var tasks []*Task
 	var err error
@@ -170,10 +178,11 @@ func TaskGetAllTasks(startIdx int, num int, queryParams SyncTaskQueryParams) []*
 	return tasks
 }
 
+// 获取所有未完成的同步任务
 func GetAllUnFinishSyncTasks(limit int) []*Task {
 	var tasks []*Task
 	var err error
-	// get all tasks progress is not 100%
+	// 获取所有进度未达到100%的任务
 	err = DB.Where("progress != ?", "100%").Limit(limit).Order("id").Find(&tasks).Error
 	if err != nil {
 		return nil
@@ -181,6 +190,7 @@ func GetAllUnFinishSyncTasks(limit int) []*Task {
 	return tasks
 }
 
+// 根据唯一任务ID获取任务
 func GetByOnlyTaskId(taskId string) (*Task, bool, error) {
 	if taskId == "" {
 		return nil, false, nil
@@ -195,6 +205,7 @@ func GetByOnlyTaskId(taskId string) (*Task, bool, error) {
 	return task, exist, err
 }
 
+// 根据用户ID和任务ID获取任务
 func GetByTaskId(userId int, taskId string) (*Task, bool, error) {
 	if taskId == "" {
 		return nil, false, nil
@@ -210,6 +221,7 @@ func GetByTaskId(userId int, taskId string) (*Task, bool, error) {
 	return task, exist, err
 }
 
+// 根据用户ID和任务ID列表获取任务
 func GetByTaskIds(userId int, taskIds []any) ([]*Task, error) {
 	if len(taskIds) == 0 {
 		return nil, nil
@@ -224,22 +236,26 @@ func GetByTaskIds(userId int, taskIds []any) ([]*Task, error) {
 	return task, nil
 }
 
+// 更新任务进度
 func TaskUpdateProgress(id int64, progress string) error {
 	return DB.Model(&Task{}).Where("id = ?", id).Update("progress", progress).Error
 }
 
+// 插入任务
 func (Task *Task) Insert() error {
 	var err error
 	err = DB.Create(Task).Error
 	return err
 }
 
+// 更新任务
 func (Task *Task) Update() error {
 	var err error
 	err = DB.Save(Task).Error
 	return err
 }
 
+// 批量更新任务
 func TaskBulkUpdate(TaskIds []string, params map[string]any) error {
 	if len(TaskIds) == 0 {
 		return nil
@@ -249,6 +265,7 @@ func TaskBulkUpdate(TaskIds []string, params map[string]any) error {
 		Updates(params).Error
 }
 
+// 根据任务ID批量更新任务
 func TaskBulkUpdateByTaskIds(taskIDs []int64, params map[string]any) error {
 	if len(taskIDs) == 0 {
 		return nil
@@ -258,6 +275,7 @@ func TaskBulkUpdateByTaskIds(taskIDs []int64, params map[string]any) error {
 		Updates(params).Error
 }
 
+// 根据ID批量更新任务
 func TaskBulkUpdateByID(ids []int64, params map[string]any) error {
 	if len(ids) == 0 {
 		return nil
@@ -272,6 +290,7 @@ type TaskQuotaUsage struct {
 	Count float64 `json:"count"`
 }
 
+// 统计已使用的任务配额
 func SumUsedTaskQuota(queryParams SyncTaskQueryParams) (stat []TaskQuotaUsage, err error) {
 	query := DB.Model(Task{})
 	// 添加过滤条件
