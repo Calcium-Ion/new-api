@@ -3,10 +3,6 @@ package main
 import (
 	"embed"
 	"fmt"
-	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"one-api/common"
@@ -19,6 +15,11 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/bytedance/gopkg/util/gopool"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
+
 	_ "net/http/pprof"
 )
 
@@ -29,6 +30,7 @@ var buildFS embed.FS
 var indexPage []byte
 
 func main() {
+	// 设置日志
 	common.SetupLogger()
 	common.SysLog("New API " + common.Version + " started")
 	if os.Getenv("GIN_MODE") != "debug" {
@@ -37,12 +39,12 @@ func main() {
 	if common.DebugEnabled {
 		common.SysLog("running in debug mode")
 	}
-	// Initialize SQL Database
+	// 初始化 SQL 数据库
 	err := model.InitDB()
 	if err != nil {
 		common.FatalLog("failed to initialize database: " + err.Error())
 	}
-	// Initialize SQL Database
+	// 初始化日志数据库
 	err = model.InitLogDB()
 	if err != nil {
 		common.FatalLog("failed to initialize database: " + err.Error())
@@ -54,18 +56,18 @@ func main() {
 		}
 	}()
 
-	// Initialize Redis
+	// 初始化 Redis
 	err = common.InitRedisClient()
 	if err != nil {
 		common.FatalLog("failed to initialize Redis: " + err.Error())
 	}
 
-	// Initialize constants
+	// 初始化常量
 	constant.InitEnv()
-	// Initialize options
+	// 初始化选项
 	model.InitOptionMap()
 	if common.RedisEnabled {
-		// for compatibility with old versions
+		// 兼容旧版本
 		common.MemoryCacheEnabled = true
 	}
 	if common.MemoryCacheEnabled {
@@ -103,6 +105,7 @@ func main() {
 			controller.UpdateMidjourneyTaskBulk()
 		})
 		gopool.Go(func() {
+			//定时任务
 			controller.UpdateTaskBulk()
 		})
 	}
@@ -122,7 +125,7 @@ func main() {
 
 	service.InitTokenEncoders()
 
-	// Initialize HTTP server
+	// 初始化 HTTP 服务器
 	server := gin.New()
 	server.Use(gin.CustomRecovery(func(c *gin.Context, err any) {
 		common.SysError(fmt.Sprintf("panic detected: %v", err))
@@ -133,11 +136,11 @@ func main() {
 			},
 		})
 	}))
-	// This will cause SSE not to work!!!
+	// 这将导致 SSE 无法工作!!!
 	//server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.RequestId())
 	middleware.SetUpLogger(server)
-	// Initialize session store
+	// 初始化会话存储
 	store := cookie.NewStore([]byte(common.SessionSecret))
 	server.Use(sessions.Sessions("session", store))
 
