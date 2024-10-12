@@ -4,7 +4,7 @@ import { API, showError } from '../helpers';
 
 async function fetchTokenKeys() {
   try {
-    const response = await API.get('/api/token/?p=0&size=999');
+    const response = await API.get('/api/token/?p=0&size=100');
     const { success, data } = response.data;
     if (success) {
       const activeTokens = data.filter((token) => token.status === 1);
@@ -38,9 +38,9 @@ function getServerAddress() {
   return serverAddress;
 }
 
-export function useTokenKeys() {
+export function useTokenKeys(id) {
   const [keys, setKeys] = useState([]);
-  const [chatLink, setChatLink] = useState('');
+  // const [chatLink, setChatLink] = useState('');
   const [serverAddress, setServerAddress] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,9 +55,7 @@ export function useTokenKeys() {
       }
       setKeys(fetchedKeys);
       setIsLoading(false);
-
-      const link = localStorage.getItem('chat_link');
-      setChatLink(link);
+      // setChatLink(link);
 
       const address = getServerAddress();
       setServerAddress(address);
@@ -66,5 +64,5 @@ export function useTokenKeys() {
     loadAllData();
   }, []);
 
-  return { keys, chatLink, serverAddress, isLoading };
+  return { keys, serverAddress, isLoading };
 }

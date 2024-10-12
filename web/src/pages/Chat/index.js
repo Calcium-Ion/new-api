@@ -1,13 +1,32 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useTokenKeys } from '../../components/fetchTokenKeys';
-import {  Layout } from '@douyinfe/semi-ui';
+import {Banner, Layout} from '@douyinfe/semi-ui';
+import { useParams } from 'react-router-dom';
 
 const ChatPage = () => {
-  const { keys, chatLink, serverAddress, isLoading } = useTokenKeys();
+  const { id } = useParams();
+  const { keys, serverAddress, isLoading } = useTokenKeys(id);
 
   const comLink = (key) => {
-    if (!chatLink || !serverAddress || !key) return '';
-    return `${chatLink}/#/?settings={"key":"sk-${key}","url":"${encodeURIComponent(serverAddress)}"}`;
+    // console.log('chatLink:', chatLink);
+    if (!serverAddress || !key) return '';
+      let link = localStorage.getItem('chat_link');
+      if (link) {
+          link = `${link}/#/?settings={"key":"sk-${key}","url":"${encodeURIComponent(serverAddress)}"}`;
+      } else if (id) {
+          let chats = localStorage.getItem('chats');
+          if (chats) {
+              chats = JSON.parse(chats);
+              if (Array.isArray(chats) && chats.length > 0) {
+                  for (let k in chats[id]) {
+                      link = chats[id][k];
+                      link = link.replace('{address}', encodeURIComponent(serverAddress));
+                      link = link.replace('{key}', 'sk-' + key);
+                  }
+              }
+          }
+      }
+      return link;
   };
 
   const iframeSrc = keys.length > 0 ? comLink(keys[0]) : '';
@@ -22,10 +41,10 @@ const ChatPage = () => {
     <div>
       <Layout>
         <Layout.Header>
-          <h3 style={{ color: 'red'}}>
-            当前没有可用的已启用令牌，请确认是否有令牌处于启用状态！<br />
-            正在跳转......
-          </h3>
+          <Banner
+              description={"正在跳转......"}
+              type={"warning"}
+          />
         </Layout.Header>
       </Layout>
     </div>
