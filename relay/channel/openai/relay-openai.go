@@ -21,6 +21,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 处理 OpenAI 流式响应
 func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	containStreamUsage := false
 	var responseId string
@@ -30,7 +31,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 
 	var responseTextBuilder strings.Builder
 	var usage = &dto.Usage{}
-	var streamItems []string // store stream items
+	var streamItems []string // 存储流项目
 
 	toolCount := 0
 	scanner := bufio.NewScanner(resp.Body)
@@ -52,7 +53,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			info.SetFirstResponseTime()
 			ticker.Reset(time.Duration(constant.StreamingTimeout) * time.Second)
 			data := scanner.Text()
-			if len(data) < 6 { // ignore blank line or wrong format
+			if len(data) < 6 { // 忽略空行或格式错误的行
 				continue
 			}
 			if data[:6] != "data: " && data[:6] != "[DONE]" {
@@ -211,6 +212,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	return nil, usage
 }
 
+// 处理 OpenAI 普通响应
 func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	var simpleResponse dto.SimpleResponse
 	responseBody, err := io.ReadAll(resp.Body)
@@ -231,12 +233,37 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
-	// Reset response body
+
+	// 在发送响应之前添加小尾巴
+	if group, ok := c.Get("group"); ok {
+		if groupTag, exists := common.UserUsableGroupChatTails[group.(string)]; exists {
+			// 将小尾巴添加到响应中
+			var responseData map[string]interface{}
+			err = json.Unmarshal(responseBody, &responseData)
+			if err == nil {
+				if choices, ok := responseData["choices"].([]interface{}); ok && len(choices) > 0 {
+					if choice, ok := choices[0].(map[string]interface{}); ok {
+						if message, ok := choice["message"].(map[string]interface{}); ok {
+							content, _ := message["content"].(string)
+							message["content"] = content + groupTag
+						}
+					}
+				}
+				// 重新编码修改后的响应
+				modifiedResponseBody, err := json.Marshal(responseData)
+				if err == nil {
+					responseBody = modifiedResponseBody
+				}
+			}
+		}
+	}
+
+	// 重置响应体
 	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
-	// We shouldn't set the header before we parse the response body, because the parse part may fail.
-	// And then we will have to send an error response, but in this case, the header has already been set.
-	// So the httpClient will be confused by the response.
-	// For example, Postman will report error, and we cannot check the response at all.
+	// 在解析响应体之前不应设置头部，因为解析部分可能会失败。
+	// 然后我们将不得不发送错误响应，但在这种情况下，头部已经设置。
+	// 因此，httpClient 会对响应感到困惑。
+	// 例如，Postman 会报告错误，我们无法检查响应。
 	for k, v := range resp.Header {
 		c.Writer.Header().Set(k, v[0])
 	}
@@ -261,6 +288,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	return nil, &simpleResponse.Usage
 }
 
+// 处理 OpenAI 语音合成响应
 func OpenaiTTSHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -270,12 +298,12 @@ func OpenaiTTSHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
-	// Reset response body
+	// 重置响应体
 	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
-	// We shouldn't set the header before we parse the response body, because the parse part may fail.
-	// And then we will have to send an error response, but in this case, the header has already been set.
-	// So the httpClient will be confused by the response.
-	// For example, Postman will report error, and we cannot check the response at all.
+	// 在解析响应体之前不应设置头部，因为解析部分可能会失败。
+	// 然后我们将不得不发送错误响应，但在这种情况下，头部已经设置。
+	// 因此，httpClient 会对响应感到困惑。
+	// 例如，Postman 会报告错误，我们无法检查响应。
 	for k, v := range resp.Header {
 		c.Writer.Header().Set(k, v[0])
 	}
@@ -295,6 +323,7 @@ func OpenaiTTSHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	return nil, usage
 }
 
+// 处理 OpenAI 语音识别响应
 func OpenaiSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, responseFormat string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	var audioResp dto.AudioResponse
 	responseBody, err := io.ReadAll(resp.Body)
@@ -310,12 +339,12 @@ func OpenaiSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
 
-	// Reset response body
+	// 重置响应体
 	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
-	// We shouldn't set the header before we parse the response body, because the parse part may fail.
-	// And then we will have to send an error response, but in this case, the header has already been set.
-	// So the httpClient will be confused by the response.
-	// For example, Postman will report error, and we cannot check the response at all.
+	// 在解析响应体之前不应设置头部，因为解析部分可能会失败。
+	// 然后我们将不得不发送错误响应，但在这种情况下，头部已经设置。
+	// 因此，httpClient 会对响应感到困惑。
+	// 例如，Postman 会报告错误，我们无法检查响应。
 	for k, v := range resp.Header {
 		c.Writer.Header().Set(k, v[0])
 	}
@@ -347,10 +376,12 @@ func OpenaiSTTHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	return nil, usage
 }
 
+// 从 VTT 格式中提取文本
 func getTextFromVTT(body []byte) (string, error) {
 	return getTextFromSRT(body)
 }
 
+// 从详细 JSON 格式中提取文本
 func getTextFromVerboseJSON(body []byte) (string, error) {
 	var whisperResponse dto.WhisperVerboseJSONResponse
 	if err := json.Unmarshal(body, &whisperResponse); err != nil {
@@ -359,6 +390,7 @@ func getTextFromVerboseJSON(body []byte) (string, error) {
 	return whisperResponse.Text, nil
 }
 
+// 从 SRT 格式中提取文本
 func getTextFromSRT(body []byte) (string, error) {
 	scanner := bufio.NewScanner(strings.NewReader(string(body)))
 	var builder strings.Builder
@@ -380,10 +412,12 @@ func getTextFromSRT(body []byte) (string, error) {
 	return builder.String(), nil
 }
 
+// 从纯文本格式中提取文本
 func getTextFromText(body []byte) (string, error) {
 	return strings.TrimSuffix(string(body), "\n"), nil
 }
 
+// 从 JSON 格式中提取文本
 func getTextFromJSON(body []byte) (string, error) {
 	var whisperResponse dto.AudioResponse
 	if err := json.Unmarshal(body, &whisperResponse); err != nil {
