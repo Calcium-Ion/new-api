@@ -63,6 +63,7 @@ func InitOptionMap() {
 	common.OptionMap["WorkerUrl"] = constant.WorkerUrl
 	common.OptionMap["WorkerValidKey"] = constant.WorkerValidKey
 	common.OptionMap["PayAddress"] = ""
+	common.OptionMap["PayNote"] = ""
 	common.OptionMap["CustomCallbackAddress"] = ""
 	common.OptionMap["EpayId"] = ""
 	common.OptionMap["EpayKey"] = ""
@@ -249,6 +250,8 @@ func updateOptionMap(key string, value string) (err error) {
 		constant.WorkerValidKey = value
 	case "PayAddress":
 		constant.PayAddress = value
+	case "PayNote":
+		common.PayNote = value
 	case "CustomCallbackAddress":
 		constant.CustomCallbackAddress = value
 	case "EpayId":

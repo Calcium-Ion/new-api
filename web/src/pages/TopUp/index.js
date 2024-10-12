@@ -21,6 +21,7 @@ import {
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import { Link } from 'react-router-dom';
+import { marked } from 'marked';
 
 const TopUp = () => {
   const [redemptionCode, setRedemptionCode] = useState('');
@@ -30,6 +31,8 @@ const TopUp = () => {
   const [amount, setAmount] = useState(0.0);
   const [minTopUp, setMinTopUp] = useState(1);
   const [topUpLink, setTopUpLink] = useState('');
+  const [payAddress, setPayAddress] = useState('');
+  const [payNote, setPayNote] = useState('');
   const [enableOnlineTopUp, setEnableOnlineTopUp] = useState(false);
   const [userQuota, setUserQuota] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -168,6 +171,13 @@ const TopUp = () => {
       if (status.enable_online_topup) {
         setEnableOnlineTopUp(status.enable_online_topup);
       }
+      if (status.pay_address) {
+        setPayAddress(status.pay_address);
+      }
+      if (status.pay_note) {
+        setPayNote(status.pay_note);
+      }
+      
     }
     getUserQuota().then();
   }, []);
@@ -210,12 +220,22 @@ const TopUp = () => {
     setOpen(false);
   };
 
+  const renderMarkdown = (content) => {
+    return { __html: marked(content) };
+  };
+
   return (
     <div>
       <Layout>
         <Layout.Header>
           <h3>我的钱包</h3>
         </Layout.Header>
+        {payNote && (
+          <div
+            style={{ fontSize: 'larger', padding: '20px' }}
+            dangerouslySetInnerHTML={renderMarkdown(payNote)}
+          />
+        )}
         <Layout.Content>
           <Modal
             title='确定要充值吗'
@@ -271,61 +291,55 @@ const TopUp = () => {
                   </Space>
                 </Form>
               </div>
-              <div style={{ marginTop: 20 }}>
-                <Divider>在线充值</Divider>
-                <Form>
-                  <Form.Input
-                    disabled={!enableOnlineTopUp}
-                    field={'redemptionCount'}
-                    label={'实付金额：' + renderAmount()}
-                    placeholder={
-                      '充值数量，最低 ' + renderQuotaWithAmount(minTopUp)
-                    }
-                    name='redemptionCount'
-                    type={'number'}
-                    value={topUpCount}
-                    onChange={async (value) => {
-                      if (value < 1) {
-                        value = 1;
+              {payAddress && (
+                
+                <div style={{ marginTop: 20 }}>
+                  <Divider>在线充值</Divider>
+                  <Form>
+                    <Form.Input
+                      disabled={!enableOnlineTopUp}
+                      field={'redemptionCount'}
+                      label={'实付金额：' + renderAmount()}
+                      placeholder={
+                        '充值数量，最低 ' + renderQuotaWithAmount(minTopUp)
                       }
-                      setTopUpCount(value);
-                      await getAmount(value);
-                    }}
-                  />
-                  <Space>
-                    <Button
-                      type={'primary'}
-                      theme={'solid'}
-                      onClick={async () => {
-                        preTopUp('zfb');
+                      name='redemptionCount'
+                      type={'number'}
+                      value={topUpCount}
+                      onChange={async (value) => {
+                        if (value < 1) {
+                          value = 1;
+                        }
+                        setTopUpCount(value);
+                        await getAmount(value);
                       }}
-                    >
-                      支付宝
-                    </Button>
-                    <Button
-                      style={{
-                        backgroundColor: 'rgba(var(--semi-green-5), 1)',
-                      }}
-                      type={'primary'}
-                      theme={'solid'}
-                      onClick={async () => {
-                        preTopUp('wx');
-                      }}
-                    >
-                      微信
-                    </Button>
-                  </Space>
-                </Form>
-              </div>
-              {/*<div style={{ display: 'flex', justifyContent: 'right' }}>*/}
-              {/*    <Text>*/}
-              {/*        <Link onClick={*/}
-              {/*            async () => {*/}
-              {/*                window.location.href = '/topup/history'*/}
-              {/*            }*/}
-              {/*        }>充值记录</Link>*/}
-              {/*    </Text>*/}
-              {/*</div>*/}
+                    />
+                    <Space>
+                      <Button
+                        type={'primary'}
+                        theme={'solid'}
+                        onClick={async () => {
+                          preTopUp('zfb');
+                        }}
+                      >
+                        支付宝
+                      </Button>
+                      <Button
+                        style={{
+                          backgroundColor: 'rgba(var(--semi-green-5), 1)',
+                        }}
+                        type={'primary'}
+                        theme={'solid'}
+                        onClick={async () => {
+                          preTopUp('wx');
+                        }}
+                      >
+                        微信
+                      </Button>
+                    </Space>
+                  </Form>
+                </div>
+              )}
             </Card>
           </div>
         </Layout.Content>

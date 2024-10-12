@@ -424,6 +424,17 @@ const SystemSetting = () => {
               placeholder='为一个 JSON 文本，键为组名称，值为倍率'
             />
           </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label='钱包备注'
+              name='PayNote'
+              onChange={handleInputChange}
+              style={{ minHeight: 50, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.PayNote}
+              placeholder='钱包备注'
+            />
+          </Form.Group>
           <Form.Button onClick={submitPayAddress}>更新支付设置</Form.Button>
           <Divider />
           <Header as='h3' inverted={isDark}>

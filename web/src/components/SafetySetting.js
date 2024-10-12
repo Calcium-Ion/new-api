@@ -35,6 +35,7 @@ const SafetySetting = () => {
     MinTopUp: 1,
     TopupGroupRatio: '',
     PayAddress: '',
+    PayNote:'',
     CustomCallbackAddress: '',
     Footer: '',
     WeChatAuthEnabled: '',
@@ -422,6 +423,17 @@ const SafetySetting = () => {
               autoComplete='new-password'
               value={inputs.TopupGroupRatio}
               placeholder='为一个 JSON 文本，键为组名称，值为倍率'
+            />
+          </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label='钱包备注'
+              name='PayNote'
+              onChange={handleInputChange}
+              style={{ minHeight: 0, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.PayNote}
+              placeholder='钱包备注'
             />
           </Form.Group>
           <Form.Button onClick={submitPayAddress}>更新支付设置</Form.Button>

@@ -51,6 +51,8 @@ func GetStatus(c *gin.Context) {
 			"turnstile_check":          common.TurnstileCheckEnabled,
 			"turnstile_site_key":       common.TurnstileSiteKey,
 			"top_up_link":              common.TopUpLink,
+			"pay_address":              constant.PayAddress,
+			"pay_note":                 common.PayNote,
 			"chat_link":                common.ChatLink,
 			"chat_link2":               common.ChatLink2,
 			"quota_per_unit":           common.QuotaPerUnit,
