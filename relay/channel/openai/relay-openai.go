@@ -74,10 +74,8 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		}
 
 		// 根据分组加小尾巴
-		fmt.Println("Group", info.Group)
 		if _, ok := common.UserUsableGroupChatTails[info.Group]; ok {
 			group_tag := common.UserUsableGroupChatTails[info.Group]
-			fmt.Println("Group Tag:", group_tag)
 			// -----------增加尾巴--------
 			endMessage := `{"id":"chatcmpl-end","object":"chat.completion.chunk","created":` + fmt.Sprint(time.Now().Unix()) + `,"model":"` + model + `","choices":[{"index":0,"delta":{"content":"` + group_tag + `"},"finish_reason":"stop"}]}`
 			err := service.StringData(c, endMessage)
@@ -88,8 +86,8 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			if flusher, ok := c.Writer.(http.Flusher); ok {
 				flusher.Flush()
 			}
-			// -----------增加尾巴 end--------
 		}
+		// -----------增加尾巴 end--------
 
 		common.SafeSendBool(stopChan, true)
 	})
