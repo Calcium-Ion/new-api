@@ -2,10 +2,17 @@ import React, {useEffect} from 'react';
 import { useTokenKeys } from '../../components/fetchTokenKeys';
 import {Banner, Layout} from '@douyinfe/semi-ui';
 import { useParams } from 'react-router-dom';
+import { usePageContext } from '../../contexts/PageContext';
 
 const ChatPage = () => {
   const { id } = useParams();
   const { keys, serverAddress, isLoading } = useTokenKeys(id);
+  const { setIsChat } = usePageContext();
+
+  useEffect(() => {
+    setIsChat(true);
+    return () => setIsChat(false);
+  }, [setIsChat]);
 
   const comLink = (key) => {
     // console.log('chatLink:', chatLink);
@@ -34,7 +41,7 @@ const ChatPage = () => {
   return !isLoading && iframeSrc ? (
     <iframe
       src={iframeSrc}
-      style={{ width: '100%', height: '85vh', border: 'none' }}
+      style={{ width: '100%', height: '100%', border: 'none'}}
       title="Token Frame"
     />
   ) : (
