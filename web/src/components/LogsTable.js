@@ -534,7 +534,7 @@ const LogsTable = () => {
           }
         }
         expandDataLocal.push({
-          key: '重试',
+          key: '渠道重试',
           value: content,
         })
       }
@@ -556,9 +556,13 @@ const LogsTable = () => {
           value: other.text_output,
         });
       }
+      expandDataLocal.push({
+        key: '倍率详情',
+        value: logs[i].content,
+      })
       expandDatesLocal[logs[i].key] = expandDataLocal;
     }
-    console.log(expandDatesLocal);
+
     setExpandData(expandDatesLocal);
 
     setLogs(logs);
@@ -634,7 +638,7 @@ const LogsTable = () => {
   }, []);
 
   const expandRowRender = (record, index) => {
-    return <Descriptions align="justify" data={expandData[record.key]} />;
+    return <Descriptions data={expandData[record.key]} />;
   };
 
   return (
