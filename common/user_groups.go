@@ -22,6 +22,24 @@ func UpdateUserUsableGroupsByJSONString(jsonStr string) error {
 	return json.Unmarshal([]byte(jsonStr), &UserUsableGroups)
 }
 
+func GetUserUsableGroups(userGroup string) map[string]string {
+	if userGroup == "" {
+		// 如果userGroup为空，返回UserUsableGroups
+		return UserUsableGroups
+	}
+	// 如果userGroup不在UserUsableGroups中，返回UserUsableGroups + userGroup
+	if _, ok := UserUsableGroups[userGroup]; !ok {
+		appendUserUsableGroups := make(map[string]string)
+		for k, v := range UserUsableGroups {
+			appendUserUsableGroups[k] = v
+		}
+		appendUserUsableGroups[userGroup] = "用户分组"
+		return appendUserUsableGroups
+	}
+	// 如果userGroup在UserUsableGroups中，返回UserUsableGroups
+	return UserUsableGroups
+}
+
 func GroupInUserUsableGroups(groupName string) bool {
 	_, ok := UserUsableGroups[groupName]
 	return ok

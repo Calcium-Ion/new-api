@@ -250,7 +250,7 @@ const LogsTable = () => {
       title: '类型',
       dataIndex: 'type',
       render: (text, record, index) => {
-        return <div>{renderType(text)}</div>;
+        return <>{renderType(text)}</>;
       },
     },
     {
@@ -258,7 +258,7 @@ const LogsTable = () => {
       dataIndex: 'model_name',
       render: (text, record, index) => {
         return record.type === 0 || record.type === 2 ? (
-          <div>
+          <>
             <Tag
               color={stringToColor(text)}
               size='large'
@@ -269,7 +269,7 @@ const LogsTable = () => {
               {' '}
               {text}{' '}
             </Tag>
-          </div>
+          </>
         ) : (
           <></>
         );
@@ -282,22 +282,22 @@ const LogsTable = () => {
         if (record.is_stream) {
           let other = getLogOther(record.other);
           return (
-            <div>
+            <>
               <Space>
                 {renderUseTime(text)}
                 {renderFirstUseTime(other.frt)}
                 {renderIsStream(record.is_stream)}
               </Space>
-            </div>
+            </>
           );
         } else {
           return (
-            <div>
+            <>
               <Space>
                 {renderUseTime(text)}
                 {renderIsStream(record.is_stream)}
               </Space>
-            </div>
+            </>
           );
         }
       },
@@ -307,7 +307,7 @@ const LogsTable = () => {
       dataIndex: 'prompt_tokens',
       render: (text, record, index) => {
         return record.type === 0 || record.type === 2 ? (
-          <div>{<span> {text} </span>}</div>
+          <>{<span> {text} </span>}</>
         ) : (
           <></>
         );
@@ -319,7 +319,7 @@ const LogsTable = () => {
       render: (text, record, index) => {
         return parseInt(text) > 0 &&
           (record.type === 0 || record.type === 2) ? (
-          <div>{<span> {text} </span>}</div>
+          <>{<span> {text} </span>}</>
         ) : (
           <></>
         );
@@ -330,7 +330,7 @@ const LogsTable = () => {
       dataIndex: 'quota',
       render: (text, record, index) => {
         return record.type === 0 || record.type === 2 ? (
-          <div>{renderQuota(text, 6)}</div>
+          <>{renderQuota(text, 6)}</>
         ) : (
           <></>
         );
