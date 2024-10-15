@@ -7,3 +7,4 @@ build
 *.db-journal
 logs
 web/dist
+.env
