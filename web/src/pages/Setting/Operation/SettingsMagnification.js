@@ -50,10 +50,17 @@ export default function SettingsMagnification(props) {
               if (res.includes(undefined))
                 return showError('部分保存失败，请重试');
             }
+            for (let i = 0; i < res.length; i++) {
+              if (!res[i].data.success) {
+                return showError(res[i].data.message)
+              }
+            }
             showSuccess('保存成功');
             props.refresh();
           })
-          .catch(() => {
+          .catch(error => {
+            console.error('Unexpected error in Promise.all:', error);
+
             showError('保存失败，请重试');
           })
           .finally(() => {
