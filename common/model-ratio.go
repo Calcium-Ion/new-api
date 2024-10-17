@@ -351,7 +351,7 @@ func GetCompletionRatio(name string) float64 {
 		return 4
 	}
 	if name == "chatgpt-4o-latest" {
-		return 4
+		return 3
 	}
 	if strings.Contains(name, "claude-instant-1") {
 		return 3
