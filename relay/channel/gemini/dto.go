@@ -1,10 +1,11 @@
 package gemini
 
 type GeminiChatRequest struct {
-	Contents         []GeminiChatContent        `json:"contents"`
-	SafetySettings   []GeminiChatSafetySettings `json:"safety_settings,omitempty"`
-	GenerationConfig GeminiChatGenerationConfig `json:"generation_config,omitempty"`
-	Tools            []GeminiChatTools          `json:"tools,omitempty"`
+	SystemInstruction *GeminiChatContent         `json:"system_instruction"`
+	Contents          []GeminiChatContent        `json:"contents"`
+	SafetySettings    []GeminiChatSafetySettings `json:"safety_settings,omitempty"`
+	GenerationConfig  GeminiChatGenerationConfig `json:"generation_config,omitempty"`
+	Tools             []GeminiChatTools          `json:"tools,omitempty"`
 }
 
 type GeminiInlineData struct {
