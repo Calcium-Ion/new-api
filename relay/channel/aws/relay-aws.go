@@ -53,7 +53,7 @@ func awsModelID(requestModel string) (string, error) {
 		return awsModelID, nil
 	}
 
-	return "", errors.Errorf("model %s not found", requestModel)
+	return requestModel, nil
 }
 
 func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*relaymodel.OpenAIErrorWithStatusCode, *relaymodel.Usage) {
