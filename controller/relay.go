@@ -68,11 +68,18 @@ func Playground(c *gin.Context) {
 	}
 	c.Set("original_model", playgroundRequest.Model)
 	group := playgroundRequest.Group
+	userGroup := c.GetString("group")
+
 	if group == "" {
-		group = c.GetString("group")
+		group = userGroup
 	} else {
+		if !common.GroupInUserUsableGroups(group) && group != userGroup {
+			openaiErr = service.OpenAIErrorWrapperLocal(errors.New("无权访问该分组"), "group_not_allowed", http.StatusForbidden)
+			return
+		}
 		c.Set("group", group)
 	}
+	c.Set("token_name", "playground-"+group)
 	channel, err := model.CacheGetRandomSatisfiedChannel(group, playgroundRequest.Model, 0)
 	if err != nil {
 		message := fmt.Sprintf("当前分组 %s 下对于模型 %s 无可用渠道", group, playgroundRequest.Model)

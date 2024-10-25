@@ -42,7 +42,7 @@ func Distribute() func(c *gin.Context) {
 		tokenGroup := c.GetString("token_group")
 		if tokenGroup != "" {
 			// check common.UserUsableGroups[userGroup]
-			if _, ok := common.UserUsableGroups[tokenGroup]; !ok {
+			if _, ok := common.GetUserUsableGroups(userGroup)[tokenGroup]; !ok {
 				abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("令牌分组 %s 已被禁用", tokenGroup))
 				return
 			}

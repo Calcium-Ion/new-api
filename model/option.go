@@ -69,6 +69,7 @@ func InitOptionMap() {
 	common.OptionMap["Price"] = strconv.FormatFloat(constant.Price, 'f', -1, 64)
 	common.OptionMap["MinTopUp"] = strconv.Itoa(constant.MinTopUp)
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
+	common.OptionMap["Chats"] = constant.Chats2JsonString()
 	common.OptionMap["GitHubClientId"] = ""
 	common.OptionMap["GitHubClientSecret"] = ""
 	common.OptionMap["TelegramBotToken"] = ""
@@ -248,6 +249,8 @@ func updateOptionMap(key string, value string) (err error) {
 		constant.WorkerValidKey = value
 	case "PayAddress":
 		constant.PayAddress = value
+	case "Chats":
+		err = constant.UpdateChatsByJsonString(value)
 	case "CustomCallbackAddress":
 		constant.CustomCallbackAddress = value
 	case "EpayId":

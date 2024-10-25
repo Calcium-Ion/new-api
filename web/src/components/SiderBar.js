@@ -40,11 +40,9 @@ const SiderBar = () => {
   const defaultIsCollapsed =
     isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true';
 
-  let navigate = useNavigate();
   const [selectedKeys, setSelectedKeys] = useState(['home']);
-  const systemName = getSystemName();
-  const logo = getLogo();
   const [isCollapsed, setIsCollapsed] = useState(defaultIsCollapsed);
+  const [chatItems, setChatItems] = useState([]);
   const theme = useTheme();
   const setTheme = useSetTheme();
 
@@ -68,12 +66,6 @@ const SiderBar = () => {
 
   const headerButtons = useMemo(
     () => [
-      // {
-      //   text: '首页',
-      //   itemKey: 'home',
-      //   to: '/',
-      //   icon: <IconHome />,
-      // },
       {
         text: 'Playground',
         itemKey: 'playground',
@@ -96,11 +88,12 @@ const SiderBar = () => {
       {
         text: '聊天',
         itemKey: 'chat',
-        to: '/chat',
+        // to: '/chat',
+        items: chatItems,
         icon: <IconComment />,
-        className: localStorage.getItem('chat_link')
-          ? 'semi-navigation-item-normal'
-          : 'tableHiddle',
+        // className: localStorage.getItem('chat_link')
+        //   ? 'semi-navigation-item-normal'
+        //   : 'tableHiddle',
       },
       {
         text: '令牌',
@@ -181,7 +174,7 @@ const SiderBar = () => {
       localStorage.getItem('enable_data_export'),
       localStorage.getItem('enable_drawing'),
       localStorage.getItem('enable_task'),
-      localStorage.getItem('chat_link'),
+      localStorage.getItem('chat_link'), chatItems,
       isAdmin(),
     ],
   );
@@ -212,6 +205,33 @@ const SiderBar = () => {
       localKey = 'home';
     }
     setSelectedKeys([localKey]);
+    let chatLink = localStorage.getItem('chat_link');
+    if (!chatLink) {
+        let chats = localStorage.getItem('chats');
+        if (chats) {
+            // console.log(chats);
+            try {
+                chats = JSON.parse(chats);
+                if (Array.isArray(chats)) {
+                    let chatItems = [];
+                    for (let i = 0; i < chats.length; i++) {
+                        let chat = {};
+                        for (let key in chats[i]) {
+                            chat.text = key;
+                            chat.itemKey = 'chat' + i;
+                            chat.to = '/chat/' + i;
+                        }
+                        // setRouterMap({ ...routerMap, chat: '/chat/' + i })
+                        chatItems.push(chat);
+                    }
+                    setChatItems(chatItems);
+                }
+            } catch (e) {
+                console.error(e);
+                showError('聊天数据解析失败')
+            }
+        }
+    }
   }, []);
 
   return (
@@ -228,6 +248,27 @@ const SiderBar = () => {
         }}
         selectedKeys={selectedKeys}
         renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
+            let chatLink = localStorage.getItem('chat_link');
+            if (!chatLink) {
+                let chats = localStorage.getItem('chats');
+                if (chats) {
+                    chats = JSON.parse(chats);
+                    if (Array.isArray(chats) && chats.length > 0) {
+                        for (let i = 0; i < chats.length; i++) {
+                            routerMap['chat' + i] = '/chat/' + i;
+                        }
+                        if (chats.length > 1) {
+                            // delete /chat
+                            if (routerMap['chat']) {
+                                delete routerMap['chat'];
+                            }
+                        } else {
+                            // rename /chat to /chat/0
+                            routerMap['chat'] = '/chat/0';
+                        }
+                    }
+                }
+            }
           return (
             <Link
               style={{ textDecoration: 'none' }}
@@ -241,15 +282,6 @@ const SiderBar = () => {
         onSelect={(key) => {
           setSelectedKeys([key.itemKey]);
         }}
-        // header={{
-        //   logo: (
-        //     <img src={logo} alt='logo' style={{ marginRight: '0.75em' }} />
-        //   ),
-        //   text: systemName,
-        // }}
-        // footer={{
-        //   text: '© 2021 NekoAPI',
-        // }}
         footer={
           <>
             {isMobile() && (

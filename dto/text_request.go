@@ -26,6 +26,7 @@ type GeneralOpenAIRequest struct {
 	FrequencyPenalty    float64        `json:"frequency_penalty,omitempty"`
 	PresencePenalty     float64        `json:"presence_penalty,omitempty"`
 	ResponseFormat      any            `json:"response_format,omitempty"`
+	EncodingFormat      any            `json:"encoding_format,omitempty"`
 	Seed                float64        `json:"seed,omitempty"`
 	Tools               []ToolCall     `json:"tools,omitempty"`
 	ToolChoice          any            `json:"tool_choice,omitempty"`

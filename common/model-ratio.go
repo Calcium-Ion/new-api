@@ -88,6 +88,7 @@ var defaultModelRatio = map[string]float64{
 	"claude-3-haiku-20240307":        0.125, // $0.25 / 1M tokens
 	"claude-3-sonnet-20240229":       1.5,   // $3 / 1M tokens
 	"claude-3-5-sonnet-20240620":     1.5,
+	"claude-3-5-sonnet-20241022":     1.5,
 	"claude-3-opus-20240229":         7.5, // $15 / 1M tokens
 	"ERNIE-4.0-8K":                   0.120 * RMB,
 	"ERNIE-3.5-8K":                   0.012 * RMB,
@@ -351,7 +352,7 @@ func GetCompletionRatio(name string) float64 {
 		return 4
 	}
 	if name == "chatgpt-4o-latest" {
-		return 4
+		return 3
 	}
 	if strings.Contains(name, "claude-instant-1") {
 		return 3
