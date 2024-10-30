@@ -538,7 +538,7 @@ const LogsTable = () => {
           value: content,
         })
       }
-      if (other.ws) {
+      if (other?.ws) {
         expandDataLocal.push({
           key: '语音输入',
           value: other.audio_input,
