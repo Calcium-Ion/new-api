@@ -223,7 +223,7 @@ func CountTokenMessages(messages []dto.Message, model string, stream bool) (int,
 			} else {
 				arrayContent := message.ParseContent()
 				for _, m := range arrayContent {
-					if m.Type == "image_url" {
+					if m.Type == dto.ContentTypeImageURL {
 						imageUrl := m.ImageUrl.(dto.MessageImageUrl)
 						imageTokenNum, err := getImageToken(&imageUrl, model, stream)
 						if err != nil {
@@ -231,6 +231,9 @@ func CountTokenMessages(messages []dto.Message, model string, stream bool) (int,
 						}
 						tokenNum += imageTokenNum
 						log.Printf("image token num: %d", imageTokenNum)
+					} else if m.Type == dto.ContentTypeInputAudio {
+						// TODO: 音频token数量计算
+						tokenNum += 100
 					} else {
 						tokenNum += getTokenNum(tokenEncoder, m.Text)
 					}
