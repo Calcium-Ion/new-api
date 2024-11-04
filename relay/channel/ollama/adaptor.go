@@ -31,7 +31,7 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	switch info.RelayMode {
 	case relayconstant.RelayModeEmbeddings:
-		return info.BaseUrl + "/api/embeddings", nil
+		return info.BaseUrl + "/api/embed", nil
 	default:
 		return relaycommon.GetFullRequestURL(info.BaseUrl, info.RequestURLPath, info.ChannelType), nil
 	}
