@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"one-api/common"
 	"one-api/dto"
@@ -42,9 +43,45 @@ func Done(c *gin.Context) {
 	_ = StringData(c, "[DONE]")
 }
 
+func WssString(c *gin.Context, ws *websocket.Conn, str string) error {
+	if ws == nil {
+		common.LogError(c, "websocket connection is nil")
+		return errors.New("websocket connection is nil")
+	}
+	//common.LogInfo(c, fmt.Sprintf("sending message: %s", str))
+	return ws.WriteMessage(1, []byte(str))
+}
+
+func WssObject(c *gin.Context, ws *websocket.Conn, object interface{}) error {
+	jsonData, err := json.Marshal(object)
+	if err != nil {
+		return fmt.Errorf("error marshalling object: %w", err)
+	}
+	if ws == nil {
+		common.LogError(c, "websocket connection is nil")
+		return errors.New("websocket connection is nil")
+	}
+	//common.LogInfo(c, fmt.Sprintf("sending message: %s", jsonData))
+	return ws.WriteMessage(1, jsonData)
+}
+
+func WssError(c *gin.Context, ws *websocket.Conn, openaiError dto.OpenAIError) {
+	errorObj := &dto.RealtimeEvent{
+		Type:    "error",
+		EventId: GetLocalRealtimeID(c),
+		Error:   &openaiError,
+	}
+	_ = WssObject(c, ws, errorObj)
+}
+
 func GetResponseID(c *gin.Context) string {
-	logID := c.GetString("X-Oneapi-Request-Id")
+	logID := c.GetString(common.RequestIdKey)
 	return fmt.Sprintf("chatcmpl-%s", logID)
+}
+
+func GetLocalRealtimeID(c *gin.Context) string {
+	logID := c.GetString(common.RequestIdKey)
+	return fmt.Sprintf("evt_%s", logID)
 }
 
 func GenerateStopResponse(id string, createAt int64, model string, finishReason string) *dto.ChatCompletionsStreamResponse {

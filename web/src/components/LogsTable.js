@@ -11,7 +11,7 @@ import {
 
 import {
   Avatar,
-  Button,
+  Button, Descriptions,
   Form,
   Layout,
   Modal,
@@ -20,7 +20,7 @@ import {
   Spin,
   Table,
   Tag,
-  Tooltip,
+  Tooltip
 } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import {
@@ -336,33 +336,33 @@ const LogsTable = () => {
         );
       },
     },
-    {
-      title: '重试',
-      dataIndex: 'retry',
-      className: isAdmin() ? 'tableShow' : 'tableHiddle',
-      render: (text, record, index) => {
-        let content = '渠道：' + record.channel;
-        if (record.other !== '') {
-          let other = JSON.parse(record.other);
-          if (other === null) {
-            return <></>;
-          }
-          if (other.admin_info !== undefined) {
-            if (
-              other.admin_info.use_channel !== null &&
-              other.admin_info.use_channel !== undefined &&
-              other.admin_info.use_channel !== ''
-            ) {
-              // channel id array
-              let useChannel = other.admin_info.use_channel;
-              let useChannelStr = useChannel.join('->');
-              content = `渠道：${useChannelStr}`;
-            }
-          }
-        }
-        return isAdminUser ? <div>{content}</div> : <></>;
-      },
-    },
+    // {
+    //   title: '重试',
+    //   dataIndex: 'retry',
+    //   className: isAdmin() ? 'tableShow' : 'tableHiddle',
+    //   render: (text, record, index) => {
+    //     let content = '渠道：' + record.channel;
+    //     if (record.other !== '') {
+    //       let other = JSON.parse(record.other);
+    //       if (other === null) {
+    //         return <></>;
+    //       }
+    //       if (other.admin_info !== undefined) {
+    //         if (
+    //           other.admin_info.use_channel !== null &&
+    //           other.admin_info.use_channel !== undefined &&
+    //           other.admin_info.use_channel !== ''
+    //         ) {
+    //           // channel id array
+    //           let useChannel = other.admin_info.use_channel;
+    //           let useChannelStr = useChannel.join('->');
+    //           content = `渠道：${useChannelStr}`;
+    //         }
+    //       }
+    //     }
+    //     return isAdminUser ? <div>{content}</div> : <></>;
+    //   },
+    // },
     {
       title: '详情',
       dataIndex: 'content',
@@ -409,6 +409,7 @@ const LogsTable = () => {
   ];
 
   const [logs, setLogs] = useState([]);
+  const [expandData, setExpandData] = useState({});
   const [showStat, setShowStat] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingStat, setLoadingStat] = useState(false);
@@ -512,10 +513,54 @@ const LogsTable = () => {
   };
 
   const setLogsFormat = (logs) => {
+    let expandDatesLocal = {};
     for (let i = 0; i < logs.length; i++) {
       logs[i].timestamp2string = timestamp2string(logs[i].created_at);
       logs[i].key = '' + logs[i].id;
+      let other = getLogOther(logs[i].other);
+      let expandDataLocal = [];
+      if (isAdmin()) {
+        let content = '渠道：' + logs[i].channel;
+        if (other.admin_info !== undefined) {
+          if (
+            other.admin_info.use_channel !== null &&
+            other.admin_info.use_channel !== undefined &&
+            other.admin_info.use_channel !== ''
+          ) {
+            // channel id array
+            let useChannel = other.admin_info.use_channel;
+            let useChannelStr = useChannel.join('->');
+            content = `渠道：${useChannelStr}`;
+          }
+        }
+        expandDataLocal.push({
+          key: '重试',
+          value: content,
+        })
+      }
+      if (other.ws) {
+        expandDataLocal.push({
+          key: '语音输入',
+          value: other.audio_input,
+        });
+        expandDataLocal.push({
+          key: '语音输出',
+          value: other.audio_output,
+        });
+        expandDataLocal.push({
+          key: '文字输入',
+          value: other.text_input,
+        });
+        expandDataLocal.push({
+          key: '文字输出',
+          value: other.text_output,
+        });
+      }
+      expandDatesLocal[logs[i].key] = expandDataLocal;
     }
+    console.log(expandDatesLocal);
+    setExpandData(expandDatesLocal);
+
     setLogs(logs);
   };
 
@@ -587,6 +632,10 @@ const LogsTable = () => {
       });
     handleEyeClick();
   }, []);
+
+  const expandRowRender = (record, index) => {
+    return <Descriptions align="justify" data={expandData[record.key]} />;
+  };
 
   return (
     <>
@@ -686,7 +735,9 @@ const LogsTable = () => {
         <Table
           style={{ marginTop: 5 }}
           columns={columns}
+          expandedRowRender={expandRowRender}
           dataSource={logs}
+          rowKey="key"
           pagination={{
             currentPage: activePage,
             pageSize: pageSize,

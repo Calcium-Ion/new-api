@@ -38,6 +38,8 @@ const (
 	RelayModeSunoSubmit
 
 	RelayModeRerank
+
+	RelayModeRealtime
 )
 
 func Path2RelayMode(path string) int {
@@ -64,6 +66,8 @@ func Path2RelayMode(path string) int {
 		relayMode = RelayModeAudioTranslation
 	} else if strings.HasPrefix(path, "/v1/rerank") {
 		relayMode = RelayModeRerank
+	} else if strings.HasPrefix(path, "/v1/realtime") {
+		relayMode = RelayModeRealtime
 	}
 	return relayMode
 }

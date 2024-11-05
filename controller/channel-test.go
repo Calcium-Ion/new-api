@@ -102,17 +102,22 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	if err != nil {
 		return err, nil
 	}
-	if resp != nil && resp.StatusCode != http.StatusOK {
-		err := service.RelayErrorHandler(resp)
-		return fmt.Errorf("status code %d: %s", resp.StatusCode, err.Error.Message), err
+	var httpResp *http.Response
+	if resp != nil {
+		httpResp = resp.(*http.Response)
+		if httpResp.StatusCode != http.StatusOK {
+			err := service.RelayErrorHandler(httpResp)
+			return fmt.Errorf("status code %d: %s", httpResp.StatusCode, err.Error.Message), err
+		}
 	}
-	usage, respErr := adaptor.DoResponse(c, resp, meta)
+	usageA, respErr := adaptor.DoResponse(c, httpResp, meta)
 	if respErr != nil {
 		return fmt.Errorf("%s", respErr.Error.Message), respErr
 	}
-	if usage == nil {
+	if usageA == nil {
 		return errors.New("usage is nil"), nil
 	}
+	usage := usageA.(*dto.Usage)
 	result := w.Result()
 	respBody, err := io.ReadAll(result.Body)
 	if err != nil {

@@ -2,7 +2,9 @@ package common
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"one-api/common"
+	"one-api/dto"
 	"one-api/relay/constant"
 	"strings"
 	"time"
@@ -21,6 +23,7 @@ type RelayInfo struct {
 	ApiType              int
 	IsStream             bool
 	IsPlayground         bool
+	UsePrice             bool
 	RelayMode            int
 	UpstreamModelName    string
 	OriginModelName      string
@@ -32,6 +35,21 @@ type RelayInfo struct {
 	BaseUrl              string
 	SupportStreamOptions bool
 	ShouldIncludeUsage   bool
+	ClientWs             *websocket.Conn
+	TargetWs             *websocket.Conn
+	InputAudioFormat     string
+	OutputAudioFormat    string
+	RealtimeTools        []dto.RealTimeTool
+	IsFirstRequest       bool
+}
+
+func GenRelayInfoWs(c *gin.Context, ws *websocket.Conn) *RelayInfo {
+	info := GenRelayInfo(c)
+	info.ClientWs = ws
+	info.InputAudioFormat = "pcm16"
+	info.OutputAudioFormat = "pcm16"
+	info.IsFirstRequest = true
+	return info
 }
 
 func GenRelayInfo(c *gin.Context) *RelayInfo {
