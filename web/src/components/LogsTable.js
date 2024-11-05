@@ -336,33 +336,33 @@ const LogsTable = () => {
         );
       },
     },
-    // {
-    //   title: '重试',
-    //   dataIndex: 'retry',
-    //   className: isAdmin() ? 'tableShow' : 'tableHiddle',
-    //   render: (text, record, index) => {
-    //     let content = '渠道：' + record.channel;
-    //     if (record.other !== '') {
-    //       let other = JSON.parse(record.other);
-    //       if (other === null) {
-    //         return <></>;
-    //       }
-    //       if (other.admin_info !== undefined) {
-    //         if (
-    //           other.admin_info.use_channel !== null &&
-    //           other.admin_info.use_channel !== undefined &&
-    //           other.admin_info.use_channel !== ''
-    //         ) {
-    //           // channel id array
-    //           let useChannel = other.admin_info.use_channel;
-    //           let useChannelStr = useChannel.join('->');
-    //           content = `渠道：${useChannelStr}`;
-    //         }
-    //       }
-    //     }
-    //     return isAdminUser ? <div>{content}</div> : <></>;
-    //   },
-    // },
+    {
+      title: '重试',
+      dataIndex: 'retry',
+      className: isAdmin() ? 'tableShow' : 'tableHiddle',
+      render: (text, record, index) => {
+        let content = '渠道：' + record.channel;
+        if (record.other !== '') {
+          let other = JSON.parse(record.other);
+          if (other === null) {
+            return <></>;
+          }
+          if (other.admin_info !== undefined) {
+            if (
+              other.admin_info.use_channel !== null &&
+              other.admin_info.use_channel !== undefined &&
+              other.admin_info.use_channel !== ''
+            ) {
+              // channel id array
+              let useChannel = other.admin_info.use_channel;
+              let useChannelStr = useChannel.join('->');
+              content = `渠道：${useChannelStr}`;
+            }
+          }
+        }
+        return isAdminUser ? <div>{content}</div> : <></>;
+      },
+    },
     {
       title: '详情',
       dataIndex: 'content',
@@ -384,25 +384,24 @@ const LogsTable = () => {
             </Paragraph>
           );
         }
-        let content = renderModelPrice(
-          record.prompt_tokens,
-          record.completion_tokens,
-          other.model_ratio,
-          other.model_price,
-          other.completion_ratio,
-          other.group_ratio,
-        );
+
+        // let content = renderModelPrice(
+        //   record.prompt_tokens,
+        //   record.completion_tokens,
+        //   other.model_ratio,
+        //   other.model_price,
+        //   other.completion_ratio,
+        //   other.group_ratio,
+        // );
         return (
-          <Tooltip content={content}>
             <Paragraph
-              ellipsis={{
-                rows: 2,
-              }}
-              style={{ maxWidth: 240 }}
+                ellipsis={{
+                  rows: 2,
+                }}
+                style={{ maxWidth: 240 }}
             >
-              {text}
+              调用消费
             </Paragraph>
-          </Tooltip>
         );
       },
     },
@@ -520,23 +519,23 @@ const LogsTable = () => {
       let other = getLogOther(logs[i].other);
       let expandDataLocal = [];
       if (isAdmin()) {
-        let content = '渠道：' + logs[i].channel;
-        if (other.admin_info !== undefined) {
-          if (
-            other.admin_info.use_channel !== null &&
-            other.admin_info.use_channel !== undefined &&
-            other.admin_info.use_channel !== ''
-          ) {
-            // channel id array
-            let useChannel = other.admin_info.use_channel;
-            let useChannelStr = useChannel.join('->');
-            content = `渠道：${useChannelStr}`;
-          }
-        }
-        expandDataLocal.push({
-          key: '渠道重试',
-          value: content,
-        })
+        // let content = '渠道：' + logs[i].channel;
+        // if (other.admin_info !== undefined) {
+        //   if (
+        //     other.admin_info.use_channel !== null &&
+        //     other.admin_info.use_channel !== undefined &&
+        //     other.admin_info.use_channel !== ''
+        //   ) {
+        //     // channel id array
+        //     let useChannel = other.admin_info.use_channel;
+        //     let useChannelStr = useChannel.join('->');
+        //     content = `渠道：${useChannelStr}`;
+        //   }
+        // }
+        // expandDataLocal.push({
+        //   key: '渠道重试',
+        //   value: content,
+        // })
       }
       if (other?.ws) {
         expandDataLocal.push({
@@ -557,9 +556,24 @@ const LogsTable = () => {
         });
       }
       expandDataLocal.push({
-        key: '倍率详情',
+        key: '日志详情',
         value: logs[i].content,
       })
+      if (logs[i].type === 2) {
+        let content = renderModelPrice(
+            logs[i].prompt_tokens,
+            logs[i].completion_tokens,
+            other.model_ratio,
+            other.model_price,
+            other.completion_ratio,
+            other.group_ratio,
+        );
+        expandDataLocal.push({
+          key: '计费过程',
+          value: content,
+        });
+      }
+
       expandDatesLocal[logs[i].key] = expandDataLocal;
     }
 
