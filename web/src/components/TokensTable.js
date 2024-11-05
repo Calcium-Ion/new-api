@@ -393,8 +393,8 @@ const TokensTable = () => {
       serverAddress = window.location.origin;
     }
     let encodedServerAddress = encodeURIComponent(serverAddress);
-    url = url.replace('{address}', encodedServerAddress);
-    url = url.replace('{key}', 'sk-' + record.key);
+    url = url.replaceAll('{address}', encodedServerAddress);
+    url = url.replaceAll('{key}', 'sk-' + record.key);
     // console.log(url);
     // const chatLink = localStorage.getItem('chat_link');
     // const mjLink = localStorage.getItem('chat_link2');

@@ -20,8 +20,8 @@ const ChatPage = () => {
               if (Array.isArray(chats) && chats.length > 0) {
                   for (let k in chats[id]) {
                       link = chats[id][k];
-                      link = link.replace('{address}', encodeURIComponent(serverAddress));
-                      link = link.replace('{key}', 'sk-' + key);
+                      link = link.replaceAll('{address}', encodeURIComponent(serverAddress));
+                      link = link.replaceAll('{key}', 'sk-' + key);
                   }
               }
           }
