@@ -508,9 +508,9 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 						localUsage = &dto.RealtimeUsage{}
 						// print now usage
 					}
-					common.LogInfo(c, fmt.Sprintf("realtime streaming sumUsage: %v", sumUsage))
-					common.LogInfo(c, fmt.Sprintf("realtime streaming localUsage: %v", localUsage))
-					common.LogInfo(c, fmt.Sprintf("realtime streaming localUsage: %v", localUsage))
+					//common.LogInfo(c, fmt.Sprintf("realtime streaming sumUsage: %v", sumUsage))
+					//common.LogInfo(c, fmt.Sprintf("realtime streaming localUsage: %v", localUsage))
+					//common.LogInfo(c, fmt.Sprintf("realtime streaming localUsage: %v", localUsage))
 
 				} else if realtimeEvent.Type == dto.RealtimeEventTypeSessionUpdated || realtimeEvent.Type == dto.RealtimeEventTypeSessionCreated {
 					realtimeSession := realtimeEvent.Session
