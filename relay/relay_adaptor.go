@@ -12,6 +12,7 @@ import (
 	"one-api/relay/channel/dify"
 	"one-api/relay/channel/gemini"
 	"one-api/relay/channel/jina"
+	"one-api/relay/channel/mistral"
 	"one-api/relay/channel/ollama"
 	"one-api/relay/channel/openai"
 	"one-api/relay/channel/palm"
@@ -68,6 +69,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &siliconflow.Adaptor{}
 	case constant.APITypeVertexAi:
 		return &vertex.Adaptor{}
+	case constant.APITypeMistral:
+		return &mistral.Adaptor{}
 	}
 	return nil
 }
