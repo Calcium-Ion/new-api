@@ -41,6 +41,7 @@ type RelayInfo struct {
 	OutputAudioFormat    string
 	RealtimeTools        []dto.RealTimeTool
 	IsFirstRequest       bool
+	AudioUsage           bool
 }
 
 func GenRelayInfoWs(c *gin.Context, ws *websocket.Conn) *RelayInfo {

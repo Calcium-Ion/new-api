@@ -24,10 +24,11 @@ import {
 } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import {
+  renderAudioModelPrice,
   renderModelPrice,
   renderNumber,
   renderQuota,
-  stringToColor,
+  stringToColor
 } from '../helpers/render';
 import Paragraph from '@douyinfe/semi-ui/lib/es/typography/paragraph';
 import { getLogOther } from '../helpers/other.js';
@@ -537,7 +538,7 @@ const LogsTable = () => {
         //   value: content,
         // })
       }
-      if (other?.ws) {
+      if (other?.ws || other?.audio) {
         expandDataLocal.push({
           key: '语音输入',
           value: other.audio_input,
@@ -560,14 +561,30 @@ const LogsTable = () => {
         value: logs[i].content,
       })
       if (logs[i].type === 2) {
-        let content = renderModelPrice(
+        let content = '';
+        if (other?.ws || other?.audio) {
+          content = renderAudioModelPrice(
+            other.text_input,
+            other.text_output,
+            other.model_ratio,
+            other.model_price,
+            other.completion_ratio,
+            other.audio_input,
+            other.audio_output,
+            other?.audio_ratio,
+            other?.audio_completion_ratio,
+            other.group_ratio,
+          );
+        } else {
+          content = renderModelPrice(
             logs[i].prompt_tokens,
             logs[i].completion_tokens,
             other.model_ratio,
             other.model_price,
             other.completion_ratio,
             other.group_ratio,
-        );
+          );
+        }
         expandDataLocal.push({
           key: '计费过程',
           value: content,

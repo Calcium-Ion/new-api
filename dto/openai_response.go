@@ -128,7 +128,9 @@ type CompletionsStreamResponse struct {
 }
 
 type Usage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
+	PromptTokens           int                `json:"prompt_tokens"`
+	CompletionTokens       int                `json:"completion_tokens"`
+	TotalTokens            int                `json:"total_tokens"`
+	PromptTokensDetails    InputTokenDetails  `json:"prompt_tokens_details"`
+	CompletionTokenDetails OutputTokenDetails `json:"completion_tokens_details"`
 }
