@@ -9,6 +9,7 @@ import (
 	"one-api/dto"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
+	"strings"
 	"time"
 )
 
@@ -20,6 +21,12 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 	if err != nil {
 		return err
 	}
+
+	token, err := model.CacheGetTokenByKey(strings.TrimLeft(relayInfo.ApiKey, "sk-"))
+	if err != nil {
+		return err
+	}
+
 	modelName := relayInfo.UpstreamModelName
 	textInputTokens := usage.InputTokenDetails.TextTokens
 	textOutTokens := usage.OutputTokenDetails.TextTokens
@@ -44,6 +51,10 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 
 	if userQuota < quota {
 		return errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
+	}
+
+	if token.RemainQuota < quota {
+		return errors.New(fmt.Sprintf("令牌额度不足，剩余额度为 %d", token.RemainQuota))
 	}
 
 	err = model.PostConsumeTokenQuota(relayInfo, 0, quota, 0, false)
