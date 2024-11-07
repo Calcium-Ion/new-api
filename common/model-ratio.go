@@ -425,6 +425,8 @@ func GetCompletionRatio(name string) float64 {
 func GetAudioRatio(name string) float64 {
 	if strings.HasPrefix(name, "gpt-4o-realtime") {
 		return 20
+	} else if strings.HasPrefix(name, "gpt-4o-audio") {
+		return 40
 	}
 	return 20
 }
