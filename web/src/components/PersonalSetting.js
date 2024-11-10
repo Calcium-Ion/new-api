@@ -10,7 +10,7 @@ import {
 } from '../helpers';
 import Turnstile from 'react-turnstile';
 import { UserContext } from '../context/User';
-import { onGitHubOAuthClicked } from './utils';
+import { onGitHubOAuthClicked, onLinuxDOOAuthClicked } from './utils';
 import {
   Avatar,
   Banner,
@@ -519,7 +519,6 @@ const PersonalSetting = () => {
                   </div>
                 </div>
               </div>
-
               <div style={{ marginTop: 10 }}>
                 <Typography.Text strong>Telegram</Typography.Text>
                 <div
@@ -551,7 +550,36 @@ const PersonalSetting = () => {
                   </div>
                 </div>
               </div>
-
+              <div style={{ marginTop: 10 }}>
+                <Typography.Text strong>LinuxDO</Typography.Text>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
+                  <div>
+                    <Input
+                      value={
+                        userState.user && userState.user.linux_do_id !== ''
+                          ? userState.user.linux_do_id
+                          : '未绑定'
+                      }
+                      readonly={true}
+                    ></Input>
+                  </div>
+                  <div>
+                    <Button
+                      onClick={() => {
+                        onLinuxDOOAuthClicked(status.linuxdo_client_id);
+                      }}
+                      disabled={
+                        (userState.user && userState.user.linux_do_id !== '') ||
+                        !status.linuxdo_oauth
+                      }
+                    >
+                      {status.linuxdo_oauth ? '绑定' : '未启用'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
               <div style={{ marginTop: 10 }}>
                 <Space>
                   <Button onClick={generateAccessToken}>
