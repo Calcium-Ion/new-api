@@ -84,6 +84,11 @@ const Playground = () => {
       // handleInputChange('group', localGroupOptions[0].value);
 
       if (localGroupOptions.length > 0) {
+        // set default group at first
+        localGroupOptions.unshift({
+          label: '用户分组',
+          value: '',
+        });
       } else {
         localGroupOptions = [{
           label: '用户分组',
