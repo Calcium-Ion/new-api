@@ -27,6 +27,7 @@ import TelegramLoginButton from 'react-telegram-login';
 import { IconGithubLogo, IconAlarm } from '@douyinfe/semi-icons';
 import WeChatIcon from './WeChatIcon';
 import { setUserData } from '../helpers/data.js';
+import LinuxDoIcon from './LinuxDoIcon.js';
 
 const LoginForm = () => {
   const [inputs, setInputs] = useState({
@@ -247,8 +248,7 @@ const LoginForm = () => {
                       )}
                       {status.linuxdo_oauth ? (
                         <Button
-                          type='primary'
-                          icon={<IconAlarm />}
+                          icon={<LinuxDoIcon />}
                           onClick={() =>
                             onLinuxDOOAuthClicked(status.linuxdo_client_id)
                           }
