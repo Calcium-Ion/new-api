@@ -19,6 +19,14 @@ export async function onGitHubOAuthClicked(github_client_id) {
   );
 }
 
+export async function onLinuxDOOAuthClicked(linuxdo_client_id) {
+  const state = await getOAuthState();
+  if (!state) return;
+  window.open(
+    `https://connect.linux.do/oauth2/authorize?response_type=code&client_id=${linuxdo_client_id}&state=${state}`,
+  );
+}
+
 let channelModels = undefined;
 export async function loadChannelModels() {
   const res = await API.get('/api/models');

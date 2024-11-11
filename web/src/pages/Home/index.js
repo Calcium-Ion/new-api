@@ -150,6 +150,12 @@ const Home = () => {
                       ? '已启用'
                       : '未启用'}
                   </p>
+                  <p>
+                    Linux DO 身份验证：
+                    {statusState?.status?.linuxdo_oauth === true
+                      ? '已启用'
+                      : '未启用'}
+                  </p>
                 </Card>
               </Col>
             </Row>

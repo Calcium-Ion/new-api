@@ -36,6 +36,7 @@ type User struct {
 	AffHistoryQuota  int            `json:"aff_history_quota" gorm:"type:int;default:0;column:aff_history"` // 邀请历史额度
 	InviterId        int            `json:"inviter_id" gorm:"type:int;column:inviter_id;index"`
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
+	LinuxDOId        string         `json:"linux_do_id" gorm:"column:linux_do_id;index"`
 }
 
 func (user *User) GetAccessToken() string {
@@ -536,4 +537,18 @@ func updateUserRequestCount(id int, count int) {
 func GetUsernameById(id int) (username string, err error) {
 	err = DB.Model(&User{}).Where("id = ?", id).Select("username").Find(&username).Error
 	return username, err
+}
+
+func IsLinuxDOIdAlreadyTaken(linuxDOId string) bool {
+	var user User
+	err := DB.Unscoped().Where("linux_do_id = ?", linuxDOId).First(&user).Error
+	return !errors.Is(err, gorm.ErrRecordNotFound)
+}
+
+func (u *User) FillUserByLinuxDOId() error {
+	if u.LinuxDOId == "" {
+		return errors.New("linux do id is empty")
+	}
+	err := DB.Where("linux_do_id = ?", u.LinuxDOId).First(u).Error
+	return err
 }

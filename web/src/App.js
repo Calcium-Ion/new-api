@@ -26,6 +26,7 @@ import Midjourney from './pages/Midjourney';
 import Pricing from './pages/Pricing/index.js';
 import Task from "./pages/Task/index.js";
 import Playground from './components/Playground.js';
+import LinuxDoOAuth from './components/LinuxDoOAuth.js';
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
@@ -178,6 +179,14 @@ function App() {
           element={
             <Suspense fallback={<Loading></Loading>}>
               <GitHubOAuth />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/oauth/linuxdo'
+          element={
+            <Suspense fallback={<Loading></Loading>}>
+              <LinuxDoOAuth />
             </Suspense>
           }
         />
