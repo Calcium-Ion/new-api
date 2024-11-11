@@ -516,7 +516,7 @@ const LogsTable = () => {
     let expandDatesLocal = {};
     for (let i = 0; i < logs.length; i++) {
       logs[i].timestamp2string = timestamp2string(logs[i].created_at);
-      logs[i].key = '' + logs[i].id;
+      logs[i].key = i;
       let other = getLogOther(logs[i].other);
       let expandDataLocal = [];
       if (isAdmin()) {
@@ -771,6 +771,7 @@ const LogsTable = () => {
           style={{ marginTop: 5 }}
           columns={columns}
           expandedRowRender={expandRowRender}
+          expandRowByClick={true}
           dataSource={logs}
           rowKey="key"
           pagination={{
