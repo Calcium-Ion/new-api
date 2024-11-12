@@ -476,10 +476,18 @@ const UsersTable = () => {
             type='primary'
             htmlType='submit'
             className='btn-margin-right'
-            style={{ marginRight: 8 }}
           >
             查询
           </Button>
+            <Button
+                theme='light'
+                type='primary'
+                onClick={() => {
+                  setShowAddUser(true);
+                }}
+            >
+              添加用户
+            </Button>
           </Space>
         </div>
       </Form>
@@ -496,16 +504,6 @@ const UsersTable = () => {
         }}
         loading={loading}
       />
-      <Button
-        theme='light'
-        type='primary'
-        style={{ marginRight: 8 }}
-        onClick={() => {
-          setShowAddUser(true);
-        }}
-      >
-        添加用户
-      </Button>
     </>
   );
 };

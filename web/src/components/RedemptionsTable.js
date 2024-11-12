@@ -10,7 +10,7 @@ import {
 import { ITEMS_PER_PAGE } from '../constants';
 import { renderQuota } from '../helpers/render';
 import {
-  Button,
+  Button, Divider,
   Form,
   Modal,
   Popconfirm,
@@ -391,6 +391,39 @@ const RedemptionsTable = () => {
           onChange={handleKeywordChange}
         />
       </Form>
+      <Divider style={{margin:'5px 0 15px 0'}}/>
+      <div>
+        <Button
+            theme='light'
+            type='primary'
+            style={{ marginRight: 8 }}
+            onClick={() => {
+              setEditingRedemption({
+                id: undefined,
+              });
+              setShowEdit(true);
+            }}
+        >
+          添加兑换码
+        </Button>
+        <Button
+            label='复制所选兑换码'
+            type='warning'
+            onClick={async () => {
+              if (selectedKeys.length === 0) {
+                showError('请至少选择一个兑换码！');
+                return;
+              }
+              let keys = '';
+              for (let i = 0; i < selectedKeys.length; i++) {
+                keys += selectedKeys[i].name + '    ' + selectedKeys[i].key + '\n';
+              }
+              await copyText(keys);
+            }}
+        >
+          复制所选兑换码到剪贴板
+        </Button>
+      </div>
 
       <Table
         style={{ marginTop: 20 }}
@@ -414,36 +447,6 @@ const RedemptionsTable = () => {
         rowSelection={rowSelection}
         onRow={handleRow}
       ></Table>
-      <Button
-        theme='light'
-        type='primary'
-        style={{ marginRight: 8 }}
-        onClick={() => {
-          setEditingRedemption({
-            id: undefined,
-          });
-          setShowEdit(true);
-        }}
-      >
-        添加兑换码
-      </Button>
-      <Button
-        label='复制所选兑换码'
-        type='warning'
-        onClick={async () => {
-          if (selectedKeys.length === 0) {
-            showError('请至少选择一个兑换码！');
-            return;
-          }
-          let keys = '';
-          for (let i = 0; i < selectedKeys.length; i++) {
-            keys += selectedKeys[i].name + '    ' + selectedKeys[i].key + '\n';
-          }
-          await copyText(keys);
-        }}
-      >
-        复制所选兑换码到剪贴板
-      </Button>
     </>
   );
 };

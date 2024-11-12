@@ -767,6 +767,22 @@ const LogsTable = () => {
             <Form.Section></Form.Section>
           </>
         </Form>
+        <div style={{marginTop:10}}>
+          <Select
+              defaultValue='0'
+              style={{ width: 120 }}
+              onChange={(value) => {
+                setLogType(parseInt(value));
+                loadLogs(0, pageSize, parseInt(value));
+              }}
+          >
+            <Select.Option value='0'>全部</Select.Option>
+            <Select.Option value='1'>充值</Select.Option>
+            <Select.Option value='2'>消费</Select.Option>
+            <Select.Option value='3'>管理</Select.Option>
+            <Select.Option value='4'>系统</Select.Option>
+          </Select>
+        </div>
         <Table
           style={{ marginTop: 5 }}
           columns={columns}
@@ -786,20 +802,6 @@ const LogsTable = () => {
             onPageChange: handlePageChange,
           }}
         />
-        <Select
-          defaultValue='0'
-          style={{ width: 120 }}
-          onChange={(value) => {
-            setLogType(parseInt(value));
-            loadLogs(0, pageSize, parseInt(value));
-          }}
-        >
-          <Select.Option value='0'>全部</Select.Option>
-          <Select.Option value='1'>充值</Select.Option>
-          <Select.Option value='2'>消费</Select.Option>
-          <Select.Option value='3'>管理</Select.Option>
-          <Select.Option value='4'>系统</Select.Option>
-        </Select>
       </Layout>
     </>
   );
