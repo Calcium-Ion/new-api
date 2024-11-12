@@ -17,7 +17,7 @@ import {
   renderQuota,
 } from '../helpers/render';
 import {
-  Button,
+  Button, Divider,
   Dropdown,
   Form,
   InputNumber,
@@ -707,226 +707,217 @@ const ChannelsTable = () => {
   };
 
   return (
-    <>
-      <EditChannel
-        refresh={refresh}
-        visible={showEdit}
-        handleClose={closeEdit}
-        editingChannel={editingChannel}
-      />
-      <Form
-        onSubmit={() => {
-          searchChannels(searchKeyword, searchGroup, searchModel);
-        }}
-        labelPosition='left'
-      >
-        <div style={{ display: 'flex' }}>
-          <Space>
-            <Form.Input
-              field='search_keyword'
-              label='搜索渠道关键词'
-              placeholder='ID，名称和密钥 ...'
-              value={searchKeyword}
-              loading={searching}
-              onChange={(v) => {
-                setSearchKeyword(v.trim());
-              }}
-            />
-            <Form.Input
-              field='search_model'
-              label='模型'
-              placeholder='模型关键字'
-              value={searchModel}
-              loading={searching}
-              onChange={(v) => {
-                setSearchModel(v.trim());
-              }}
-            />
-            <Form.Select
-              field='group'
-              label='分组'
-              optionList={[{ label: '选择分组', value: null}, ...groupOptions]}
-              initValue={null}
-              onChange={(v) => {
-                setSearchGroup(v);
-                searchChannels(searchKeyword, v, searchModel);
-              }}
-            />
+      <>
+        <EditChannel
+            refresh={refresh}
+            visible={showEdit}
+            handleClose={closeEdit}
+            editingChannel={editingChannel}
+        />
+        <Form
+            onSubmit={() => {
+              searchChannels(searchKeyword, searchGroup, searchModel);
+            }}
+            labelPosition='left'
+        >
+          <div style={{display: 'flex'}}>
+            <Space>
+              <Form.Input
+                  field='search_keyword'
+                  label='搜索渠道关键词'
+                  placeholder='ID，名称和密钥 ...'
+                  value={searchKeyword}
+                  loading={searching}
+                  onChange={(v) => {
+                    setSearchKeyword(v.trim());
+                  }}
+              />
+              <Form.Input
+                  field='search_model'
+                  label='模型'
+                  placeholder='模型关键字'
+                  value={searchModel}
+                  loading={searching}
+                  onChange={(v) => {
+                    setSearchModel(v.trim());
+                  }}
+              />
+              <Form.Select
+                  field='group'
+                  label='分组'
+                  optionList={[{label: '选择分组', value: null}, ...groupOptions]}
+                  initValue={null}
+                  onChange={(v) => {
+                    setSearchGroup(v);
+                    searchChannels(searchKeyword, v, searchModel);
+                  }}
+              />
+              <Button
+                  label='查询'
+                  type='primary'
+                  htmlType='submit'
+                  className='btn-margin-right'
+                  style={{marginRight: 8}}
+              >
+                查询
+              </Button>
+            </Space>
+          </div>
+        </Form>
+        <Divider style={{marginBottom:15}}/>
+        <div
+            style={{
+              display: isMobile() ? '' : 'flex',
+              marginTop: isMobile() ? 0 : -45,
+              zIndex: 999,
+              pointerEvents: 'none',
+            }}
+        >
+          <Space
+              style={{pointerEvents: 'auto', marginTop: isMobile() ? 0 : 45}}
+          >
+            <Typography.Text strong>使用ID排序</Typography.Text>
+            <Switch
+                checked={idSort}
+                label='使用ID排序'
+                uncheckedText='关'
+                aria-label='是否用ID排序'
+                onChange={(v) => {
+                  localStorage.setItem('id-sort', v + '');
+                  setIdSort(v);
+                  loadChannels(0, pageSize, v)
+                      .then()
+                      .catch((reason) => {
+                        showError(reason);
+                      });
+                }}
+            ></Switch>
             <Button
-              label='查询'
-              type='primary'
-              htmlType='submit'
-              className='btn-margin-right'
-              style={{ marginRight: 8 }}
+                theme='light'
+                type='primary'
+                style={{marginRight: 8}}
+                onClick={() => {
+                  setEditingChannel({
+                    id: undefined,
+                  });
+                  setShowEdit(true);
+                }}
             >
-              查询
+              添加渠道
+            </Button>
+            <Popconfirm
+                title='确定？'
+                okType={'warning'}
+                onConfirm={testAllChannels}
+                position={isMobile() ? 'top' : 'top'}
+            >
+              <Button theme='light' type='warning' style={{marginRight: 8}}>
+                测试所有通道
+              </Button>
+            </Popconfirm>
+            <Popconfirm
+                title='确定？'
+                okType={'secondary'}
+                onConfirm={updateAllChannelsBalance}
+            >
+              <Button theme='light' type='secondary' style={{marginRight: 8}}>
+                更新所有已启用通道余额
+              </Button>
+            </Popconfirm>
+            <Popconfirm
+                title='确定是否要删除禁用通道？'
+                content='此修改将不可逆'
+                okType={'danger'}
+                onConfirm={deleteAllDisabledChannels}
+            >
+              <Button theme='light' type='danger' style={{marginRight: 8}}>
+                删除禁用通道
+              </Button>
+            </Popconfirm>
+
+            <Button
+                theme='light'
+                type='primary'
+                style={{marginRight: 8}}
+                onClick={refresh}
+            >
+              刷新
             </Button>
           </Space>
         </div>
-      </Form>
-      <div style={{ marginTop: 10, display: 'flex' }}>
-        <Space>
+        <div style={{marginTop: 20}}>
           <Space>
-            <Typography.Text strong>使用ID排序</Typography.Text>
+            <Typography.Text strong>开启批量删除</Typography.Text>
             <Switch
-              checked={idSort}
-              label='使用ID排序'
-              uncheckedText='关'
-              aria-label='是否用ID排序'
-              onChange={(v) => {
-                localStorage.setItem('id-sort', v + '');
-                setIdSort(v);
-                loadChannels(0, pageSize, v)
-                  .then()
-                  .catch((reason) => {
-                    showError(reason);
-                  });
-              }}
+                label='开启批量删除'
+                uncheckedText='关'
+                aria-label='是否开启批量删除'
+                onChange={(v) => {
+                  setEnableBatchDelete(v);
+                }}
             ></Switch>
-          </Space>
-        </Space>
-      </div>
-
-      <Table
-        className={'channel-table'}
-        style={{ marginTop: 15 }}
-        columns={columns}
-        dataSource={pageData}
-        pagination={{
-          currentPage: activePage,
-          pageSize: pageSize,
-          total: channelCount,
-          pageSizeOpts: [10, 20, 50, 100],
-          showSizeChanger: true,
-          formatPageText: (page) => '',
-          onPageSizeChange: (size) => {
-            handlePageSizeChange(size).then();
-          },
-          onPageChange: handlePageChange,
-        }}
-        loading={loading}
-        onRow={handleRow}
-        rowSelection={
-          enableBatchDelete
-            ? {
-                onChange: (selectedRowKeys, selectedRows) => {
-                  // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-                  setSelectedChannels(selectedRows);
-                },
-              }
-            : null
-        }
-      />
-      <div
-        style={{
-          display: isMobile() ? '' : 'flex',
-          marginTop: isMobile() ? 0 : -45,
-          zIndex: 999,
-          position: 'relative',
-          pointerEvents: 'none',
-        }}
-      >
-        <Space
-          style={{ pointerEvents: 'auto', marginTop: isMobile() ? 0 : 45 }}
-        >
-          <Button
-            theme='light'
-            type='primary'
-            style={{ marginRight: 8 }}
-            onClick={() => {
-              setEditingChannel({
-                id: undefined,
-              });
-              setShowEdit(true);
-            }}
-          >
-            添加渠道
-          </Button>
-          <Popconfirm
-            title='确定？'
-            okType={'warning'}
-            onConfirm={testAllChannels}
-            position={isMobile() ? 'top' : 'top'}
-          >
-            <Button theme='light' type='warning' style={{ marginRight: 8 }}>
-              测试所有通道
-            </Button>
-          </Popconfirm>
-          <Popconfirm
-            title='确定？'
-            okType={'secondary'}
-            onConfirm={updateAllChannelsBalance}
-          >
-            <Button theme='light' type='secondary' style={{ marginRight: 8 }}>
-              更新所有已启用通道余额
-            </Button>
-          </Popconfirm>
-          <Popconfirm
-            title='确定是否要删除禁用通道？'
-            content='此修改将不可逆'
-            okType={'danger'}
-            onConfirm={deleteAllDisabledChannels}
-          >
-            <Button theme='light' type='danger' style={{ marginRight: 8 }}>
-              删除禁用通道
-            </Button>
-          </Popconfirm>
-
-          <Button
-            theme='light'
-            type='primary'
-            style={{ marginRight: 8 }}
-            onClick={refresh}
-          >
-            刷新
-          </Button>
-        </Space>
-        {/*<div style={{width: '100%', pointerEvents: 'none', position: 'absolute'}}>*/}
-
-        {/*</div>*/}
-      </div>
-      <div style={{ marginTop: 20 }}>
-        <Space>
-          <Typography.Text strong>开启批量删除</Typography.Text>
-          <Switch
-            label='开启批量删除'
-            uncheckedText='关'
-            aria-label='是否开启批量删除'
-            onChange={(v) => {
-              setEnableBatchDelete(v);
-            }}
-          ></Switch>
-          <Popconfirm
-            title='确定是否要删除所选通道？'
-            content='此修改将不可逆'
-            okType={'danger'}
-            onConfirm={batchDeleteChannels}
-            disabled={!enableBatchDelete}
-            position={'top'}
-          >
-            <Button
-              disabled={!enableBatchDelete}
-              theme='light'
-              type='danger'
-              style={{ marginRight: 8 }}
+            <Popconfirm
+                title='确定是否要删除所选通道？'
+                content='此修改将不可逆'
+                okType={'danger'}
+                onConfirm={batchDeleteChannels}
+                disabled={!enableBatchDelete}
+                position={'top'}
             >
-              删除所选通道
-            </Button>
-          </Popconfirm>
-          <Popconfirm
-            title='确定是否要修复数据库一致性？'
-            content='进行该操作时，可能导致渠道访问错误，请仅在数据库出现问题时使用'
-            okType={'warning'}
-            onConfirm={fixChannelsAbilities}
-            position={'top'}
-          >
-            <Button theme='light' type='secondary' style={{ marginRight: 8 }}>
-              修复数据库一致性
-            </Button>
-          </Popconfirm>
-        </Space>
-      </div>
-    </>
+              <Button
+                  disabled={!enableBatchDelete}
+                  theme='light'
+                  type='danger'
+                  style={{marginRight: 8}}
+              >
+                删除所选通道
+              </Button>
+            </Popconfirm>
+            <Popconfirm
+                title='确定是否要修复数据库一致性？'
+                content='进行该操作时，可能导致渠道访问错误，请仅在数据库出现问题时使用'
+                okType={'warning'}
+                onConfirm={fixChannelsAbilities}
+                position={'top'}
+            >
+              <Button theme='light' type='secondary' style={{marginRight: 8}}>
+                修复数据库一致性
+              </Button>
+            </Popconfirm>
+          </Space>
+        </div>
+
+        <Table
+            className={'channel-table'}
+            style={{marginTop: 15}}
+            columns={columns}
+            dataSource={pageData}
+            pagination={{
+              currentPage: activePage,
+              pageSize: pageSize,
+              total: channelCount,
+              pageSizeOpts: [10, 20, 50, 100],
+              showSizeChanger: true,
+              formatPageText: (page) => '',
+              onPageSizeChange: (size) => {
+                handlePageSizeChange(size).then();
+              },
+              onPageChange: handlePageChange,
+            }}
+            loading={loading}
+            onRow={handleRow}
+            rowSelection={
+              enableBatchDelete
+                  ? {
+                    onChange: (selectedRowKeys, selectedRows) => {
+                      // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+                      setSelectedChannels(selectedRows);
+                    },
+                  }
+                  : null
+            }
+        />
+      </>
   );
 };
 
