@@ -87,7 +87,7 @@ export default function DataDashboard(props) {
                 <Form.Switch
                   field={'DataExportEnabled'}
                   label={'启用数据看板（实验性）'}
-                  size='large'
+                  size='default'
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) => {
