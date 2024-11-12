@@ -123,7 +123,7 @@ export default function SettingsSensitiveWords(props) {
               </Col>
             </Row>
             <Row>
-              <Button size='large' onClick={onSubmit}>
+              <Button size='default' onClick={onSubmit}>
                 保存屏蔽词过滤设置
               </Button>
             </Row>

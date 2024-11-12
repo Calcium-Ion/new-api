@@ -135,7 +135,7 @@ export default function DataDashboard(props) {
               </Col>
             </Row>
             <Row>
-              <Button size='large' onClick={onSubmit}>
+              <Button size='default' onClick={onSubmit}>
                 保存数据看板设置
               </Button>
             </Row>

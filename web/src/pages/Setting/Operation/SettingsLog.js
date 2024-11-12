@@ -135,7 +135,7 @@ export default function SettingsLog(props) {
             </Row>
 
             <Row>
-              <Button size='large' onClick={onSubmit}>
+              <Button size='default' onClick={onSubmit}>
                 保存日志设置
               </Button>
             </Row>

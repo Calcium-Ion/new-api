@@ -184,7 +184,7 @@ export default function GeneralSettings(props) {
               </Col>
             </Row>
             <Row>
-              <Button size='large' onClick={onSubmit}>
+              <Button size='default' onClick={onSubmit}>
                 保存通用设置
               </Button>
             </Row>

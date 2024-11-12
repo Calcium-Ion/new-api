@@ -142,7 +142,7 @@ export default function SettingsMonitoring(props) {
               </Col>
             </Row>
             <Row>
-              <Button size='large' onClick={onSubmit}>
+              <Button size='default' onClick={onSubmit}>
                 保存监控设置
               </Button>
             </Row>
