@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
 	"io"
 	"net/http"
@@ -78,13 +77,7 @@ func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*
 		return wrapErr(errors.New("request not found")), nil
 	}
 	claudeReq := claudeReq_.(*claude.ClaudeRequest)
-	awsClaudeReq := &AwsClaudeRequest{
-		AnthropicVersion: "bedrock-2023-05-31",
-	}
-	if err = copier.Copy(awsClaudeReq, claudeReq); err != nil {
-		return wrapErr(errors.Wrap(err, "copy request")), nil
-	}
-
+	awsClaudeReq := copyRequest(claudeReq)
 	awsReq.Body, err = json.Marshal(awsClaudeReq)
 	if err != nil {
 		return wrapErr(errors.Wrap(err, "marshal request")), nil
@@ -136,12 +129,7 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	}
 	claudeReq := claudeReq_.(*claude.ClaudeRequest)
 
-	awsClaudeReq := &AwsClaudeRequest{
-		AnthropicVersion: "bedrock-2023-05-31",
-	}
-	if err = copier.Copy(awsClaudeReq, claudeReq); err != nil {
-		return wrapErr(errors.Wrap(err, "copy request")), nil
-	}
+	awsClaudeReq := copyRequest(claudeReq)
 	awsReq.Body, err = json.Marshal(awsClaudeReq)
 	if err != nil {
 		return wrapErr(errors.Wrap(err, "marshal request")), nil
