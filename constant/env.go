@@ -30,6 +30,7 @@ var GeminiModelMap = map[string]string{
 	"gemini-1.5-flash-001":      "v1beta",
 	"gemini-1.5-flash":          "v1beta",
 	"gemini-ultra":              "v1beta",
+	"gemini-exp-1114":           "v1beta",
 }
 
 func InitEnv() {

@@ -30,22 +30,13 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	var version string
-	
-	// 为特定模型指定版本
-	switch info.UpstreamModelName {
-	case "gemini-exp-1114":
-		version = "v1beta"
-	default:
-		// 从映射中获取模型名称对应的版本，如果找不到就使用 info.ApiVersion 或默认的版本 "v1"
-		var beta bool
-		version, beta = constant.GeminiModelMap[info.UpstreamModelName]
-		if !beta {
-			if info.ApiVersion != "" {
-				version = info.ApiVersion
-			} else {
-				version = "v1"
-			}
+	// 从映射中获取模型名称对应的版本，如果找不到就使用 info.ApiVersion 或默认的版本 "v1"
+	version, beta := constant.GeminiModelMap[info.UpstreamModelName]
+	if !beta {
+		if info.ApiVersion != "" {
+			version = info.ApiVersion
+		} else {
+			version = "v1"
 		}
 	}
 
