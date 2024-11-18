@@ -105,7 +105,7 @@ func GetChannelsByTag(tag string) ([]*Channel, error) {
 	return channels, err
 }
 
-func SearchChannels(keyword string, group string, model string) ([]*Channel, error) {
+func SearchChannels(keyword string, group string, model string, idSort bool) ([]*Channel, error) {
 	var channels []*Channel
 	keyCol := "`key`"
 	groupCol := "`group`"
@@ -116,6 +116,11 @@ func SearchChannels(keyword string, group string, model string) ([]*Channel, err
 		keyCol = `"key"`
 		groupCol = `"group"`
 		modelsCol = `"models"`
+	}
+
+	order := "priority desc"
+	if idSort {
+		order = "id desc"
 	}
 
 	// 构造基础查询
@@ -140,7 +145,7 @@ func SearchChannels(keyword string, group string, model string) ([]*Channel, err
 	}
 
 	// 执行查询
-	err := baseQuery.Where(whereClause, args...).Order("priority desc").Find(&channels).Error
+	err := baseQuery.Where(whereClause, args...).Order(order).Find(&channels).Error
 	if err != nil {
 		return nil, err
 	}
