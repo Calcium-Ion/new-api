@@ -2,8 +2,8 @@ import { API, showError } from '../helpers';
 
 export async function getOAuthState() {
   let path = '/api/oauth/state';
-  let affCode = new URLSearchParams(window.location.search).get('aff');
-  if (affCode) {
+  let affCode = localStorage.getItem('aff');
+  if (affCode && affCode.length > 0) {
     path += `?aff=${affCode}`;
   }
   const res = await API.get(path);
