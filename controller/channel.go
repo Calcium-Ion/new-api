@@ -158,8 +158,8 @@ func SearchChannels(c *gin.Context) {
 	keyword := c.Query("keyword")
 	group := c.Query("group")
 	modelKeyword := c.Query("model")
-	//idSort, _ := strconv.ParseBool(c.Query("id_sort"))
-	channels, err := model.SearchChannels(keyword, group, modelKeyword)
+	idSort, _ := strconv.ParseBool(c.Query("id_sort"))
+	channels, err := model.SearchChannels(keyword, group, modelKeyword, idSort)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -294,10 +294,11 @@ func DeleteDisabledChannel(c *gin.Context) {
 }
 
 type ChannelTag struct {
-	Tag      string  `json:"tag"`
-	NewTag   *string `json:"newTag"`
-	Priority *int64  `json:"priority"`
-	Weight   *uint   `json:"weight"`
+	Tag        string  `json:"tag"`
+	NewTag     *string `json:"new_tag"`
+	Priority   *int64  `json:"priority"`
+	Weight     *uint   `json:"weight"`
+	MapMapping *string `json:"map_mapping"`
 }
 
 func DisableTagChannels(c *gin.Context) {

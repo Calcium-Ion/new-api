@@ -8,7 +8,8 @@ const EditTagModal = (props) => {
   const [loading, setLoading] = useState(false);
   const originInputs = {
     tag: '',
-    newTag: null,
+    new_tag: null,
+    model_mapping: null,
   }
   const [inputs, setInputs] = useState(originInputs);
 
@@ -18,10 +19,12 @@ const EditTagModal = (props) => {
     let data = {
       tag: tag,
     }
-    let shouldSave = true;
     if (inputs.newTag === tag) {
       setLoading(false);
       return;
+    }
+    if (inputs.model_mapping !== null) {
+      data.model_mapping = inputs.model
     }
     data.newTag = inputs.newTag;
     if (data.newTag === '') {
@@ -80,8 +83,8 @@ const EditTagModal = (props) => {
         <TextInput
           label="新标签（留空则解散标签，不会删除标签下的渠道）"
           name="newTag"
-          value={inputs.newTag}
-          onChange={(value) => setInputs({ ...inputs, newTag: value })}
+          value={inputs.new_tag}
+          onChange={(value) => setInputs({ ...inputs, new_tag: value })}
           placeholder="请输入新标签"
         />
       </Spin>

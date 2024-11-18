@@ -691,7 +691,7 @@ const ChannelsTable = () => {
     }
     setSearching(true);
     const res = await API.get(
-      `/api/channel/search?keyword=${searchKeyword}&group=${searchGroup}&model=${searchModel}`
+      `/api/channel/search?keyword=${searchKeyword}&group=${searchGroup}&model=${searchModel}&id_sort=${idSort}`
     );
     const { success, message, data } = res.data;
     if (success) {
