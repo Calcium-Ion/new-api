@@ -32,6 +32,7 @@ type Channel struct {
 	Priority          *int64  `json:"priority" gorm:"bigint;default:0"`
 	AutoBan           *int    `json:"auto_ban" gorm:"default:1"`
 	OtherInfo         string  `json:"other_info"`
+	Tag               *string `json:"tag" gorm:"index"`
 }
 
 func (channel *Channel) GetModels() []string {
@@ -61,6 +62,17 @@ func (channel *Channel) SetOtherInfo(otherInfo map[string]interface{}) {
 	channel.OtherInfo = string(otherInfoBytes)
 }
 
+func (channel *Channel) GetTag() string {
+	if channel.Tag == nil {
+		return ""
+	}
+	return *channel.Tag
+}
+
+func (channel *Channel) SetTag(tag string) {
+	channel.Tag = &tag
+}
+
 func (channel *Channel) GetAutoBan() bool {
 	if channel.AutoBan == nil {
 		return false
@@ -84,6 +96,12 @@ func GetAllChannels(startIdx int, num int, selectAll bool, idSort bool) ([]*Chan
 	} else {
 		err = DB.Order(order).Limit(num).Offset(startIdx).Omit("key").Find(&channels).Error
 	}
+	return channels, err
+}
+
+func GetChannelsByTag(tag string) ([]*Channel, error) {
+	var channels []*Channel
+	err := DB.Where("tag = ?", tag).Find(&channels).Error
 	return channels, err
 }
 
@@ -286,6 +304,42 @@ func UpdateChannelStatusById(id int, status int, reason string) {
 		}
 	}
 
+}
+
+func EnableChannelByTag(tag string) error {
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Update("status", common.ChannelStatusEnabled).Error
+	if err != nil {
+		return err
+	}
+	err = UpdateAbilityStatusByTag(tag, true)
+	return err
+}
+
+func DisableChannelByTag(tag string) error {
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Update("status", common.ChannelStatusManuallyDisabled).Error
+	if err != nil {
+		return err
+	}
+	err = UpdateAbilityStatusByTag(tag, false)
+	return err
+}
+
+func EditChannelByTag(tag string, newTag *string, priority *int64, weight *uint) error {
+	updateData := Channel{}
+	if newTag != nil {
+		updateData.Tag = newTag
+	}
+	if priority != nil {
+		updateData.Priority = priority
+	}
+	if weight != nil {
+		updateData.Weight = weight
+	}
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Updates(updateData).Error
+	if err != nil {
+		return err
+	}
+	return UpdateAbilityByTag(tag, newTag, priority, weight)
 }
 
 func UpdateChannelUsedQuota(id int, quota int) {

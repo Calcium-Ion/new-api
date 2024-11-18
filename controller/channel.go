@@ -57,10 +57,24 @@ func GetAllChannels(c *gin.Context) {
 		})
 		return
 	}
+	tags := make(map[string]bool)
+	channelData := make([]*model.Channel, 0, len(channels))
+	for _, channel := range channels {
+		channelTag := channel.GetTag()
+		if channelTag != "" && !tags[channelTag] {
+			tags[channelTag] = true
+			tagChannels, err := model.GetChannelsByTag(channelTag)
+			if err == nil {
+				channelData = append(channelData, tagChannels...)
+			}
+		} else {
+			channelData = append(channelData, channel)
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    channels,
+		"data":    channelData,
 	})
 	return
 }
@@ -275,6 +289,88 @@ func DeleteDisabledChannel(c *gin.Context) {
 		"success": true,
 		"message": "",
 		"data":    rows,
+	})
+	return
+}
+
+type ChannelTag struct {
+	Tag      string  `json:"tag"`
+	NewTag   *string `json:"newTag"`
+	Priority *int64  `json:"priority"`
+	Weight   *uint   `json:"weight"`
+}
+
+func DisableTagChannels(c *gin.Context) {
+	channelTag := ChannelTag{}
+	err := c.ShouldBindJSON(&channelTag)
+	if err != nil || channelTag.Tag == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "参数错误",
+		})
+		return
+	}
+	err = model.DisableChannelByTag(channelTag.Tag)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+	})
+	return
+}
+
+func EnableTagChannels(c *gin.Context) {
+	channelTag := ChannelTag{}
+	err := c.ShouldBindJSON(&channelTag)
+	if err != nil || channelTag.Tag == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "参数错误",
+		})
+		return
+	}
+	err = model.EnableChannelByTag(channelTag.Tag)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+	})
+	return
+}
+
+func EditTagChannels(c *gin.Context) {
+	channelTag := ChannelTag{}
+	err := c.ShouldBindJSON(&channelTag)
+	if err != nil || channelTag.Tag == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "参数错误",
+		})
+		return
+	}
+	err = model.EditChannelByTag(channelTag.Tag, channelTag.NewTag, channelTag.Priority, channelTag.Weight)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
 	})
 	return
 }
