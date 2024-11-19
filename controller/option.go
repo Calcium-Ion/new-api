@@ -82,6 +82,15 @@ func UpdateOption(c *gin.Context) {
 			})
 			return
 		}
+	case "GroupRatio":
+		err = common.CheckGroupRatio(option.Value)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
 	}
 	err = model.UpdateOption(option.Key, option.Value)
 	if err != nil {
