@@ -102,7 +102,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	if info.ChannelType != common.ChannelTypeOpenAI && info.ChannelType != common.ChannelTypeAzure {
+	if info.ChannelType != common.ChannelTypeOpenAI {
 		request.StreamOptions = nil
 	}
 	if strings.HasPrefix(request.Model, "o1-") {
