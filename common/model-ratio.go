@@ -33,17 +33,18 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4-32k":  30,
 	//"gpt-4-32k-0314":               30, //deprecated
 	"gpt-4-32k-0613":                  30,
-	"gpt-4-1106-preview":              5,    // $0.01 / 1K tokens
-	"gpt-4-0125-preview":              5,    // $0.01 / 1K tokens
-	"gpt-4-turbo-preview":             5,    // $0.01 / 1K tokens
-	"gpt-4-vision-preview":            5,    // $0.01 / 1K tokens
-	"gpt-4-1106-vision-preview":       5,    // $0.01 / 1K tokens
-	"chatgpt-4o-latest":               2.5,  // $0.01 / 1K tokens
-	"gpt-4o":                          1.25, // $0.01 / 1K tokens
-	"gpt-4o-audio-preview":            1.25, // $0.0015 / 1K tokens
-	"gpt-4o-audio-preview-2024-10-01": 1.25, // $0.0015 / 1K tokens
-	"gpt-4o-2024-08-06":               1.25, // $0.01 / 1K tokens
-	"gpt-4o-2024-05-13":               2.5,
+	"gpt-4-1106-preview":              5,    // $10 / 1M tokens
+	"gpt-4-0125-preview":              5,    // $10 / 1M tokens
+	"gpt-4-turbo-preview":             5,    // $10 / 1M tokens
+	"gpt-4-vision-preview":            5,    // $10 / 1M tokens
+	"gpt-4-1106-vision-preview":       5,    // $10 / 1M tokens
+	"chatgpt-4o-latest":               2.5,  // $5 / 1M tokens
+	"gpt-4o":                          1.25, // $2.5 / 1M tokens
+	"gpt-4o-audio-preview":            1.25, // $2.5 / 1M tokens
+	"gpt-4o-audio-preview-2024-10-01": 1.25, // $2.5 / 1M tokens
+	"gpt-4o-2024-05-13":               2.5,  // $5 / 1M tokens
+	"gpt-4o-2024-08-06":               1.25, // $2.5 / 1M tokens
+	"gpt-4o-2024-11-20":               1.25, // $2.5 / 1M tokens
 	"gpt-4o-realtime-preview":         2.5,
 	"o1-preview":                      7.5,
 	"o1-preview-2024-09-12":           7.5,
