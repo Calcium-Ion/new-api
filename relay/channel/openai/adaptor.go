@@ -132,6 +132,19 @@ func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInf
 
 		writer.WriteField("model", request.Model)
 
+		// 获取所有表单字段
+		formData := c.Request.PostForm
+
+		// 遍历表单字段并打印输出
+		for key, values := range formData {
+			if key == "model" {
+				continue
+			}
+			for _, value := range values {
+				writer.WriteField(key, value)
+			}
+		}
+
 		// 添加文件字段
 		file, header, err := c.Request.FormFile("file")
 		if err != nil {

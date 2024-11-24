@@ -33,14 +33,17 @@ func getAndValidAudioRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 			}
 		}
 	default:
-		if audioRequest.Model == "" {
-			audioRequest.Model = c.PostForm("model")
+		err = c.Request.ParseForm()
+		if err != nil {
+			return nil, err
 		}
+		formData := c.Request.PostForm
+		if audioRequest.Model == "" {
+			audioRequest.Model = formData.Get("model")
+		}
+
 		if audioRequest.Model == "" {
 			return nil, errors.New("model is required")
-		}
-		if audioRequest.ResponseFormat == "" {
-			audioRequest.ResponseFormat = "json"
 		}
 	}
 	return audioRequest, nil
