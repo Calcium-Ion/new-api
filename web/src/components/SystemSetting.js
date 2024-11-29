@@ -29,6 +29,7 @@ const SystemSetting = () => {
     ServerAddress: '',
     WorkerUrl: '',
     WorkerValidKey: '',
+    PaymentEnabled: false,
     EpayId: '',
     EpayKey: '',
     EpayPrice: 7.3,
@@ -114,6 +115,7 @@ const SystemSetting = () => {
       case 'EmailAliasRestrictionEnabled':
       case 'SMTPSSLEnabled':
       case 'RegisterEnabled':
+      case 'PaymentEnabled':
         value = inputs[key] === 'true' ? 'false' : 'true';
         break;
       default:
@@ -462,7 +464,15 @@ const SystemSetting = () => {
               placeholder='为一个 JSON 文本，键为组名称，值为倍率'
             />
           </Form.Group>
-          <Form.Button onClick={submitPayAddress}>更新支付设置</Form.Button>
+          <Form.Group inline>
+            <Form.Button onClick={submitPayAddress}>更新支付设置</Form.Button>
+            <Form.Checkbox
+                checked={inputs.PaymentEnabled === 'true'}
+                label='开启在线支付'
+                name='PaymentEnabled'
+                onChange={handleInputChange}
+            />
+          </Form.Group>
           <Divider />
           <Header as='h3' inverted={isDark}>
             配置登录注册

@@ -63,6 +63,7 @@ func GetStatus(c *gin.Context) {
 			"enable_data_export":       common.DataExportEnabled,
 			"data_export_default_time": common.DataExportDefaultTime,
 			"default_collapse_sidebar": common.DefaultCollapseSidebar,
+			"payment_enabled":          constant.PaymentEnabled,
 			"enable_online_topup":      constant.EpayAddress != "" && constant.EpayId != "" && constant.EpayKey != "",
 			"mj_notify_enabled":        constant.MjNotifyEnabled,
 			"chats":                    constant.Chats,

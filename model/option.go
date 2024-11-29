@@ -63,6 +63,7 @@ func InitOptionMap() {
 	common.OptionMap["ServerAddress"] = ""
 	common.OptionMap["WorkerUrl"] = constant.WorkerUrl
 	common.OptionMap["WorkerValidKey"] = constant.WorkerValidKey
+	common.OptionMap["PaymentEnabled"] = strconv.FormatBool(constant.PaymentEnabled)
 	common.OptionMap["EpayAddress"] = ""
 	common.OptionMap["EpayCallbackAddress"] = ""
 	common.OptionMap["EpayId"] = ""
@@ -228,6 +229,8 @@ func updateOptionMap(key string, value string) (err error) {
 			constant.StopOnSensitiveEnabled = boolValue
 		case "SMTPSSLEnabled":
 			common.SMTPSSLEnabled = boolValue
+		case "PaymentEnabled":
+			constant.PaymentEnabled = boolValue
 		}
 	}
 	switch key {

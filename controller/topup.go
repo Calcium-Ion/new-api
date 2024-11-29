@@ -69,6 +69,12 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
 		return
 	}
+
+	if !constant.PaymentEnabled {
+		c.JSON(200, gin.H{"message": "error", "data": "管理员未开启在线支付"})
+		return
+	}
+
 	if req.Amount < getMinTopup() {
 		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
 		return
@@ -229,6 +235,11 @@ func RequestAmount(c *gin.Context) {
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
+		return
+	}
+
+	if !constant.PaymentEnabled {
+		c.JSON(200, gin.H{"message": "error", "data": "管理员未开启在线支付"})
 		return
 	}
 
