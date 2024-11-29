@@ -329,10 +329,25 @@ func DisableChannelByTag(tag string) error {
 	return err
 }
 
-func EditChannelByTag(tag string, newTag *string, priority *int64, weight *uint) error {
+func EditChannelByTag(tag string, newTag *string, modelMapping *string, models *string, group *string, priority *int64, weight *uint) error {
 	updateData := Channel{}
-	if newTag != nil {
+	shouldReCreateAbilities := false
+	updatedTag := tag
+	// 如果 newTag 不为空且不等于 tag，则更新 tag
+	if newTag != nil && *newTag != tag {
 		updateData.Tag = newTag
+		updatedTag = *newTag
+	}
+	if modelMapping != nil && *modelMapping != "" {
+		updateData.ModelMapping = modelMapping
+	}
+	if models != nil && *models != "" {
+		shouldReCreateAbilities = true
+		updateData.Models = *models
+	}
+	if group != nil && *group != "" {
+		shouldReCreateAbilities = true
+		updateData.Group = *group
 	}
 	if priority != nil {
 		updateData.Priority = priority
@@ -340,11 +355,28 @@ func EditChannelByTag(tag string, newTag *string, priority *int64, weight *uint)
 	if weight != nil {
 		updateData.Weight = weight
 	}
+
 	err := DB.Model(&Channel{}).Where("tag = ?", tag).Updates(updateData).Error
 	if err != nil {
 		return err
 	}
-	return UpdateAbilityByTag(tag, newTag, priority, weight)
+	if shouldReCreateAbilities {
+		channels, err := GetChannelsByTag(updatedTag)
+		if err == nil {
+			for _, channel := range channels {
+				err = channel.UpdateAbilities()
+				if err != nil {
+					common.SysError("failed to update abilities: " + err.Error())
+				}
+			}
+		}
+	} else {
+		err := UpdateAbilityByTag(tag, newTag, priority, weight)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func UpdateChannelUsedQuota(id int, quota int) {

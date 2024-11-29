@@ -28,9 +28,7 @@ import { getChannelModels, loadChannelModels } from '../../components/utils.js';
 import axios from 'axios';
 
 const MODEL_MAPPING_EXAMPLE = {
-  'gpt-3.5-turbo-0301': 'gpt-3.5-turbo',
-  'gpt-4-0314': 'gpt-4',
-  'gpt-4-32k-0314': 'gpt-4-32k'
+  'gpt-3.5-turbo': 'gpt-3.5-turbo-0125'
 };
 
 const STATUS_CODE_MAPPING_EXAMPLE = {
@@ -253,7 +251,7 @@ const EditChannel = (props) => {
       setBasicModels(
         res.data.data
           .filter((model) => {
-            return model.id.startsWith('gpt-3') || model.id.startsWith('text-');
+            return model.id.startsWith('gpt-') || model.id.startsWith('text-');
           })
           .map((model) => model.id)
       );
@@ -282,7 +280,7 @@ const EditChannel = (props) => {
   useEffect(() => {
     let localModelOptions = [...originModelOptions];
     inputs.models.forEach((model) => {
-      if (!localModelOptions.find((option) => option.key === model)) {
+      if (!localModelOptions.find((option) => option.label === model)) {
         localModelOptions.push({
           label: model,
           value: model
@@ -296,8 +294,7 @@ const EditChannel = (props) => {
     fetchModels().then();
     fetchGroups().then();
     if (isEdit) {
-      loadChannel().then(() => {
-      });
+      loadChannel().then(() => {});
     } else {
       setInputs(originInputs);
       let localModels = getChannelModels(inputs.type);

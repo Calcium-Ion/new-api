@@ -59,16 +59,29 @@ func GetAllChannels(c *gin.Context) {
 	}
 	tags := make(map[string]bool)
 	channelData := make([]*model.Channel, 0, len(channels))
+	tagChannels := make([]*model.Channel, 0)
 	for _, channel := range channels {
 		channelTag := channel.GetTag()
 		if channelTag != "" && !tags[channelTag] {
 			tags[channelTag] = true
-			tagChannels, err := model.GetChannelsByTag(channelTag)
+			tagChannel, err := model.GetChannelsByTag(channelTag)
 			if err == nil {
-				channelData = append(channelData, tagChannels...)
+				tagChannels = append(tagChannels, tagChannel...)
 			}
 		} else {
 			channelData = append(channelData, channel)
+		}
+	}
+	for i, channel := range tagChannels {
+		find := false
+		for _, can := range channelData {
+			if channel.Id == can.Id {
+				find = true
+				break
+			}
+		}
+		if !find {
+			channelData = append(channelData, tagChannels[i])
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -294,11 +307,13 @@ func DeleteDisabledChannel(c *gin.Context) {
 }
 
 type ChannelTag struct {
-	Tag        string  `json:"tag"`
-	NewTag     *string `json:"new_tag"`
-	Priority   *int64  `json:"priority"`
-	Weight     *uint   `json:"weight"`
-	MapMapping *string `json:"map_mapping"`
+	Tag          string  `json:"tag"`
+	NewTag       *string `json:"new_tag"`
+	Priority     *int64  `json:"priority"`
+	Weight       *uint   `json:"weight"`
+	ModelMapping *string `json:"map_mapping"`
+	Models       *string `json:"models"`
+	Groups       *string `json:"groups"`
 }
 
 func DisableTagChannels(c *gin.Context) {
@@ -354,14 +369,21 @@ func EnableTagChannels(c *gin.Context) {
 func EditTagChannels(c *gin.Context) {
 	channelTag := ChannelTag{}
 	err := c.ShouldBindJSON(&channelTag)
-	if err != nil || channelTag.Tag == "" {
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "参数错误",
 		})
 		return
 	}
-	err = model.EditChannelByTag(channelTag.Tag, channelTag.NewTag, channelTag.Priority, channelTag.Weight)
+	if channelTag.Tag == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "tag不能为空",
+		})
+		return
+	}
+	err = model.EditChannelByTag(channelTag.Tag, channelTag.NewTag, channelTag.ModelMapping, channelTag.Models, channelTag.Groups, channelTag.Priority, channelTag.Weight)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
