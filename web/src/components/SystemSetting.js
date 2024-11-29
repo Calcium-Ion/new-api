@@ -31,11 +31,11 @@ const SystemSetting = () => {
     WorkerValidKey: '',
     EpayId: '',
     EpayKey: '',
-    Price: 7.3,
+    EpayPrice: 7.3,
     MinTopUp: 1,
     TopupGroupRatio: '',
-    PayAddress: '',
-    CustomCallbackAddress: '',
+    EpayAddress: '',
+    EpayCallbackAddress: '',
     Footer: '',
     WeChatAuthEnabled: '',
     WeChatServerAddress: '',
@@ -128,7 +128,7 @@ const SystemSetting = () => {
       if (key === 'EmailDomainWhitelist') {
         value = value.split(',');
       }
-      if (key === 'Price') {
+      if (key === 'EpayPrice') {
         value = parseFloat(value);
       }
       setInputs((inputs) => ({
@@ -153,10 +153,12 @@ const SystemSetting = () => {
       name === 'ServerAddress' ||
       name === 'WorkerUrl' ||
       name === 'WorkerValidKey' ||
+      name === 'MinTopUp' ||
       name === 'EpayId' ||
       name === 'EpayKey' ||
-      name === 'Price' ||
-      name === 'PayAddress' ||
+      name === 'EpayPrice' ||
+      name === 'EpayAddress' ||
+      name === 'EpayCallbackAddress' ||
       name === 'GitHubClientId' ||
       name === 'GitHubClientSecret' ||
       name === 'WeChatServerAddress' ||
@@ -195,6 +197,7 @@ const SystemSetting = () => {
       showError('请先填写服务器地址');
       return;
     }
+
     if (originInputs['TopupGroupRatio'] !== inputs.TopupGroupRatio) {
       if (!verifyJSON(inputs.TopupGroupRatio)) {
         showError('充值分组倍率不是合法的 JSON 字符串');
@@ -202,15 +205,26 @@ const SystemSetting = () => {
       }
       await updateOption('TopupGroupRatio', inputs.TopupGroupRatio);
     }
-    let PayAddress = removeTrailingSlash(inputs.PayAddress);
-    await updateOption('PayAddress', PayAddress);
+
+    await updateOption('MinTopUp', inputs.MinTopUp)
+
+    let EpayAddress = removeTrailingSlash(inputs.EpayAddress);
+    await updateOption('EpayAddress', EpayAddress);
+
     if (inputs.EpayId !== '') {
       await updateOption('EpayId', inputs.EpayId);
     }
+
     if (inputs.EpayKey !== undefined && inputs.EpayKey !== '') {
       await updateOption('EpayKey', inputs.EpayKey);
     }
-    await updateOption('Price', '' + inputs.Price);
+
+    await updateOption('EpayPrice', '' + inputs.EpayPrice);
+
+    if (inputs.EpayCallbackAddress !== undefined && inputs.EpayCallbackAddress !== '') {
+      let EpayCallbackAddress = removeTrailingSlash(inputs.EpayCallbackAddress)
+      await updateOption('EpayCallbackAddress', EpayCallbackAddress)
+    }
   };
 
   const submitSMTP = async () => {
@@ -393,8 +407,8 @@ const SystemSetting = () => {
             <Form.Input
               label='支付地址，不填写则不启用在线支付'
               placeholder='例如：https://yourdomain.com'
-              value={inputs.PayAddress}
-              name='PayAddress'
+              value={inputs.EpayAddress}
+              name='EpayAddress'
               onChange={handleInputChange}
             />
             <Form.Input
@@ -416,15 +430,15 @@ const SystemSetting = () => {
             <Form.Input
               label='回调地址，不填写则使用上方服务器地址作为回调地址'
               placeholder='例如：https://yourdomain.com'
-              value={inputs.CustomCallbackAddress}
-              name='CustomCallbackAddress'
+              value={inputs.EpayCallbackAddress}
+              name='EpayCallbackAddress'
               onChange={handleInputChange}
             />
             <Form.Input
               label='充值价格（x元/美金）'
               placeholder='例如：7，就是7元/美金'
-              value={inputs.Price}
-              name='Price'
+              value={inputs.EpayPrice}
+              name='EpayPrice'
               min={0}
               onChange={handleInputChange}
             />

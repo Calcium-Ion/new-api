@@ -28,13 +28,13 @@ type AmountRequest struct {
 }
 
 func GetEpayClient() *epay.Client {
-	if constant.PayAddress == "" || constant.EpayId == "" || constant.EpayKey == "" {
+	if constant.EpayAddress == "" || constant.EpayId == "" || constant.EpayKey == "" {
 		return nil
 	}
 	withUrl, err := epay.NewClient(&epay.Config{
 		PartnerID: constant.EpayId,
 		Key:       constant.EpayKey,
-	}, constant.PayAddress)
+	}, constant.EpayAddress)
 	if err != nil {
 		return nil
 	}
@@ -50,7 +50,7 @@ func getPayMoney(amount float64, group string) float64 {
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
 	}
-	payMoney := amount * constant.Price * topupGroupRatio
+	payMoney := amount * constant.EpayPrice * topupGroupRatio
 	return payMoney
 }
 

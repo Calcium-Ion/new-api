@@ -5,8 +5,8 @@ import (
 )
 
 func GetCallbackAddress() string {
-	if constant.CustomCallbackAddress == "" {
+	if constant.EpayCallbackAddress == "" {
 		return constant.ServerAddress
 	}
-	return constant.CustomCallbackAddress
+	return constant.EpayCallbackAddress
 }

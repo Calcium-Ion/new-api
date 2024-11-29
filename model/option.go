@@ -63,11 +63,11 @@ func InitOptionMap() {
 	common.OptionMap["ServerAddress"] = ""
 	common.OptionMap["WorkerUrl"] = constant.WorkerUrl
 	common.OptionMap["WorkerValidKey"] = constant.WorkerValidKey
-	common.OptionMap["PayAddress"] = ""
-	common.OptionMap["CustomCallbackAddress"] = ""
+	common.OptionMap["EpayAddress"] = ""
+	common.OptionMap["EpayCallbackAddress"] = ""
 	common.OptionMap["EpayId"] = ""
 	common.OptionMap["EpayKey"] = ""
-	common.OptionMap["Price"] = strconv.FormatFloat(constant.Price, 'f', -1, 64)
+	common.OptionMap["EpayPrice"] = strconv.FormatFloat(constant.EpayPrice, 'f', -1, 64)
 	common.OptionMap["MinTopUp"] = strconv.Itoa(constant.MinTopUp)
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = constant.Chats2JsonString()
@@ -250,18 +250,18 @@ func updateOptionMap(key string, value string) (err error) {
 		constant.WorkerUrl = value
 	case "WorkerValidKey":
 		constant.WorkerValidKey = value
-	case "PayAddress":
-		constant.PayAddress = value
+	case "PayAddress", "EpayAddress":
+		constant.EpayAddress = value
 	case "Chats":
 		err = constant.UpdateChatsByJsonString(value)
-	case "CustomCallbackAddress":
-		constant.CustomCallbackAddress = value
+	case "CustomCallbackAddress", "EpayCallbackAddress":
+		constant.EpayCallbackAddress = value
 	case "EpayId":
 		constant.EpayId = value
 	case "EpayKey":
 		constant.EpayKey = value
-	case "Price":
-		constant.Price, _ = strconv.ParseFloat(value, 64)
+	case "Price", "EpayPrice":
+		constant.EpayPrice, _ = strconv.ParseFloat(value, 64)
 	case "MinTopUp":
 		constant.MinTopUp, _ = strconv.Atoi(value)
 	case "TopupGroupRatio":
