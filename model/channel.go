@@ -32,6 +32,7 @@ type Channel struct {
 	Priority          *int64  `json:"priority" gorm:"bigint;default:0"`
 	AutoBan           *int    `json:"auto_ban" gorm:"default:1"`
 	OtherInfo         string  `json:"other_info"`
+	Tag               *string `json:"tag" gorm:"index"`
 }
 
 func (channel *Channel) GetModels() []string {
@@ -61,6 +62,17 @@ func (channel *Channel) SetOtherInfo(otherInfo map[string]interface{}) {
 	channel.OtherInfo = string(otherInfoBytes)
 }
 
+func (channel *Channel) GetTag() string {
+	if channel.Tag == nil {
+		return ""
+	}
+	return *channel.Tag
+}
+
+func (channel *Channel) SetTag(tag string) {
+	channel.Tag = &tag
+}
+
 func (channel *Channel) GetAutoBan() bool {
 	if channel.AutoBan == nil {
 		return false
@@ -87,7 +99,13 @@ func GetAllChannels(startIdx int, num int, selectAll bool, idSort bool) ([]*Chan
 	return channels, err
 }
 
-func SearchChannels(keyword string, group string, model string) ([]*Channel, error) {
+func GetChannelsByTag(tag string) ([]*Channel, error) {
+	var channels []*Channel
+	err := DB.Where("tag = ?", tag).Find(&channels).Error
+	return channels, err
+}
+
+func SearchChannels(keyword string, group string, model string, idSort bool) ([]*Channel, error) {
 	var channels []*Channel
 	keyCol := "`key`"
 	groupCol := "`group`"
@@ -98,6 +116,11 @@ func SearchChannels(keyword string, group string, model string) ([]*Channel, err
 		keyCol = `"key"`
 		groupCol = `"group"`
 		modelsCol = `"models"`
+	}
+
+	order := "priority desc"
+	if idSort {
+		order = "id desc"
 	}
 
 	// 构造基础查询
@@ -122,7 +145,7 @@ func SearchChannels(keyword string, group string, model string) ([]*Channel, err
 	}
 
 	// 执行查询
-	err := baseQuery.Where(whereClause, args...).Order("priority desc").Find(&channels).Error
+	err := baseQuery.Where(whereClause, args...).Order(order).Find(&channels).Error
 	if err != nil {
 		return nil, err
 	}
@@ -286,6 +309,74 @@ func UpdateChannelStatusById(id int, status int, reason string) {
 		}
 	}
 
+}
+
+func EnableChannelByTag(tag string) error {
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Update("status", common.ChannelStatusEnabled).Error
+	if err != nil {
+		return err
+	}
+	err = UpdateAbilityStatusByTag(tag, true)
+	return err
+}
+
+func DisableChannelByTag(tag string) error {
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Update("status", common.ChannelStatusManuallyDisabled).Error
+	if err != nil {
+		return err
+	}
+	err = UpdateAbilityStatusByTag(tag, false)
+	return err
+}
+
+func EditChannelByTag(tag string, newTag *string, modelMapping *string, models *string, group *string, priority *int64, weight *uint) error {
+	updateData := Channel{}
+	shouldReCreateAbilities := false
+	updatedTag := tag
+	// 如果 newTag 不为空且不等于 tag，则更新 tag
+	if newTag != nil && *newTag != tag {
+		updateData.Tag = newTag
+		updatedTag = *newTag
+	}
+	if modelMapping != nil && *modelMapping != "" {
+		updateData.ModelMapping = modelMapping
+	}
+	if models != nil && *models != "" {
+		shouldReCreateAbilities = true
+		updateData.Models = *models
+	}
+	if group != nil && *group != "" {
+		shouldReCreateAbilities = true
+		updateData.Group = *group
+	}
+	if priority != nil {
+		updateData.Priority = priority
+	}
+	if weight != nil {
+		updateData.Weight = weight
+	}
+
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Updates(updateData).Error
+	if err != nil {
+		return err
+	}
+	if shouldReCreateAbilities {
+		channels, err := GetChannelsByTag(updatedTag)
+		if err == nil {
+			for _, channel := range channels {
+				err = channel.UpdateAbilities()
+				if err != nil {
+					common.SysError("failed to update abilities: " + err.Error())
+				}
+			}
+		}
+	} else {
+		err := UpdateAbilityByTag(tag, newTag, priority, weight)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func UpdateChannelUsedQuota(id int, quota int) {

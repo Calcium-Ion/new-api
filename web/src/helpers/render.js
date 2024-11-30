@@ -67,6 +67,8 @@ export function renderQuotaNumberWithDigit(num, digits = 2) {
 }
 
 export function renderNumberWithPoint(num) {
+  if (num === undefined)
+    return '';
   num = num.toFixed(2);
   if (num >= 100000) {
     // Convert number to string to manipulate it
