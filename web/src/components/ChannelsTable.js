@@ -31,7 +31,7 @@ import {
   Typography
 } from '@douyinfe/semi-ui';
 import EditChannel from '../pages/Channel/EditChannel';
-import { IconTreeTriangleDown } from '@douyinfe/semi-icons';
+import { IconList, IconTreeTriangleDown } from '@douyinfe/semi-icons';
 import { loadChannelModels } from './utils.js';
 import EditTagModal from '../pages/Channel/EditTagModal.js';
 
@@ -52,6 +52,20 @@ function renderType(type) {
   return (
     <Tag size="large" color={type2label[type]?.color}>
       {type2label[type]?.text}
+    </Tag>
+  );
+}
+
+function renderTagType(type) {
+  return (
+    <Tag
+      color='light-blue'
+      prefixIcon={<IconList />}
+      size='large'
+      shape='circle'
+      type='light'
+    >
+      标签聚合
     </Tag>
   );
 }
@@ -90,7 +104,11 @@ const ChannelsTable = () => {
       title: '类型',
       dataIndex: 'type',
       render: (text, record, index) => {
-        return <div>{renderType(text)}</div>;
+        if (record.children === undefined) {
+          return <>{renderType(text)}</>;
+        } else {
+          return <>{renderTagType(0)}</>;
+        }
       }
     },
     {
@@ -441,7 +459,8 @@ const ChannelsTable = () => {
           let channelGroupsStr = channels[i].group;
           channelGroupsStr.split(',').forEach((item, index) => {
             if (tagChannelDates.group.indexOf(item) === -1) {
-              tagChannelDates.group += item + ',';
+              // join
+              tagChannelDates.group += ',' + item;
             }
           });
         }

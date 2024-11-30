@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API, showError, showSuccess } from '../../helpers';
+import { API, showError, showInfo, showSuccess, showWarning, verifyJSON } from '../../helpers';
 import { SideSheet, Space, Button, Input, Typography, Spin, Modal, Select, Banner, TextArea } from '@douyinfe/semi-ui';
 import TextInput from '../../components/TextInput.js';
 import { getChannelModels } from '../../components/utils.js';
@@ -122,7 +122,12 @@ const EditTagModal = (props) => {
     let data = {
       tag: tag,
     }
-    if (inputs.model_mapping !== null) {
+    if (inputs.model_mapping !== null && inputs.model_mapping !== '') {
+      if (inputs.model_mapping !== '' && !verifyJSON(inputs.model_mapping)) {
+        showInfo('模型映射必须是合法的 JSON 格式！');
+        setLoading(false);
+        return;
+      }
       data.model_mapping = inputs.model_mapping
     }
     if (inputs.groups.length > 0) {
@@ -132,6 +137,12 @@ const EditTagModal = (props) => {
       data.models = inputs.models.join(',');
     }
     data.newTag = inputs.newTag;
+    // check have any change
+    if (data.model_mapping === undefined && data.groups === undefined && data.models === undefined && data.newTag === undefined) {
+      showWarning('没有任何修改！');
+      setLoading(false);
+      return;
+    }
     await submit(data);
     setLoading(false);
   };
