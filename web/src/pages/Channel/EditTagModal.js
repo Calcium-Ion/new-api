@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API, showError, showInfo, showSuccess, showWarning, verifyJSON } from '../../helpers';
 import { SideSheet, Space, Button, Input, Typography, Spin, Modal, Select, Banner, TextArea } from '@douyinfe/semi-ui';
-import TextInput from '../../components/TextInput.js';
+import TextInput from '../../components/custom/TextInput.js';
 import { getChannelModels } from '../../components/utils.js';
 
 const MODEL_MAPPING_EXAMPLE = {

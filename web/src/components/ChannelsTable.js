@@ -12,15 +12,16 @@ import {
 
 import { CHANNEL_OPTIONS, ITEMS_PER_PAGE } from '../constants';
 import {
+  getQuotaPerUnit,
   renderGroup,
   renderNumberWithPoint,
-  renderQuota
+  renderQuota, renderQuotaWithPrompt
 } from '../helpers/render';
 import {
   Button, Divider,
   Dropdown,
-  Form,
-  InputNumber,
+  Form, Input,
+  InputNumber, Modal,
   Popconfirm,
   Space,
   SplitButtonGroup,
@@ -34,6 +35,7 @@ import EditChannel from '../pages/Channel/EditChannel';
 import { IconList, IconTreeTriangleDown } from '@douyinfe/semi-icons';
 import { loadChannelModels } from './utils.js';
 import EditTagModal from '../pages/Channel/EditTagModal.js';
+import TextNumberInput from './custom/TextNumberInput.js';
 
 function renderTimestamp(timestamp) {
   return <>{timestamp2string(timestamp)}</>;
@@ -200,7 +202,29 @@ const ChannelsTable = () => {
           );
         } else {
           return <>
-            <Button theme="outline" type="primary">修改</Button>
+            <InputNumber
+              style={{ width: 70 }}
+              name="priority"
+              keepFocus={true}
+              onBlur={(e) => {
+                Modal.warning({
+                  title: '修改子渠道优先级',
+                  content: '确定要修改所有子渠道优先级为 ' + e.target.value + ' 吗？',
+                  onOk: () => {
+                    if (e.target.value === '') {
+                      return;
+                    }
+                    submitTagEdit('priority', {
+                      tag: record.key,
+                      priority: e.target.value
+                    })
+                  },
+                })
+              }}
+              innerButtons
+              defaultValue={record.priority}
+              min={-999}
+            />
           </>;
         }
       }
@@ -227,12 +251,29 @@ const ChannelsTable = () => {
           );
         } else {
           return (
-            <Button
-              theme="outline"
-              type="primary"
-            >
-              修改
-            </Button>
+            <InputNumber
+              style={{ width: 70 }}
+              name="weight"
+              keepFocus={true}
+              onBlur={(e) => {
+                Modal.warning({
+                  title: '修改子渠道权重',
+                  content: '确定要修改所有子渠道权重为 ' + e.target.value + ' 吗？',
+                  onOk: () => {
+                    if (e.target.value === '') {
+                      return;
+                    }
+                    submitTagEdit('weight', {
+                      tag: record.key,
+                      weight: e.target.value
+                    })
+                  },
+                })
+              }}
+              innerButtons
+              defaultValue={record.weight}
+              min={-999}
+            />
           );
         }
       }
@@ -397,6 +438,8 @@ const ChannelsTable = () => {
   const [showEditTag, setShowEditTag] = useState(false);
   const [editingTag, setEditingTag] = useState('');
   const [selectedChannels, setSelectedChannels] = useState([]);
+  const [showEditPriority, setShowEditPriority] = useState(false);
+
 
   const removeRecord = (id) => {
     let newDataSource = [...channels];
@@ -444,13 +487,29 @@ const ChannelsTable = () => {
             name: '标签：' + tag,
             group: '',
             used_quota: 0,
-            response_time: 0
+            response_time: 0,
+            priority: -1,
+            weight: -1,
           };
           tagChannelDates.children = [];
           channelDates.push(tagChannelDates);
         } else {
           // found, add to the tag
           tagChannelDates = channelDates.find((item) => item.key === tag);
+        }
+        if (tagChannelDates.priority === -1) {
+          tagChannelDates.priority = channels[i].priority;
+        } else {
+          if (tagChannelDates.priority !== channels[i].priority) {
+            tagChannelDates.priority = '';
+          }
+        }
+        if (tagChannelDates.weight === -1) {
+          tagChannelDates.weight = channels[i].weight;
+        } else {
+          if (tagChannelDates.weight !== channels[i].weight) {
+            tagChannelDates.weight = '';
+          }
         }
 
         if (tagChannelDates.group === '') {
@@ -854,6 +913,35 @@ const ChannelsTable = () => {
       showError(error.message);
     }
   };
+
+  const submitTagEdit = async (type, data) => {
+    switch (type) {
+      case 'priority':
+        if (data.priority === undefined || data.priority === '') {
+          showInfo('优先级必须是整数！');
+          return;
+        }
+        data.priority = parseInt(data.priority);
+        break;
+      case 'weight':
+        if (data.weight === undefined || data.weight < 0 || data.weight === '') {
+          showInfo('权重必须是非负整数！');
+          return;
+        }
+        data.weight = parseInt(data.weight);
+        break
+    }
+
+    try {
+      const res = await API.put('/api/channel/tag', data);
+      if (res?.data?.success) {
+        showSuccess('更新成功！');
+        await refresh();
+      }
+    } catch (error) {
+      showError(error);
+    }
+  }
 
   const closeEdit = () => {
     setShowEdit(false);
