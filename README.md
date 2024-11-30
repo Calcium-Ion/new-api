@@ -88,6 +88,17 @@
 [图文教程](BT.md)
 
 ### 基于 Docker 进行部署
+### 使用 Docker Compose 部署（推荐）
+```shell
+# 下载项目
+git clone https://github.com/Calcium-Ion/new-api.git
+cd new-api
+# 按需编辑 docker-compose.yml
+# 启动
+docker-compose up -d
+```
+
+### 直接使用 Docker 镜像
 ```shell
 # 使用 SQLite 的部署命令：
 docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
