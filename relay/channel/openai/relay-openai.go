@@ -98,6 +98,11 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 				shouldSendLastResp = false
 			}
 		}
+		for _, choice := range lastStreamResponse.Choices {
+			if choice.FinishReason != nil {
+				shouldSendLastResp = true
+			}
+		}
 	}
 	if shouldSendLastResp {
 		service.StringData(c, lastStreamData)
