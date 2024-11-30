@@ -317,7 +317,7 @@ const ChannelsTable = () => {
                 position={'left'}
                 onConfirm={() => {
                   manageChannel(record.id, 'delete', record).then(() => {
-                    removeRecord(record.id);
+                    removeRecord(record);
                   });
                 }}
               >
@@ -365,7 +365,7 @@ const ChannelsTable = () => {
                 okType={'danger'}
                 position={'left'}
                 onConfirm={async () => {
-                  copySelectedChannel(record.id);
+                  copySelectedChannel(record);
                 }}
               >
                 <Button theme="light" type="primary" style={{ marginRight: 1 }}>
@@ -441,10 +441,21 @@ const ChannelsTable = () => {
   const [showEditPriority, setShowEditPriority] = useState(false);
 
 
-  const removeRecord = (id) => {
+  const removeRecord = (record) => {
     let newDataSource = [...channels];
-    if (id != null) {
-      let idx = newDataSource.findIndex((data) => data.id === id);
+    if (record.id != null) {
+      let idx = newDataSource.findIndex((data) => {
+        if (data.children !== undefined) {
+          for (let i = 0; i < data.children.length; i++) {
+            if (data.children[i].id === record.id) {
+              data.children.splice(i, 1);
+              return false;
+            }
+          }
+        } else {
+          return data.id === record.id
+        }
+      });
 
       if (idx > -1) {
         newDataSource.splice(idx, 1);
@@ -566,11 +577,8 @@ const ChannelsTable = () => {
     setLoading(false);
   };
 
-  const copySelectedChannel = async (id) => {
-    const channelToCopy = channels.find(
-      (channel) => String(channel.id) === String(id)
-    );
-    console.log(channelToCopy);
+  const copySelectedChannel = async (record) => {
+    const channelToCopy = record
     channelToCopy.name += '_复制';
     channelToCopy.created_time = null;
     channelToCopy.balance = 0;
