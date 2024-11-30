@@ -22,7 +22,7 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 		return err
 	}
 
-	token, err := model.CacheGetTokenByKey(strings.TrimLeft(relayInfo.ApiKey, "sk-"))
+	token, err := model.CacheGetTokenByKey(strings.TrimLeft(relayInfo.TokenKey, "sk-"))
 	if err != nil {
 		return err
 	}
