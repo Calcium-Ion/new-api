@@ -3,12 +3,13 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
 	"one-api/model"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type OpenAIModel struct {
@@ -48,41 +49,36 @@ func GetAllChannels(c *gin.Context) {
 	if pageSize < 0 {
 		pageSize = common.ItemsPerPage
 	}
+	channelData := make([]*model.Channel, 0)
 	idSort, _ := strconv.ParseBool(c.Query("id_sort"))
-	channels, err := model.GetAllChannels(p*pageSize, pageSize, false, idSort)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
-	}
-	tags := make(map[string]bool)
-	channelData := make([]*model.Channel, 0, len(channels))
-	tagChannels := make([]*model.Channel, 0)
-	for _, channel := range channels {
-		channelTag := channel.GetTag()
-		if channelTag != "" && !tags[channelTag] {
-			tags[channelTag] = true
-			tagChannel, err := model.GetChannelsByTag(channelTag)
-			if err == nil {
-				tagChannels = append(tagChannels, tagChannel...)
-			}
-		} else {
-			channelData = append(channelData, channel)
+	enableTagMode, _ := strconv.ParseBool(c.Query("tag_mode"))
+	if enableTagMode {
+		tags, err := model.GetPaginatedTags(p*pageSize, pageSize)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
 		}
-	}
-	for i, channel := range tagChannels {
-		find := false
-		for _, can := range channelData {
-			if channel.Id == can.Id {
-				find = true
-				break
+		for _, tag := range tags {
+			if tag != nil && *tag != "" {
+				tagChannel, err := model.GetChannelsByTag(*tag)
+				if err == nil {
+					channelData = append(channelData, tagChannel...)
+				}
 			}
 		}
-		if !find {
-			channelData = append(channelData, tagChannels[i])
+	} else {
+		channels, err := model.GetAllChannels(p*pageSize, pageSize, false, idSort)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
 		}
+		channelData = channels
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
