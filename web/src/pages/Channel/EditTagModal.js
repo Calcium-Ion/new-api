@@ -136,9 +136,9 @@ const EditTagModal = (props) => {
     if (inputs.models.length > 0) {
       data.models = inputs.models.join(',');
     }
-    data.newTag = inputs.newTag;
+    data.new_tag = inputs.new_tag;
     // check have any change
-    if (data.model_mapping === undefined && data.groups === undefined && data.models === undefined && data.newTag === undefined) {
+    if (data.model_mapping === undefined && data.groups === undefined && data.models === undefined && data.new_tag === undefined) {
       showWarning('没有任何修改！');
       setLoading(false);
       return;
