@@ -53,7 +53,7 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 		return errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
 	}
 
-	if token.RemainQuota < quota {
+	if !token.UnlimitedQuota && token.RemainQuota < quota {
 		return errors.New(fmt.Sprintf("令牌额度不足，剩余额度为 %d", token.RemainQuota))
 	}
 

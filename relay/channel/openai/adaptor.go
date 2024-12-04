@@ -32,11 +32,15 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	if info.RelayMode == constant.RelayModeRealtime {
-		// trim https
-		baseUrl := strings.TrimPrefix(info.BaseUrl, "https://")
-		baseUrl = strings.TrimPrefix(baseUrl, "http://")
-		baseUrl = "wss://" + baseUrl
-		info.BaseUrl = baseUrl
+		if strings.HasPrefix(info.BaseUrl, "https://") {
+			baseUrl := strings.TrimPrefix(info.BaseUrl, "https://")
+			baseUrl = "wss://" + baseUrl
+			info.BaseUrl = baseUrl
+		} else if strings.HasPrefix(info.BaseUrl, "http://") {
+			baseUrl := strings.TrimPrefix(info.BaseUrl, "http://")
+			baseUrl = "ws://" + baseUrl
+			info.BaseUrl = baseUrl
+		}
 	}
 	switch info.ChannelType {
 	case common.ChannelTypeAzure:
