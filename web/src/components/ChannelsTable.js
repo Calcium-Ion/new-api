@@ -484,7 +484,7 @@ const ChannelsTable = () => {
       if (!enableTagMode) {
         channelDates.push(channels[i]);
       } else {
-        let tag = channels[i].tag;
+        let tag = channels[i].tag?channels[i].tag:"";
         // find from channelTags
         let tagIndex = channelTags[tag];
         let tagChannelDates = undefined;
