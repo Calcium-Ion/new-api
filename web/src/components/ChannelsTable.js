@@ -781,10 +781,6 @@ const ChannelsTable = () => {
     const { success, message, data } = res.data;
     if (success) {
       setChannelFormat(data, enableTagMode);
-      if (!enableTagMode) {
-        setChannels(data.map(channel => ({...channel, key: '' + channel.id})));
-        setChannelCount(data.length);
-      }
       setActivePage(1);
     } else {
       showError(message);
