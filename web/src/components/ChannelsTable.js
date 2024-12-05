@@ -470,18 +470,18 @@ const ChannelsTable = () => {
     let channelTags = {};
     for (let i = 0; i < channels.length; i++) {
       channels[i].key = '' + channels[i].id;
-      if (!enableTagMode) {
-        let test_models = [];
-        channels[i].models.split(',').forEach((item, index) => {
-          test_models.push({
-            node: 'item',
-            name: item,
-            onClick: () => {
-              testChannel(channels[i], item);
-            }
-          });
+      let test_models = [];
+      channels[i].models.split(',').forEach((item, index) => {
+        test_models.push({
+          node: 'item',
+          name: item,
+          onClick: () => {
+            testChannel(channels[i], item);
+          }
         });
-        channels[i].test_models = test_models;
+      });
+      channels[i].test_models = test_models;
+      if (!enableTagMode) {
         channelDates.push(channels[i]);
       } else {
         let tag = channels[i].tag;
