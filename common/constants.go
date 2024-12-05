@@ -229,6 +229,7 @@ const (
 	ChannelTypeSiliconFlow    = 40
 	ChannelTypeVertexAi       = 41
 	ChannelTypeMistral        = 42
+	ChannelTypeDeepSeek       = 43
 
 	ChannelTypeDummy // this one is only for count, do not add any channel after this
 
@@ -254,7 +255,7 @@ var ChannelBaseURLs = []string{
 	"https://open.bigmodel.cn",            // 16
 	"https://dashscope.aliyuncs.com",      // 17
 	"",                                    // 18
-	"https://api.360.cn",                   // 19
+	"https://api.360.cn",                  // 19
 	"https://openrouter.ai/api",           // 20
 	"https://api.aiproxy.io",              // 21
 	"https://fastgpt.run/api/openapi",     // 22
@@ -278,4 +279,5 @@ var ChannelBaseURLs = []string{
 	"https://api.siliconflow.cn",                //40
 	"",                                          //41
 	"https://api.mistral.ai",                    //42
+	"https://api.deepseek.com",                  //43
 }
