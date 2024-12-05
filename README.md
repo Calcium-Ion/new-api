@@ -16,15 +16,6 @@
 > 本项目仅供个人学习使用，不保证稳定性，且不提供任何技术支持。
 > 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
 
-> [!TIP]
-> 最新版Docker镜像：`calciumion/new-api:latest`  
-> 默认账号root 密码123456  
-> 更新指令：
-> ```
-> docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
-> ```
-
-
 ## 主要变更
 此分叉版本的主要变更如下：
 
@@ -77,6 +68,14 @@
 - `GEMINI_MODEL_MAP`：Gemini模型指定版本(v1/v1beta)，使用“模型:版本”指定，","分隔，例如：-e GEMINI_MODEL_MAP="gemini-1.5-pro-latest:v1beta,gemini-1.5-pro-001:v1beta"，为空则使用默认配置(v1beta)
 - `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`，`STRICT`，默认为 `NONE`。
 ## 部署
+> [!TIP]
+> 最新版Docker镜像：`calciumion/new-api:latest`  
+> 默认账号root 密码123456  
+> 更新指令：
+> ```
+> docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
+> ```
+
 ### 部署要求
 - 本地数据库（默认）：SQLite（Docker 部署默认使用 SQLite，必须挂载 `/data` 目录到宿主机）
 - 远程数据库：MySQL 版本 >= 5.7.8，PgSQL 版本 >= 9.6
