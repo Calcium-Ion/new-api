@@ -410,3 +410,55 @@ func GetPaginatedTags(offset int, limit int) ([]*string, error) {
 	err := DB.Model(&Channel{}).Select("DISTINCT tag").Where("tag != ''").Offset(offset).Limit(limit).Find(&tags).Error
 	return tags, err
 }
+
+func SearchTags(keyword string, group string, model string, idSort bool) ([]*string, error) {
+	var tags []*string
+	keyCol := "`key`"
+	groupCol := "`group`"
+	modelsCol := "`models`"
+
+	// 如果是 PostgreSQL，使用双引号
+	if common.UsingPostgreSQL {
+		keyCol = `"key"`
+		groupCol = `"group"`
+		modelsCol = `"models"`
+	}
+
+	order := "priority desc"
+	if idSort {
+		order = "id desc"
+	}
+
+	// 构造基础查询
+	baseQuery := DB.Model(&Channel{}).Omit(keyCol)
+
+	// 构造WHERE子句
+	var whereClause string
+	var args []interface{}
+	if group != "" && group != "null" {
+		var groupCondition string
+		if common.UsingMySQL {
+			groupCondition = `CONCAT(',', ` + groupCol + `, ',') LIKE ?`
+		} else {
+			// sqlite, PostgreSQL
+			groupCondition = `(',' || ` + groupCol + ` || ',') LIKE ?`
+		}
+		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + ` LIKE ? AND ` + groupCondition
+		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+model+"%", "%,"+group+",%")
+	} else {
+		whereClause = "(id = ? OR name LIKE ? OR " + keyCol + " = ?) AND " + modelsCol + " LIKE ?"
+		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+model+"%")
+	}
+
+	err := baseQuery.Where(whereClause, args...).
+		Select("DISTINCT tag").
+		Where("tag != ''").
+		Order(order).
+		Find(&tags).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}

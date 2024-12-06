@@ -168,18 +168,40 @@ func SearchChannels(c *gin.Context) {
 	group := c.Query("group")
 	modelKeyword := c.Query("model")
 	idSort, _ := strconv.ParseBool(c.Query("id_sort"))
-	channels, err := model.SearchChannels(keyword, group, modelKeyword, idSort)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
+	enableTagMode, _ := strconv.ParseBool(c.Query("tag_mode"))
+	channelData := make([]*model.Channel, 0)
+	if enableTagMode {
+		tags, err := model.SearchTags(keyword, group, modelKeyword, idSort)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
+		for _, tag := range tags {
+			if tag != nil && *tag != "" {
+				tagChannel, err := model.GetChannelsByTag(*tag)
+				if err == nil {
+					channelData = append(channelData, tagChannel...)
+				}
+			}
+		}
+	} else {
+		channels, err := model.SearchChannels(keyword, group, modelKeyword, idSort)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
+		channelData = channels
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    channels,
+		"data":    channelData,
 	})
 	return
 }
