@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
@@ -186,10 +187,11 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 				Role:    "assistant",
 				Content: content,
 			},
-			FinishReason: relaycommon.StopFinishReason,
+			FinishReason: constant.FinishReasonStop,
 		}
 		if len(candidate.Content.Parts) > 0 {
 			if candidate.Content.Parts[0].FunctionCall != nil {
+				choice.FinishReason = constant.FinishReasonToolCalls
 				choice.Message.ToolCalls = getToolCalls(&candidate)
 			} else {
 				choice.Message.SetStringContent(candidate.Content.Parts[0].Text)
@@ -262,7 +264,7 @@ func GeminiChatStreamHandler(c *gin.Context, resp *http.Response, info *relaycom
 		}
 	}
 
-	response := service.GenerateStopResponse(id, createAt, info.UpstreamModelName, relaycommon.StopFinishReason)
+	response := service.GenerateStopResponse(id, createAt, info.UpstreamModelName, constant.FinishReasonStop)
 	service.ObjectData(c, response)
 
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens

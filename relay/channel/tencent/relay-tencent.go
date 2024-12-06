@@ -12,8 +12,8 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
-	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strconv"
 	"strings"
@@ -81,7 +81,7 @@ func streamResponseTencent2OpenAI(TencentResponse *TencentChatResponse) *dto.Cha
 		var choice dto.ChatCompletionsStreamResponseChoice
 		choice.Delta.SetContentString(TencentResponse.Choices[0].Delta.Content)
 		if TencentResponse.Choices[0].FinishReason == "stop" {
-			choice.FinishReason = &relaycommon.StopFinishReason
+			choice.FinishReason = &constant.FinishReasonStop
 		}
 		response.Choices = append(response.Choices, choice)
 	}
