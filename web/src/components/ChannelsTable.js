@@ -768,7 +768,7 @@ const ChannelsTable = () => {
     }
   };
 
-  const searchChannels = async (searchKeyword, searchGroup, searchModel) => {
+  const searchChannels = async (searchKeyword, searchGroup, searchModel, enableTagMode) => {
     if (searchKeyword === '' && searchGroup === '' && searchModel === '') {
       await loadChannels(0, pageSize, idSort, enableTagMode);
       setActivePage(1);
@@ -982,7 +982,7 @@ const ChannelsTable = () => {
       />
       <Form
         onSubmit={() => {
-          searchChannels(searchKeyword, searchGroup, searchModel);
+          searchChannels(searchKeyword, searchGroup, searchModel, enableTagMode);
         }}
         labelPosition="left"
       >
@@ -1015,7 +1015,7 @@ const ChannelsTable = () => {
               initValue={null}
               onChange={(v) => {
                 setSearchGroup(v);
-                searchChannels(searchKeyword, v, searchModel);
+                searchChannels(searchKeyword, v, searchModel, enableTagMode);
               }}
             />
             <Button
