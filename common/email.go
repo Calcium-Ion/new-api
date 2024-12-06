@@ -10,21 +10,21 @@ import (
 )
 
 func generateMessageID() (string, error) {
-	split := strings.Split(SMTPAccount, "@")
+	split := strings.Split(SMTPFrom, "@")
 	if len(split) < 2 {
 		return "", fmt.Errorf("invalid SMTP account")
 	}
-	domain := strings.Split(SMTPAccount, "@")[1]
+	domain := strings.Split(SMTPFrom, "@")[1]
 	return fmt.Sprintf("<%d.%s@%s>", time.Now().UnixNano(), GetRandomString(12), domain), nil
 }
 
 func SendEmail(subject string, receiver string, content string) error {
+	if SMTPFrom == "" { // for compatibility
+		SMTPFrom = SMTPAccount
+	}
 	id, err2 := generateMessageID()
 	if err2 != nil {
 		return err2
-	}
-	if SMTPFrom == "" { // for compatibility
-		SMTPFrom = SMTPAccount
 	}
 	if SMTPServer == "" && SMTPAccount == "" {
 		return fmt.Errorf("SMTP 服务器未配置")
@@ -79,11 +79,11 @@ func SendEmail(subject string, receiver string, content string) error {
 		if err != nil {
 			return err
 		}
-	} else if isOutlookServer(SMTPAccount) {
+	} else if isOutlookServer(SMTPAccount) || SMTPServer == "smtp.azurecomm.net" {
 		auth = LoginAuth(SMTPAccount, SMTPToken)
-		err = smtp.SendMail(addr, auth, SMTPAccount, to, mail)
+		err = smtp.SendMail(addr, auth, SMTPFrom, to, mail)
 	} else {
-		err = smtp.SendMail(addr, auth, SMTPAccount, to, mail)
+		err = smtp.SendMail(addr, auth, SMTPFrom, to, mail)
 	}
 	return err
 }
