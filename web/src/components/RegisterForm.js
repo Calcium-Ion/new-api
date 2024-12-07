@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API, getLogo, showError, showInfo, showSuccess, updateAPI } from '../helpers';
 import Turnstile from 'react-turnstile';
@@ -11,6 +11,7 @@ import LinuxDoIcon from './LinuxDoIcon.js';
 import WeChatIcon from './WeChatIcon.js';
 import TelegramLoginButton from 'react-telegram-login/src';
 import { setUserData } from '../helpers/data.js';
+import { UserContext } from '../context/User/index.js';
 
 const RegisterForm = () => {
   const [inputs, setInputs] = useState({
@@ -22,6 +23,7 @@ const RegisterForm = () => {
   });
   const { username, password, password2 } = inputs;
   const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [userState, userDispatch] = useContext(UserContext);
   const [turnstileEnabled, setTurnstileEnabled] = useState(false);
   const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
@@ -132,6 +134,38 @@ const RegisterForm = () => {
     }
     setLoading(false);
   };
+
+  const onTelegramLoginClicked = async (response) => {
+    const fields = [
+      'id',
+      'first_name',
+      'last_name',
+      'username',
+      'photo_url',
+      'auth_date',
+      'hash',
+      'lang',
+    ];
+    const params = {};
+    fields.forEach((field) => {
+      if (response[field]) {
+        params[field] = response[field];
+      }
+    });
+    const res = await API.get(`/api/oauth/telegram/login`, { params });
+    const { success, message, data } = res.data;
+    if (success) {
+      userDispatch({ type: 'login', payload: data });
+      localStorage.setItem('user', JSON.stringify(data));
+      showSuccess('登录成功！');
+      setUserData(data);
+      updateAPI();
+      navigate('/');
+    } else {
+      showError(message);
+    }
+  };
+
 
   return (
     <div>
