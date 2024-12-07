@@ -245,7 +245,7 @@ func xunfeiMakeRequest(textRequest dto.GeneralOpenAIRequest, domain, authUrl, ap
 func apiVersion2domain(apiVersion string) string {
 	switch apiVersion {
 	case "v1.1":
-		return "general"
+		return "lite"
 	case "v2.1":
 		return "generalv2"
 	case "v3.1":
