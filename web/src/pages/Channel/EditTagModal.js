@@ -209,7 +209,7 @@ const EditTagModal = (props) => {
       </div>
       <Spin spinning={loading}>
         <TextInput
-          label="新标签，留空则不更改"
+          label="标签名，留空则解散标签"
           name="newTag"
           value={inputs.new_tag}
           onChange={(value) => setInputs({ ...inputs, new_tag: value })}
