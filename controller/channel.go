@@ -63,7 +63,7 @@ func GetAllChannels(c *gin.Context) {
 		}
 		for _, tag := range tags {
 			if tag != nil && *tag != "" {
-				tagChannel, err := model.GetChannelsByTag(*tag)
+				tagChannel, err := model.GetChannelsByTag(*tag, idSort)
 				if err == nil {
 					channelData = append(channelData, tagChannel...)
 				}
@@ -181,7 +181,7 @@ func SearchChannels(c *gin.Context) {
 		}
 		for _, tag := range tags {
 			if tag != nil && *tag != "" {
-				tagChannel, err := model.GetChannelsByTag(*tag)
+				tagChannel, err := model.GetChannelsByTag(*tag, idSort)
 				if err == nil {
 					channelData = append(channelData, tagChannel...)
 				}

@@ -100,9 +100,13 @@ func GetAllChannels(startIdx int, num int, selectAll bool, idSort bool) ([]*Chan
 	return channels, err
 }
 
-func GetChannelsByTag(tag string) ([]*Channel, error) {
+func GetChannelsByTag(tag string, idSort bool) ([]*Channel, error) {
 	var channels []*Channel
-	err := DB.Where("tag = ?", tag).Find(&channels).Error
+	order := "priority desc"
+	if idSort {
+		order = "id desc"
+	}
+	err := DB.Where("tag = ?", tag).Order(order).Find(&channels).Error
 	return channels, err
 }
 
@@ -362,7 +366,7 @@ func EditChannelByTag(tag string, newTag *string, modelMapping *string, models *
 		return err
 	}
 	if shouldReCreateAbilities {
-		channels, err := GetChannelsByTag(updatedTag)
+		channels, err := GetChannelsByTag(updatedTag, false)
 		if err == nil {
 			for _, channel := range channels {
 				err = channel.UpdateAbilities()
@@ -450,10 +454,13 @@ func SearchTags(keyword string, group string, model string, idSort bool) ([]*str
 		args = append(args, common.String2Int(keyword), "%"+keyword+"%", keyword, "%"+model+"%")
 	}
 
-	err := baseQuery.Where(whereClause, args...).
-		Select("DISTINCT tag").
+	subQuery := baseQuery.Where(whereClause, args...).
+		Select("tag").
 		Where("tag != ''").
-		Order(order).
+		Order(order)
+
+	err := DB.Table("(?) as sub", subQuery).
+		Select("DISTINCT tag").
 		Find(&tags).Error
 
 	if err != nil {

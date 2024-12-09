@@ -33,7 +33,7 @@ var indexPage []byte
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		common.SysLog("Can't load .env file")
+		common.SysError("failed to load .env file: " + err.Error())
 	}
 
 	common.SetupLogger()
