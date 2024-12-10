@@ -284,6 +284,7 @@ const Playground = () => {
             name='model'
             required
             selection
+            searchPosition='dropdown'
             filter
             onChange={(value) => {
               handleInputChange('model', value);
