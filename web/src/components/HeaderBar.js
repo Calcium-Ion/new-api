@@ -33,14 +33,6 @@ let headerButtons = [
   },
 ];
 
-let buttons = [
-  {
-    text: '首页',
-    itemKey: 'home',
-    to: '/',
-  },
-];
-
 if (localStorage.getItem('chat_link')) {
   headerButtons.splice(1, 0, {
     name: '聊天',
@@ -63,6 +55,19 @@ const HeaderBar = () => {
     (currentDate.getMonth() === 1 &&
       currentDate.getDate() >= 9 &&
       currentDate.getDate() <= 24);
+
+  let buttons = [
+    {
+      text: '首页',
+      itemKey: 'home',
+      to: '/',
+    },
+    {
+      text: '控制台',
+      itemKey: 'detail',
+      to: '/',
+    },
+  ];
 
   async function logout() {
     await API.get('/api/user/logout');
@@ -102,21 +107,30 @@ const HeaderBar = () => {
         <div style={{ width: '100%' }}>
           <Nav
             mode={'horizontal'}
-            // bodyStyle={{ height: 100 }}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
                 about: '/about',
                 login: '/login',
                 register: '/register',
+                detail: '/detail',
                 home: '/',
               };
               return (
-                <Link
-                  style={{ textDecoration: 'none' }}
-                  to={routerMap[props.itemKey]}
-                >
-                  {itemElement}
-                </Link>
+                <div onClick={(e) => {
+                  if (props.itemKey === 'home') {
+                    styleDispatch({ type: 'SET_SIDER', payload: true });
+                  } else {
+                    styleDispatch({ type: 'SET_SIDER', payload: false });
+                  }
+                }}>
+                  <Link
+                    className="header-bar-text"
+                    style={{ textDecoration: 'none' }}
+                    to={routerMap[props.itemKey]}
+                  >
+                    {itemElement}
+                  </Link>
+                </div>
               );
             }}
             selectedKeys={[]}
@@ -127,10 +141,10 @@ const HeaderBar = () => {
                 <>
                   {
                     styleState.showSider ?
-                      <Button icon={<IconMenu />} theme="light" style={{ marginRight: 10 }} aria-label="展开侧边栏" onClick={
+                      <Button icon={<IconMenu />} theme="light" aria-label="展开侧边栏" onClick={
                         () => styleDispatch({ type: 'SET_SIDER', payload: false })
                       } />:
-                      <Button icon={<IconIndentLeft />} theme="light" style={{ marginRight: 10 }} aria-label="关闭侧边栏" onClick={
+                      <Button icon={<IconIndentLeft />} theme="light" aria-label="关闭侧边栏" onClick={
                         () => styleDispatch({ type: 'SET_SIDER', payload: true })
                       } />
                   }

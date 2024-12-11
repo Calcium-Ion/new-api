@@ -17,6 +17,10 @@ body {
   flex-direction: column;
 }
 
+#root > section > header > section > div > div > div > div.semi-navigation-header-list-outer > div.semi-navigation-list-wrapper > ul > div > a > li > span{
+  font-weight: 600 !important;
+}
+
 @media only screen and (max-width: 767px) {
   .semi-table-tbody,
   .semi-table-row,
@@ -38,6 +42,10 @@ body {
     flex-wrap: wrap;
     row-gap: 3px;
     column-gap: 10px;
+  }
+
+  .semi-navigation-horizontal .semi-navigation-header {
+    margin-right: 0;
   }
 }
 
