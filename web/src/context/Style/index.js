@@ -11,6 +11,7 @@ export const StyleProvider = ({ children }) => {
   const [state, setState] = useState({
     isMobile: false,
     showSider: false,
+    isChatPage: false,
   });
 
   const dispatch = (action) => {
@@ -24,6 +25,9 @@ export const StyleProvider = ({ children }) => {
           break;
         case 'SET_MOBILE':
           setState(prev => ({ ...prev, isMobile: action.payload }));
+          break;
+        case 'SET_CHAT_PAGE':
+          setState(prev => ({ ...prev, isChatPage: action.payload }));
           break;
         default:
           setState(prev => ({ ...prev, ...action }));
