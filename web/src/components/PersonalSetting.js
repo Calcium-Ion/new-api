@@ -363,36 +363,18 @@ const PersonalSetting = () => {
                                     </Space>
                                 </>
                             }
-                            footer={
-                                <Descriptions row>
-                                    <Descriptions.Item itemKey='当前余额'>
-                                        {renderQuota(userState?.user?.quota)}
-                                    </Descriptions.Item>
-                                    <Descriptions.Item itemKey='历史消耗'>
-                                        {renderQuota(userState?.user?.used_quota)}
-                                    </Descriptions.Item>
-                                    <Descriptions.Item itemKey='请求次数'>
-                                        {userState.user?.request_count}
-                                    </Descriptions.Item>
-                                </Descriptions>
-                            }
                         >
-                            <Typography.Title heading={6}>可用模型</Typography.Title>
-                            <div style={{marginTop: 10}}>
-                                <Space wrap>
-                                    {models.map((model) => (
-                                        <Tag
-                                            key={model}
-                                            color='cyan'
-                                            onClick={() => {
-                                                copyText(model);
-                                            }}
-                                        >
-                                            {model}
-                                        </Tag>
-                                    ))}
-                                </Space>
-                            </div>
+                            <Descriptions row>
+                                <Descriptions.Item itemKey='当前余额'>
+                                    {renderQuota(userState?.user?.quota)}
+                                </Descriptions.Item>
+                                <Descriptions.Item itemKey='历史消耗'>
+                                    {renderQuota(userState?.user?.used_quota)}
+                                </Descriptions.Item>
+                                <Descriptions.Item itemKey='请求次数'>
+                                    {userState.user?.request_count}
+                                </Descriptions.Item>
+                            </Descriptions>
                         </Card>
                         <Card
                             style={{marginTop: 10}}
