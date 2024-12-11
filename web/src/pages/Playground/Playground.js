@@ -103,11 +103,16 @@ const Playground = () => {
       // handleInputChange('group', localGroupOptions[0].value);
 
       if (localGroupOptions.length > 0) {
-        // set default group at first
-        localGroupOptions.unshift({
-          label: '用户分组',
-          value: '',
-        });
+        // set user group at first
+        if (userState.user && userState.user.group) {
+          let userGroup = userState.user.group;
+          // Find and move user's group to the front
+          const userGroupIndex = localGroupOptions.findIndex(g => g.value === userGroup);
+          if (userGroupIndex > -1) {
+            const userGroupOption = localGroupOptions.splice(userGroupIndex, 1)[0];
+            localGroupOptions.unshift(userGroupOption);
+          }
+        }
       } else {
         localGroupOptions = [{
           label: '用户分组',

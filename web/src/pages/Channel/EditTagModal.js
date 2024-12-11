@@ -16,6 +16,7 @@ const EditTagModal = (props) => {
   const [groupOptions, setGroupOptions] = useState([]);
   const [basicModels, setBasicModels] = useState([]);
   const [fullModels, setFullModels] = useState([]);
+  const [customModel, setCustomModel] = useState('');
   const originInputs = {
     tag: '',
     new_tag: null,
@@ -183,6 +184,40 @@ const EditTagModal = (props) => {
     fetchGroups().then();
   }, [visible]);
 
+  const addCustomModels = () => {
+    if (customModel.trim() === '') return;
+    // 使用逗号分隔字符串，然后去除每个模型名称前后的空格
+    const modelArray = customModel.split(',').map((model) => model.trim());
+
+    let localModels = [...inputs.models];
+    let localModelOptions = [...modelOptions];
+    let hasError = false;
+
+    modelArray.forEach((model) => {
+      // 检查模型是否已存在，且模型名称非空
+      if (model && !localModels.includes(model)) {
+        localModels.push(model); // 添加到模型列表
+        localModelOptions.push({
+          // 添加到下拉选项
+          key: model,
+          text: model,
+          value: model
+        });
+      } else if (model) {
+        showError('某些模型已存在！');
+        hasError = true;
+      }
+    });
+
+    if (hasError) return; // 如果有错误则终止操作
+
+    // 更新状态值
+    setModelOptions(localModelOptions);
+    setCustomModel('');
+    handleInputChange('models', localModels);
+  };
+
+
   return (
     <SideSheet
       title="编辑标签"
@@ -224,12 +259,26 @@ const EditTagModal = (props) => {
           required
           multiple
           selection
+          filter
+          searchPosition='dropdown'
           onChange={(value) => {
             handleInputChange('models', value);
           }}
           value={inputs.models}
           autoComplete="new-password"
           optionList={modelOptions}
+        />
+        <Input
+          addonAfter={
+            <Button type="primary" onClick={addCustomModels}>
+              填入
+            </Button>
+          }
+          placeholder="输入自定义模型名称"
+          value={customModel}
+          onChange={(value) => {
+            setCustomModel(value.trim());
+          }}
         />
         <div style={{ marginTop: 10 }}>
           <Typography.Text strong>分组，留空则不更改：</Typography.Text>

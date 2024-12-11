@@ -25,7 +25,7 @@ import {
 import { ITEMS_PER_PAGE } from '../constants';
 import {
   renderAudioModelPrice,
-  renderModelPrice,
+  renderModelPrice, renderModelPriceSimple,
   renderNumber,
   renderQuota,
   stringToColor
@@ -386,14 +386,11 @@ const LogsTable = () => {
           );
         }
 
-        // let content = renderModelPrice(
-        //   record.prompt_tokens,
-        //   record.completion_tokens,
-        //   other.model_ratio,
-        //   other.model_price,
-        //   other.completion_ratio,
-        //   other.group_ratio,
-        // );
+        let content = renderModelPriceSimple(
+          other.model_ratio,
+          other.model_price,
+          other.group_ratio,
+        );
         return (
             <Paragraph
                 ellipsis={{
@@ -401,7 +398,7 @@ const LogsTable = () => {
                 }}
                 style={{ maxWidth: 240 }}
             >
-              调用消费
+              {content}
             </Paragraph>
         );
       },

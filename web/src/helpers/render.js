@@ -175,6 +175,19 @@ export function renderModelPrice(
   }
 }
 
+export function renderModelPriceSimple(
+  modelRatio,
+  modelPrice = -1,
+  groupRatio,
+) {
+  // 1 ratio = $0.002 / 1K tokens
+  if (modelPrice !== -1) {
+    return '价格：$' + modelPrice + ' * 分组：' + groupRatio;
+  } else {
+    return '模型: ' + modelRatio + ' * 分组: ' + groupRatio;
+  }
+}
+
 export function renderAudioModelPrice(
   inputTokens,
   completionTokens,
