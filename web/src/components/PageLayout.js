@@ -23,7 +23,7 @@ const PageLayout = () => {
         </Sider>
         <Layout>
           <Content
-            style={{ overflowY: 'auto', padding: styleState.isChatPage? '0': '24px' }}
+            style={{ overflowY: styleState.shouldInnerPadding?'hidden':'auto', padding: styleState.shouldInnerPadding? '0': '24px' }}
           >
             <App />
           </Content>
