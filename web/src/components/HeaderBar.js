@@ -67,6 +67,11 @@ const HeaderBar = () => {
       itemKey: 'detail',
       to: '/',
     },
+    {
+      text: '定价',
+      itemKey: 'pricing',
+      to: '/pricing',
+    },
   ];
 
   async function logout() {
@@ -112,6 +117,7 @@ const HeaderBar = () => {
                 about: '/about',
                 login: '/login',
                 register: '/register',
+                pricing: '/pricing',
                 detail: '/detail',
                 home: '/',
               };
@@ -180,7 +186,7 @@ const HeaderBar = () => {
                 <>
                   <Switch
                     checkedText='🌞'
-                    size={'large'}
+                    size={styleState.isMobile?'default':'large'}
                     checked={theme === 'dark'}
                     uncheckedText='🌙'
                     onChange={(checked) => {
@@ -205,7 +211,7 @@ const HeaderBar = () => {
                       >
                         {userState.user.username[0]}
                       </Avatar>
-                      <span>{userState.user.username}</span>
+                      {styleState.isMobile?null:<Text>{userState.user.username}</Text>}
                     </Dropdown>
                   </>
                 ) : (
