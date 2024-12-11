@@ -176,7 +176,20 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 }
 
 func (a *Adaptor) GetModelList() []string {
-	return ModelList
+	var modelList []string
+	for i, s := range ModelList {
+		modelList = append(modelList, s)
+		ModelList[i] = s
+	}
+	for i, s := range claude.ModelList {
+		modelList = append(modelList, s)
+		claude.ModelList[i] = s
+	}
+	for i, s := range gemini.ModelList {
+		modelList = append(modelList, s)
+		gemini.ModelList[i] = s
+	}
+	return modelList
 }
 
 func (a *Adaptor) GetChannelName() string {
