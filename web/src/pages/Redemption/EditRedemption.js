@@ -7,7 +7,7 @@ import {
   showError,
   showSuccess,
 } from '../../helpers';
-import { renderQuotaWithPrompt } from '../../helpers/render';
+import { getQuotaPerUnit, renderQuota, renderQuotaWithPrompt } from '../../helpers/render';
 import {
   AutoComplete,
   Button,
@@ -66,11 +66,16 @@ const EditRedemption = (props) => {
   }, [props.editingRedemption.id]);
 
   const submit = async () => {
-    if (!isEdit && inputs.name === '') return;
+    let name = inputs.name;
+    if (!isEdit && inputs.name === '') {
+      // set default name
+      name = '兑换码-' + renderQuota(quota);
+    }
     setLoading(true);
     let localInputs = inputs;
     localInputs.count = parseInt(localInputs.count);
     localInputs.quota = parseInt(localInputs.quota);
+    localInputs.name = name;
     let res;
     if (isEdit) {
       res = await API.put(`/api/redemption/`, {
