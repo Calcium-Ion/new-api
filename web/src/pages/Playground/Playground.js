@@ -326,7 +326,12 @@ const Playground = () => {
               }}
               value={inputs.group}
               autoComplete='new-password'
-              optionList={groups}
+              optionList={groups.map((group) => ({
+                ...group,
+                label: styleState.isMobile && group.label.length > 18
+                  ? group.label.substring(0, 18) + '...'
+                  : group.label,
+              }))}
             />
             <div style={{ marginTop: 10 }}>
               <Typography.Text strong>模型：</Typography.Text>
