@@ -490,20 +490,16 @@ const Detail = (props) => {
                 <Card>
                   <Descriptions row size='small'>
                     <Descriptions.Item itemKey='平均RPM'>
-                      {renderNumber(
-                        times /
-                          ((Date.parse(end_timestamp) -
-                            Date.parse(start_timestamp)) /
-                            60000),
-                      ).toFixed(3)}
+                      {(times /
+                        ((Date.parse(end_timestamp) -
+                          Date.parse(start_timestamp)) /
+                          60000)).toFixed(3)}
                     </Descriptions.Item>
                     <Descriptions.Item itemKey='平均TPM'>
-                      {renderNumber(
-                        consumeTokens /
-                          ((Date.parse(end_timestamp) -
-                            Date.parse(start_timestamp)) /
-                            60000),
-                      ).toFixed(3)}
+                      {(consumeTokens /
+                        ((Date.parse(end_timestamp) -
+                          Date.parse(start_timestamp)) /
+                          60000)).toFixed(3)}
                     </Descriptions.Item>
                   </Descriptions>
                 </Card>
