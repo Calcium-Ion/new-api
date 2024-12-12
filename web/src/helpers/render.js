@@ -268,6 +268,44 @@ const colors = [
   'yellow',
 ];
 
+// 基础10色色板 (N ≤ 10)
+const baseColors = [
+  '#1664FF', // 主色
+  '#1AC6FF', 
+  '#FF8A00',
+  '#3CC780',
+  '#7442D4',
+  '#FFC400',
+  '#304D77',
+  '#B48DEB',
+  '#009488',
+  '#FF7DDA'
+];
+
+// 扩展20色色板 (10 < N ≤ 20)
+const extendedColors = [
+  '#1664FF',
+  '#B2CFFF',
+  '#1AC6FF',
+  '#94EFFF',
+  '#FF8A00',
+  '#FFCE7A',
+  '#3CC780',
+  '#B9EDCD',
+  '#7442D4',
+  '#DDC5FA',
+  '#FFC400',
+  '#FAE878',
+  '#304D77',
+  '#8B959E',
+  '#B48DEB',
+  '#EFE3FF',
+  '#009488',
+  '#59BAA8',
+  '#FF7DDA',
+  '#FFCFEE'
+];
+
 export const modelColorMap = {
   'dall-e': 'rgb(147,112,219)', // 深紫色
   // 'dall-e-2': 'rgb(147,112,219)', // 介于紫色和蓝色之间的色调
@@ -312,14 +350,33 @@ export const modelColorMap = {
   'claude-2.1': 'rgb(255,209,190)', // 浅橙色（略有区别）
 };
 
+export function modelToColor(modelName) {
+  // 1. 如果模型在预定义的 modelColorMap 中，使用预定义颜色
+  if (modelColorMap[modelName]) {
+    return modelColorMap[modelName];
+  }
+
+  // 2. 生成一个稳定的数字作为索引
+  let hash = 0;
+  for (let i = 0; i < modelName.length; i++) {
+    hash = ((hash << 5) - hash) + modelName.charCodeAt(i);
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  hash = Math.abs(hash);
+
+  // 3. 根据模型名称长度选择不同的色板
+  const colorPalette = modelName.length > 10 ? extendedColors : baseColors;
+  
+  // 4. 使用hash值选择颜色
+  const index = hash % colorPalette.length;
+  return colorPalette[index];
+}
+
 export function stringToColor(str) {
   let sum = 0;
-  // 对字符串中的每个字符进行操作
   for (let i = 0; i < str.length; i++) {
-    // 将字符的ASCII值加到sum中
     sum += str.charCodeAt(i);
   }
-  // 使用模运算得到个位数
   let i = sum % colors.length;
   return colors[i];
 }

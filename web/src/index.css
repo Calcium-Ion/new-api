@@ -21,7 +21,21 @@ body {
   font-weight: 600 !important;
 }
 
+.semi-descriptions-double-small .semi-descriptions-item {
+  padding-right: 30px;
+}
+
+.panel-desc-card {
+  /*min-width: 320px;*/
+}
+
 @media only screen and (max-width: 767px) {
+  #root > section > header > section > div > div > div > div.semi-navigation-header-list-outer > div.semi-navigation-list-wrapper > ul > div > a > li {
+    padding: 0 5px;
+  }
+  #root > section > header > section > div > div > div > div.semi-navigation-footer > div:nth-child(1) > a > li {
+    padding: 0 5px;
+  }
   .semi-table-tbody,
   .semi-table-row,
   .semi-table-row-cell {

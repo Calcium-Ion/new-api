@@ -74,12 +74,6 @@ const SiderBar = () => {
         icon: <IconCommentStroked />,
       },
       {
-        text: '模型价格',
-        itemKey: 'pricing',
-        to: '/pricing',
-        icon: <IconPriceTag />,
-      },
-      {
         text: '渠道',
         itemKey: 'channel',
         to: '/channel',
@@ -101,6 +95,16 @@ const SiderBar = () => {
         itemKey: 'token',
         to: '/token',
         icon: <IconKey />,
+      },
+      {
+        text: '数据看板',
+        itemKey: 'detail',
+        to: '/detail',
+        icon: <IconCalendarClock />,
+        className:
+          localStorage.getItem('enable_data_export') === 'true'
+            ? 'semi-navigation-item-normal'
+            : 'tableHiddle',
       },
       {
         text: '兑换码',
@@ -127,16 +131,6 @@ const SiderBar = () => {
         itemKey: 'log',
         to: '/log',
         icon: <IconHistogram />,
-      },
-      {
-        text: '数据看板',
-        itemKey: 'detail',
-        to: '/detail',
-        icon: <IconCalendarClock />,
-        className:
-          localStorage.getItem('enable_data_export') === 'true'
-            ? 'semi-navigation-item-normal'
-            : 'tableHiddle',
       },
       {
         text: '绘图',
