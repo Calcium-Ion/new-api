@@ -148,7 +148,7 @@ const HeaderBar = () => {
               logo: (
                 <>
                   {
-                    styleState.showSider ?
+                    !styleState.showSider ?
                       <Button icon={<IconMenu />} theme="light" aria-label="展开侧边栏" onClick={
                         () => styleDispatch({ type: 'SET_SIDER', payload: true })
                       } />:

@@ -328,8 +328,8 @@ const Playground = () => {
               autoComplete='new-password'
               optionList={groups.map((group) => ({
                 ...group,
-                label: styleState.isMobile && group.label.length > 18
-                  ? group.label.substring(0, 18) + '...'
+                label: styleState.isMobile && group.label.length > 16
+                  ? group.label.substring(0, 16) + '...'
                   : group.label,
               }))}
             />
