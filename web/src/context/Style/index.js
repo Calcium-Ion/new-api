@@ -44,6 +44,26 @@ export const StyleProvider = ({ children }) => {
 
     updateIsMobile();
 
+    const updateShowSider = () => {
+      if (isMobile()) {
+        dispatch({ type: 'SET_SIDER', payload: false });
+      } else {
+        // check pathname
+        const pathname = window.location.pathname;
+        console.log(pathname)
+        if (pathname === '' || pathname === '/' || pathname.includes('/home') || pathname.includes('/chat')) {
+          dispatch({ type: 'SET_SIDER', payload: false });
+          dispatch({ type: 'SET_INNER_PADDING', payload: false });
+        } else {
+          dispatch({ type: 'SET_SIDER', payload: true });
+          dispatch({ type: 'SET_INNER_PADDING', payload: true });
+        }
+      }
+    };
+
+    updateShowSider()
+
+
     // Optionally, add event listeners to handle window resize
     window.addEventListener('resize', updateIsMobile);
 

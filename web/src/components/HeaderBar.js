@@ -124,11 +124,11 @@ const HeaderBar = () => {
               return (
                 <div onClick={(e) => {
                   if (props.itemKey === 'home') {
-                    styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
-                    styleDispatch({ type: 'SET_SIDER', payload: true });
-                  } else {
                     styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
                     styleDispatch({ type: 'SET_SIDER', payload: false });
+                  } else {
+                    styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
+                    styleDispatch({ type: 'SET_SIDER', payload: true });
                   }
                 }}>
                   <Link
@@ -150,10 +150,10 @@ const HeaderBar = () => {
                   {
                     styleState.showSider ?
                       <Button icon={<IconMenu />} theme="light" aria-label="展开侧边栏" onClick={
-                        () => styleDispatch({ type: 'SET_SIDER', payload: false })
+                        () => styleDispatch({ type: 'SET_SIDER', payload: true })
                       } />:
                       <Button icon={<IconIndentLeft />} theme="light" aria-label="关闭侧边栏" onClick={
-                        () => styleDispatch({ type: 'SET_SIDER', payload: true })
+                        () => styleDispatch({ type: 'SET_SIDER', payload: false })
                       } />
                   }
                 </>

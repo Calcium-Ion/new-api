@@ -274,9 +274,9 @@ const SiderBar = () => {
         items={headerButtons}
         onSelect={(key) => {
           if (key.itemKey.toString().startsWith('chat')) {
-            styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
-          } else {
             styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
+          } else {
+            styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
           }
           setSelectedKeys([key.itemKey]);
         }}

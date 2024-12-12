@@ -19,11 +19,11 @@ const PageLayout = () => {
       </Header>
       <Layout style={{ flex: 1, overflow: 'hidden' }}>
         <Sider>
-          {styleState.showSider ? null : <SiderBar />}
+          {styleState.showSider ? <SiderBar /> : null}
         </Sider>
         <Layout>
           <Content
-            style={{ overflowY: styleState.shouldInnerPadding?'hidden':'auto', padding: styleState.shouldInnerPadding? '0': '24px' }}
+            style={{ overflowY: styleState.shouldInnerPadding?'auto':'hidden', padding: styleState.shouldInnerPadding? '24px': '0' }}
           >
             <App />
           </Content>
