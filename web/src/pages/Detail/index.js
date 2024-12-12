@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { initVChartSemiTheme } from '@visactor/vchart-semi-theme';
 
-import { Button, Col, Form, Layout, Row, Spin } from '@douyinfe/semi-ui';
+import { Button, Card, Col, Descriptions, Form, Layout, Row, Spin, Tabs } from '@douyinfe/semi-ui';
 import { VChart } from "@visactor/react-vchart";
 import {
   API,
@@ -19,10 +19,14 @@ import {
   stringToColor,
   modelToColor,
 } from '../../helpers/render';
+import { UserContext } from '../../context/User/index.js';
+import { StyleContext } from '../../context/Style/index.js';
 
 const Detail = (props) => {
   const formRef = useRef();
   let now = new Date();
+  const [userState, userDispatch] = useContext(UserContext);
+  const [styleState, styleDispatch] = useContext(StyleContext);
   const [inputs, setInputs] = useState({
     username: '',
     token_name: '',
@@ -44,6 +48,7 @@ const Detail = (props) => {
   const [loading, setLoading] = useState(false);
   const [quotaData, setQuotaData] = useState([]);
   const [consumeQuota, setConsumeQuota] = useState(0);
+  const [consumeTokens, setConsumeTokens] = useState(0);
   const [times, setTimes] = useState(0);
   const [dataExportDefaultTime, setDataExportDefaultTime] = useState(
     localStorage.getItem('data_export_default_time') || 'hour',
@@ -245,25 +250,30 @@ const Detail = (props) => {
     let totalQuota = 0;
     let totalTimes = 0;
     let uniqueModels = new Set();
+    let totalTokens = 0;
 
-    // 首先收集所有唯一的模型名称
-    data.forEach(item => uniqueModels.add(item.model_name));
+    // 收集所有唯一的模型名称和时间点
+    let uniqueTimes = new Set();
+    data.forEach(item => {
+      uniqueModels.add(item.model_name);
+      uniqueTimes.add(timestamp2string1(item.created_at, dataExportDefaultTime));
+      totalTokens += item.token_used;
+    });
     
-    // 为每个唯一的模型生成或获取颜色
+    // 处理颜色映射
     const newModelColors = {};
     Array.from(uniqueModels).forEach((modelName) => {
-      // 优先使用 modelColorMap 中的颜色，然后是已存在的颜色，最后使用新的颜色生成函数
       newModelColors[modelName] = modelColorMap[modelName] || 
         modelColors[modelName] || 
-        modelToColor(modelName);  // 使用新的颜色生成函数替代 stringToColor
+        modelToColor(modelName);
     });
     setModelColors(newModelColors);
 
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
+    // 处理饼图数据
+    for (let item of data) {
       totalQuota += item.quota;
       totalTimes += item.count;
-      // 合并model_name
+      
       let pieItem = newPieData.find((it) => it.type === item.model_name);
       if (pieItem) {
         pieItem.value += item.count;
@@ -273,27 +283,47 @@ const Detail = (props) => {
           value: item.count,
         });
       }
-      // 合并created_at和model_name 为 lineData
-      let createTime = timestamp2string1(
-        item.created_at,
-        dataExportDefaultTime,
-      );
-      let lineItem = newLineData.find(
-        (it) => it.Time === createTime && it.Model === item.model_name,
-      );
-      if (lineItem) {
-        lineItem.Usage += parseFloat(getQuotaWithUnit(item.quota));
-      } else {
-        newLineData.push({
-          Time: createTime,
-          Model: item.model_name,
-          Usage: parseFloat(getQuotaWithUnit(item.quota)),
-        });
-      }
     }
 
-    // sort by count
+    // 处理柱状图数据
+    let timePoints = Array.from(uniqueTimes);
+    if (timePoints.length < 7) {
+      // 根据时间粒度生成合适的时间点
+      const generateTimePoints = () => {
+        let lastTime = Math.max(...data.map(item => item.created_at));
+        let points = [];
+        let interval = dataExportDefaultTime === 'hour' ? 3600 
+                      : dataExportDefaultTime === 'day' ? 86400 
+                      : 604800;
+
+        for (let i = 0; i < 7; i++) {
+          points.push(timestamp2string1(lastTime - (i * interval), dataExportDefaultTime));
+        }
+        return points.reverse();
+      };
+
+      timePoints = generateTimePoints();
+    }
+
+    // 为每个时间点和模型生成数据
+    timePoints.forEach(time => {
+      Array.from(uniqueModels).forEach(model => {
+        let existingData = data.find(item => 
+          timestamp2string1(item.created_at, dataExportDefaultTime) === time && 
+          item.model_name === model
+        );
+
+        newLineData.push({
+          Time: time,
+          Model: model,
+          Usage: existingData ? parseFloat(getQuotaWithUnit(existingData.quota)) : 0
+        });
+      });
+    });
+
+    // 排序
     newPieData.sort((a, b) => b.value - a.value);
+    newLineData.sort((a, b) => a.Time.localeCompare(b.Time));
 
     // 更新图表配置和数据
     setSpecPie(prev => ({
@@ -324,9 +354,21 @@ const Detail = (props) => {
     setLineData(newLineData);
     setConsumeQuota(totalQuota);
     setTimes(totalTimes);
+    setConsumeTokens(totalTokens);
+  };
+
+  const getUserData = async () => {
+    let res = await API.get(`/api/user/self`);
+    const {success, message, data} = res.data;
+    if (success) {
+      userDispatch({type: 'login', payload: data});
+    } else {
+      showError(message);
+    }
   };
 
   useEffect(() => {
+    getUserData()
     if (!initialized.current) {
       initVChartSemiTheme({
         isWatchingThemeSwitch: true,
@@ -397,33 +439,97 @@ const Detail = (props) => {
                   />
                 </>
               )}
+              <Button
+                label='查询'
+                type='primary'
+                htmlType='submit'
+                className='btn-margin-right'
+                onClick={refresh}
+                loading={loading}
+                style={{ marginTop: 24 }}
+              >
+                查询
+              </Button>
               <Form.Section>
-                <Button
-                  label='查询'
-                  type='primary'
-                  htmlType='submit'
-                  className='btn-margin-right'
-                  onClick={refresh}
-                  loading={loading}
-                >
-                  查询
-                </Button>
               </Form.Section>
             </>
           </Form>
           <Spin spinning={loading}>
-            <div style={{ height: 500 }}>
-              <VChart 
-                spec={spec_pie}
-                option={{ mode: "desktop-browser" }}
-              />
-            </div>
-            <div style={{ height: 500 }}>
-              <VChart 
-                spec={spec_line}
-                option={{ mode: "desktop-browser" }}
-              />
-            </div>
+            <Row gutter={{ xs: 16, sm: 16, md: 16, lg: 24, xl: 24, xxl: 24 }} style={{marginTop: 20}} type="flex" justify="space-between">
+              <Col span={styleState.isMobile?24:8}>
+                <Card className='panel-desc-card'>
+                  <Descriptions row size="small">
+                    <Descriptions.Item itemKey='当前余额'>
+                      {renderQuota(userState?.user?.quota)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='历史消耗'>
+                      {renderQuota(userState?.user?.used_quota)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='请求次数'>
+                      {userState.user?.request_count}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+              <Col span={styleState.isMobile?24:8}>
+                <Card>
+                  <Descriptions row size="small">
+                    <Descriptions.Item itemKey='统计额度'>
+                      {renderQuota(consumeQuota)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='统计Tokens'>
+                      {consumeTokens}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='统计次数'>
+                      {times}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+              <Col span={styleState.isMobile ? 24 : 8}>
+                <Card>
+                  <Descriptions row size='small'>
+                    <Descriptions.Item itemKey='平均RPM'>
+                      {renderNumber(
+                        times /
+                          ((Date.parse(end_timestamp) -
+                            Date.parse(start_timestamp)) /
+                            60000),
+                      ).toFixed(3)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='平均TPM'>
+                      {renderNumber(
+                        consumeTokens /
+                          ((Date.parse(end_timestamp) -
+                            Date.parse(start_timestamp)) /
+                            60000),
+                      ).toFixed(3)}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+            </Row>
+            <Card style={{marginTop: 20}}>
+              <Tabs type="line" defaultActiveKey="1">
+                <Tabs.TabPane tab="消耗分布" itemKey="1">
+                  <div style={{ height: 500 }}>
+                    <VChart
+                      spec={spec_line}
+                      option={{ mode: "desktop-browser" }}
+                    />
+                  </div>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="调用次数分布" itemKey="2">
+                  <div style={{ height: 500 }}>
+                    <VChart
+                      spec={spec_pie}
+                      option={{ mode: "desktop-browser" }}
+                    />
+                  </div>
+                </Tabs.TabPane>
+
+              </Tabs>
+            </Card>
           </Spin>
         </Layout.Content>
       </Layout>
