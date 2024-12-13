@@ -9,17 +9,19 @@ import '../index.css';
 import fireworks from 'react-fireworks';
 
 import {
+  IconClose,
   IconHelpCircle,
   IconHome,
-  IconHomeStroked,
-  IconKey,
+  IconHomeStroked, IconIndentLeft,
+  IconKey, IconMenu,
   IconNoteMoneyStroked,
   IconPriceTag,
   IconUser
 } from '@douyinfe/semi-icons';
-import { Avatar, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
+import { Avatar, Button, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
+import { StyleContext } from '../context/Style/index.js';
 
 // HeaderBar Buttons
 let headerButtons = [
@@ -29,21 +31,6 @@ let headerButtons = [
     to: '/about',
     icon: <IconHelpCircle />,
   },
-];
-
-let buttons = [
-  {
-    text: '首页',
-    itemKey: 'home',
-    to: '/',
-    // icon: <IconHomeStroked />,
-  },
-  // {
-  //   text: 'Playground',
-  //   itemKey: 'playground',
-  //   to: '/playground',
-  //   // icon: <IconNoteMoneyStroked />,
-  // },
 ];
 
 if (localStorage.getItem('chat_link')) {
@@ -56,9 +43,9 @@ if (localStorage.getItem('chat_link')) {
 
 const HeaderBar = () => {
   const [userState, userDispatch] = useContext(UserContext);
+  const [styleState, styleDispatch] = useContext(StyleContext);
   let navigate = useNavigate();
 
-  const [showSidebar, setShowSidebar] = useState(false);
   const systemName = getSystemName();
   const logo = getLogo();
   const currentDate = new Date();
@@ -69,8 +56,25 @@ const HeaderBar = () => {
       currentDate.getDate() >= 9 &&
       currentDate.getDate() <= 24);
 
+  let buttons = [
+    {
+      text: '首页',
+      itemKey: 'home',
+      to: '/',
+    },
+    {
+      text: '控制台',
+      itemKey: 'detail',
+      to: '/',
+    },
+    {
+      text: '定价',
+      itemKey: 'pricing',
+      to: '/pricing',
+    },
+  ];
+
   async function logout() {
-    setShowSidebar(false);
     await API.get('/api/user/logout');
     showSuccess('注销成功!');
     userDispatch({ type: 'logout' });
@@ -108,36 +112,57 @@ const HeaderBar = () => {
         <div style={{ width: '100%' }}>
           <Nav
             mode={'horizontal'}
-            // bodyStyle={{ height: 100 }}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
                 about: '/about',
                 login: '/login',
                 register: '/register',
+                pricing: '/pricing',
+                detail: '/detail',
                 home: '/',
               };
               return (
-                <Link
-                  style={{ textDecoration: 'none' }}
-                  to={routerMap[props.itemKey]}
-                >
-                  {itemElement}
-                </Link>
+                <div onClick={(e) => {
+                  if (props.itemKey === 'home') {
+                    styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
+                    styleDispatch({ type: 'SET_SIDER', payload: false });
+                  } else {
+                    styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
+                    styleDispatch({ type: 'SET_SIDER', payload: true });
+                  }
+                }}>
+                  <Link
+                    className="header-bar-text"
+                    style={{ textDecoration: 'none' }}
+                    to={routerMap[props.itemKey]}
+                  >
+                    {itemElement}
+                  </Link>
+                </div>
               );
             }}
             selectedKeys={[]}
             // items={headerButtons}
             onSelect={(key) => {}}
-            header={isMobile()?{
+            header={styleState.isMobile?{
               logo: (
-                <img src={logo} alt='logo' style={{ marginRight: '0.75em' }} />
+                <>
+                  {
+                    !styleState.showSider ?
+                      <Button icon={<IconMenu />} theme="light" aria-label="展开侧边栏" onClick={
+                        () => styleDispatch({ type: 'SET_SIDER', payload: true })
+                      } />:
+                      <Button icon={<IconIndentLeft />} theme="light" aria-label="关闭侧边栏" onClick={
+                        () => styleDispatch({ type: 'SET_SIDER', payload: false })
+                      } />
+                  }
+                </>
               ),
             }:{
               logo: (
                 <img src={logo} alt='logo' />
               ),
               text: systemName,
-
             }}
             items={buttons}
             footer={
@@ -159,17 +184,15 @@ const HeaderBar = () => {
                 )}
                 <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
                 <>
-                {!isMobile() && (
-                    <Switch
-                      checkedText='🌞'
-                      size={'large'}
-                      checked={theme === 'dark'}
-                      uncheckedText='🌙'
-                      onChange={(checked) => {
-                        setTheme(checked);
-                      }}
-                    />
-                  )}
+                  <Switch
+                    checkedText='🌞'
+                    size={styleState.isMobile?'default':'large'}
+                    checked={theme === 'dark'}
+                    uncheckedText='🌙'
+                    onChange={(checked) => {
+                      setTheme(checked);
+                    }}
+                  />
                 </>
                 {userState.user ? (
                   <>
@@ -188,7 +211,7 @@ const HeaderBar = () => {
                       >
                         {userState.user.username[0]}
                       </Avatar>
-                      <span>{userState.user.username}</span>
+                      {styleState.isMobile?null:<Text>{userState.user.username}</Text>}
                     </Dropdown>
                   </>
                 ) : (

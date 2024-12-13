@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
-	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
 	"sync"
@@ -139,7 +139,7 @@ func streamResponseZhipu2OpenAI(zhipuResponse string) *dto.ChatCompletionsStream
 func streamMetaResponseZhipu2OpenAI(zhipuResponse *ZhipuStreamMetaResponse) (*dto.ChatCompletionsStreamResponse, *dto.Usage) {
 	var choice dto.ChatCompletionsStreamResponseChoice
 	choice.Delta.SetContentString("")
-	choice.FinishReason = &relaycommon.StopFinishReason
+	choice.FinishReason = &constant.FinishReasonStop
 	response := dto.ChatCompletionsStreamResponse{
 		Id:      zhipuResponse.RequestId,
 		Object:  "chat.completion.chunk",

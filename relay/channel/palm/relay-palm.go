@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
-	relaycommon "one-api/relay/common"
 	"one-api/service"
 )
 
@@ -63,7 +63,7 @@ func streamResponsePaLM2OpenAI(palmResponse *PaLMChatResponse) *dto.ChatCompleti
 	if len(palmResponse.Candidates) > 0 {
 		choice.Delta.SetContentString(palmResponse.Candidates[0].Content)
 	}
-	choice.FinishReason = &relaycommon.StopFinishReason
+	choice.FinishReason = &constant.FinishReasonStop
 	var response dto.ChatCompletionsStreamResponse
 	response.Object = "chat.completion.chunk"
 	response.Model = "palm2"

@@ -32,11 +32,15 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	if info.RelayMode == constant.RelayModeRealtime {
-		// trim https
-		baseUrl := strings.TrimPrefix(info.BaseUrl, "https://")
-		baseUrl = strings.TrimPrefix(baseUrl, "http://")
-		baseUrl = "wss://" + baseUrl
-		info.BaseUrl = baseUrl
+		if strings.HasPrefix(info.BaseUrl, "https://") {
+			baseUrl := strings.TrimPrefix(info.BaseUrl, "https://")
+			baseUrl = "wss://" + baseUrl
+			info.BaseUrl = baseUrl
+		} else if strings.HasPrefix(info.BaseUrl, "http://") {
+			baseUrl := strings.TrimPrefix(info.BaseUrl, "http://")
+			baseUrl = "ws://" + baseUrl
+			info.BaseUrl = baseUrl
+		}
 	}
 	switch info.ChannelType {
 	case common.ChannelTypeAzure:
@@ -131,6 +135,19 @@ func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInf
 		writer := multipart.NewWriter(&requestBody)
 
 		writer.WriteField("model", request.Model)
+
+		// 获取所有表单字段
+		formData := c.Request.PostForm
+
+		// 遍历表单字段并打印输出
+		for key, values := range formData {
+			if key == "model" {
+				continue
+			}
+			for _, value := range values {
+				writer.WriteField(key, value)
+			}
+		}
 
 		// 添加文件字段
 		file, header, err := c.Request.FormFile("file")

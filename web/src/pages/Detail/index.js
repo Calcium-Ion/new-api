@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { initVChartSemiTheme } from '@visactor/vchart-semi-theme';
 
-import { Button, Col, Form, Layout, Row, Spin } from '@douyinfe/semi-ui';
-import VChart from '@visactor/vchart';
+import { Button, Card, Col, Descriptions, Form, Layout, Row, Spin, Tabs } from '@douyinfe/semi-ui';
+import { VChart } from "@visactor/react-vchart";
 import {
   API,
   isAdmin,
@@ -17,11 +17,16 @@ import {
   renderQuota,
   renderQuotaNumberWithDigit,
   stringToColor,
+  modelToColor,
 } from '../../helpers/render';
+import { UserContext } from '../../context/User/index.js';
+import { StyleContext } from '../../context/Style/index.js';
 
 const Detail = (props) => {
   const formRef = useRef();
   let now = new Date();
+  const [userState, userDispatch] = useContext(UserContext);
+  const [styleState, styleDispatch] = useContext(StyleContext);
   const [inputs, setInputs] = useState({
     username: '',
     token_name: '',
@@ -40,32 +45,76 @@ const Detail = (props) => {
     inputs;
   const isAdminUser = isAdmin();
   const initialized = useRef(false);
-  const [modelDataChart, setModelDataChart] = useState(null);
-  const [modelDataPieChart, setModelDataPieChart] = useState(null);
   const [loading, setLoading] = useState(false);
   const [quotaData, setQuotaData] = useState([]);
   const [consumeQuota, setConsumeQuota] = useState(0);
+  const [consumeTokens, setConsumeTokens] = useState(0);
   const [times, setTimes] = useState(0);
   const [dataExportDefaultTime, setDataExportDefaultTime] = useState(
     localStorage.getItem('data_export_default_time') || 'hour',
   );
-
-  const handleInputChange = (value, name) => {
-    if (name === 'data_export_default_time') {
-      setDataExportDefaultTime(value);
-      return;
-    }
-    setInputs((inputs) => ({ ...inputs, [name]: value }));
-  };
-
-  const spec_line = {
-    type: 'bar',
-    data: [
-      {
-        id: 'barData',
-        values: [],
+  const [pieData, setPieData] = useState([{ type: 'null', value: '0' }]);
+  const [lineData, setLineData] = useState([]);
+  const [spec_pie, setSpecPie] = useState({
+    type: 'pie',
+    data: [{
+      id: 'id0',
+      values: pieData
+    }],
+    outerRadius: 0.8,
+    innerRadius: 0.5,
+    padAngle: 0.6,
+    valueField: 'value',
+    categoryField: 'type',
+    pie: {
+      style: {
+        cornerRadius: 10,
       },
-    ],
+      state: {
+        hover: {
+          outerRadius: 0.85,
+          stroke: '#000',
+          lineWidth: 1,
+        },
+        selected: {
+          outerRadius: 0.85,
+          stroke: '#000',
+          lineWidth: 1,
+        },
+      },
+    },
+    title: {
+      visible: true,
+      text: '模型调用次数占比',
+      subtext: `总计：${renderNumber(times)}`,
+    },
+    legends: {
+      visible: true,
+      orient: 'left',
+    },
+    label: {
+      visible: true,
+    },
+    tooltip: {
+      mark: {
+        content: [
+          {
+            key: (datum) => datum['type'],
+            value: (datum) => renderNumber(datum['value']),
+          },
+        ],
+      },
+    },
+    color: {
+      specified: modelColorMap,
+    },
+  });
+  const [spec_line, setSpecLine] = useState({
+    type: 'bar',
+    data: [{
+      id: 'barData',
+      values: lineData
+    }],
     xField: 'Time',
     yField: 'Usage',
     seriesField: 'Model',
@@ -77,7 +126,7 @@ const Detail = (props) => {
     title: {
       visible: true,
       text: '模型消耗分布',
-      subtext: '0',
+      subtext: `总计：${renderQuota(consumeQuota, 2)}`,
     },
     bar: {
       // The state style of bar
@@ -129,196 +178,197 @@ const Detail = (props) => {
     color: {
       specified: modelColorMap,
     },
+  });
+
+  // 添加一个新的状态来存储模型-颜色映射
+  const [modelColors, setModelColors] = useState({});
+
+  const handleInputChange = (value, name) => {
+    if (name === 'data_export_default_time') {
+      setDataExportDefaultTime(value);
+      return;
+    }
+    setInputs((inputs) => ({ ...inputs, [name]: value }));
   };
 
-  const spec_pie = {
-    type: 'pie',
-    data: [
-      {
-        id: 'id0',
-        values: [{ type: 'null', value: '0' }],
-      },
-    ],
-    outerRadius: 0.8,
-    innerRadius: 0.5,
-    padAngle: 0.6,
-    valueField: 'value',
-    categoryField: 'type',
-    pie: {
-      style: {
-        cornerRadius: 10,
-      },
-      state: {
-        hover: {
-          outerRadius: 0.85,
-          stroke: '#000',
-          lineWidth: 1,
-        },
-        selected: {
-          outerRadius: 0.85,
-          stroke: '#000',
-          lineWidth: 1,
-        },
-      },
-    },
-    title: {
-      visible: true,
-      text: '模型调用次数占比',
-    },
-    legends: {
-      visible: true,
-      orient: 'left',
-    },
-    label: {
-      visible: true,
-    },
-    tooltip: {
-      mark: {
-        content: [
-          {
-            key: (datum) => datum['type'],
-            value: (datum) => renderNumber(datum['value']),
-          },
-        ],
-      },
-    },
-    color: {
-      specified: modelColorMap,
-    },
-  };
-
-  const loadQuotaData = async (lineChart, pieChart) => {
+  const loadQuotaData = async () => {
     setLoading(true);
-
-    let url = '';
-    let localStartTimestamp = Date.parse(start_timestamp) / 1000;
-    let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    if (isAdminUser) {
-      url = `/api/data/?username=${username}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
-    } else {
-      url = `/api/data/self/?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
-    }
-    const res = await API.get(url);
-    const { success, message, data } = res.data;
-    if (success) {
-      setQuotaData(data);
-      if (data.length === 0) {
-        data.push({
-          count: 0,
-          model_name: '无数据',
-          quota: 0,
-          created_at: now.getTime() / 1000,
+    try {
+      let url = '';
+      let localStartTimestamp = Date.parse(start_timestamp) / 1000;
+      let localEndTimestamp = Date.parse(end_timestamp) / 1000;
+      if (isAdminUser) {
+        url = `/api/data/?username=${username}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
+      } else {
+        url = `/api/data/self/?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
+      }
+      const res = await API.get(url);
+      const { success, message, data } = res.data;
+      if (success) {
+        setQuotaData(data);
+        if (data.length === 0) {
+          data.push({
+            count: 0,
+            model_name: '无数据',
+            quota: 0,
+            created_at: now.getTime() / 1000,
+          });
+        }
+        // 根据dataExportDefaultTime重制时间粒度
+        let timeGranularity = 3600;
+        if (dataExportDefaultTime === 'day') {
+          timeGranularity = 86400;
+        } else if (dataExportDefaultTime === 'week') {
+          timeGranularity = 604800;
+        }
+        // sort created_at
+        data.sort((a, b) => a.created_at - b.created_at);
+        data.forEach((item) => {
+          item['created_at'] =
+            Math.floor(item['created_at'] / timeGranularity) * timeGranularity;
         });
+        updateChartData(data);
+      } else {
+        showError(message);
       }
-      // 根据dataExportDefaultTime重制时间粒度
-      let timeGranularity = 3600;
-      if (dataExportDefaultTime === 'day') {
-        timeGranularity = 86400;
-      } else if (dataExportDefaultTime === 'week') {
-        timeGranularity = 604800;
-      }
-      // sort created_at
-      data.sort((a, b) => a.created_at - b.created_at);
-      data.forEach((item) => {
-        item['created_at'] =
-          Math.floor(item['created_at'] / timeGranularity) * timeGranularity;
-      });
-      updateChart(lineChart, pieChart, data);
-    } else {
-      showError(message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const refresh = async () => {
-    await loadQuotaData(modelDataChart, modelDataPieChart);
+    await loadQuotaData();
   };
 
   const initChart = async () => {
-    let lineChart = modelDataChart;
-    if (!modelDataChart) {
-      lineChart = new VChart(spec_line, { dom: 'model_data' });
-      setModelDataChart(lineChart);
-      lineChart.renderAsync();
-    }
-    let pieChart = modelDataPieChart;
-    if (!modelDataPieChart) {
-      pieChart = new VChart(spec_pie, { dom: 'model_pie' });
-      setModelDataPieChart(pieChart);
-      pieChart.renderAsync();
-    }
-    console.log('init vchart');
-    await loadQuotaData(lineChart, pieChart);
+    await loadQuotaData();
   };
 
-  const updateChart = (lineChart, pieChart, data) => {
-    if (isAdminUser) {
-      // 将所有用户合并
-    }
-    let pieData = [];
-    let lineData = [];
-    let consumeQuota = 0;
-    let times = 0;
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-      consumeQuota += item.quota;
-      times += item.count;
-      // 合并model_name
-      let pieItem = pieData.find((it) => it.type === item.model_name);
+  const updateChartData = (data) => {
+    let newPieData = [];
+    let newLineData = [];
+    let totalQuota = 0;
+    let totalTimes = 0;
+    let uniqueModels = new Set();
+    let totalTokens = 0;
+
+    // 收集所有唯一的模型名称和时间点
+    let uniqueTimes = new Set();
+    data.forEach(item => {
+      uniqueModels.add(item.model_name);
+      uniqueTimes.add(timestamp2string1(item.created_at, dataExportDefaultTime));
+      totalTokens += item.token_used;
+    });
+    
+    // 处理颜色映射
+    const newModelColors = {};
+    Array.from(uniqueModels).forEach((modelName) => {
+      newModelColors[modelName] = modelColorMap[modelName] || 
+        modelColors[modelName] || 
+        modelToColor(modelName);
+    });
+    setModelColors(newModelColors);
+
+    // 处理饼图数据
+    for (let item of data) {
+      totalQuota += item.quota;
+      totalTimes += item.count;
+      
+      let pieItem = newPieData.find((it) => it.type === item.model_name);
       if (pieItem) {
         pieItem.value += item.count;
       } else {
-        pieData.push({
+        newPieData.push({
           type: item.model_name,
           value: item.count,
         });
       }
-      // 合并created_at和model_name 为 lineData, created_at 数据类型是小时的时间戳
-      // 转换日期格式
-      let createTime = timestamp2string1(
-        item.created_at,
-        dataExportDefaultTime,
-      );
-      let lineItem = lineData.find(
-        (it) => it.Time === createTime && it.Model === item.model_name,
-      );
-      if (lineItem) {
-        lineItem.Usage += parseFloat(getQuotaWithUnit(item.quota));
-      } else {
-        lineData.push({
-          Time: createTime,
-          Model: item.model_name,
-          Usage: parseFloat(getQuotaWithUnit(item.quota)),
-        });
-      }
     }
-    setConsumeQuota(consumeQuota);
-    setTimes(times);
 
-    // sort by count
-    pieData.sort((a, b) => b.value - a.value);
-    spec_pie.title.subtext = `总计：${renderNumber(times)}`;
-    spec_pie.data[0].values = pieData;
+    // 处理柱状图数据
+    let timePoints = Array.from(uniqueTimes);
+    if (timePoints.length < 7) {
+      // 根据时间粒度生成合适的时间点
+      const generateTimePoints = () => {
+        let lastTime = Math.max(...data.map(item => item.created_at));
+        let points = [];
+        let interval = dataExportDefaultTime === 'hour' ? 3600 
+                      : dataExportDefaultTime === 'day' ? 86400 
+                      : 604800;
 
-    spec_line.title.subtext = `总计：${renderQuota(consumeQuota, 2)}`;
-    spec_line.data[0].values = lineData;
-    pieChart.updateSpec(spec_pie);
-    lineChart.updateSpec(spec_line);
+        for (let i = 0; i < 7; i++) {
+          points.push(timestamp2string1(lastTime - (i * interval), dataExportDefaultTime));
+        }
+        return points.reverse();
+      };
 
-    // pieChart.updateData('id0', pieData);
-    // lineChart.updateData('barData', lineData);
-    pieChart.reLayout();
-    lineChart.reLayout();
+      timePoints = generateTimePoints();
+    }
+
+    // 为每个时间点和模型生成数据
+    timePoints.forEach(time => {
+      Array.from(uniqueModels).forEach(model => {
+        let existingData = data.find(item => 
+          timestamp2string1(item.created_at, dataExportDefaultTime) === time && 
+          item.model_name === model
+        );
+
+        newLineData.push({
+          Time: time,
+          Model: model,
+          Usage: existingData ? parseFloat(getQuotaWithUnit(existingData.quota)) : 0
+        });
+      });
+    });
+
+    // 排序
+    newPieData.sort((a, b) => b.value - a.value);
+    newLineData.sort((a, b) => a.Time.localeCompare(b.Time));
+
+    // 更新图表配置和数据
+    setSpecPie(prev => ({
+      ...prev,
+      data: [{ id: 'id0', values: newPieData }],
+      title: {
+        ...prev.title,
+        subtext: `总计：${renderNumber(totalTimes)}`
+      },
+      color: {
+        specified: newModelColors
+      }
+    }));
+
+    setSpecLine(prev => ({
+      ...prev,
+      data: [{ id: 'barData', values: newLineData }],
+      title: {
+        ...prev.title,
+        subtext: `总计：${renderQuota(totalQuota, 2)}`
+      },
+      color: {
+        specified: newModelColors
+      }
+    }));
+    
+    setPieData(newPieData);
+    setLineData(newLineData);
+    setConsumeQuota(totalQuota);
+    setTimes(totalTimes);
+    setConsumeTokens(totalTokens);
+  };
+
+  const getUserData = async () => {
+    let res = await API.get(`/api/user/self`);
+    const {success, message, data} = res.data;
+    if (success) {
+      userDispatch({type: 'login', payload: data});
+    } else {
+      showError(message);
+    }
   };
 
   useEffect(() => {
-    // setDataExportDefaultTime(localStorage.getItem('data_export_default_time'));
-    // if (dataExportDefaultTime === 'day') {
-    //     // 设置开始时间为7天前
-    //     let st = timestamp2string(now.getTime() / 1000 - 86400 * 7)
-    //     inputs.start_timestamp = st;
-    //     formRef.current.formApi.setValue('start_timestamp', st);
-    // }
+    getUserData()
     if (!initialized.current) {
       initVChartSemiTheme({
         isWatchingThemeSwitch: true,
@@ -389,33 +439,93 @@ const Detail = (props) => {
                   />
                 </>
               )}
+              <Button
+                label='查询'
+                type='primary'
+                htmlType='submit'
+                className='btn-margin-right'
+                onClick={refresh}
+                loading={loading}
+                style={{ marginTop: 24 }}
+              >
+                查询
+              </Button>
               <Form.Section>
-                <Button
-                  label='查询'
-                  type='primary'
-                  htmlType='submit'
-                  className='btn-margin-right'
-                  onClick={refresh}
-                  loading={loading}
-                >
-                  查询
-                </Button>
               </Form.Section>
             </>
           </Form>
           <Spin spinning={loading}>
-            <div style={{ height: 500 }}>
-              <div
-                id='model_pie'
-                style={{ width: '100%', minWidth: 100 }}
-              ></div>
-            </div>
-            <div style={{ height: 500 }}>
-              <div
-                id='model_data'
-                style={{ width: '100%', minWidth: 100 }}
-              ></div>
-            </div>
+            <Row gutter={{ xs: 16, sm: 16, md: 16, lg: 24, xl: 24, xxl: 24 }} style={{marginTop: 20}} type="flex" justify="space-between">
+              <Col span={styleState.isMobile?24:8}>
+                <Card className='panel-desc-card'>
+                  <Descriptions row size="small">
+                    <Descriptions.Item itemKey='当前余额'>
+                      {renderQuota(userState?.user?.quota)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='历史消耗'>
+                      {renderQuota(userState?.user?.used_quota)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='请求次数'>
+                      {userState.user?.request_count}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+              <Col span={styleState.isMobile?24:8}>
+                <Card>
+                  <Descriptions row size="small">
+                    <Descriptions.Item itemKey='统计额度'>
+                      {renderQuota(consumeQuota)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='统计Tokens'>
+                      {consumeTokens}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='统计次数'>
+                      {times}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+              <Col span={styleState.isMobile ? 24 : 8}>
+                <Card>
+                  <Descriptions row size='small'>
+                    <Descriptions.Item itemKey='平均RPM'>
+                      {(times /
+                        ((Date.parse(end_timestamp) -
+                          Date.parse(start_timestamp)) /
+                          60000)).toFixed(3)}
+                    </Descriptions.Item>
+                    <Descriptions.Item itemKey='平均TPM'>
+                      {(consumeTokens /
+                        ((Date.parse(end_timestamp) -
+                          Date.parse(start_timestamp)) /
+                          60000)).toFixed(3)}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </Col>
+            </Row>
+            <Card style={{marginTop: 20}}>
+              <Tabs type="line" defaultActiveKey="1">
+                <Tabs.TabPane tab="消耗分布" itemKey="1">
+                  <div style={{ height: 500 }}>
+                    <VChart
+                      spec={spec_line}
+                      option={{ mode: "desktop-browser" }}
+                    />
+                  </div>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="调用次数分布" itemKey="2">
+                  <div style={{ height: 500 }}>
+                    <VChart
+                      spec={spec_pie}
+                      option={{ mode: "desktop-browser" }}
+                    />
+                  </div>
+                </Tabs.TabPane>
+
+              </Tabs>
+            </Card>
           </Spin>
         </Layout.Content>
       </Layout>

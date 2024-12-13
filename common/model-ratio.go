@@ -150,6 +150,7 @@ var defaultModelRatio = map[string]float64{
 	"360gpt-turbo":                   0.0858, // ¥0.0012 / 1k tokens
 	"360gpt-turbo-responsibility-8k": 0.8572, // ¥0.012 / 1k tokens
 	"360gpt-pro":                     0.8572, // ¥0.012 / 1k tokens
+	"360gpt2-pro":                    0.8572, // ¥0.012 / 1k tokens
 	"embedding-bert-512-v1":          0.0715, // ¥0.001 / 1k tokens
 	"embedding_s1_v1":                0.0715, // ¥0.001 / 1k tokens
 	"semantic_similarity_s1_v1":      0.0715, // ¥0.001 / 1k tokens

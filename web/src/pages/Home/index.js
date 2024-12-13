@@ -3,11 +3,13 @@ import { Card, Col, Row } from '@douyinfe/semi-ui';
 import { API, showError, showNotice, timestamp2string } from '../../helpers';
 import { StatusContext } from '../../context/Status';
 import { marked } from 'marked';
+import { StyleContext } from '../../context/Style/index.js';
 
 const Home = () => {
   const [statusState] = useContext(StatusContext);
   const [homePageContentLoaded, setHomePageContentLoaded] = useState(false);
   const [homePageContent, setHomePageContent] = useState('');
+  const [styleState, styleDispatch] = useContext(StyleContext);
 
   const displayNotice = async () => {
     const res = await API.get('/api/notice');

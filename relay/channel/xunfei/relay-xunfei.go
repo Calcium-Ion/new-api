@@ -12,8 +12,8 @@ import (
 	"net/http"
 	"net/url"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
-	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
 	"time"
@@ -67,7 +67,7 @@ func responseXunfei2OpenAI(response *XunfeiChatResponse) *dto.OpenAITextResponse
 			Role:    "assistant",
 			Content: content,
 		},
-		FinishReason: relaycommon.StopFinishReason,
+		FinishReason: constant.FinishReasonStop,
 	}
 	fullTextResponse := dto.OpenAITextResponse{
 		Object:  "chat.completion",
@@ -89,7 +89,7 @@ func streamResponseXunfei2OpenAI(xunfeiResponse *XunfeiChatResponse) *dto.ChatCo
 	var choice dto.ChatCompletionsStreamResponseChoice
 	choice.Delta.SetContentString(xunfeiResponse.Payload.Choices.Text[0].Content)
 	if xunfeiResponse.Payload.Choices.Status == 2 {
-		choice.FinishReason = &relaycommon.StopFinishReason
+		choice.FinishReason = &constant.FinishReasonStop
 	}
 	response := dto.ChatCompletionsStreamResponse{
 		Object:  "chat.completion.chunk",
@@ -245,7 +245,7 @@ func xunfeiMakeRequest(textRequest dto.GeneralOpenAIRequest, domain, authUrl, ap
 func apiVersion2domain(apiVersion string) string {
 	switch apiVersion {
 	case "v1.1":
-		return "general"
+		return "lite"
 	case "v2.1":
 		return "generalv2"
 	case "v3.1":

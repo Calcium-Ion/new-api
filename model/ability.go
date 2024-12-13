@@ -10,12 +10,13 @@ import (
 )
 
 type Ability struct {
-	Group     string `json:"group" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
-	Model     string `json:"model" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
-	ChannelId int    `json:"channel_id" gorm:"primaryKey;autoIncrement:false;index"`
-	Enabled   bool   `json:"enabled"`
-	Priority  *int64 `json:"priority" gorm:"bigint;default:0;index"`
-	Weight    uint   `json:"weight" gorm:"default:0;index"`
+	Group     string  `json:"group" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
+	Model     string  `json:"model" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
+	ChannelId int     `json:"channel_id" gorm:"primaryKey;autoIncrement:false;index"`
+	Enabled   bool    `json:"enabled"`
+	Priority  *int64  `json:"priority" gorm:"bigint;default:0;index"`
+	Weight    uint    `json:"weight" gorm:"default:0;index"`
+	Tag       *string `json:"tag" gorm:"index"`
 }
 
 func GetGroupModels(group string) []string {
@@ -149,6 +150,7 @@ func (channel *Channel) AddAbilities() error {
 				Enabled:   channel.Status == common.ChannelStatusEnabled,
 				Priority:  channel.Priority,
 				Weight:    uint(channel.GetWeight()),
+				Tag:       channel.Tag,
 			}
 			abilities = append(abilities, ability)
 		}
@@ -188,6 +190,24 @@ func (channel *Channel) UpdateAbilities() error {
 
 func UpdateAbilityStatus(channelId int, status bool) error {
 	return DB.Model(&Ability{}).Where("channel_id = ?", channelId).Select("enabled").Update("enabled", status).Error
+}
+
+func UpdateAbilityStatusByTag(tag string, status bool) error {
+	return DB.Model(&Ability{}).Where("tag = ?", tag).Select("enabled").Update("enabled", status).Error
+}
+
+func UpdateAbilityByTag(tag string, newTag *string, priority *int64, weight *uint) error {
+	ability := Ability{}
+	if newTag != nil {
+		ability.Tag = newTag
+	}
+	if priority != nil {
+		ability.Priority = priority
+	}
+	if weight != nil {
+		ability.Weight = *weight
+	}
+	return DB.Model(&Ability{}).Where("tag = ?", tag).Updates(ability).Error
 }
 
 func FixAbility() (int, error) {

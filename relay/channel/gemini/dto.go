@@ -34,6 +34,7 @@ type GeminiChatSafetySettings struct {
 }
 
 type GeminiChatTools struct {
+	GoogleSearch         any `json:"googleSearch,omitempty"`
 	FunctionDeclarations any `json:"functionDeclarations,omitempty"`
 }
 

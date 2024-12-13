@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
@@ -44,13 +45,25 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 	}
 	if textRequest.Tools != nil {
 		functions := make([]dto.FunctionCall, 0, len(textRequest.Tools))
+		googleSearch := false
 		for _, tool := range textRequest.Tools {
+			if tool.Function.Name == "googleSearch" {
+				googleSearch = true
+				continue
+			}
 			functions = append(functions, tool.Function)
 		}
-		geminiRequest.Tools = []GeminiChatTools{
-			{
-				FunctionDeclarations: functions,
-			},
+		if len(functions) > 0 {
+			geminiRequest.Tools = []GeminiChatTools{
+				{
+					FunctionDeclarations: functions,
+				},
+			}
+		}
+		if googleSearch {
+			geminiRequest.Tools = append(geminiRequest.Tools, GeminiChatTools{
+				GoogleSearch: make(map[string]string),
+			})
 		}
 	} else if textRequest.Functions != nil {
 		geminiRequest.Tools = []GeminiChatTools{
@@ -133,7 +146,6 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 			shouldAddDummyModelMessage = false
 		}
 	}
-
 	return &geminiRequest
 }
 
@@ -186,10 +198,11 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 				Role:    "assistant",
 				Content: content,
 			},
-			FinishReason: relaycommon.StopFinishReason,
+			FinishReason: constant.FinishReasonStop,
 		}
 		if len(candidate.Content.Parts) > 0 {
 			if candidate.Content.Parts[0].FunctionCall != nil {
+				choice.FinishReason = constant.FinishReasonToolCalls
 				choice.Message.ToolCalls = getToolCalls(&candidate)
 			} else {
 				choice.Message.SetStringContent(candidate.Content.Parts[0].Text)
@@ -262,7 +275,7 @@ func GeminiChatStreamHandler(c *gin.Context, resp *http.Response, info *relaycom
 		}
 	}
 
-	response := service.GenerateStopResponse(id, createAt, info.UpstreamModelName, relaycommon.StopFinishReason)
+	response := service.GenerateStopResponse(id, createAt, info.UpstreamModelName, constant.FinishReasonStop)
 	service.ObjectData(c, response)
 
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens

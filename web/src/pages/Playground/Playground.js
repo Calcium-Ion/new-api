@@ -1,9 +1,11 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { UserContext } from '../context/User';
-import { API, getUserIdFromLocalStorage, showError } from '../helpers';
-import { Card, Chat, Input, Layout, Select, Slider, TextArea, Typography } from '@douyinfe/semi-ui';
+import { UserContext } from '../../context/User/index.js';
+import { API, getUserIdFromLocalStorage, showError } from '../../helpers/index.js';
+import { Card, Chat, Input, Layout, Select, Slider, TextArea, Typography, Button } from '@douyinfe/semi-ui';
 import { SSE } from 'sse';
+import { IconSetting } from '@douyinfe/semi-icons';
+import { StyleContext } from '../../context/Style/index.js';
 
 const defaultMessage = [
   {
@@ -19,6 +21,21 @@ const defaultMessage = [
     content: "你好，请问有什么可以帮助您的吗？",
   }
 ];
+
+const roleInfo = {
+  user:  {
+    name: 'User',
+    avatar: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/docs-icon.png'
+  },
+  assistant: {
+    name: 'Assistant',
+    avatar: 'logo.png'
+  },
+  system: {
+    name: 'System',
+    avatar: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/other/logo.png'
+  }
+}
 
 let id = 4;
 function getId() {
@@ -39,6 +56,8 @@ const Playground = () => {
   const [message, setMessage] = useState(defaultMessage);
   const [models, setModels] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [showSettings, setShowSettings] = useState(true);
+  const [styleState, styleDispatch] = useContext(StyleContext);
 
   const handleInputChange = (name, value) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
@@ -84,11 +103,16 @@ const Playground = () => {
       // handleInputChange('group', localGroupOptions[0].value);
 
       if (localGroupOptions.length > 0) {
-        // set default group at first
-        localGroupOptions.unshift({
-          label: '用户分组',
-          value: '',
-        });
+        // set user group at first
+        if (userState.user && userState.user.group) {
+          let userGroup = userState.user.group;
+          // Find and move user's group to the front
+          const userGroupIndex = localGroupOptions.findIndex(g => g.value === userGroup);
+          if (userGroupIndex > -1) {
+            const userGroupOption = localGroupOptions.splice(userGroupIndex, 1)[0];
+            localGroupOptions.unshift(userGroupOption);
+          }
+        }
       } else {
         localGroupOptions = [{
           label: '用户分组',
@@ -242,94 +266,147 @@ const Playground = () => {
     })
   }, []);
 
+  const SettingsToggle = () => {
+    if (!styleState.isMobile) return null;
+    return (
+      <Button
+        icon={<IconSetting />}
+        style={{
+          position: 'absolute',
+          left: showSettings ? -10 : -20,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 1000,
+          width: 40,
+          height: 40,
+          borderRadius: '0 20px 20px 0',
+          padding: 0,
+          boxShadow: '2px 0 8px rgba(0, 0, 0, 0.15)',
+        }}
+        onClick={() => setShowSettings(!showSettings)}
+        theme="solid"
+        type="primary"
+      />
+    );
+  };
+
+  function CustomInputRender(props) {
+    const { detailProps } = props;
+    const { clearContextNode, uploadNode, inputNode, sendNode, onClick } = detailProps;
+
+    return <div style={{margin: '8px 16px', display: 'flex', flexDirection:'row',
+      alignItems: 'flex-end', borderRadius: 16,padding: 10, border: '1px solid var(--semi-color-border)'}}
+                onClick={onClick}
+    >
+      {/*{uploadNode}*/}
+      {inputNode}
+      {sendNode}
+    </div>
+  }
+
+  const renderInputArea = useCallback((props) => {
+    return (<CustomInputRender {...props} />)
+  }, []);
+
   return (
     <Layout style={{height: '100%'}}>
-      <Layout.Sider>
-        <Card style={commonOuterStyle}>
-          <div style={{ marginTop: 10 }}>
-            <Typography.Text strong>分组：</Typography.Text>
-          </div>
-          <Select
-            placeholder={'请选择分组'}
-            name='group'
-            required
-            selection
-            onChange={(value) => {
-              handleInputChange('group', value);
-            }}
-            value={inputs.group}
-            autoComplete='new-password'
-            optionList={groups}
-          />
-          <div style={{ marginTop: 10 }}>
-            <Typography.Text strong>模型：</Typography.Text>
-          </div>
-          <Select
-            placeholder={'请选择模型'}
-            name='model'
-            required
-            selection
-            filter
-            onChange={(value) => {
-              handleInputChange('model', value);
-            }}
-            value={inputs.model}
-            autoComplete='new-password'
-            optionList={models}
-          />
-          <div style={{ marginTop: 10 }}>
-            <Typography.Text strong>Temperature：</Typography.Text>
-          </div>
-          <Slider
-            step={0.1}
-            min={0.1}
-            max={1}
-            value={inputs.temperature}
-            onChange={(value) => {
-              handleInputChange('temperature', value);
-            }}
-          />
-          <div style={{ marginTop: 10 }}>
-            <Typography.Text strong>MaxTokens：</Typography.Text>
-          </div>
-          <Input
-            placeholder='MaxTokens'
-            name='max_tokens'
-            required
-            autoComplete='new-password'
-            defaultValue={0}
-            value={inputs.max_tokens}
-            onChange={(value) => {
-              handleInputChange('max_tokens', value);
-            }}
-          />
+      {(showSettings || !styleState.isMobile) && (
+        <Layout.Sider style={{ display: styleState.isMobile ? 'block' : 'initial' }}>
+          <Card style={commonOuterStyle}>
+            <div style={{ marginTop: 10 }}>
+              <Typography.Text strong>分组：</Typography.Text>
+            </div>
+            <Select
+              placeholder={'请选择分组'}
+              name='group'
+              required
+              selection
+              onChange={(value) => {
+                handleInputChange('group', value);
+              }}
+              value={inputs.group}
+              autoComplete='new-password'
+              optionList={groups.map((group) => ({
+                ...group,
+                label: styleState.isMobile && group.label.length > 16
+                  ? group.label.substring(0, 16) + '...'
+                  : group.label,
+              }))}
+            />
+            <div style={{ marginTop: 10 }}>
+              <Typography.Text strong>模型：</Typography.Text>
+            </div>
+            <Select
+              placeholder={'请选择模型'}
+              name='model'
+              required
+              selection
+              searchPosition='dropdown'
+              filter
+              onChange={(value) => {
+                handleInputChange('model', value);
+              }}
+              value={inputs.model}
+              autoComplete='new-password'
+              optionList={models}
+            />
+            <div style={{ marginTop: 10 }}>
+              <Typography.Text strong>Temperature：</Typography.Text>
+            </div>
+            <Slider
+              step={0.1}
+              min={0.1}
+              max={1}
+              value={inputs.temperature}
+              onChange={(value) => {
+                handleInputChange('temperature', value);
+              }}
+            />
+            <div style={{ marginTop: 10 }}>
+              <Typography.Text strong>MaxTokens：</Typography.Text>
+            </div>
+            <Input
+              placeholder='MaxTokens'
+              name='max_tokens'
+              required
+              autoComplete='new-password'
+              defaultValue={0}
+              value={inputs.max_tokens}
+              onChange={(value) => {
+                handleInputChange('max_tokens', value);
+              }}
+            />
 
-          <div style={{ marginTop: 10 }}>
-            <Typography.Text strong>System：</Typography.Text>
-          </div>
-          <TextArea
-            placeholder='System Prompt'
-            name='system'
-            required
-            autoComplete='new-password'
-            autosize
-            defaultValue={systemPrompt}
-            // value={systemPrompt}
-            onChange={(value) => {
-              setSystemPrompt(value);
-            }}
-          />
+            <div style={{ marginTop: 10 }}>
+              <Typography.Text strong>System：</Typography.Text>
+            </div>
+            <TextArea
+              placeholder='System Prompt'
+              name='system'
+              required
+              autoComplete='new-password'
+              autosize
+              defaultValue={systemPrompt}
+              // value={systemPrompt}
+              onChange={(value) => {
+                setSystemPrompt(value);
+              }}
+            />
 
-        </Card>
-      </Layout.Sider>
+          </Card>
+        </Layout.Sider>
+      )}
       <Layout.Content>
-        <div style={{height: '100%'}}>
+        <div style={{height: '100%', position: 'relative'}}>
+          <SettingsToggle />
           <Chat
             chatBoxRenderConfig={{
               renderChatBoxAction: () => {
                 return <div></div>
               }
             }}
+            renderInputArea={renderInputArea}
+            roleConfig={roleInfo}
             style={commonOuterStyle}
             chats={message}
             onMessageSend={onMessageSend}

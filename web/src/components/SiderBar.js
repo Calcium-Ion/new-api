@@ -31,14 +31,15 @@ import { Avatar, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
 import { setStatusData } from '../helpers/data.js';
 import { stringToColor } from '../helpers/render.js';
 import { useSetTheme, useTheme } from '../context/Theme/index.js';
+import { StyleContext } from '../context/Style/index.js';
 
 // HeaderBar Buttons
 
 const SiderBar = () => {
-  const [userState, userDispatch] = useContext(UserContext);
+  const [styleState, styleDispatch] = useContext(StyleContext);
   const [statusState, statusDispatch] = useContext(StatusContext);
   const defaultIsCollapsed =
-    isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true';
+    localStorage.getItem('default_collapse_sidebar') === 'true';
 
   const [selectedKeys, setSelectedKeys] = useState(['home']);
   const [isCollapsed, setIsCollapsed] = useState(defaultIsCollapsed);
@@ -73,12 +74,6 @@ const SiderBar = () => {
         icon: <IconCommentStroked />,
       },
       {
-        text: '模型价格',
-        itemKey: 'pricing',
-        to: '/pricing',
-        icon: <IconPriceTag />,
-      },
-      {
         text: '渠道',
         itemKey: 'channel',
         to: '/channel',
@@ -100,6 +95,16 @@ const SiderBar = () => {
         itemKey: 'token',
         to: '/token',
         icon: <IconKey />,
+      },
+      {
+        text: '数据看板',
+        itemKey: 'detail',
+        to: '/detail',
+        icon: <IconCalendarClock />,
+        className:
+          localStorage.getItem('enable_data_export') === 'true'
+            ? 'semi-navigation-item-normal'
+            : 'tableHiddle',
       },
       {
         text: '兑换码',
@@ -126,16 +131,6 @@ const SiderBar = () => {
         itemKey: 'log',
         to: '/log',
         icon: <IconHistogram />,
-      },
-      {
-        text: '数据看板',
-        itemKey: 'detail',
-        to: '/detail',
-        icon: <IconCalendarClock />,
-        className:
-          localStorage.getItem('enable_data_export') === 'true'
-            ? 'semi-navigation-item-normal'
-            : 'tableHiddle',
       },
       {
         text: '绘图',
@@ -196,7 +191,6 @@ const SiderBar = () => {
   useEffect(() => {
     loadStatus().then(() => {
       setIsCollapsed(
-        isMobile() ||
           localStorage.getItem('default_collapse_sidebar') === 'true',
       );
     });
@@ -239,7 +233,6 @@ const SiderBar = () => {
       <Nav
         style={{ maxWidth: 220, height: '100%' }}
         defaultIsCollapsed={
-          isMobile() ||
           localStorage.getItem('default_collapse_sidebar') === 'true'
         }
         isCollapsed={isCollapsed}
@@ -280,21 +273,15 @@ const SiderBar = () => {
         }}
         items={headerButtons}
         onSelect={(key) => {
+          if (key.itemKey.toString().startsWith('chat')) {
+            styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
+          } else {
+            styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
+          }
           setSelectedKeys([key.itemKey]);
         }}
         footer={
           <>
-            {isMobile() && (
-              <Switch
-                checkedText='🌞'
-                size={'small'}
-                checked={theme === 'dark'}
-                uncheckedText='🌙'
-                onChange={(checked) => {
-                  setTheme(checked);
-                }}
-              />
-            )}
           </>
         }
       >
