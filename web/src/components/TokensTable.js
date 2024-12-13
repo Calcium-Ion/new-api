@@ -23,67 +23,66 @@ import {
 
 import { IconTreeTriangleDown } from '@douyinfe/semi-icons';
 import EditToken from '../pages/Token/EditToken';
+import { useTranslation } from 'react-i18next';
 
 function renderTimestamp(timestamp) {
   return <>{timestamp2string(timestamp)}</>;
 }
 
-function renderStatus(status, model_limits_enabled = false) {
-  switch (status) {
-    case 1:
-      if (model_limits_enabled) {
-        return (
-          <Tag color='green' size='large'>
-            已启用：限制模型
-          </Tag>
-        );
-      } else {
-        return (
-          <Tag color='green' size='large'>
-            已启用
-          </Tag>
-        );
-      }
-    case 2:
-      return (
-        <Tag color='red' size='large'>
-          {' '}
-          已禁用{' '}
-        </Tag>
-      );
-    case 3:
-      return (
-        <Tag color='yellow' size='large'>
-          {' '}
-          已过期{' '}
-        </Tag>
-      );
-    case 4:
-      return (
-        <Tag color='grey' size='large'>
-          {' '}
-          已耗尽{' '}
-        </Tag>
-      );
-    default:
-      return (
-        <Tag color='black' size='large'>
-          {' '}
-          未知状态{' '}
-        </Tag>
-      );
-  }
-}
-
 const TokensTable = () => {
+
+  const { t } = useTranslation();
+
+  const renderStatus = (status, model_limits_enabled = false) => {
+    switch (status) {
+      case 1:
+        if (model_limits_enabled) {
+          return (
+            <Tag color='green' size='large'>
+              {t('已启用：限制模型')}
+            </Tag>
+          );
+        } else {
+          return (
+            <Tag color='green' size='large'>
+              {t('已启用')}
+            </Tag>
+          );
+        }
+      case 2:
+        return (
+          <Tag color='red' size='large'>
+            {t('已禁用')}
+          </Tag>
+        );
+      case 3:
+        return (
+          <Tag color='yellow' size='large'>
+            {t('已过期')}
+          </Tag>
+        );
+      case 4:
+        return (
+          <Tag color='grey' size='large'>
+            {t('已耗尽')}
+          </Tag>
+        );
+      default:
+        return (
+          <Tag color='black' size='large'>
+            {t('未知状态')}
+          </Tag>
+        );
+    }
+  };
 
   const columns = [
     {
-      title: '名称',
+      title: t('名称'),
       dataIndex: 'name',
     },
     {
-      title: '状态',
+      title: t('状态'),
       dataIndex: 'status',
       key: 'status',
       render: (text, record, index) => {
@@ -96,21 +95,21 @@ const TokensTable = () => {
       },
     },
     {
-      title: '已用额度',
+      title: t('已用额度'),
       dataIndex: 'used_quota',
       render: (text, record, index) => {
         return <div>{renderQuota(parseInt(text))}</div>;
       },
     },
     {
-      title: '剩余额度',
+      title: t('剩余额度'),
       dataIndex: 'remain_quota',
       render: (text, record, index) => {
         return (
           <div>
             {record.unlimited_quota ? (
               <Tag size={'large'} color={'white'}>
-                无限制
+                {t('无限制')}
               </Tag>
             ) : (
               <Tag size={'large'} color={'light-blue'}>
@@ -122,19 +121,19 @@ const TokensTable = () => {
       },
     },
     {
-      title: '创建时间',
+      title: t('创建时间'),
       dataIndex: 'created_time',
       render: (text, record, index) => {
         return <div>{renderTimestamp(text)}</div>;
       },
     },
     {
-      title: '过期时间',
+      title: t('过期时间'),
       dataIndex: 'expired_time',
       render: (text, record, index) => {
         return (
           <div>
-            {record.expired_time === -1 ? '永不过期' : renderTimestamp(text)}
+            {record.expired_time === -1 ? t('永不过期') : renderTimestamp(text)}
           </div>
         );
       },
@@ -199,7 +198,7 @@ const TokensTable = () => {
 
           } catch (e) {
             console.log(e);
-            showError('聊天链接配置错误，请联系管理员');
+            showError(t('聊天链接配置错误，请联系管理员'));
           }
         }
         return (
@@ -210,7 +209,7 @@ const TokensTable = () => {
               position='top'
             >
               <Button theme='light' type='tertiary' style={{ marginRight: 1 }}>
-                查看
+                {t('查看')}
               </Button>
             </Popover>
             <Button
@@ -221,24 +220,24 @@ const TokensTable = () => {
                 await copyText('sk-' + record.key);
               }}
             >
-              复制
+              {t('复制')}
             </Button>
             <SplitButtonGroup
               style={{ marginRight: 1 }}
-              aria-label='项目操作按钮组'
+              aria-label={t('项目操作按钮组')}
             >
               <Button
                 theme='light'
                 style={{ color: 'rgba(var(--semi-teal-7), 1)' }}
                 onClick={() => {
                   if (chatsArray.length === 0) {
-                    showError('请联系管理员配置聊天链接');
+                    showError(t('请联系管理员配置聊天链接'));
                   } else {
                     onOpenLink('default', chats[0][Object.keys(chats[0])[0]], record);
                   }
                 }}
               >
-                聊天
+                {t('聊天')}
               </Button>
               <Dropdown
                 trigger='click'
@@ -256,8 +255,8 @@ const TokensTable = () => {
               </Dropdown>
             </SplitButtonGroup>
             <Popconfirm
-              title='确定是否要删除此令牌？'
-              content='此修改将不可逆'
+              title={t('确定是否要删除此令牌？')}
+              content={t('此修改将不可逆')}
               okType={'danger'}
               position={'left'}
               onConfirm={() => {
@@ -267,7 +266,7 @@ const TokensTable = () => {
               }}
             >
               <Button theme='light' type='danger' style={{ marginRight: 1 }}>
-                删除
+                {t('删除')}
               </Button>
             </Popconfirm>
             {record.status === 1 ? (
@@ -279,7 +278,7 @@ const TokensTable = () => {
                   manageToken(record.id, 'disable', record);
                 }}
               >
-                禁用
+                {t('禁用')}
               </Button>
             ) : (
               <Button
@@ -290,7 +289,7 @@ const TokensTable = () => {
                   manageToken(record.id, 'enable', record);
                 }}
               >
-                启用
+                {t('启用')}
               </Button>
             )}
             <Button
@@ -302,7 +301,7 @@ const TokensTable = () => {
                 setShowEdit(true);
               }}
             >
-              编辑
+              {t('编辑')}
             </Button>
           </div>
         );
@@ -371,10 +370,10 @@ const TokensTable = () => {
 
   const copyText = async (text) => {
     if (await copy(text)) {
-      showSuccess('已复制到剪贴板！');
+      showSuccess(t('已复制到剪贴板！'));
     } else {
       Modal.error({
-        title: '无法复制到剪贴板，请手动复制',
+        title: t('无法复制到剪贴板，请手动复制'),
         content: text,
         size: 'large',
       });
@@ -395,37 +394,6 @@ const TokensTable = () => {
     let encodedServerAddress = encodeURIComponent(serverAddress);
     url = url.replaceAll('{address}', encodedServerAddress);
     url = url.replaceAll('{key}', 'sk-' + record.key);
-    // console.log(url);
-    // const chatLink = localStorage.getItem('chat_link');
-    // const mjLink = localStorage.getItem('chat_link2');
-    // let defaultUrl;
-    //
-    // if (chatLink) {
-    //   defaultUrl =
-    //     chatLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    // }
-    // let url;
-    // switch (type) {
-    //   case 'ama':
-    //     url = `ama://set-api-key?server=${encodedServerAddress}&key=sk-${key}`;
-    //     break;
-    //   case 'opencat':
-    //     url = `opencat://team/join?domain=${encodedServerAddress}&token=sk-${key}`;
-    //     break;
-    //   case 'lobe':
-    //     url = `https://chat-preview.lobehub.com/?settings={"keyVaults":{"openai":{"apiKey":"sk-${key}","baseURL":"${encodedServerAddress}/v1"}}}`;
-    //     break;
-    //   case 'next-mj':
-    //     url =
-    //       mjLink + `/#/?settings={"key":"sk-${key}","url":"${serverAddress}"}`;
-    //     break;
-    //   default:
-    //     if (!chatLink) {
-    //       showError('管理员未设置聊天链接');
-    //       return;
-    //     }
-    //     url = defaultUrl;
-    // }
 
     window.open(url, '_blank');
   };
@@ -571,29 +539,29 @@ const TokensTable = () => {
       >
         <Form.Input
           field='keyword'
-          label='搜索关键字'
-          placeholder='令牌名称'
+          label={t('搜索关键字')}
+          placeholder={t('令牌名称')}
           value={searchKeyword}
           loading={searching}
           onChange={handleKeywordChange}
         />
         <Form.Input
           field='token'
-          label='Key'
-          placeholder='密钥'
+          label={t('密钥')}
+          placeholder={t('密钥')}
           value={searchToken}
           loading={searching}
           onChange={handleSearchTokenChange}
         />
         <Button
-          label='查询'
+          label={t('查询')}
           type='primary'
           htmlType='submit'
           className='btn-margin-right'
           onClick={searchTokens}
           style={{ marginRight: 8 }}
         >
-          查询
+          {t('查询')}
         </Button>
       </Form>
       <Divider style={{margin:'15px 0'}}/>
@@ -609,14 +577,14 @@ const TokensTable = () => {
               setShowEdit(true);
             }}
         >
-          添加令牌
+            {t('添加令牌')}
         </Button>
         <Button
-            label='复制所选令牌'
+            label={t('复制所选令牌')}
             type='warning'
             onClick={async () => {
               if (selectedKeys.length === 0) {
-                showError('请至少选择一个令牌！');
+                showError(t('请至少选择一个令牌！'));
                 return;
               }
               let keys = '';
@@ -627,7 +595,7 @@ const TokensTable = () => {
               await copyText(keys);
             }}
         >
-          复制所选令牌到剪贴板
+          {t('复制所选令牌到剪贴板')}
         </Button>
       </div>
 
@@ -642,7 +610,11 @@ const TokensTable = () => {
           showSizeChanger: true,
           pageSizeOptions: [10, 20, 50, 100],
           formatPageText: (page) =>
-            `第 ${page.currentStart} - ${page.currentEnd} 条，共 ${tokens.length} 条`,
+            t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
+              start: page.currentStart,
+              end: page.currentEnd,
+              total: tokens.length
+            }),
           onPageSizeChange: (size) => {
             setPageSize(size);
             setActivePage(1);

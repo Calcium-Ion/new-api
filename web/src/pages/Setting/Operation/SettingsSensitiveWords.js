@@ -7,8 +7,10 @@ import {
   showSuccess,
   showWarning,
 } from '../../../helpers';
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsSensitiveWords(props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
     CheckSensitiveEnabled: false,
@@ -20,7 +22,7 @@ export default function SettingsSensitiveWords(props) {
 
   function onSubmit() {
     const updateArray = compareObjects(inputs, inputsRow);
-    if (!updateArray.length) return showWarning('你似乎并没有修改什么');
+    if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
     const requestQueue = updateArray.map((item) => {
       let value = '';
       if (typeof inputs[item.key] === 'boolean') {
@@ -39,13 +41,13 @@ export default function SettingsSensitiveWords(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError('部分保存失败，请重试');
+          if (res.includes(undefined)) return showError(t('部分保存失败，请重试'));
         }
-        showSuccess('保存成功');
+        showSuccess(t('保存成功'));
         props.refresh();
       })
       .catch(() => {
-        showError('保存失败，请重试');
+        showError(t('保存失败，请重试'));
       })
       .finally(() => {
         setLoading(false);
@@ -71,12 +73,12 @@ export default function SettingsSensitiveWords(props) {
           getFormApi={(formAPI) => (refForm.current = formAPI)}
           style={{ marginBottom: 15 }}
         >
-          <Form.Section text={'屏蔽词过滤设置'}>
+          <Form.Section text={t('屏蔽词过滤设置')}>
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Switch
                   field={'CheckSensitiveEnabled'}
-                  label={'启用屏蔽词过滤功能'}
+                  label={t('启用屏蔽词过滤功能')}
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
@@ -91,7 +93,7 @@ export default function SettingsSensitiveWords(props) {
               <Col span={8}>
                 <Form.Switch
                   field={'CheckSensitiveOnPromptEnabled'}
-                  label={'启用 Prompt 检查'}
+                  label={t('启用 Prompt 检查')}
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
@@ -107,9 +109,9 @@ export default function SettingsSensitiveWords(props) {
             <Row>
               <Col span={16}>
                 <Form.TextArea
-                  label={'屏蔽词列表'}
-                  extraText={'一行一个屏蔽词，不需要符号分割'}
-                  placeholder={'一行一个屏蔽词，不需要符号分割'}
+                  label={t('屏蔽词列表')}
+                  extraText={t('一行一个屏蔽词，不需要符号分割')}
+                  placeholder={t('一行一个屏蔽词，不需要符号分割')}
                   field={'SensitiveWords'}
                   onChange={(value) =>
                     setInputs({
@@ -124,7 +126,7 @@ export default function SettingsSensitiveWords(props) {
             </Row>
             <Row>
               <Button size='default' onClick={onSubmit}>
-                保存屏蔽词过滤设置
+                {t('保存屏蔽词过滤设置')}
               </Button>
             </Row>
           </Form.Section>

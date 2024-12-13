@@ -2,8 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Banner, Button, Col, Form, Row } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess } from '../helpers';
 import { marked } from 'marked';
+import { useTranslation } from 'react-i18next';
 
 const OtherSetting = () => {
+  const { t } = useTranslation();
   let [inputs, setInputs] = useState({
     Notice: '',
     SystemName: '',
@@ -54,10 +56,10 @@ const OtherSetting = () => {
     try {
       setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: true }));
       await updateOption('Notice', inputs.Notice);
-      showSuccess('公告已更新');
+      showSuccess(t('公告已更新'));
     } catch (error) {
-      console.error('公告更新失败', error);
-      showError('公告更新失败');
+      console.error(t('公告更新失败'), error);
+      showError(t('公告更新失败'));
     } finally {
       setLoadingInput((loadingInput) => ({ ...loadingInput, Notice: false }));
     }
@@ -72,10 +74,10 @@ const OtherSetting = () => {
         SystemName: true,
       }));
       await updateOption('SystemName', inputs.SystemName);
-      showSuccess('系统名称已更新');
+      showSuccess(t('系统名称已更新'));
     } catch (error) {
-      console.error('系统名称更新失败', error);
-      showError('系统名称更新失败');
+      console.error(t('系统名称更新失败'), error);
+      showError(t('系统名称更新失败'));
     } finally {
       setLoadingInput((loadingInput) => ({
         ...loadingInput,
@@ -193,17 +195,17 @@ const OtherSetting = () => {
           getFormApi={(formAPI) => (formAPISettingGeneral.current = formAPI)}
           style={{ marginBottom: 15 }}
         >
-          <Form.Section text={'通用设置'}>
+          <Form.Section text={t('通用设置')}>
             <Form.TextArea
-              label={'公告'}
-              placeholder={'在此输入新的公告内容，支持 Markdown & HTML 代码'}
+              label={t('公告')}
+              placeholder={t('在此输入新的公告内容，支持 Markdown & HTML 代码')}
               field={'Notice'}
               onChange={handleInputChange}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
               autosize={{ minRows: 6, maxRows: 12 }}
             />
             <Button onClick={submitNotice} loading={loadingInput['Notice']}>
-              设置公告
+              {t('设置公告')}
             </Button>
           </Form.Section>
         </Form>
@@ -213,10 +215,10 @@ const OtherSetting = () => {
           getFormApi={(formAPI) => (formAPIPersonalization.current = formAPI)}
           style={{ marginBottom: 15 }}
         >
-          <Form.Section text={'个性化设置'}>
+          <Form.Section text={t('个性化设置')}>
             <Form.Input
-              label={'系统名称'}
-              placeholder={'在此输入系统名称'}
+              label={t('系统名称')}
+              placeholder={t('在此输入系统名称')}
               field={'SystemName'}
               onChange={handleInputChange}
             />
@@ -224,22 +226,20 @@ const OtherSetting = () => {
               onClick={submitSystemName}
               loading={loadingInput['SystemName']}
             >
-              设置系统名称
+              {t('设置系统名称')}
             </Button>
             <Form.Input
-              label={'Logo 图片地址'}
-              placeholder={'在此输入 Logo 图片地址'}
+              label={t('Logo 图片地址')}
+              placeholder={t('在此输入 Logo 图片地址')}
               field={'Logo'}
               onChange={handleInputChange}
             />
             <Button onClick={submitLogo} loading={loadingInput['Logo']}>
-              设置 Logo
+              {t('设置 Logo')}
             </Button>
             <Form.TextArea
-              label={'首页内容'}
-              placeholder={
-                '在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页。'
-              }
+              label={t('首页内容')}
+              placeholder={t('在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页')}
               field={'HomePageContent'}
               onChange={handleInputChange}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
@@ -249,39 +249,35 @@ const OtherSetting = () => {
               onClick={() => submitOption('HomePageContent')}
               loading={loadingInput['HomePageContent']}
             >
-              设置首页内容
+              {t('设置首页内容')}
             </Button>
             <Form.TextArea
-              label={'关于'}
-              placeholder={
-                '在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面。'
-              }
+              label={t('关于')}
+              placeholder={t('在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面')}
               field={'About'}
               onChange={handleInputChange}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
               autosize={{ minRows: 6, maxRows: 12 }}
             />
             <Button onClick={submitAbout} loading={loadingInput['About']}>
-              设置关于
+              {t('设置关于')}
             </Button>
             {/*  */}
             <Banner
               fullMode={false}
               type='info'
-              description='移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。'
+              description={t('移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目')}
               closeIcon={null}
               style={{ marginTop: 15 }}
             />
             <Form.Input
-              label={'页脚'}
-              placeholder={
-                '在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码'
-              }
+              label={t('页脚')}
+              placeholder={t('在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码')}
               field={'Footer'}
               onChange={handleInputChange}
             />
             <Button onClick={submitFooter} loading={loadingInput['Footer']}>
-              设置页脚
+              {t('设置页脚')}
             </Button>
           </Form.Section>
         </Form>

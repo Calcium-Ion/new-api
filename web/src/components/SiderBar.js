@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/User';
 import { StatusContext } from '../context/Status';
+import { useTranslation } from 'react-i18next';
 
 import {
   API,
@@ -36,6 +37,7 @@ import { StyleContext } from '../context/Style/index.js';
 // HeaderBar Buttons
 
 const SiderBar = () => {
+  const { t } = useTranslation();
   const [styleState, styleDispatch] = useContext(StyleContext);
   const [statusState, statusDispatch] = useContext(StatusContext);
   const defaultIsCollapsed =
@@ -74,30 +76,26 @@ const SiderBar = () => {
         icon: <IconCommentStroked />,
       },
       {
-        text: '渠道',
+        text: t('渠道'),
         itemKey: 'channel',
         to: '/channel',
         icon: <IconLayers />,
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
       {
-        text: '聊天',
+        text: t('聊天'),
         itemKey: 'chat',
-        // to: '/chat',
         items: chatItems,
         icon: <IconComment />,
-        // className: localStorage.getItem('chat_link')
-        //   ? 'semi-navigation-item-normal'
-        //   : 'tableHiddle',
       },
       {
-        text: '令牌',
+        text: t('令牌'),
         itemKey: 'token',
         to: '/token',
         icon: <IconKey />,
       },
       {
-        text: '数据看板',
+        text: t('数据看板'),
         itemKey: 'detail',
         to: '/detail',
         icon: <IconCalendarClock />,
@@ -107,33 +105,33 @@ const SiderBar = () => {
             : 'tableHiddle',
       },
       {
-        text: '兑换码',
+        text: t('兑换码'),
         itemKey: 'redemption',
         to: '/redemption',
         icon: <IconGift />,
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
       {
-        text: '钱包',
+        text: t('钱包'),
         itemKey: 'topup',
         to: '/topup',
         icon: <IconCreditCard />,
       },
       {
-        text: '用户管理',
+        text: t('用户管理'),
         itemKey: 'user',
         to: '/user',
         icon: <IconUser />,
         className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
       },
       {
-        text: '日志',
+        text: t('日志'),
         itemKey: 'log',
         to: '/log',
         icon: <IconHistogram />,
       },
       {
-        text: '绘图',
+        text: t('绘图'),
         itemKey: 'midjourney',
         to: '/midjourney',
         icon: <IconImage />,
@@ -143,7 +141,7 @@ const SiderBar = () => {
             : 'tableHiddle',
       },
       {
-        text: '异步任务',
+        text: t('异步任务'),
         itemKey: 'task',
         to: '/task',
         icon: <IconChecklistStroked />,
@@ -153,24 +151,20 @@ const SiderBar = () => {
                 : 'tableHiddle',
       },
       {
-        text: '设置',
+        text: t('设置'),
         itemKey: 'setting',
         to: '/setting',
         icon: <IconSetting />,
       },
-      // {
-      //     text: '关于',
-      //     itemKey: 'about',
-      //     to: '/about',
-      //     icon: <IconAt/>
-      // }
     ],
     [
       localStorage.getItem('enable_data_export'),
       localStorage.getItem('enable_drawing'),
       localStorage.getItem('enable_task'),
-      localStorage.getItem('chat_link'), chatItems,
+      localStorage.getItem('chat_link'),
+      chatItems,
       isAdmin(),
+      t,
     ],
   );
 
