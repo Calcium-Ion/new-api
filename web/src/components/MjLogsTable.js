@@ -46,7 +46,6 @@ const LogsTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
   function renderType(type) {
-    const { t } = useTranslation();
     
     switch (type) {
       case 'IMAGINE':
@@ -155,7 +154,6 @@ const LogsTable = () => {
   }
   
   function renderCode(code) {
-    const { t } = useTranslation();
     
     switch (code) {
       case 1:
@@ -192,7 +190,6 @@ const LogsTable = () => {
   }
   
   function renderStatus(type) {
-    const { t } = useTranslation();
     
     switch (type) {
       case 'SUCCESS':
@@ -254,7 +251,6 @@ const LogsTable = () => {
   };
   // 修改renderDuration函数以包含颜色逻辑
   function renderDuration(submit_time, finishTime) {
-    const { t } = useTranslation();
     
     if (!submit_time || !finishTime) return 'N/A';
 
