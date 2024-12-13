@@ -4,56 +4,72 @@
 
 # New API
 
+
+🍥新一代大模型网关与AI资产管理系统
+
 <a href="https://trendshift.io/repositories/8227" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8227" alt="Calcium-Ion%2Fnew-api | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
+<p align="center">
+  <a href="https://raw.githubusercontent.com/Calcium-Ion/new-api/main/LICENSE">
+    <img src="https://img.shields.io/github/license/Calcium-Ion/new-api?color=brightgreen" alt="license">
+  </a>
+  <a href="https://github.com/Calcium-Ion/new-api/releases/latest">
+    <img src="https://img.shields.io/github/v/release/Calcium-Ion/new-api?color=brightgreen&include_prereleases" alt="release">
+  </a>
+  <a href="https://github.com/users/Calcium-Ion/packages/container/package/new-api">
+    <img src="https://img.shields.io/badge/docker-ghcr.io-blue" alt="docker">
+  </a>
+  <a href="https://hub.docker.com/r/Calcium-Ion/new-api">
+    <img src="https://img.shields.io/badge/docker-dockerHub-blue" alt="docker">
+  </a>
+  <a href="https://goreportcard.com/report/github.com/Calcium-Ion/new-api">
+    <img src="https://goreportcard.com/badge/github.com/Calcium-Ion/new-api" alt="GoReportCard">
+  </a>
+</p>
 </div>
 
-> [!NOTE]
+## 📝 项目说明
+
+> [!NOTE]  
 > 本项目为开源项目，在[One API](https://github.com/songquanpeng/one-api)的基础上进行二次开发
 
-> [!IMPORTANT]
-> 使用者必须在遵循 OpenAI 的[使用条款](https://openai.com/policies/terms-of-use)以及**法律法规**的情况下使用，不得用于非法用途。
-> 本项目仅供个人学习使用，不保证稳定性，且不提供任何技术支持。
-> 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
+> [!IMPORTANT]  
+> - 使用者必须在遵循 OpenAI 的[使用条款](https://openai.com/policies/terms-of-use)以及**法律法规**的情况下使用，不得用于非法用途。
+> - 本项目仅供个人学习使用，不保证稳定性，且不提供任何技术支持。
+> - 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
 
-## 主要变更
-此分叉版本的主要变更如下：
+## ✨ 主要特性
 
-1. 全新的UI界面（部分界面还待更新）
-2. 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口的支持，[对接文档](Midjourney.md)
-3. 支持在线充值功能，可在系统设置中设置，当前支持的支付接口：
-    + [x] 易支付
-4. 支持用key查询使用额度:
-    + 配合项目[neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)可实现用key查询使用
-5. 渠道显示已使用额度，支持指定组织访问
-6. 分页支持选择每页显示数量
-7. 兼容原版One API的数据库，可直接使用原版数据库（one-api.db）
-8. 支持模型按次数收费，可在 系统设置-运营设置 中设置
-9. 支持渠道**加权随机**
-10. 数据看板
-11. 可设置令牌能调用的模型
-12. 支持Telegram授权登录。
+1. 🎨 全新的UI界面（部分界面还待更新）
+2. 🌍 多语言支持（待完善）
+3. 🎨 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口支持，[对接文档](Midjourney.md)
+4. 💰 支持在线充值功能，可在系统设置中设置：
+    - [x] 易支付
+5. 🔍 支持用key查询使用额度：
+    - 配合项目[neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)可实现用key查询使用
+6. 📑 分页支持选择每页显示数量
+7. 🔄 兼容原版One API的数据库，可直接使用原版数据库（one-api.db）
+8. 💵 支持模型按次数收费，可在 系统设置-运营设置 中设置
+9. ⚖️ 支持渠道**加权随机**
+10. 📈 数据看板（控制台）
+11. 🔒 可设置令牌能调用的模型
+12. 🤖 支持Telegram授权登录：
     1. 系统设置-配置登录注册-允许通过Telegram登录
     2. 对[@Botfather](https://t.me/botfather)输入指令/setdomain
     3. 选择你的bot，然后输入http(s)://你的网站地址/login
     4. Telegram Bot 名称是bot username 去掉@后的字符串
-13. 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口的支持，[对接文档](Suno.md)
-14. 支持Rerank模型，目前仅兼容Cohere和Jina，可接入Dify，[对接文档](Rerank.md)
-15. **[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime/integration)** - 支持OpenAI的Realtime API，支持Azure渠道。
+13. 🎵 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口支持，[对接文档](Suno.md)
+14. 🔄 支持Rerank模型，目前兼容Cohere和Jina，可接入Dify，[对接文档](Rerank.md)
+15. ⚡ **[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime/integration)** - 支持OpenAI的Realtime API，支持Azure渠道
 
 ## 模型支持
 此版本额外支持以下模型：
 1. 第三方模型 **gps** （gpt-4-gizmo-*）
-2. 智谱glm-4v，glm-4v识图
-3. Anthropic Claude 3
-4. [Ollama](https://github.com/ollama/ollama?tab=readme-ov-file)，添加渠道时，密钥可以随便填写，默认的请求地址是[http://localhost:11434](http://localhost:11434)，如果需要修改请在渠道中修改
-5. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
-6. [零一万物](https://platform.lingyiwanwu.com/)
-7. 自定义渠道，支持填入完整调用地址
-8. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
-9. Rerank模型，目前支持[Cohere](https://cohere.ai/)和[Jina](https://jina.ai/)，[对接文档](Rerank.md)
-10. Dify
-11. Vertex AI，目前兼容Claude，Gemini，Llama3.1
+2. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
+3. 自定义渠道，支持填入完整调用地址
+4. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
+5. Rerank模型，目前支持[Cohere](https://cohere.ai/)和[Jina](https://jina.ai/)，[对接文档](Rerank.md)
+6. Dify
 
 您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
 
@@ -151,6 +167,6 @@ docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 - [chatnio](https://github.com/Deeptrain-Community/chatnio)：下一代 AI 一站式 B/C 端解决方案
 - [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)：用key查询使用额度
 
-## Star History
+## 🌟 Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Calcium-Ion/new-api&type=Date)](https://star-history.com/#Calcium-Ion/new-api&Date)
