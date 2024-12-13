@@ -1,7 +1,7 @@
 // ModelSettingsVisualEditor.js
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Input, Modal, Form, Space } from '@douyinfe/semi-ui';
-import { IconDelete, IconPlus, IconSearch,IconSave } from '@douyinfe/semi-icons';
+import { IconDelete, IconPlus, IconSearch, IconSave } from '@douyinfe/semi-icons';
 import { showError, showSuccess } from '../../../helpers';
 import { API } from '../../../helpers';
 export default function ModelSettingsVisualEditor(props) {
@@ -55,40 +55,44 @@ export default function ModelSettingsVisualEditor(props) {
   const pagedData = getPagedData(filteredModels, currentPage, pageSize);
 
   const SubmitData = async () => {
-    setLoading(true); 
+    setLoading(true);
     const output = {
       ModelPrice: {},
       ModelRatio: {},
       CompletionRatio: {}
     };
     let currentConvertModelName = '';
-    
+
     try {
       // 数据转换
       models.forEach(model => {
         currentConvertModelName = model.name;
-        if (model.price !== '') output.ModelPrice[model.name] = parseFloat(model.price);
-        if (model.ratio !== '') output.ModelRatio[model.name] = parseFloat(model.ratio);
-        if (model.completionRatio != '') output.CompletionRatio[model.name] = parseFloat(model.completionRatio);
+        if (model.price !== '') {
+          // 如果价格不为空，则转换为浮点数，忽略倍率参数
+          output.ModelPrice[model.name] = parseFloat(model.price)
+        } else {
+          if (model.ratio !== '') output.ModelRatio[model.name] = parseFloat(model.ratio);
+          if (model.completionRatio != '') output.CompletionRatio[model.name] = parseFloat(model.completionRatio);
+        }
       });
-  
+
       // 准备API请求数组
       const finalOutput = {
         ModelPrice: JSON.stringify(output.ModelPrice, null, 2),
-        ModelRatio: JSON.stringify(output.ModelRatio, null, 2), 
+        ModelRatio: JSON.stringify(output.ModelRatio, null, 2),
         CompletionRatio: JSON.stringify(output.CompletionRatio, null, 2)
       };
-  
+
       const requestQueue = Object.entries(finalOutput).map(([key, value]) => {
         return API.put('/api/option/', {
           key,
           value
         });
       });
-  
+
       // 批量处理请求
       const results = await Promise.all(requestQueue);
-      
+
       // 验证结果
       if (requestQueue.length === 1) {
         if (results.includes(undefined)) return;
@@ -97,17 +101,17 @@ export default function ModelSettingsVisualEditor(props) {
           return showError('部分保存失败，请重试');
         }
       }
-  
+
       // 检查每个请求的结果
       for (const res of results) {
         if (!res.data.success) {
           return showError(res.data.message);
         }
       }
-  
+
       showSuccess('保存成功');
       props.refresh();
-  
+
     } catch (error) {
       console.error('保存失败:', error);
       showError('保存失败，请重试');
@@ -130,6 +134,7 @@ export default function ModelSettingsVisualEditor(props) {
         <Input
           value={text}
           placeholder="按量计价"
+          disabled={record.ratio !== ''}
           onChange={value => updateModel(record.name, 'price', value)}
         />
       )
@@ -141,7 +146,9 @@ export default function ModelSettingsVisualEditor(props) {
       render: (text, record) => (
         <Input
           value={text}
-          placeholder="默认倍率"
+
+          placeholder={record.price !== '' ? '固定价格' : '默认补全倍率'}
+          disabled={record.price !== ''}
           onChange={value => updateModel(record.name, 'ratio', value)}
         />
       )
@@ -153,7 +160,8 @@ export default function ModelSettingsVisualEditor(props) {
       render: (text, record) => (
         <Input
           value={text}
-          placeholder="默认补全值"
+          placeholder={record.price !== '' ? '固定价格' : '默认补全倍率'}
+          disabled={record.price !== ''}
           onChange={value => updateModel(record.name, 'completionRatio', value)}
         />
       )
@@ -172,6 +180,10 @@ export default function ModelSettingsVisualEditor(props) {
   ];
 
   const updateModel = (name, field, value) => {
+    if (isNaN(value)) {
+      showError('请输入数字');
+      return;
+    }
     setModels(prev =>
       prev.map(model =>
         model.name === name
@@ -203,7 +215,7 @@ export default function ModelSettingsVisualEditor(props) {
 
   return (
     <>
-    <h3>模型价格</h3>
+      <h3>模型价格</h3>
       <Space vertical align="start" style={{ width: '100%' }}>
         <Space>
           <Button icon={<IconPlus />} onClick={() => setVisible(true)}>
@@ -247,6 +259,7 @@ export default function ModelSettingsVisualEditor(props) {
         }}
       >
         <Form>
+          <p>请输入固定价格或者模型倍率+补全倍率</p>
           <Form.Input
             field="name"
             label="模型名称"
@@ -255,17 +268,20 @@ export default function ModelSettingsVisualEditor(props) {
           />
           <Form.Input
             field="price"
-            label="固定价格"
+            label="固定价格(每次)"
+            placeholder="输入每次价格"
             onChange={value => setCurrentModel(prev => ({ ...prev, price: value }))}
           />
           <Form.Input
             field="ratio"
             label="模型倍率"
+            placeholder="输入模型倍率"
             onChange={value => setCurrentModel(prev => ({ ...prev, ratio: value }))}
           />
           <Form.Input
             field="completionRatio"
             label="补全倍率"
+            placeholder="输入补全价格"
             onChange={value => setCurrentModel(prev => ({ ...prev, completionRatio: value }))}
           />
         </Form>
