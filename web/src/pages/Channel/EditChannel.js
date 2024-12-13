@@ -220,7 +220,7 @@ const EditChannel = (props) => {
               'Authorization': `Bearer ${key}`
             }
           });
-          if (res.data && res.data?.success) {
+          if (res.data) {
             models.push(...res.data.data.map((model) => model.id));
           } else {
             err = true;
