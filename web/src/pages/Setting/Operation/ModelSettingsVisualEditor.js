@@ -134,7 +134,6 @@ export default function ModelSettingsVisualEditor(props) {
         <Input
           value={text}
           placeholder="按量计价"
-          disabled={record.ratio !== ''}
           onChange={value => updateModel(record.name, 'price', value)}
         />
       )
@@ -202,6 +201,11 @@ export default function ModelSettingsVisualEditor(props) {
       showError('模型名称已存在');
       return;
     }
+    // 不允许同时添加固定价格和倍率
+    if (values.price !== '' && (values.ratio !== '' || values.completionRatio !== '')) {
+      showError('固定价格和倍率不能同时存在');
+      return;
+    }
     setModels(prev => [{
       name: values.name,
       price: values.price || '',
@@ -263,6 +267,7 @@ export default function ModelSettingsVisualEditor(props) {
           <Form.Input
             field="name"
             label="模型名称"
+            placeholder="strawberry"
             required
             onChange={value => setCurrentModel(prev => ({ ...prev, name: value }))}
           />
