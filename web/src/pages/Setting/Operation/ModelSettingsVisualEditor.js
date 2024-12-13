@@ -1,7 +1,7 @@
 // ModelSettingsVisualEditor.js
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Input, Modal, Form, Space } from '@douyinfe/semi-ui';
-import { IconDelete, IconPlus, IconSearch } from '@douyinfe/semi-icons';
+import { IconDelete, IconPlus, IconSearch,IconSave } from '@douyinfe/semi-icons';
 import { showError, showSuccess } from '../../../helpers';
 import { API } from '../../../helpers';
 export default function ModelSettingsVisualEditor(props) {
@@ -10,6 +10,7 @@ export default function ModelSettingsVisualEditor(props) {
   const [currentModel, setCurrentModel] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const pageSize = 10;
 
   useEffect(() => {
@@ -53,49 +54,66 @@ export default function ModelSettingsVisualEditor(props) {
   // 然后基于过滤后的数据计算分页数据
   const pagedData = getPagedData(filteredModels, currentPage, pageSize);
 
-  // 转换回JSON格式
-  const generateJSONOutput = async () => {
+  const SubmitData = async () => {
+    setLoading(true); 
     const output = {
       ModelPrice: {},
       ModelRatio: {},
       CompletionRatio: {}
     };
     let currentConvertModelName = '';
+    
     try {
+      // 数据转换
       models.forEach(model => {
         currentConvertModelName = model.name;
         if (model.price !== '') output.ModelPrice[model.name] = parseFloat(model.price);
         if (model.ratio !== '') output.ModelRatio[model.name] = parseFloat(model.ratio);
         if (model.completionRatio != '') output.CompletionRatio[model.name] = parseFloat(model.completionRatio);
       });
-    } catch (error) {
-      console.error('JSON转换错误:', error);
-      showError('JSON转换错误, 请检查输入+模型名称: ' + currentConvertModelName);
-      return;
-    }
-
-    const finalOutput = {
-      ModelPrice: JSON.stringify(output.ModelPrice, null, 2),
-      ModelRatio: JSON.stringify(output.ModelRatio, null, 2),
-      CompletionRatio: JSON.stringify(output.CompletionRatio, null, 2)
-    }
-
-    forEach(finalOutput, (value, key) => {
-      API.put('/api/option/', {
-        key: key,
-        value
-      }).then(res => {
-        if (res.data.success) {
-          showSuccess('保存成功');
-        } else {
-          showError(res.data.message);
+  
+      // 准备API请求数组
+      const finalOutput = {
+        ModelPrice: JSON.stringify(output.ModelPrice, null, 2),
+        ModelRatio: JSON.stringify(output.ModelRatio, null, 2), 
+        CompletionRatio: JSON.stringify(output.CompletionRatio, null, 2)
+      };
+  
+      const requestQueue = Object.entries(finalOutput).map(([key, value]) => {
+        return API.put('/api/option/', {
+          key,
+          value
+        });
+      });
+  
+      // 批量处理请求
+      const results = await Promise.all(requestQueue);
+      
+      // 验证结果
+      if (requestQueue.length === 1) {
+        if (results.includes(undefined)) return;
+      } else if (requestQueue.length > 1) {
+        if (results.includes(undefined)) {
+          return showError('部分保存失败，请重试');
         }
-      })
-    })
-
-
-    showSuccess('转换成功');
-    props.refresh();
+      }
+  
+      // 检查每个请求的结果
+      for (const res of results) {
+        if (!res.data.success) {
+          return showError(res.data.message);
+        }
+      }
+  
+      showSuccess('保存成功');
+      props.refresh();
+  
+    } catch (error) {
+      console.error('保存失败:', error);
+      showError('保存失败，请重试');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
@@ -111,7 +129,7 @@ export default function ModelSettingsVisualEditor(props) {
       render: (text, record) => (
         <Input
           value={text}
-          placeholder="无"
+          placeholder="按量计价"
           onChange={value => updateModel(record.name, 'price', value)}
         />
       )
@@ -166,27 +184,33 @@ export default function ModelSettingsVisualEditor(props) {
   const deleteModel = (name) => {
     setModels(prev => prev.filter(model => model.name !== name));
   };
-
   const addModel = (values) => {
-    setModels(prev => [...prev, {
+    // 检查模型名称是否存在, 如果存在则拒绝添加
+    if (models.some(model => model.name === values.name)) {
+      showError('模型名称已存在');
+      return;
+    }
+    setModels(prev => [{
       name: values.name,
       price: values.price || '',
       ratio: values.ratio || '',
       completionRatio: values.completionRatio || ''
-    }]);
+    }, ...prev]);
     setVisible(false);
+    showSuccess('添加成功');
   };
 
 
   return (
     <>
+    <h3>模型价格</h3>
       <Space vertical align="start" style={{ width: '100%' }}>
         <Space>
           <Button icon={<IconPlus />} onClick={() => setVisible(true)}>
             添加模型
           </Button>
-          <Button type="primary" onClick={generateJSONOutput}>
-            保存更改
+          <Button type="primary" icon={<IconSave />} onClick={SubmitData}>
+            应用更改
           </Button>
           <Input
             prefix={<IconSearch />}
