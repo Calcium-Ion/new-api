@@ -148,10 +148,12 @@ const HeaderBar = () => {
                 <div onClick={(e) => {
                   if (props.itemKey === 'home') {
                     styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
-                    // styleDispatch({ type: 'SET_SIDER', payload: false });
+                    styleDispatch({ type: 'SET_SIDER', payload: false });
                   } else {
                     styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
-                    // styleDispatch({ type: 'SET_SIDER', payload: true });
+                    if (!styleState.isMobile) {
+                      styleDispatch({ type: 'SET_SIDER', payload: true });
+                    }
                   }
                 }}>
                   <Link
