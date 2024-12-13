@@ -22,7 +22,7 @@
   <a href="https://github.com/users/Calcium-Ion/packages/container/package/new-api">
     <img src="https://img.shields.io/badge/docker-ghcr.io-blue" alt="docker">
   </a>
-  <a href="https://hub.docker.com/r/Calcium-Ion/new-api">
+  <a href="https://hub.docker.com/r/CalciumIon/new-api">
     <img src="https://img.shields.io/badge/docker-dockerHub-blue" alt="docker">
   </a>
   <a href="https://goreportcard.com/report/github.com/Calcium-Ion/new-api">
