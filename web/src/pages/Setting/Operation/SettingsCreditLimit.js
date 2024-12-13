@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { useTranslation } from 'react-i18next';
 import {
   compareObjects,
   API,
@@ -9,6 +10,7 @@ import {
 } from '../../../helpers';
 
 export default function SettingsCreditLimit(props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
     QuotaForNewUser: '',
@@ -21,7 +23,7 @@ export default function SettingsCreditLimit(props) {
 
   function onSubmit() {
     const updateArray = compareObjects(inputs, inputsRow);
-    if (!updateArray.length) return showWarning('你似乎并没有修改什么');
+    if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
     const requestQueue = updateArray.map((item) => {
       let value = '';
       if (typeof inputs[item.key] === 'boolean') {
@@ -40,13 +42,13 @@ export default function SettingsCreditLimit(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError('部分保存失败，请重试');
+          if (res.includes(undefined)) return showError(t('部分保存失败，请重试'));
         }
-        showSuccess('保存成功');
+        showSuccess(t('保存成功'));
         props.refresh();
       })
       .catch(() => {
-        showError('保存失败，请重试');
+        showError(t('保存失败，请重试'));
       })
       .finally(() => {
         setLoading(false);
@@ -72,11 +74,11 @@ export default function SettingsCreditLimit(props) {
           getFormApi={(formAPI) => (refForm.current = formAPI)}
           style={{ marginBottom: 15 }}
         >
-          <Form.Section text={'额度设置'}>
+          <Form.Section text={t('额度设置')}>
             <Row gutter={16}>
               <Col span={6}>
                 <Form.InputNumber
-                  label={'新用户初始额度'}
+                  label={t('新用户初始额度')}
                   field={'QuotaForNewUser'}
                   step={1}
                   min={0}
@@ -92,12 +94,12 @@ export default function SettingsCreditLimit(props) {
               </Col>
               <Col span={6}>
                 <Form.InputNumber
-                  label={'请求预扣费额度'}
+                  label={t('请求预扣费额度')}
                   field={'PreConsumedQuota'}
                   step={1}
                   min={0}
                   suffix={'Token'}
-                  extraText={'请求结束后多退少补'}
+                  extraText={t('请求结束后多退少补')}
                   placeholder={''}
                   onChange={(value) =>
                     setInputs({
@@ -109,13 +111,13 @@ export default function SettingsCreditLimit(props) {
               </Col>
               <Col span={6}>
                 <Form.InputNumber
-                  label={'邀请新用户奖励额度'}
+                  label={t('邀请新用户奖励额度')}
                   field={'QuotaForInviter'}
                   step={1}
                   min={0}
                   suffix={'Token'}
                   extraText={''}
-                  placeholder={'例如：2000'}
+                  placeholder={t('例如：2000')}
                   onChange={(value) =>
                     setInputs({
                       ...inputs,
@@ -126,13 +128,13 @@ export default function SettingsCreditLimit(props) {
               </Col>
               <Col span={6}>
                 <Form.InputNumber
-                  label={'新用户使用邀请码奖励额度'}
+                  label={t('新用户使用邀请码奖励额度')}
                   field={'QuotaForInvitee'}
                   step={1}
                   min={0}
                   suffix={'Token'}
                   extraText={''}
-                  placeholder={'例如：1000'}
+                  placeholder={t('例如：1000')}
                   onChange={(value) =>
                     setInputs({
                       ...inputs,
@@ -145,7 +147,7 @@ export default function SettingsCreditLimit(props) {
 
             <Row>
               <Button size='default' onClick={onSubmit}>
-                保存额度设置
+                {t('保存额度设置')}
               </Button>
             </Row>
           </Form.Section>

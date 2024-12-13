@@ -7,8 +7,10 @@ import {
   showSuccess,
   showWarning,
 } from '../../../helpers';
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsMonitoring(props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
     ChannelDisableThreshold: '',
@@ -21,7 +23,7 @@ export default function SettingsMonitoring(props) {
 
   function onSubmit() {
     const updateArray = compareObjects(inputs, inputsRow);
-    if (!updateArray.length) return showWarning('你似乎并没有修改什么');
+    if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
     const requestQueue = updateArray.map((item) => {
       let value = '';
       if (typeof inputs[item.key] === 'boolean') {
@@ -40,13 +42,13 @@ export default function SettingsMonitoring(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError('部分保存失败，请重试');
+          if (res.includes(undefined)) return showError(t('部分保存失败，请重试'));
         }
-        showSuccess('保存成功');
+        showSuccess(t('保存成功'));
         props.refresh();
       })
       .catch(() => {
-        showError('保存失败，请重试');
+        showError(t('保存失败，请重试'));
       })
       .finally(() => {
         setLoading(false);
@@ -64,6 +66,7 @@ export default function SettingsMonitoring(props) {
     setInputsRow(structuredClone(currentInputs));
     refForm.current.setValues(currentInputs);
   }, [props.options]);
+  
   return (
     <>
       <Spin spinning={loading}>
@@ -72,15 +75,15 @@ export default function SettingsMonitoring(props) {
           getFormApi={(formAPI) => (refForm.current = formAPI)}
           style={{ marginBottom: 15 }}
         >
-          <Form.Section text={'监控设置'}>
+          <Form.Section text={t('监控设置')}>
             <Row gutter={16}>
               <Col span={8}>
                 <Form.InputNumber
-                  label={'最长响应时间'}
+                  label={t('最长响应时间')}
                   step={1}
                   min={0}
-                  suffix={'秒'}
-                  extraText={'当运行通道全部测试时，超过此时间将自动禁用通道'}
+                  suffix={t('秒')}
+                  extraText={t('当运行通道全部测试时，超过此时间将自动禁用通道')}
                   placeholder={''}
                   field={'ChannelDisableThreshold'}
                   onChange={(value) =>
@@ -93,11 +96,11 @@ export default function SettingsMonitoring(props) {
               </Col>
               <Col span={8}>
                 <Form.InputNumber
-                  label={'额度提醒阈值'}
+                  label={t('额度提醒阈值')}
                   step={1}
                   min={0}
                   suffix={'Token'}
-                  extraText={'低于此额度时将发送邮件提醒用户'}
+                  extraText={t('低于此额度时将发送邮件提醒用户')}
                   placeholder={''}
                   field={'QuotaRemindThreshold'}
                   onChange={(value) =>
@@ -113,7 +116,7 @@ export default function SettingsMonitoring(props) {
               <Col span={8}>
                 <Form.Switch
                   field={'AutomaticDisableChannelEnabled'}
-                  label={'失败时自动禁用通道'}
+                  label={t('失败时自动禁用通道')}
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
@@ -128,7 +131,7 @@ export default function SettingsMonitoring(props) {
               <Col span={8}>
                 <Form.Switch
                   field={'AutomaticEnableChannelEnabled'}
-                  label={'成功时自动启用通道'}
+                  label={t('成功时自动启用通道')}
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
@@ -143,7 +146,7 @@ export default function SettingsMonitoring(props) {
             </Row>
             <Row>
               <Button size='default' onClick={onSubmit}>
-                保存监控设置
+                {t('保存监控设置')}
               </Button>
             </Row>
           </Form.Section>

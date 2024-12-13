@@ -6,11 +6,13 @@ import FooterBar from './Footer.js';
 import { ToastContainer } from 'react-toastify';
 import React, { useContext } from 'react';
 import { StyleContext } from '../context/Style/index.js';
+import { useTranslation } from 'react-i18next';
 const { Sider, Content, Header, Footer } = Layout;
 
 
 const PageLayout = () => {
   const [styleState, styleDispatch] = useContext(StyleContext);
+  const { t } = useTranslation();
 
   return (
     <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -28,7 +30,7 @@ const PageLayout = () => {
             <App />
           </Content>
           <Layout.Footer>
-            <FooterBar></FooterBar>
+            <FooterBar />
           </Layout.Footer>
         </Layout>
       </Layout>

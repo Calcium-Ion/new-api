@@ -21,8 +21,10 @@ import {
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const TopUp = () => {
+  const { t } = useTranslation();
   const [redemptionCode, setRedemptionCode] = useState('');
   const [topUpCode, setTopUpCode] = useState('');
   const [topUpCount, setTopUpCount] = useState(0);
@@ -38,7 +40,7 @@ const TopUp = () => {
 
   const topUp = async () => {
     if (redemptionCode === '') {
-      showInfo('请输入兑换码！');
+      showInfo(t('请输入兑换码！'));
       return;
     }
     setIsSubmitting(true);
@@ -48,10 +50,10 @@ const TopUp = () => {
       });
       const { success, message, data } = res.data;
       if (success) {
-        showSuccess('兑换成功！');
+        showSuccess(t('兑换成功！'));
         Modal.success({
-          title: '兑换成功！',
-          content: '成功兑换额度：' + renderQuota(data),
+          title: t('兑换成功！'),
+          content: t('成功兑换额度：') + renderQuota(data),
           centered: true,
         });
         setUserQuota((quota) => {
@@ -62,7 +64,7 @@ const TopUp = () => {
         showError(message);
       }
     } catch (err) {
-      showError('请求失败');
+      showError(t('请求失败'));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +72,7 @@ const TopUp = () => {
 
   const openTopUpLink = () => {
     if (!topUpLink) {
-      showError('超级管理员未设置充值链接！');
+      showError(t('超级管理员未设置充值链接！'));
       return;
     }
     window.open(topUpLink, '_blank');
@@ -78,12 +80,12 @@ const TopUp = () => {
 
   const preTopUp = async (payment) => {
     if (!enableOnlineTopUp) {
-      showError('管理员未开启在线充值！');
+      showError(t('管理员未开启在线充值！'));
       return;
     }
     await getAmount();
     if (topUpCount < minTopUp) {
-      showError('充值数量不能小于' + minTopUp);
+      showError(t('充值数量不能小于') + minTopUp);
       return;
     }
     setPayWay(payment);
@@ -174,7 +176,7 @@ const TopUp = () => {
 
   const renderAmount = () => {
     // console.log(amount);
-    return amount + '元';
+    return amount + ' ' + t('元');
   };
 
   const getAmount = async (value) => {
@@ -214,11 +216,11 @@ const TopUp = () => {
     <div>
       <Layout>
         <Layout.Header>
-          <h3>我的钱包</h3>
+          <h3>{t('我的钱包')}</h3>
         </Layout.Header>
         <Layout.Content>
           <Modal
-            title='确定要充值吗'
+            title={t('确定要充值吗')}
             visible={open}
             onOk={onlineTopUp}
             onCancel={handleCancel}
@@ -226,24 +228,24 @@ const TopUp = () => {
             size={'small'}
             centered={true}
           >
-            <p>充值数量：{topUpCount}</p>
-            <p>实付金额：{renderAmount()}</p>
-            <p>是否确认充值？</p>
+            <p>{t('充值数量')}：{topUpCount}</p>
+            <p>{t('实付金额')}：{renderAmount()}</p>
+            <p>{t('是否确认充值？')}</p>
           </Modal>
           <div
             style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}
           >
             <Card style={{ width: '500px', padding: '20px' }}>
               <Title level={3} style={{ textAlign: 'center' }}>
-                余额 {renderQuota(userQuota)}
+                {t('余额')} {renderQuota(userQuota)}
               </Title>
               <div style={{ marginTop: 20 }}>
-                <Divider>兑换余额</Divider>
+                <Divider>{t('兑换余额')}</Divider>
                 <Form>
                   <Form.Input
                     field={'redemptionCode'}
-                    label={'兑换码'}
-                    placeholder='兑换码'
+                    label={t('兑换码')}
+                    placeholder={t('兑换码')}
                     name='redemptionCode'
                     value={redemptionCode}
                     onChange={(value) => {
@@ -257,7 +259,7 @@ const TopUp = () => {
                         theme={'solid'}
                         onClick={openTopUpLink}
                       >
-                        获取兑换码
+                        {t('获取兑换码')}
                       </Button>
                     ) : null}
                     <Button
@@ -266,21 +268,19 @@ const TopUp = () => {
                       onClick={topUp}
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? '兑换中...' : '兑换'}
+                      {isSubmitting ? t('兑换中...') : t('兑换')}
                     </Button>
                   </Space>
                 </Form>
               </div>
               <div style={{ marginTop: 20 }}>
-                <Divider>在线充值</Divider>
+                <Divider>{t('在线充值')}</Divider>
                 <Form>
                   <Form.Input
                     disabled={!enableOnlineTopUp}
                     field={'redemptionCount'}
-                    label={'实付金额：' + renderAmount()}
-                    placeholder={
-                      '充值数量，最低 ' + renderQuotaWithAmount(minTopUp)
-                    }
+                    label={t('实付金额：') + ' ' + renderAmount()}
+                    placeholder={t('充值数量，最低 ') + renderQuotaWithAmount(minTopUp)}
                     name='redemptionCount'
                     type={'number'}
                     value={topUpCount}
@@ -300,7 +300,7 @@ const TopUp = () => {
                         preTopUp('zfb');
                       }}
                     >
-                      支付宝
+                      {t('支付宝')}
                     </Button>
                     <Button
                       style={{
@@ -312,7 +312,7 @@ const TopUp = () => {
                         preTopUp('wx');
                       }}
                     >
-                      微信
+                      {t('微信')}
                     </Button>
                   </Space>
                 </Form>
