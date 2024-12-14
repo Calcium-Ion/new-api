@@ -1209,5 +1209,8 @@
   "首页内容已更新": "Home page content updated",
   "关于已更新": "About updated",
   "模型测试": "model test",
-  "当前未开启Midjourney回调，部分项目可能无法获得绘图结果，可在运营设置中开启。": "Current Midjourney callback is not enabled, some projects may not be able to obtain drawing results, which can be enabled in the operation settings."
+  "当前未开启Midjourney回调，部分项目可能无法获得绘图结果，可在运营设置中开启。": "Current Midjourney callback is not enabled, some projects may not be able to obtain drawing results, which can be enabled in the operation settings.",
+  "Telegram 身份验证": "Telegram authentication",
+  "Linux DO 身份验证": "Linux DO authentication",
+  "协议": "License"
 }
