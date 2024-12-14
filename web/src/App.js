@@ -27,6 +27,9 @@ import Task from "./pages/Task/index.js";
 import Playground from './pages/Playground/Playground.js';
 import OAuth2Callback from "./components/OAuth2Callback.js";
 import { useTranslation } from 'react-i18next';
+import { StatusContext } from './context/Status';
+import { setStatusData } from './helpers/data.js';
+import { API, showError } from './helpers';
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
@@ -34,7 +37,7 @@ const About = lazy(() => import('./pages/About'));
 
 function App() {
   const [userState, userDispatch] = useContext(UserContext);
-  // const [statusState, statusDispatch] = useContext(StatusContext);
+  const [statusState, statusDispatch] = useContext(StatusContext);
   const { i18n } = useTranslation();
 
   const loadUser = () => {
@@ -42,6 +45,23 @@ function App() {
     if (user) {
       let data = JSON.parse(user);
       userDispatch({ type: 'login', payload: data });
+    }
+  };
+
+  const loadStatus = async () => {
+    try {
+      const res = await API.get('/api/status');
+      if (!res?.data) return;
+      
+      const { success, data } = res.data;
+      if (success) {
+        statusDispatch({ type: 'set', payload: data });
+        setStatusData(data);
+      } else {
+        showError('Unable to connect to server');
+      }
+    } catch (error) {
+      showError('Failed to load status');
     }
   };
 
@@ -63,6 +83,9 @@ function App() {
     if (savedLang) {
       i18n.changeLanguage(savedLang);
     }
+    loadStatus();
+
+
   }, [i18n]);
 
   return (

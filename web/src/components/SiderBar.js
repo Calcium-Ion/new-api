@@ -168,31 +168,13 @@ const SiderBar = () => {
     ],
   );
 
-  const loadStatus = async () => {
-    const res = await API.get('/api/status');
-    if (res === undefined) {
-      return;
-    }
-    const { success, data } = res.data;
-    if (success) {
-      statusDispatch({ type: 'set', payload: data });
-      setStatusData(data);
-    } else {
-      showError('无法正常连接至服务器！');
-    }
-  };
-
   useEffect(() => {
-    loadStatus().then(() => {
-      setIsCollapsed(
-          localStorage.getItem('default_collapse_sidebar') === 'true',
-      );
-    });
     let localKey = window.location.pathname.split('/')[1];
     if (localKey === '') {
       localKey = 'home';
     }
     setSelectedKeys([localKey]);
+    
     let chatLink = localStorage.getItem('chat_link');
     if (!chatLink) {
         let chats = localStorage.getItem('chats');
@@ -220,6 +202,8 @@ const SiderBar = () => {
             }
         }
     }
+    
+    setIsCollapsed(localStorage.getItem('default_collapse_sidebar') === 'true');
   }, []);
 
   return (
