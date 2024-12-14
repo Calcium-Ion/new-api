@@ -249,7 +249,7 @@ const ChannelsTable = () => {
       }
     },
     {
-      title: '优先级',
+      title: t('优先级'),
       dataIndex: 'priority',
       render: (text, record, index) => {
         if (record.children === undefined) {
@@ -276,8 +276,8 @@ const ChannelsTable = () => {
               keepFocus={true}
               onBlur={(e) => {
                 Modal.warning({
-                  title: '修改子渠道优先级',
-                  content: '确定要修改所有子渠道优先级为 ' + e.target.value + ' 吗？',
+                  title: t('修改子渠道优先级'),
+                  content: t('确定要修改所有子渠道优先级为 ') + e.target.value + t(' 吗？'),
                   onOk: () => {
                     if (e.target.value === '') {
                       return;
@@ -298,7 +298,7 @@ const ChannelsTable = () => {
       }
     },
     {
-      title: '权重',
+      title: t('权重'),
       dataIndex: 'weight',
       render: (text, record, index) => {
         if (record.children === undefined) {
@@ -325,8 +325,8 @@ const ChannelsTable = () => {
               keepFocus={true}
               onBlur={(e) => {
                 Modal.warning({
-                  title: '修改子渠道权重',
-                  content: '确定要修改所有子渠道权重为 ' + e.target.value + ' 吗？',
+                  title: t('修改子渠道权重'),
+                  content: t('确定要修改所有子渠道权重为 ') + e.target.value + t(' 吗？'),
                   onOk: () => {
                     if (e.target.value === '') {
                       return;
@@ -646,25 +646,25 @@ const ChannelsTable = () => {
 
   const copySelectedChannel = async (record) => {
     const channelToCopy = record
-    channelToCopy.name += '_复制';
+    channelToCopy.name += t('_复制');
     channelToCopy.created_time = null;
     channelToCopy.balance = 0;
     channelToCopy.used_quota = 0;
     if (!channelToCopy) {
-      showError('渠道未找到，请刷新页面后重试。');
+      showError(t('渠道未找到，请刷新页面后重试。'));
       return;
     }
     try {
       const newChannel = { ...channelToCopy, id: undefined };
       const response = await API.post('/api/channel/', newChannel);
       if (response.data.success) {
-        showSuccess('渠道复制成功');
+        showSuccess(t('渠道复制成功'));
         await refresh();
       } else {
         showError(response.data.message);
       }
     } catch (error) {
-      showError('渠道复制失败: ' + error.message);
+      showError(t('渠道复制失败: ') + error.message);
     }
   };
 
@@ -723,7 +723,7 @@ const ChannelsTable = () => {
     }
     const { success, message } = res.data;
     if (success) {
-      showSuccess('操作成功完成！');
+      showSuccess(t('操作成功完成！'));
       let channel = res.data.data;
       let newChannels = [...channels];
       if (action === 'delete') {

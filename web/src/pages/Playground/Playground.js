@@ -97,32 +97,29 @@ const Playground = () => {
     let res = await API.get(`/api/user/self/groups`);
     const { success, message, data } = res.data;
     if (success) {
-      // return data is a map, key is group name, value is group description
-      // label is group description, value is group name
       let localGroupOptions = Object.keys(data).map((group) => ({
         label: data[group],
         value: group,
       }));
-      // handleInputChange('group', localGroupOptions[0].value);
 
-      if (localGroupOptions.length > 0) {
-        // set user group at first
-        if (userState.user && userState.user.group) {
-          let userGroup = userState.user.group;
-          // Find and move user's group to the front
+      if (localGroupOptions.length === 0) {
+        localGroupOptions = [{
+          label: t('用户分组'),
+          value: '',
+        }];
+      } else {
+        const localUser = JSON.parse(localStorage.getItem('user'));
+        const userGroup = (userState.user && userState.user.group) || (localUser && localUser.group);
+        
+        if (userGroup) {
           const userGroupIndex = localGroupOptions.findIndex(g => g.value === userGroup);
           if (userGroupIndex > -1) {
             const userGroupOption = localGroupOptions.splice(userGroupIndex, 1)[0];
             localGroupOptions.unshift(userGroupOption);
           }
         }
-      } else {
-        localGroupOptions = [{
-          label: t('用户分组'),
-          value: '',
-        }];
-        setGroups(localGroupOptions);
       }
+
       setGroups(localGroupOptions);
       handleInputChange('group', localGroupOptions[0].value);
     } else {
