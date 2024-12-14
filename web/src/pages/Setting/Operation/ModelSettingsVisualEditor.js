@@ -4,7 +4,10 @@ import { Table, Button, Input, Modal, Form, Space } from '@douyinfe/semi-ui';
 import { IconDelete, IconPlus, IconSearch, IconSave } from '@douyinfe/semi-icons';
 import { showError, showSuccess } from '../../../helpers';
 import { API } from '../../../helpers';
+import { useTranslation } from 'react-i18next';
+
 export default function ModelSettingsVisualEditor(props) {
+  const { t } = useTranslation();
   const [models, setModels] = useState([]);
   const [visible, setVisible] = useState(false);
   const [currentModel, setCurrentModel] = useState(null);
@@ -122,51 +125,50 @@ export default function ModelSettingsVisualEditor(props) {
 
   const columns = [
     {
-      title: '模型名称',
+      title: t('模型名称'),
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: '固定价格',
+      title: t('模型固定价格'),
       dataIndex: 'price',
       key: 'price',
       render: (text, record) => (
         <Input
           value={text}
-          placeholder="按量计价"
+          placeholder={t('按量计费')}
           onChange={value => updateModel(record.name, 'price', value)}
         />
       )
     },
     {
-      title: '模型倍率',
+      title: t('模型倍率'),
       dataIndex: 'ratio',
       key: 'ratio',
       render: (text, record) => (
         <Input
           value={text}
-
-          placeholder={record.price !== '' ? '固定价格' : '默认补全倍率'}
+          placeholder={record.price !== '' ? t('模型倍率') : t('默认补全倍率')}
           disabled={record.price !== ''}
           onChange={value => updateModel(record.name, 'ratio', value)}
         />
       )
     },
     {
-      title: '补全倍率',
+      title: t('补全倍率'),
       dataIndex: 'completionRatio',
       key: 'completionRatio',
       render: (text, record) => (
         <Input
           value={text}
-          placeholder={record.price !== '' ? '固定价格' : '默认补全倍率'}
+          placeholder={record.price !== '' ? t('补全倍率') : t('默认补全倍率')}
           disabled={record.price !== ''}
           onChange={value => updateModel(record.name, 'completionRatio', value)}
         />
       )
     },
     {
-      title: '操作',
+      title: t('操作'),
       key: 'action',
       render: (_, record) => (
         <Button
@@ -219,22 +221,20 @@ export default function ModelSettingsVisualEditor(props) {
 
   return (
     <>
-      <h3>模型价格</h3>
       <Space vertical align="start" style={{ width: '100%' }}>
         <Space>
           <Button icon={<IconPlus />} onClick={() => setVisible(true)}>
-            添加模型
+            {t('添加模型')}
           </Button>
           <Button type="primary" icon={<IconSave />} onClick={SubmitData}>
-            应用更改
+            {t('应用更改')}
           </Button>
           <Input
             prefix={<IconSearch />}
-            placeholder="搜索模型名称"
+            placeholder={t('搜索模型名称')}
             value={searchText}
             onChange={value => {
               setSearchText(value)
-              // 搜索时重置页码
               setCurrentPage(1);
             }}
             style={{ width: 200 }}
@@ -242,12 +242,18 @@ export default function ModelSettingsVisualEditor(props) {
         </Space>
         <Table
           columns={columns}
-          dataSource={pagedData} // 使用分页后的数据
+          dataSource={pagedData}
           pagination={{
             currentPage: currentPage,
             pageSize: pageSize,
             total: filteredModels.length,
             onPageChange: page => setCurrentPage(page),
+            formatPageText: (page) =>
+              t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
+                start: page.currentStart,
+                end: page.currentEnd,
+                total: filteredModels.length
+              }),
             showTotal: true,
             showSizeChanger: false
           }}
@@ -255,7 +261,7 @@ export default function ModelSettingsVisualEditor(props) {
       </Space>
 
       <Modal
-        title="添加模型"
+        title={t('添加模型')}
         visible={visible}
         onCancel={() => setVisible(false)}
         onOk={() => {
@@ -263,32 +269,49 @@ export default function ModelSettingsVisualEditor(props) {
         }}
       >
         <Form>
-          <p>请输入固定价格或者模型倍率+补全倍率</p>
           <Form.Input
             field="name"
-            label="模型名称"
+            label={t('模型名称')}
             placeholder="strawberry"
             required
             onChange={value => setCurrentModel(prev => ({ ...prev, name: value }))}
           />
-          <Form.Input
-            field="price"
-            label="固定价格(每次)"
-            placeholder="输入每次价格"
-            onChange={value => setCurrentModel(prev => ({ ...prev, price: value }))}
+          <Form.Switch
+            field="priceMode"
+            label={<>{t('定价模式')}：{currentModel?.priceMode ? t("固定价格") : t("倍率模式")}</>}
+            onChange={checked => {
+              setCurrentModel(prev => ({
+                ...prev,
+                price: '',
+                ratio: '',
+                completionRatio: '',
+                priceMode: checked
+              }));
+            }}
           />
-          <Form.Input
-            field="ratio"
-            label="模型倍率"
-            placeholder="输入模型倍率"
-            onChange={value => setCurrentModel(prev => ({ ...prev, ratio: value }))}
-          />
-          <Form.Input
-            field="completionRatio"
-            label="补全倍率"
-            placeholder="输入补全价格"
-            onChange={value => setCurrentModel(prev => ({ ...prev, completionRatio: value }))}
-          />
+          {currentModel?.priceMode ? (
+            <Form.Input
+              field="price"
+              label={t('固定价格(每次)')}
+              placeholder={t('输入每次价格')}
+              onChange={value => setCurrentModel(prev => ({ ...prev, price: value }))}
+            />
+          ) : (
+            <>
+              <Form.Input
+                field="ratio"
+                label={t('模型倍率')}
+                placeholder={t('输入模型倍率')}
+                onChange={value => setCurrentModel(prev => ({ ...prev, ratio: value }))}
+              />
+              <Form.Input
+                field="completionRatio"
+                label={t('补全倍率')}
+                placeholder={t('输入补全价格')}
+                onChange={value => setCurrentModel(prev => ({ ...prev, completionRatio: value }))}
+              />
+            </>
+          )}
         </Form>
       </Modal>
     </>
