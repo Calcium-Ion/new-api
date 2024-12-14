@@ -8,6 +8,7 @@ import SettingsDataDashboard from '../pages/Setting/Operation/SettingsDataDashbo
 import SettingsMonitoring from '../pages/Setting/Operation/SettingsMonitoring.js';
 import SettingsCreditLimit from '../pages/Setting/Operation/SettingsCreditLimit.js';
 import SettingsMagnification from '../pages/Setting/Operation/SettingsMagnification.js';
+import ModelSettingsVisualEditor from '../pages/Setting/Operation/ModelSettingsVisualEditor.js';
 
 import { API, showError, showSuccess } from '../helpers';
 import SettingsChats from '../pages/Setting/Operation/SettingsChats.js';
@@ -140,6 +141,10 @@ const OperationSetting = () => {
         {/* 倍率设置 */}
         <Card style={{ marginTop: '10px' }}>
           <SettingsMagnification options={inputs} refresh={onRefresh} />
+        </Card>
+        {/*可视化倍率设置*/}
+        <Card style={{ marginTop: '10px' }}>
+          <ModelSettingsVisualEditor options={inputs} refresh={onRefresh} />
         </Card>
       </Spin>
     </>
