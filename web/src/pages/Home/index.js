@@ -54,7 +54,8 @@ const Home = () => {
   useEffect(() => {
     displayNotice().then();
     displayHomePageContent().then();
-  }, []);
+  });
+
   return (
     <>
       {homePageContentLoaded && homePageContent === '' ? (

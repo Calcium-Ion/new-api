@@ -36,58 +36,6 @@ const Detail = lazy(() => import('./pages/Detail'));
 const About = lazy(() => import('./pages/About'));
 
 function App() {
-  const [userState, userDispatch] = useContext(UserContext);
-  const [statusState, statusDispatch] = useContext(StatusContext);
-  const { i18n } = useTranslation();
-
-  const loadUser = () => {
-    let user = localStorage.getItem('user');
-    if (user) {
-      let data = JSON.parse(user);
-      userDispatch({ type: 'login', payload: data });
-    }
-  };
-
-  const loadStatus = async () => {
-    try {
-      const res = await API.get('/api/status');
-      if (!res?.data) return;
-      
-      const { success, data } = res.data;
-      if (success) {
-        statusDispatch({ type: 'set', payload: data });
-        setStatusData(data);
-      } else {
-        showError('Unable to connect to server');
-      }
-    } catch (error) {
-      showError('Failed to load status');
-    }
-  };
-
-  useEffect(() => {
-    loadUser();
-    let systemName = getSystemName();
-    if (systemName) {
-      document.title = systemName;
-    }
-    let logo = getLogo();
-    if (logo) {
-      let linkElement = document.querySelector("link[rel~='icon']");
-      if (linkElement) {
-        linkElement.href = logo;
-      }
-    }
-    // 从localStorage获取上次使用的语言
-    const savedLang = localStorage.getItem('i18nextLng');
-    if (savedLang) {
-      i18n.changeLanguage(savedLang);
-    }
-    loadStatus();
-
-
-  }, [i18n]);
-
   return (
     <>
       <Routes>
