@@ -984,7 +984,7 @@
   "保存失败，请重试": "Save failed, please try again",
   "没有可用的使用信息": "No usage information available",
   "使用详情": "Usage details",
-  "收起": "close",
+  "收起": "Collapse",
   "计费详情": "Billing details",
   "提示Token": "Tip Token",
   "补全Token": "Complete Token",
@@ -1231,5 +1231,8 @@
   "一次调用消耗多少刀，优先级大于模型倍率": "How much USD one call costs, priority over model ratio",
   "仅对自定义模型有效": "Only effective for custom models",
   "添加模型": "Add model",
-  "应用更改": "Apply changes"
+  "应用更改": "Apply changes",
+  "更多": "Expand more",
+  "个模型": "models",
+  "可用模型": "Available models"
 }

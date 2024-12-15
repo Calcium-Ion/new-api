@@ -25,6 +25,7 @@ import {
     Space,
     Tag,
     Typography,
+    Collapsible,
 } from '@douyinfe/semi-ui';
 import {
     getQuotaPerUnit,
@@ -64,6 +65,8 @@ const PersonalSetting = () => {
     const [models, setModels] = useState([]);
     const [openTransfer, setOpenTransfer] = useState(false);
     const [transferAmount, setTransferAmount] = useState(0);
+    const [isModelsExpanded, setIsModelsExpanded] = useState(false);
+    const MODELS_DISPLAY_COUNT = 10;  // 默认显示的模型数量
 
     useEffect(() => {
         // let user = localStorage.getItem('user');
@@ -189,7 +192,7 @@ const PersonalSetting = () => {
         );
         const {success, message} = res.data;
         if (success) {
-            showSuccess(t('微信账户绑定成功！'));
+            showSuccess(t('微信账户绑��成功！'));
             setShowWeChatBindModal(false);
         } else {
             showError(message);
@@ -289,10 +292,10 @@ const PersonalSetting = () => {
 
     const copyText = async (text) => {
         if (await copy(text)) {
-            showSuccess('已复制：' + text);
+            showSuccess(t('已复制：') + text);
         } else {
             // setSearchKeyword(text);
-            Modal.error({title: '无法复制到剪贴板，请手动复制', content: text});
+            Modal.error({title: t('无法复制到剪贴板，请手动复制'), content: text});
         }
     };
 
@@ -363,6 +366,80 @@ const PersonalSetting = () => {
                                         <Tag color='blue'>{userState?.user?.group}</Tag>
                                     </Space>
                                 </>
+                            }
+                            footer={
+                            <>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <Typography.Title heading={6}>{t('可用模型')}</Typography.Title>
+                                </div>
+                                <div style={{marginTop: 10}}>
+                                    {models.length <= MODELS_DISPLAY_COUNT ? (
+                                        <Space wrap>
+                                            {models.map((model) => (
+                                                <Tag
+                                                    key={model}
+                                                    color='cyan'
+                                                    onClick={() => {
+                                                        copyText(model);
+                                                    }}
+                                                >
+                                                    {model}
+                                                </Tag>
+                                            ))}
+                                        </Space>
+                                    ) : (
+                                        <>
+                                            <Collapsible isOpen={isModelsExpanded}>
+                                                <Space wrap>
+                                                    {models.map((model) => (
+                                                        <Tag
+                                                            key={model}
+                                                            color='cyan'
+                                                            onClick={() => {
+                                                                copyText(model);
+                                                            }}
+                                                        >
+                                                            {model}
+                                                        </Tag>
+                                                    ))}
+                                                    <Tag 
+                                                        color='blue' 
+                                                        type="light"
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => setIsModelsExpanded(false)}
+                                                    >
+                                                        {t('收起')}
+                                                    </Tag>
+                                                </Space>
+                                            </Collapsible>
+                                            {!isModelsExpanded && (
+                                                <Space wrap>
+                                                    {models.slice(0, MODELS_DISPLAY_COUNT).map((model) => (
+                                                        <Tag
+                                                            key={model}
+                                                            color='cyan'
+                                                            onClick={() => {
+                                                                copyText(model);
+                                                            }}
+                                                        >
+                                                            {model}
+                                                        </Tag>
+                                                    ))}
+                                                    <Tag 
+                                                        color='blue'
+                                                        type="light"
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => setIsModelsExpanded(true)}
+                                                    >
+                                                        {t('更多')} {models.length - MODELS_DISPLAY_COUNT} {t('个模型')}
+                                                    </Tag>
+                                                </Space>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </>
+
                             }
                         >
                             <Descriptions row>
