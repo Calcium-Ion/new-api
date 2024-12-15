@@ -964,6 +964,42 @@ const EditChannel = (props) => {
             value={inputs.weight}
             autoComplete="new-password"
           />
+          {inputs.type === 8 && (
+          <>
+            <div style={{ marginTop: 10 }}>
+              <Typography.Text strong>
+                {t('渠道额外设置')}：
+              </Typography.Text>
+            </div>
+            <TextArea
+              placeholder={t('此项可选，用于配置渠道特定设置，为一个 JSON 字符串，例如：') + '\n{\n  "force_format": true\n}'}
+              name="setting"
+              onChange={(value) => {
+                handleInputChange('setting', value);
+              }}
+              autosize
+              value={inputs.setting}
+              autoComplete="new-password"
+            />
+            <Typography.Text
+              style={{
+                color: 'rgba(var(--semi-blue-5), 1)', 
+                userSelect: 'none',
+                cursor: 'pointer'
+              }}
+              onClick={() => {
+                handleInputChange(
+                  'setting',
+                  JSON.stringify({
+                    force_format: true
+                  }, null, 2)
+                );
+              }}
+            >
+              {t('填入模板')}
+              </Typography.Text>
+            </>
+          )}  
         </Spin>
       </SideSheet>
     </>
