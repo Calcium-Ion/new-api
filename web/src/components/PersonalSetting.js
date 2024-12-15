@@ -192,7 +192,7 @@ const PersonalSetting = () => {
         );
         const {success, message} = res.data;
         if (success) {
-            showSuccess(t('微信账户绑��成功！'));
+            showSuccess(t('微信账户绑定成功！'));
             setShowWeChatBindModal(false);
         } else {
             showError(message);
