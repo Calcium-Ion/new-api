@@ -76,8 +76,12 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 	for _, message := range textRequest.Messages {
 
 		if message.Role == "system" {
-			geminiRequest.SystemInstructions = &GeminiPart{
-				Text: message.StringContent(),
+			geminiRequest.SystemInstructions = &GeminiChatContent{
+				Parts: []GeminiPart{
+					{
+						Text: message.StringContent(),
+					},
+				},
 			}
 			continue
 		}

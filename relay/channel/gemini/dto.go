@@ -5,7 +5,7 @@ type GeminiChatRequest struct {
 	SafetySettings     []GeminiChatSafetySettings `json:"safety_settings,omitempty"`
 	GenerationConfig   GeminiChatGenerationConfig `json:"generation_config,omitempty"`
 	Tools              []GeminiChatTools          `json:"tools,omitempty"`
-	SystemInstructions *GeminiPart                `json:"system_instruction,omitempty"`
+	SystemInstructions *GeminiChatContent         `json:"system_instruction,omitempty"`
 }
 
 type GeminiInlineData struct {
