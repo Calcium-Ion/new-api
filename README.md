@@ -170,6 +170,10 @@ docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 - [chatnio](https://github.com/Deeptrain-Community/chatnio)：下一代 AI 一站式 B/C 端解决方案
 - [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)：用key查询使用额度
 
+其他基于New API的项目：
+- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon)：New API高性能优化版，并支持Claude格式
+- [VoAPI](https://github.com/VoAPI/VoAPI)：基于New API的闭源项目
+
 ## 🌟 Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Calcium-Ion/new-api&type=Date)](https://star-history.com/#Calcium-Ion/new-api&Date)
