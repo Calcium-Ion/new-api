@@ -14,6 +14,7 @@ import {
   IconHelpCircle,
   IconHome,
   IconHomeStroked, IconIndentLeft,
+  IconComment,
   IconKey, IconMenu,
   IconNoteMoneyStroked,
   IconPriceTag,
@@ -87,12 +88,19 @@ const HeaderBar = () => {
   useEffect(() => {
     if (theme === 'dark') {
       document.body.setAttribute('theme-mode', 'dark');
+    } else {
+      document.body.removeAttribute('theme-mode');
+    }
+    // 发送当前主题模式给子页面
+    const iframe = document.querySelector('iframe');
+    if (iframe) {
+      iframe.contentWindow.postMessage({ themeMode: theme }, '*');
     }
 
     if (isNewYear) {
       console.log('Happy New Year!');
     }
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     const handleLanguageChanged = (lng) => {
@@ -125,6 +133,7 @@ const HeaderBar = () => {
                 pricing: '/pricing',
                 detail: '/detail',
                 home: '/',
+                chat: '/chat',
               };
               return (
                 <div onClick={(e) => {
@@ -205,13 +214,13 @@ const HeaderBar = () => {
                   position='bottomRight'
                   render={
                     <Dropdown.Menu>
-                      <Dropdown.Item 
+                      <Dropdown.Item
                         onClick={() => handleLanguageChange('zh')}
                         type={currentLang === 'zh' ? 'primary' : 'tertiary'}
                       >
                         中文
                       </Dropdown.Item>
-                      <Dropdown.Item 
+                      <Dropdown.Item
                         onClick={() => handleLanguageChange('en')}
                         type={currentLang === 'en' ? 'primary' : 'tertiary'}
                       >
@@ -220,8 +229,8 @@ const HeaderBar = () => {
                     </Dropdown.Menu>
                   }
                 >
-                  <Nav.Item 
-                    itemKey={'language'} 
+                  <Nav.Item
+                    itemKey={'language'}
                     icon={<IconLanguage />}
                   />
                 </Dropdown>
