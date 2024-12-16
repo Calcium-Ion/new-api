@@ -105,6 +105,10 @@ const HeaderBar = () => {
   useEffect(() => {
     const handleLanguageChanged = (lng) => {
       setCurrentLang(lng);
+      const iframe = document.querySelector('iframe');
+      if (iframe) {
+        iframe.contentWindow.postMessage({ lang: lng }, '*');
+      }
     };
 
     i18n.on('languageChanged', handleLanguageChanged);
