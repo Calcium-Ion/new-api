@@ -7,7 +7,7 @@ import { StyleContext } from '../../context/Style/index.js';
 import { useTranslation } from 'react-i18next';
 
 const Home = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [statusState] = useContext(StatusContext);
   const [homePageContentLoaded, setHomePageContentLoaded] = useState(false);
   const [homePageContent, setHomePageContent] = useState('');
@@ -49,6 +49,7 @@ const Home = () => {
                 // console.log('Sending theme-mode to iframe:', theme); 
                 iframe.onload = () => {
                     iframe.contentWindow.postMessage({ themeMode: theme }, '*');
+                    iframe.contentWindow.postMessage({ lang: i18n.language }, '*');
                 };
             }
         }
