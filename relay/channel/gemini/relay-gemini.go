@@ -72,21 +72,27 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 			},
 		}
 	}
-	shouldAddDummyModelMessage := false
+	//shouldAddDummyModelMessage := false
 	for _, message := range textRequest.Messages {
+
+		if message.Role == "system" {
+			geminiRequest.SystemInstructions = &GeminiPart{
+				Text: message.StringContent(),
+			}
+			continue
+		}
 		content := GeminiChatContent{
 			Role: message.Role,
-			Parts: []GeminiPart{
-				{
-					Text: message.StringContent(),
-				},
-			},
+			//Parts: []GeminiPart{
+			//	{
+			//		Text: message.StringContent(),
+			//	},
+			//},
 		}
 		openaiContent := message.ParseContent()
 		var parts []GeminiPart
 		imageNum := 0
 		for _, part := range openaiContent {
-
 			if part.Type == dto.ContentTypeText {
 				parts = append(parts, GeminiPart{
 					Text: part.Text,
@@ -127,24 +133,24 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 			content.Role = "model"
 		}
 		// Converting system prompt to prompt from user for the same reason
-		if content.Role == "system" {
-			content.Role = "user"
-			shouldAddDummyModelMessage = true
-		}
+		//if content.Role == "system" {
+		//	content.Role = "user"
+		//	shouldAddDummyModelMessage = true
+		//}
 		geminiRequest.Contents = append(geminiRequest.Contents, content)
-
-		// If a system message is the last message, we need to add a dummy model message to make gemini happy
-		if shouldAddDummyModelMessage {
-			geminiRequest.Contents = append(geminiRequest.Contents, GeminiChatContent{
-				Role: "model",
-				Parts: []GeminiPart{
-					{
-						Text: "Okay",
-					},
-				},
-			})
-			shouldAddDummyModelMessage = false
-		}
+		//
+		//// If a system message is the last message, we need to add a dummy model message to make gemini happy
+		//if shouldAddDummyModelMessage {
+		//	geminiRequest.Contents = append(geminiRequest.Contents, GeminiChatContent{
+		//		Role: "model",
+		//		Parts: []GeminiPart{
+		//			{
+		//				Text: "Okay",
+		//			},
+		//		},
+		//	})
+		//	shouldAddDummyModelMessage = false
+		//}
 	}
 	return &geminiRequest
 }
