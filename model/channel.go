@@ -296,10 +296,15 @@ func UpdateChannelStatusById(id int, status int, reason string) {
 	if (common.MemoryCacheEnabled) {
 		channelStatusLock.Lock()
 		channelCache, err := CacheGetChannel(id)
-		// 如果缓存渠道不存在或渠道已是目标状态，直接返回
-		if err != nil || channelCache.Status == status {
+		// 如果缓存渠道存在，且状态已是目标状态，直接返回 
+		if channelCache != nil && channelCache.Status == status {  
 			channelStatusLock.Unlock()
-			return
+			return 
+		}
+		// 如果缓存渠道不存在(说明已经被禁用)，且要设置的状态不为启用，直接返回 
+		if channelCache == nil && status != common.ChannelStatusEnabled {  
+			channelStatusLock.Unlock()
+			return 
 		}
 		CacheUpdateChannelStatus(id, status)
 		channelStatusLock.Unlock()
