@@ -36,7 +36,7 @@ func getOpenAICompletionRatioData(name string) float64 {
 	}
 
 	// o1
-	if strings.HasPrefix(name, "o1-") {
+	if strings.HasPrefix(name, "o1") {
 		return 4
 	}
 
