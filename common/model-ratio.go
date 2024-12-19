@@ -133,10 +133,6 @@ func UpdateCompletionRatioByJSONString(jsonStr string) error {
 }
 
 func GetCompletionRatio(name string) float64 {
-	// Custom Completion Ratio
-	if ratio, ok := CompletionRatio[name]; ok && ratio > 0 {
-		return ratio
-	}
 
 	// OpenAI Models
 	if strings.HasPrefix(name, "gpt") || strings.HasPrefix(name, "chatgpt") || strings.HasPrefix(name, "o1") {
@@ -185,6 +181,11 @@ func GetCompletionRatio(name string) float64 {
 		return 2
 	case "llama3-70b-8192":
 		return 0.79 / 0.59
+	}
+
+	// Custom Completion Ratio
+	if ratio, ok := CompletionRatio[name]; ok && ratio > 0 {
+		return ratio
 	}
 
 	return 1
