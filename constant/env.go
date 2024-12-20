@@ -23,6 +23,8 @@ var GeminiModelMap = map[string]string{
 	"gemini-1.0-pro": "v1",
 }
 
+var GeminiVisionMaxImageNum = common.GetEnvOrDefault("GEMINI_VISION_MAX_IMAGE_NUM", 16)
+
 func InitEnv() {
 	modelVersionMapStr := strings.TrimSpace(os.Getenv("GEMINI_MODEL_MAP"))
 	if modelVersionMapStr == "" {

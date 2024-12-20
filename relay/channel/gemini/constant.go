@@ -1,9 +1,5 @@
 package gemini
 
-const (
-	GeminiVisionMaxImageNum = 16
-)
-
 var ModelList = []string{
 	// stable version
 	"gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.5-flash-8b",
