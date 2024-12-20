@@ -75,7 +75,7 @@ export default function ModelSettingsVisualEditor(props) {
           output.ModelPrice[model.name] = parseFloat(model.price)
         } else {
           if (model.ratio !== '') output.ModelRatio[model.name] = parseFloat(model.ratio);
-          if (model.completionRatio != '') output.CompletionRatio[model.name] = parseFloat(model.completionRatio);
+          if (model.completionRatio !== '') output.CompletionRatio[model.name] = parseFloat(model.completionRatio);
         }
       });
 
@@ -201,11 +201,6 @@ export default function ModelSettingsVisualEditor(props) {
     // 检查模型名称是否存在, 如果存在则拒绝添加
     if (models.some(model => model.name === values.name)) {
       showError('模型名称已存在');
-      return;
-    }
-    // 不允许同时添加固定价格和倍率
-    if (values.price !== '' && (values.ratio !== '' || values.completionRatio !== '')) {
-      showError('固定价格和倍率不能同时存在');
       return;
     }
     setModels(prev => [{
