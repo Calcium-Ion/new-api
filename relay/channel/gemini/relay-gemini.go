@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"one-api/common"
@@ -13,6 +12,8 @@ import (
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Setting safety to the lowest possible values since Gemini is already powerless enough
@@ -34,6 +35,10 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 			},
 			{
 				Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
+				Threshold: common.GeminiSafetySetting,
+			},
+			{
+				Category:  "HARM_CATEGORY_CIVIC_INTEGRITY",
 				Threshold: common.GeminiSafetySetting,
 			},
 		},
@@ -215,7 +220,11 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 				choice.FinishReason = constant.FinishReasonToolCalls
 				choice.Message.ToolCalls = getToolCalls(&candidate)
 			} else {
-				choice.Message.SetStringContent(candidate.Content.Parts[0].Text)
+				var texts []string
+				for _, part := range candidate.Content.Parts {
+					texts = append(texts, part.Text)
+				}
+				choice.Message.SetStringContent(strings.Join(texts, "\n"))
 			}
 		}
 		fullTextResponse.Choices = append(fullTextResponse.Choices, choice)

@@ -153,6 +153,8 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 	}
 	if strings.HasPrefix(model, "o1-") {
 		testRequest.MaxCompletionTokens = 1
+	} else if strings.HasPrefix(model, "gemini-2.0-flash-thinking") {
+		testRequest.MaxTokens = 2
 	} else {
 		testRequest.MaxTokens = 1
 	}
