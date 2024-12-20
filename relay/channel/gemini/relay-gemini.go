@@ -236,13 +236,17 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) *dto.Ch
 	var choice dto.ChatCompletionsStreamResponseChoice
 	//choice.Delta.SetContentString(geminiResponse.GetResponseText())
 	if len(geminiResponse.Candidates) > 0 && len(geminiResponse.Candidates[0].Content.Parts) > 0 {
-		respFirst := geminiResponse.Candidates[0].Content.Parts[0]
-		if respFirst.FunctionCall != nil {
+		respFirstParts := geminiResponse.Candidates[0].Content.Parts
+		if respFirstParts[0].FunctionCall != nil {
 			// function response
 			choice.Delta.ToolCalls = getToolCalls(&geminiResponse.Candidates[0])
 		} else {
 			// text response
-			choice.Delta.SetContentString(respFirst.Text)
+			var texts []string
+			for _, part := range respFirstParts {
+				texts = append(texts, part.Text)
+			}
+			choice.Delta.SetContentString(strings.Join(texts, "\n"))
 		}
 	}
 	var response dto.ChatCompletionsStreamResponse
