@@ -108,9 +108,10 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) *GeminiChatReques
 				})
 			} else if part.Type == dto.ContentTypeImageURL {
 				imageNum += 1
-				//if imageNum > GeminiVisionMaxImageNum {
-				//	continue
-				//}
+
+				if constant.GeminiVisionMaxImageNum != -1 && imageNum > constant.GeminiVisionMaxImageNum {
+					continue
+				}
 				// 判断是否是url
 				if strings.HasPrefix(part.ImageUrl.(dto.MessageImageUrl).Url, "http") {
 					// 是url，获取图片的类型和base64编码的数据
