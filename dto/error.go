@@ -1,5 +1,7 @@
 package dto
 
+import "fmt"
+
 type OpenAIError struct {
 	Message string `json:"message"`
 	Type    string `json:"type"`
@@ -7,10 +9,18 @@ type OpenAIError struct {
 	Code    any    `json:"code"`
 }
 
+func (e OpenAIError) ToMessageString() string {
+	return fmt.Sprintf("type %s, code %v, message %s", e.Type, e.Code, e.Message)
+}
+
 type OpenAIErrorWithStatusCode struct {
 	Error      OpenAIError `json:"error"`
 	StatusCode int         `json:"status_code"`
 	LocalError bool
+}
+
+func (e OpenAIErrorWithStatusCode) ToMessageString() string {
+	return fmt.Sprintf("status code %d, %s", e.StatusCode, e.Error.ToMessageString())
 }
 
 type GeneralErrorResponse struct {
