@@ -57,7 +57,11 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	return CovertGemini2OpenAI(*request), nil
+	ai, err := CovertGemini2OpenAI(*request)
+	if err != nil {
+		return nil, err
+	}
+	return ai, nil
 }
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
