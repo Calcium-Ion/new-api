@@ -25,7 +25,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import {
-  renderAudioModelPrice,
+  renderAudioModelPrice, renderGroup,
   renderModelPrice, renderModelPriceSimple,
   renderNumber,
   renderQuota,
@@ -228,10 +228,9 @@ const LogsTable = () => {
           }
           if (other.group !== undefined) {
             return (
-              <Tag color='blue' size='large'>
-                {' '}
-                {other.group}{' '}
-              </Tag>
+              <>
+                {renderGroup(other.group)}
+              </>
             );
           } else {
             return <></>;
