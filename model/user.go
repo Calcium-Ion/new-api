@@ -107,7 +107,7 @@ func SearchUsers(keyword string, group string) ([]*User, error) {
 			return users, err
 		}
 	}
-
+ 
 	err = nil
 
 	query := DB.Unscoped().Omit("password")
