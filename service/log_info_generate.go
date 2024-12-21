@@ -12,6 +12,7 @@ func GenerateTextOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, m
 	other["group_ratio"] = groupRatio
 	other["completion_ratio"] = completionRatio
 	other["model_price"] = modelPrice
+	other["group"] = relayInfo.Group
 	other["frt"] = float64(relayInfo.FirstResponseTime.UnixMilli() - relayInfo.StartTime.UnixMilli())
 	adminInfo := make(map[string]interface{})
 	adminInfo["use_channel"] = ctx.GetStringSlice("use_channel")

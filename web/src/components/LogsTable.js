@@ -218,6 +218,30 @@ const LogsTable = () => {
       },
     },
     {
+      title: t('分组'),
+      dataIndex: 'group',
+      render: (text, record, index) => {
+        if (record.type === 0 || record.type === 2) {
+          let other = JSON.parse(record.other);
+          if (other === null) {
+            return <></>;
+          }
+          if (other.group !== undefined) {
+            return (
+              <Tag color='blue' size='large'>
+                {' '}
+                {other.group}{' '}
+              </Tag>
+            );
+          } else {
+            return <></>;
+          }
+        } else {
+          return <></>;
+        }
+      },
+    },
+    {
       title: t('类型'),
       dataIndex: 'type',
       render: (text, record, index) => {
