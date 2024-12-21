@@ -46,6 +46,8 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4o-2024-08-06":               1.25, // $2.5 / 1M tokens
 	"gpt-4o-2024-11-20":               1.25, // $2.5 / 1M tokens
 	"gpt-4o-realtime-preview":         2.5,
+	"o1":                              7.5,
+	"o1-2024-12-17":                   7.5,
 	"o1-preview":                      7.5,
 	"o1-preview-2024-09-12":           7.5,
 	"o1-mini":                         1.5,
