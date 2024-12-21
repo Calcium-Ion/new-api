@@ -77,6 +77,16 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 			},
 		}
 	}
+
+	if textRequest.ResponseFormat != nil && (textRequest.ResponseFormat.Type == "json_schema" || textRequest.ResponseFormat.Type == "json_object") {
+		geminiRequest.GenerationConfig.ResponseMimeType = "application/json"
+
+		if textRequest.ResponseFormat.JsonSchema != nil && textRequest.ResponseFormat.JsonSchema.Schema != nil {
+			cleanedSchema := removeAdditionalPropertiesWithDepth(textRequest.ResponseFormat.JsonSchema.Schema, 0)
+			geminiRequest.GenerationConfig.ResponseSchema = cleanedSchema
+		}
+	}
+
 	//shouldAddDummyModelMessage := false
 	for _, message := range textRequest.Messages {
 
@@ -163,6 +173,46 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 		//}
 	}
 	return &geminiRequest, nil
+}
+
+func removeAdditionalPropertiesWithDepth(schema interface{}, depth int) interface{} {
+	if depth >= 5 {
+		return schema
+	}
+
+	v, ok := schema.(map[string]interface{})
+	if !ok || len(v) == 0 {
+		return schema
+	}
+
+	// 如果type不为object和array，则直接返回
+	if typeVal, exists := v["type"]; !exists || (typeVal != "object" && typeVal != "array") {
+		return schema
+	}
+
+	switch v["type"] {
+	case "object":
+		delete(v, "additionalProperties")
+		// 处理 properties
+		if properties, ok := v["properties"].(map[string]interface{}); ok {
+			for key, value := range properties {
+				properties[key] = removeAdditionalPropertiesWithDepth(value, depth+1)
+			}
+		}
+		for _, field := range []string{"allOf", "anyOf", "oneOf"} {
+			if nested, ok := v[field].([]interface{}); ok {
+				for i, item := range nested {
+					nested[i] = removeAdditionalPropertiesWithDepth(item, depth+1)
+				}
+			}
+		}
+	case "array":
+		if items, ok := v["items"].(map[string]interface{}); ok {
+			v["items"] = removeAdditionalPropertiesWithDepth(items, depth+1)
+		}
+	}
+
+	return v
 }
 
 func (g *GeminiChatResponse) GetResponseText() string {
