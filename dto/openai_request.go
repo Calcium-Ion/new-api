@@ -22,7 +22,7 @@ type GeneralOpenAIRequest struct {
 	StreamOptions       *StreamOptions  `json:"stream_options,omitempty"`
 	MaxTokens           uint            `json:"max_tokens,omitempty"`
 	MaxCompletionTokens uint            `json:"max_completion_tokens,omitempty"`
-	ReasoningEffort     string         `json:"reasoning_effort,omitempty"`
+	ReasoningEffort     string          `json:"reasoning_effort,omitempty"`
 	Temperature         float64         `json:"temperature,omitempty"`
 	TopP                float64         `json:"top_p,omitempty"`
 	TopK                int             `json:"top_k,omitempty"`
@@ -89,11 +89,27 @@ type Message struct {
 	Role       string          `json:"role"`
 	Content    json.RawMessage `json:"content"`
 	Name       *string         `json:"name,omitempty"`
-	ToolCalls  any             `json:"tool_calls,omitempty"`
+	ToolCalls  json.RawMessage `json:"tool_calls,omitempty"`
 	ToolCallId string          `json:"tool_call_id,omitempty"`
 }
 
-type MediaMessage struct {
+func (m Message) ParseToolCalls() []ToolCall {
+	if m.ToolCalls == nil {
+		return nil
+	}
+	var toolCalls []ToolCall
+	if err := json.Unmarshal(m.ToolCalls, &toolCalls); err == nil {
+		return toolCalls
+	}
+	return toolCalls
+}
+
+func (m Message) SetToolCalls(toolCalls any) {
+	toolCallsJson, _ := json.Marshal(toolCalls)
+	m.ToolCalls = toolCallsJson
+}
+
+type MediaContent struct {
 	Type       string `json:"type"`
 	Text       string `json:"text"`
 	ImageUrl   any    `json:"image_url,omitempty"`
@@ -137,11 +153,11 @@ func (m Message) IsStringContent() bool {
 	return false
 }
 
-func (m Message) ParseContent() []MediaMessage {
-	var contentList []MediaMessage
+func (m Message) ParseContent() []MediaContent {
+	var contentList []MediaContent
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
-		contentList = append(contentList, MediaMessage{
+		contentList = append(contentList, MediaContent{
 			Type: ContentTypeText,
 			Text: stringContent,
 		})
@@ -157,7 +173,7 @@ func (m Message) ParseContent() []MediaMessage {
 			switch contentMap["type"] {
 			case ContentTypeText:
 				if subStr, ok := contentMap["text"].(string); ok {
-					contentList = append(contentList, MediaMessage{
+					contentList = append(contentList, MediaContent{
 						Type: ContentTypeText,
 						Text: subStr,
 					})
@@ -170,7 +186,7 @@ func (m Message) ParseContent() []MediaMessage {
 					} else {
 						subObj["detail"] = "high"
 					}
-					contentList = append(contentList, MediaMessage{
+					contentList = append(contentList, MediaContent{
 						Type: ContentTypeImageURL,
 						ImageUrl: MessageImageUrl{
 							Url:    subObj["url"].(string),
@@ -178,7 +194,7 @@ func (m Message) ParseContent() []MediaMessage {
 						},
 					})
 				} else if url, ok := contentMap["image_url"].(string); ok {
-					contentList = append(contentList, MediaMessage{
+					contentList = append(contentList, MediaContent{
 						Type: ContentTypeImageURL,
 						ImageUrl: MessageImageUrl{
 							Url:    url,
@@ -188,7 +204,7 @@ func (m Message) ParseContent() []MediaMessage {
 				}
 			case ContentTypeInputAudio:
 				if subObj, ok := contentMap["input_audio"].(map[string]any); ok {
-					contentList = append(contentList, MediaMessage{
+					contentList = append(contentList, MediaContent{
 						Type: ContentTypeInputAudio,
 						InputAudio: MessageInputAudio{
 							Data:   subObj["data"].(string),

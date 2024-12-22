@@ -240,14 +240,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 					claudeMediaMessages = append(claudeMediaMessages, claudeMediaMessage)
 				}
 				if message.ToolCalls != nil {
-					for _, tc := range message.ToolCalls.([]interface{}) {
-						toolCallJSON, _ := json.Marshal(tc)
-						var toolCall dto.ToolCall
-						err := json.Unmarshal(toolCallJSON, &toolCall)
-						if err != nil {
-							common.SysError("tool call is not a dto.ToolCall: " + fmt.Sprintf("%v", tc))
-							continue
-						}
+					for _, toolCall := range message.ParseToolCalls() {
 						inputObj := make(map[string]any)
 						if err := json.Unmarshal([]byte(toolCall.Function.Arguments), &inputObj); err != nil {
 							common.SysError("tool call function arguments is not a map[string]any: " + fmt.Sprintf("%v", toolCall.Function.Arguments))
@@ -393,7 +386,7 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	}
 	choice.SetStringContent(responseText)
 	if len(tools) > 0 {
-		choice.Message.ToolCalls = tools
+		choice.Message.SetToolCalls(tools)
 	}
 	fullTextResponse.Model = claudeResponse.Model
 	choices = append(choices, choice)
