@@ -355,6 +355,7 @@ func GeminiChatStreamHandler(c *gin.Context, resp *http.Response, info *relaycom
 		}
 		response.Id = id
 		response.Created = createAt
+		response.Model = info.UpstreamModelName
 		responseText += response.Choices[0].Delta.GetContentString()
 		if geminiResponse.UsageMetadata.TotalTokenCount != 0 {
 			usage.PromptTokens = geminiResponse.UsageMetadata.PromptTokenCount
@@ -383,7 +384,7 @@ func GeminiChatStreamHandler(c *gin.Context, resp *http.Response, info *relaycom
 	return nil, usage
 }
 
-func GeminiChatHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+func GeminiChatHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
@@ -409,6 +410,7 @@ func GeminiChatHandler(c *gin.Context, resp *http.Response) (*dto.OpenAIErrorWit
 		}, nil
 	}
 	fullTextResponse := responseGeminiChat2OpenAI(&geminiResponse)
+	fullTextResponse.Model = info.UpstreamModelName
 	usage := dto.Usage{
 		PromptTokens:     geminiResponse.UsageMetadata.PromptTokenCount,
 		CompletionTokens: geminiResponse.UsageMetadata.CandidatesTokenCount,

@@ -76,7 +76,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	if info.IsStream {
 		err, usage = GeminiChatStreamHandler(c, resp, info)
 	} else {
-		err, usage = GeminiChatHandler(c, resp)
+		err, usage = GeminiChatHandler(c, resp, info)
 	}
 	return
 }
