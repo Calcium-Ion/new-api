@@ -93,22 +93,6 @@ type Message struct {
 	ToolCallId string          `json:"tool_call_id,omitempty"`
 }
 
-func (m Message) ParseToolCalls() []ToolCall {
-	if m.ToolCalls == nil {
-		return nil
-	}
-	var toolCalls []ToolCall
-	if err := json.Unmarshal(m.ToolCalls, &toolCalls); err == nil {
-		return toolCalls
-	}
-	return toolCalls
-}
-
-func (m *Message) SetToolCalls(toolCalls any) {
-	toolCallsJson, _ := json.Marshal(toolCalls)
-	m.ToolCalls = toolCallsJson
-}
-
 type MediaContent struct {
 	Type       string `json:"type"`
 	Text       string `json:"text"`
@@ -132,7 +116,23 @@ const (
 	ContentTypeInputAudio = "input_audio"
 )
 
-func (m Message) StringContent() string {
+func (m *Message) ParseToolCalls() []ToolCall {
+	if m.ToolCalls == nil {
+		return nil
+	}
+	var toolCalls []ToolCall
+	if err := json.Unmarshal(m.ToolCalls, &toolCalls); err == nil {
+		return toolCalls
+	}
+	return toolCalls
+}
+
+func (m *Message) SetToolCalls(toolCalls any) {
+	toolCallsJson, _ := json.Marshal(toolCalls)
+	m.ToolCalls = toolCallsJson
+}
+
+func (m *Message) StringContent() string {
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
 		return stringContent
@@ -145,7 +145,7 @@ func (m *Message) SetStringContent(content string) {
 	m.Content = jsonContent
 }
 
-func (m Message) IsStringContent() bool {
+func (m *Message) IsStringContent() bool {
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
 		return true
@@ -153,7 +153,7 @@ func (m Message) IsStringContent() bool {
 	return false
 }
 
-func (m Message) ParseContent() []MediaContent {
+func (m *Message) ParseContent() []MediaContent {
 	var contentList []MediaContent
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
