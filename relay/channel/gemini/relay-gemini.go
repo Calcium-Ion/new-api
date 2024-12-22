@@ -56,6 +56,34 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 				googleSearch = true
 				continue
 			}
+			// Ensure parameters has non-empty properties
+			if tool.Function.Parameters != nil {
+				params, ok := tool.Function.Parameters.(map[string]interface{})
+				if ok {
+					if props, hasProps := params["properties"].(map[string]interface{}); hasProps {
+						if len(props) == 0 {
+							// Add an empty property if no parameters needed
+							params["properties"] = map[string]interface{}{
+								"_": map[string]interface{}{
+									"type":        "string",
+									"description": "No parameters needed",
+								},
+							}
+							// Update required field to match the property
+							params["required"] = []string{"_"}
+						} else {
+							// If properties exist, ensure required field matches existing properties
+							existingProps := make([]string, 0)
+							for propName := range props {
+								existingProps = append(existingProps, propName)
+							}
+							if len(existingProps) > 0 {
+								params["required"] = []string{existingProps[0]}
+							}
+						}
+					}
+				}
+			}
 			functions = append(functions, tool.Function)
 		}
 		if len(functions) > 0 {
