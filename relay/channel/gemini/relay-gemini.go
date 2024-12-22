@@ -193,7 +193,7 @@ func removeAdditionalPropertiesWithDepth(schema interface{}, depth int) interfac
 	if typeVal, exists := v["type"]; !exists || (typeVal != "object" && typeVal != "array") {
 		return schema
 	}
-
+	delete(v, "title")
 	switch v["type"] {
 	case "object":
 		delete(v, "additionalProperties")
