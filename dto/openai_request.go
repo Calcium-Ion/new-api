@@ -104,7 +104,7 @@ func (m Message) ParseToolCalls() []ToolCall {
 	return toolCalls
 }
 
-func (m Message) SetToolCalls(toolCalls any) {
+func (m *Message) SetToolCalls(toolCalls any) {
 	toolCallsJson, _ := json.Marshal(toolCalls)
 	m.ToolCalls = toolCallsJson
 }
