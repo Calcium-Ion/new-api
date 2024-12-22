@@ -2,6 +2,7 @@ package gemini
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -108,16 +109,14 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 				},
 			}
 			continue
-		} else if message.Role == "tool" {
-			message.Role = "model"
 		}
-
 		var parts []GeminiPart
 		content := GeminiChatContent{
 			Role: message.Role,
 		}
 		isToolCall := false
 		if message.ToolCalls != nil {
+			message.Role = "model"
 			isToolCall = true
 			for _, call := range message.ParseToolCalls() {
 				toolCall := GeminiPart{
@@ -130,40 +129,55 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 			}
 		}
 		if !isToolCall {
-			openaiContent := message.ParseContent()
-			imageNum := 0
-			for _, part := range openaiContent {
-				if part.Type == dto.ContentTypeText {
-					parts = append(parts, GeminiPart{
-						Text: part.Text,
-					})
-				} else if part.Type == dto.ContentTypeImageURL {
-					imageNum += 1
+			if message.Role == "tool" {
+				content.Role = "user"
+				name := ""
+				if message.Name != nil {
+					name = *message.Name
+				}
+				functionResp := &FunctionResponse{
+					Name:     name,
+					Response: common.StrToMap(message.StringContent()),
+				}
+				parts = append(parts, GeminiPart{
+					FunctionResponse: functionResp,
+				})
+			} else {
+				openaiContent := message.ParseContent()
+				imageNum := 0
+				for _, part := range openaiContent {
+					if part.Type == dto.ContentTypeText {
+						parts = append(parts, GeminiPart{
+							Text: part.Text,
+						})
+					} else if part.Type == dto.ContentTypeImageURL {
+						imageNum += 1
 
-					if constant.GeminiVisionMaxImageNum != -1 && imageNum > constant.GeminiVisionMaxImageNum {
-						return nil, fmt.Errorf("too many images in the message, max allowed is %d", constant.GeminiVisionMaxImageNum)
-					}
-					// 判断是否是url
-					if strings.HasPrefix(part.ImageUrl.(dto.MessageImageUrl).Url, "http") {
-						// 是url，获取图片的类型和base64编码的数据
-						mimeType, data, _ := service.GetImageFromUrl(part.ImageUrl.(dto.MessageImageUrl).Url)
-						parts = append(parts, GeminiPart{
-							InlineData: &GeminiInlineData{
-								MimeType: mimeType,
-								Data:     data,
-							},
-						})
-					} else {
-						_, format, base64String, err := service.DecodeBase64ImageData(part.ImageUrl.(dto.MessageImageUrl).Url)
-						if err != nil {
-							return nil, fmt.Errorf("decode base64 image data failed: %s", err.Error())
+						if constant.GeminiVisionMaxImageNum != -1 && imageNum > constant.GeminiVisionMaxImageNum {
+							return nil, fmt.Errorf("too many images in the message, max allowed is %d", constant.GeminiVisionMaxImageNum)
 						}
-						parts = append(parts, GeminiPart{
-							InlineData: &GeminiInlineData{
-								MimeType: "image/" + format,
-								Data:     base64String,
-							},
-						})
+						// 判断是否是url
+						if strings.HasPrefix(part.ImageUrl.(dto.MessageImageUrl).Url, "http") {
+							// 是url，获取图片的类型和base64编码的数据
+							mimeType, data, _ := service.GetImageFromUrl(part.ImageUrl.(dto.MessageImageUrl).Url)
+							parts = append(parts, GeminiPart{
+								InlineData: &GeminiInlineData{
+									MimeType: mimeType,
+									Data:     data,
+								},
+							})
+						} else {
+							_, format, base64String, err := service.DecodeBase64ImageData(part.ImageUrl.(dto.MessageImageUrl).Url)
+							if err != nil {
+								return nil, fmt.Errorf("decode base64 image data failed: %s", err.Error())
+							}
+							parts = append(parts, GeminiPart{
+								InlineData: &GeminiInlineData{
+									MimeType: "image/" + format,
+									Data:     base64String,
+								},
+							})
+						}
 					}
 				}
 			}
@@ -176,6 +190,7 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 		}
 		geminiRequest.Contents = append(geminiRequest.Contents, content)
 	}
+	common.LogJson(context.Background(), "gemini_request", geminiRequest)
 	return &geminiRequest, nil
 }
 
