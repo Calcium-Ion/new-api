@@ -35,7 +35,9 @@ func StrToMap(str string) map[string]interface{} {
 	m := make(map[string]interface{})
 	err := json.Unmarshal([]byte(str), &m)
 	if err != nil {
-		return nil
+		return map[string]interface{}{
+			"result": str,
+		}
 	}
 	return m
 }
