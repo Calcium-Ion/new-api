@@ -2,7 +2,6 @@ package gemini
 
 import (
 	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -190,7 +189,6 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 		}
 		geminiRequest.Contents = append(geminiRequest.Contents, content)
 	}
-	common.LogJson(context.Background(), "gemini_request", geminiRequest)
 	return &geminiRequest, nil
 }
 
