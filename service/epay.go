@@ -1,12 +1,12 @@
 package service
 
 import (
-	"one-api/constant"
+	"one-api/setting"
 )
 
 func GetCallbackAddress() string {
-	if constant.CustomCallbackAddress == "" {
-		return constant.ServerAddress
+	if setting.CustomCallbackAddress == "" {
+		return setting.ServerAddress
 	}
-	return constant.CustomCallbackAddress
+	return setting.CustomCallbackAddress
 }

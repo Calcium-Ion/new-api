@@ -11,6 +11,7 @@ import (
 	"one-api/constant"
 	"one-api/dto"
 	relayconstant "one-api/relay/constant"
+	"one-api/setting"
 	"strconv"
 	"strings"
 	"time"
@@ -167,16 +168,16 @@ func DoMidjourneyHttpRequest(c *gin.Context, timeout time.Duration, fullRequestU
 		if err != nil {
 			return MidjourneyErrorWithStatusCodeWrapper(constant.MjErrorUnknown, "read_request_body_failed", http.StatusInternalServerError), nullBytes, err
 		}
-		if !constant.MjAccountFilterEnabled {
+		if !setting.MjAccountFilterEnabled {
 			delete(mapResult, "accountFilter")
 		}
-		if !constant.MjNotifyEnabled {
+		if !setting.MjNotifyEnabled {
 			delete(mapResult, "notifyHook")
 		}
 		//req, err := http.NewRequest(c.Request.Method, fullRequestURL, requestBody)
 		// make new request with mapResult
 	}
-	if constant.MjModeClearEnabled {
+	if setting.MjModeClearEnabled {
 		if prompt, ok := mapResult["prompt"].(string); ok {
 			prompt = strings.Replace(prompt, "--fast", "", -1)
 			prompt = strings.Replace(prompt, "--relax", "", -1)

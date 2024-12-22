@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"one-api/common"
-	"one-api/constant"
 	"one-api/model"
+	"one-api/setting"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -47,9 +47,9 @@ func GetStatus(c *gin.Context) {
 			"footer_html":              common.Footer,
 			"wechat_qrcode":            common.WeChatAccountQRCodeImageURL,
 			"wechat_login":             common.WeChatAuthEnabled,
-			"server_address":           constant.ServerAddress,
-			"price":                    constant.Price,
-			"min_topup":                constant.MinTopUp,
+			"server_address":           setting.ServerAddress,
+			"price":                    setting.Price,
+			"min_topup":                setting.MinTopUp,
 			"turnstile_check":          common.TurnstileCheckEnabled,
 			"turnstile_site_key":       common.TurnstileSiteKey,
 			"top_up_link":              common.TopUpLink,
@@ -63,9 +63,9 @@ func GetStatus(c *gin.Context) {
 			"enable_data_export":       common.DataExportEnabled,
 			"data_export_default_time": common.DataExportDefaultTime,
 			"default_collapse_sidebar": common.DefaultCollapseSidebar,
-			"enable_online_topup":      constant.PayAddress != "" && constant.EpayId != "" && constant.EpayKey != "",
-			"mj_notify_enabled":        constant.MjNotifyEnabled,
-			"chats":                    constant.Chats,
+			"enable_online_topup":      setting.PayAddress != "" && setting.EpayId != "" && setting.EpayKey != "",
+			"mj_notify_enabled":        setting.MjNotifyEnabled,
+			"chats":                    setting.Chats,
 		},
 	})
 	return
@@ -207,7 +207,7 @@ func SendPasswordResetEmail(c *gin.Context) {
 	}
 	code := common.GenerateVerificationCode(0)
 	common.RegisterVerificationCodeWithKey(email, code, common.PasswordResetPurpose)
-	link := fmt.Sprintf("%s/user/reset?email=%s&token=%s", constant.ServerAddress, email, code)
+	link := fmt.Sprintf("%s/user/reset?email=%s&token=%s", setting.ServerAddress, email, code)
 	subject := fmt.Sprintf("%s密码重置", common.SystemName)
 	content := fmt.Sprintf("<p>您好，你正在进行%s密码重置。</p>"+
 		"<p>点击 <a href='%s'>此处</a> 进行密码重置。</p>"+

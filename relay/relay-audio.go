@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
-	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
+	"one-api/setting"
 )
 
 func getAndValidAudioRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.AudioRequest, error) {
@@ -26,7 +26,7 @@ func getAndValidAudioRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 		if audioRequest.Model == "" {
 			return nil, errors.New("model is required")
 		}
-		if constant.ShouldCheckPromptSensitive() {
+		if setting.ShouldCheckPromptSensitive() {
 			err := service.CheckSensitiveInput(audioRequest.Input)
 			if err != nil {
 				return nil, err

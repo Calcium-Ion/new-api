@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"one-api/common"
-	"one-api/constant"
 	relaycommon "one-api/relay/common"
+	"one-api/setting"
 	"strconv"
 	"strings"
 )
@@ -325,7 +325,7 @@ func PostConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, userQuota int, quot
 						prompt = "您的额度已用尽"
 					}
 					if email != "" {
-						topUpLink := fmt.Sprintf("%s/topup", constant.ServerAddress)
+						topUpLink := fmt.Sprintf("%s/topup", setting.ServerAddress)
 						err = common.SendEmail(prompt, email,
 							fmt.Sprintf("%s，当前剩余额度为 %d，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='%s'>%s</a>", prompt, userQuota, topUpLink, topUpLink))
 						if err != nil {

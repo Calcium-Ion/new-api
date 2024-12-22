@@ -8,9 +8,9 @@ import (
 	"log"
 	"net/url"
 	"one-api/common"
-	"one-api/constant"
 	"one-api/model"
 	"one-api/service"
+	"one-api/setting"
 	"strconv"
 	"sync"
 	"time"
@@ -28,13 +28,13 @@ type AmountRequest struct {
 }
 
 func GetEpayClient() *epay.Client {
-	if constant.PayAddress == "" || constant.EpayId == "" || constant.EpayKey == "" {
+	if setting.PayAddress == "" || setting.EpayId == "" || setting.EpayKey == "" {
 		return nil
 	}
 	withUrl, err := epay.NewClient(&epay.Config{
-		PartnerID: constant.EpayId,
-		Key:       constant.EpayKey,
-	}, constant.PayAddress)
+		PartnerID: setting.EpayId,
+		Key:       setting.EpayKey,
+	}, setting.PayAddress)
 	if err != nil {
 		return nil
 	}
@@ -50,12 +50,12 @@ func getPayMoney(amount float64, group string) float64 {
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
 	}
-	payMoney := amount * constant.Price * topupGroupRatio
+	payMoney := amount * setting.Price * topupGroupRatio
 	return payMoney
 }
 
 func getMinTopup() int {
-	minTopup := constant.MinTopUp
+	minTopup := setting.MinTopUp
 	if !common.DisplayInCurrencyEnabled {
 		minTopup = minTopup * int(common.QuotaPerUnit)
 	}
@@ -94,7 +94,7 @@ func RequestEpay(c *gin.Context) {
 		payType = "wxpay"
 	}
 	callBackAddress := service.GetCallbackAddress()
-	returnUrl, _ := url.Parse(constant.ServerAddress + "/log")
+	returnUrl, _ := url.Parse(setting.ServerAddress + "/log")
 	notifyUrl, _ := url.Parse(callBackAddress + "/api/user/epay/notify")
 	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
 	tradeNo = fmt.Sprintf("USR%dNO%s", id, tradeNo)

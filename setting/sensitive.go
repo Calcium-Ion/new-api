@@ -1,4 +1,4 @@
-package constant
+package setting
 
 import "strings"
 
