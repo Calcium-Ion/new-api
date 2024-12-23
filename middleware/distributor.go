@@ -12,6 +12,7 @@ import (
 	"one-api/service"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -112,6 +113,7 @@ func Distribute() func(c *gin.Context) {
 				}
 			}
 		}
+		c.Set(constant.ContextKeyRequestStartTime, time.Now())
 		SetupContextForSelectedChannel(c, channel, modelRequest.Model)
 		c.Next()
 	}

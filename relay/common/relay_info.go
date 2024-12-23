@@ -2,8 +2,9 @@ package common
 
 import (
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
-	"one-api/relay/constant"
+	relayconstant "one-api/relay/constant"
 	"strings"
 	"time"
 
@@ -66,13 +67,13 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	userId := c.GetInt("id")
 	group := c.GetString("group")
 	tokenUnlimited := c.GetBool("token_unlimited_quota")
-	startTime := time.Now()
+	startTime := c.GetTime(constant.ContextKeyRequestStartTime)
 	// firstResponseTime = time.Now() - 1 second
 
-	apiType, _ := constant.ChannelType2APIType(channelType)
+	apiType, _ := relayconstant.ChannelType2APIType(channelType)
 
 	info := &RelayInfo{
-		RelayMode:         constant.Path2RelayMode(c.Request.URL.Path),
+		RelayMode:         relayconstant.Path2RelayMode(c.Request.URL.Path),
 		BaseUrl:           c.GetString("base_url"),
 		RequestURLPath:    c.Request.URL.String(),
 		ChannelType:       channelType,
@@ -158,10 +159,10 @@ func GenTaskRelayInfo(c *gin.Context) *TaskRelayInfo {
 	group := c.GetString("group")
 	startTime := time.Now()
 
-	apiType, _ := constant.ChannelType2APIType(channelType)
+	apiType, _ := relayconstant.ChannelType2APIType(channelType)
 
 	info := &TaskRelayInfo{
-		RelayMode:      constant.Path2RelayMode(c.Request.URL.Path),
+		RelayMode:      relayconstant.Path2RelayMode(c.Request.URL.Path),
 		BaseUrl:        c.GetString("base_url"),
 		RequestURLPath: c.Request.URL.String(),
 		ChannelType:    channelType,
