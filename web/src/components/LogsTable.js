@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   API,
@@ -33,6 +33,7 @@ import {
 } from '../helpers/render';
 import Paragraph from '@douyinfe/semi-ui/lib/es/typography/paragraph';
 import { getLogOther } from '../helpers/other.js';
+import { StyleContext } from '../context/Style/index.js';
 
 const { Header } = Layout;
 
@@ -406,6 +407,7 @@ const LogsTable = () => {
     },
   ];
 
+  const [styleState, styleDispatch] = useContext(StyleContext);
   const [logs, setLogs] = useState([]);
   const [expandData, setExpandData] = useState({});
   const [showStat, setShowStat] = useState(false);
@@ -443,12 +445,17 @@ const LogsTable = () => {
   });
 
   const handleInputChange = (value, name) => {
-    // console.log('name:', name, 'value:', value);
-    setInputs((inputs) => ({ ...inputs, [name]: value }));
+    if (value && (name === 'start_timestamp' || name === 'end_timestamp')) {
+      // 确保日期值是有效的
+      const dateValue = typeof value === 'string' ? value : timestamp2string(value);
+      setInputs(inputs => ({ ...inputs, [name]: dateValue }));
+    } else {
+      setInputs(inputs => ({ ...inputs, [name]: value }));
+    }
   };
 
   const getLogSelfStat = async () => {
-    let localStartTimestamp = Date.parse(start_timestamp) / 1000;
+    let localStartTimestamp = Date.parse(3) / 1000;
     let localEndTimestamp = Date.parse(end_timestamp) / 1000;
     let url = `/api/log/self/stat?type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&group=${group}`;
     url = encodeURI(url);
@@ -694,19 +701,47 @@ const LogsTable = () => {
         <Form layout='horizontal' style={{ marginTop: 10 }}>
           <>
             <Form.Section>
-              <div style={{ display: 'flex', marginBottom: 10 }}>
-                <Form.DatePicker
-                  field="range_timestamp"
-                  label={t('时间范围')}
-                  initValue={[start_timestamp, end_timestamp]}
-                  value={[start_timestamp, end_timestamp]}
-                  type="dateTimeRange"
-                  name="range_timestamp"
-                  onChange={(value) => {
-                    handleInputChange(value[0], 'start_timestamp');
-                    handleInputChange(value[1], 'end_timestamp');
-                  }}
-                />
+              <div style={{ marginBottom: 10 }}>
+              {
+                  styleState.isMobile ? (
+                    <div>
+                      <Form.DatePicker
+                        field='start_timestamp'
+                        label={t('起始时间')}
+                        style={{ width: 272 }}
+                        initValue={start_timestamp}
+                        type='dateTime'
+                        onChange={(value) => {
+                          console.log(value);
+                          handleInputChange(value, 'start_timestamp')
+                        }}
+                      />
+                      <Form.DatePicker
+                        field='end_timestamp'
+                        fluid
+                        label={t('结束时间')}
+                        style={{ width: 272 }}
+                        initValue={end_timestamp}
+                        type='dateTime'
+                        onChange={(value) => handleInputChange(value, 'end_timestamp')}
+                      />
+                    </div>
+                  ) : (
+                    <Form.DatePicker
+                      field="range_timestamp"
+                      label={t('时间范围')}
+                      initValue={[start_timestamp, end_timestamp]}
+                      type="dateTimeRange"
+                      name="range_timestamp"
+                      onChange={(value) => {
+                        if (Array.isArray(value) && value.length === 2) {
+                          handleInputChange(value[0], 'start_timestamp');
+                          handleInputChange(value[1], 'end_timestamp');
+                        }
+                      }}
+                    />
+                  )
+                }
               </div>
             </Form.Section>
             <Form.Input
