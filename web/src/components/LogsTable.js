@@ -445,17 +445,11 @@ const LogsTable = () => {
   });
 
   const handleInputChange = (value, name) => {
-    if (value && (name === 'start_timestamp' || name === 'end_timestamp')) {
-      // 确保日期值是有效的
-      const dateValue = typeof value === 'string' ? value : timestamp2string(value);
-      setInputs(inputs => ({ ...inputs, [name]: dateValue }));
-    } else {
-      setInputs(inputs => ({ ...inputs, [name]: value }));
-    }
+    setInputs(inputs => ({ ...inputs, [name]: value }));
   };
 
   const getLogSelfStat = async () => {
-    let localStartTimestamp = Date.parse(3) / 1000;
+    let localStartTimestamp = Date.parse(start_timestamp) / 1000;
     let localEndTimestamp = Date.parse(end_timestamp) / 1000;
     let url = `/api/log/self/stat?type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&group=${group}`;
     url = encodeURI(url);
