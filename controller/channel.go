@@ -115,8 +115,8 @@ func FetchUpstreamModels(c *gin.Context) {
 	//	return
 	//}
 	baseURL := common.ChannelBaseURLs[channel.Type]
-	if channel.GetBaseURL() == "" {
-		channel.BaseURL = &baseURL
+	if channel.GetBaseURL() != "" {
+		baseURL = channel.GetBaseURL()
 	}
 	url := fmt.Sprintf("%s/v1/models", baseURL)
 	body, err := GetResponseBody("GET", url, channel, GetAuthHeader(channel.Key))
