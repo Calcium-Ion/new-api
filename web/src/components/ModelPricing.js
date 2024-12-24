@@ -162,36 +162,39 @@ const ModelPricing = () => {
       title: t('可用分组'),
       dataIndex: 'enable_groups',
       render: (text, record, index) => {
+        
         // enable_groups is a string array
         return (
           <Space>
             {text.map((group) => {
-              if (group === selectedGroup) {
-                return (
-                  <Tag
-                    color='blue'
-                    size='large'
-                    prefixIcon={<IconVerify />}
-                  >
-                    {group}
-                  </Tag>
-                );
-              } else {
-                return (
-                  <Tag
-                    color='blue'
-                    size='large'
-                    onClick={() => {
-                      setSelectedGroup(group);
-                      showInfo(t('当前查看的分组为：{{group}}，倍率为：{{ratio}}', {
-                        group: group,
-                        ratio: groupRatio[group]
-                      }));
-                    }}
-                  >
-                    {group}
-                  </Tag>
-                );
+              if (usableGroup[group]) {
+                if (group === selectedGroup) {
+                  return (
+                    <Tag
+                      color='blue'
+                      size='large'
+                      prefixIcon={<IconVerify />}
+                    >
+                      {group}
+                    </Tag>
+                  );
+                } else {
+                  return (
+                    <Tag
+                      color='blue'
+                      size='large'
+                      onClick={() => {
+                        setSelectedGroup(group);
+                        showInfo(t('当前查看的分组为：{{group}}，倍率为：{{ratio}}', {
+                          group: group,
+                          ratio: groupRatio[group]
+                        }));
+                      }}
+                    >
+                      {group}
+                    </Tag>
+                  );
+                }
               }
             })}
           </Space>
@@ -275,6 +278,7 @@ const ModelPricing = () => {
   const [loading, setLoading] = useState(true);
   const [userState, userDispatch] = useContext(UserContext);
   const [groupRatio, setGroupRatio] = useState({});
+  const [usableGroup, setUsableGroup] = useState({});
 
   const setModelsFormat = (models, groupRatio) => {
     for (let i = 0; i < models.length; i++) {
@@ -309,9 +313,10 @@ const ModelPricing = () => {
     let url = '';
     url = `/api/pricing`;
     const res = await API.get(url);
-    const { success, message, data, group_ratio } = res.data;
+    const { success, message, data, group_ratio, usable_group } = res.data;
     if (success) {
       setGroupRatio(group_ratio);
+      setUsableGroup(usable_group);
       setSelectedGroup(userState.user ? userState.user.group : 'default')
       setModelsFormat(data, group_ratio);
     } else {
