@@ -4,7 +4,6 @@ import (
 	crand "crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"github.com/google/uuid"
 	"html/template"
 	"log"
 	"math/big"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func OpenBrowser(url string) {

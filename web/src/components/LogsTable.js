@@ -222,19 +222,27 @@ const LogsTable = () => {
       dataIndex: 'group',
       render: (text, record, index) => {
         if (record.type === 0 || record.type === 2) {
-          let other = JSON.parse(record.other);
-          if (other === null) {
-            return <></>;
-          }
-          if (other.group !== undefined) {
+         if (record.group) {
             return (
               <>
-                {renderGroup(other.group)}
+                {renderGroup(record.group)}
               </>
             );
-          } else {
-            return <></>;
-          }
+         } else {
+           let other = JSON.parse(record.other);
+           if (other === null) {
+             return <></>;
+           }
+           if (other.group !== undefined) {
+             return (
+               <>
+                 {renderGroup(other.group)}
+               </>
+             );
+           } else {
+             return <></>;
+           }
+         }
         } else {
           return <></>;
         }
@@ -417,6 +425,7 @@ const LogsTable = () => {
     start_timestamp: timestamp2string(getTodayStartTimestamp()),
     end_timestamp: timestamp2string(now.getTime() / 1000 + 3600),
     channel: '',
+    group: '',
   });
   const {
     username,
@@ -425,6 +434,7 @@ const LogsTable = () => {
     start_timestamp,
     end_timestamp,
     channel,
+    group,
   } = inputs;
 
   const [stat, setStat] = useState({
@@ -433,13 +443,14 @@ const LogsTable = () => {
   });
 
   const handleInputChange = (value, name) => {
+    // console.log('name:', name, 'value:', value);
     setInputs((inputs) => ({ ...inputs, [name]: value }));
   };
 
   const getLogSelfStat = async () => {
     let localStartTimestamp = Date.parse(start_timestamp) / 1000;
     let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    let url = `/api/log/self/stat?type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+    let url = `/api/log/self/stat?type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&group=${group}`;
     url = encodeURI(url);
     let res = await API.get(url);
     const { success, message, data } = res.data;
@@ -453,7 +464,7 @@ const LogsTable = () => {
   const getLogStat = async () => {
     let localStartTimestamp = Date.parse(start_timestamp) / 1000;
     let localEndTimestamp = Date.parse(end_timestamp) / 1000;
-    let url = `/api/log/stat?type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}`;
+    let url = `/api/log/stat?type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}&group=${group}`;
     url = encodeURI(url);
     let res = await API.get(url);
     const { success, message, data } = res.data;
@@ -596,9 +607,9 @@ const LogsTable = () => {
     let localStartTimestamp = Date.parse(start_timestamp) / 1000;
     let localEndTimestamp = Date.parse(end_timestamp) / 1000;
     if (isAdminUser) {
-      url = `/api/log/?p=${startIdx}&page_size=${pageSize}&type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}`;
+      url = `/api/log/?p=${startIdx}&page_size=${pageSize}&type=${logType}&username=${username}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&channel=${channel}&group=${group}`;
     } else {
-      url = `/api/log/self/?p=${startIdx}&page_size=${pageSize}&type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+      url = `/api/log/self/?p=${startIdx}&page_size=${pageSize}&type=${logType}&token_name=${token_name}&model_name=${model_name}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&group=${group}`;
     }
     url = encodeURI(url);
     const res = await API.get(url);
@@ -682,10 +693,25 @@ const LogsTable = () => {
         </Header>
         <Form layout='horizontal' style={{ marginTop: 10 }}>
           <>
+            <Form.Section>
+              <div style={{ display: 'flex', marginBottom: 10 }}>
+                <Form.DatePicker
+                  field="range_timestamp"
+                  label={t('时间范围')}
+                  initValue={[start_timestamp, end_timestamp]}
+                  value={[start_timestamp, end_timestamp]}
+                  type="dateTimeRange"
+                  name="range_timestamp"
+                  onChange={(value) => {
+                    handleInputChange(value[0], 'start_timestamp');
+                    handleInputChange(value[1], 'end_timestamp');
+                  }}
+                />
+              </div>
+            </Form.Section>
             <Form.Input
               field='token_name'
               label={t('令牌名称')}
-              style={{ width: 176 }}
               value={token_name}
               placeholder={t('可选值')}
               name='token_name'
@@ -694,39 +720,24 @@ const LogsTable = () => {
             <Form.Input
               field='model_name'
               label={t('模型名称')}
-              style={{ width: 176 }}
               value={model_name}
               placeholder={t('可选值')}
               name='model_name'
               onChange={(value) => handleInputChange(value, 'model_name')}
             />
-            <Form.DatePicker
-              field='start_timestamp'
-              label={t('起始时间')}
-              style={{ width: 272 }}
-              initValue={start_timestamp}
-              value={start_timestamp}
-              type='dateTime'
-              name='start_timestamp'
-              onChange={(value) => handleInputChange(value, 'start_timestamp')}
-            />
-            <Form.DatePicker
-              field='end_timestamp'
-              fluid
-              label={t('结束时间')}
-              style={{ width: 272 }}
-              initValue={end_timestamp}
-              value={end_timestamp}
-              type='dateTime'
-              name='end_timestamp'
-              onChange={(value) => handleInputChange(value, 'end_timestamp')}
+            <Form.Input
+              field='group'
+              label={t('分组')}
+              value={group}
+              placeholder={t('可选值')}
+              name='group'
+              onChange={(value) => handleInputChange(value, 'group')}
             />
             {isAdminUser && (
               <>
                 <Form.Input
                   field='channel'
                   label={t('渠道 ID')}
-                  style={{ width: 176 }}
                   value={channel}
                   placeholder={t('可选值')}
                   name='channel'
@@ -735,7 +746,6 @@ const LogsTable = () => {
                 <Form.Input
                   field='username'
                   label={t('用户名称')}
-                  style={{ width: 176 }}
                   value={username}
                   placeholder={t('可选值')}
                   name='username'
