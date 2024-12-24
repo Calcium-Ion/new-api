@@ -4,7 +4,7 @@ type GeminiChatRequest struct {
 	Contents           []GeminiChatContent        `json:"contents"`
 	SafetySettings     []GeminiChatSafetySettings `json:"safety_settings,omitempty"`
 	GenerationConfig   GeminiChatGenerationConfig `json:"generation_config,omitempty"`
-	Tools              []GeminiChatTools          `json:"tools,omitempty"`
+	Tools              []GeminiChatTool           `json:"tools,omitempty"`
 	SystemInstructions *GeminiChatContent         `json:"system_instruction,omitempty"`
 }
 
@@ -18,16 +18,39 @@ type FunctionCall struct {
 	Arguments    any    `json:"args"`
 }
 
+type GeminiFunctionResponseContent struct {
+	Name    string `json:"name"`
+	Content any    `json:"content"`
+}
+
 type FunctionResponse struct {
-	Name     string `json:"name"`
-	Response any    `json:"response"`
+	Name     string                        `json:"name"`
+	Response GeminiFunctionResponseContent `json:"response"`
+}
+
+type GeminiPartExecutableCode struct {
+	Language string `json:"language,omitempty"`
+	Code     string `json:"code,omitempty"`
+}
+
+type GeminiPartCodeExecutionResult struct {
+	Outcome string `json:"outcome,omitempty"`
+	Output  string `json:"output,omitempty"`
+}
+
+type GeminiFileData struct {
+	MimeType string `json:"mimeType,omitempty"`
+	FileUri  string `json:"fileUri,omitempty"`
 }
 
 type GeminiPart struct {
-	Text             string            `json:"text,omitempty"`
-	InlineData       *GeminiInlineData `json:"inlineData,omitempty"`
-	FunctionCall     *FunctionCall     `json:"functionCall,omitempty"`
-	FunctionResponse *FunctionResponse `json:"functionResponse,omitempty"`
+	Text                string                         `json:"text,omitempty"`
+	InlineData          *GeminiInlineData              `json:"inlineData,omitempty"`
+	FunctionCall        *FunctionCall                  `json:"functionCall,omitempty"`
+	FunctionResponse    *FunctionResponse              `json:"functionResponse,omitempty"`
+	FileData            *GeminiFileData                `json:"fileData,omitempty"`
+	ExecutableCode      *GeminiPartExecutableCode      `json:"executableCode,omitempty"`
+	CodeExecutionResult *GeminiPartCodeExecutionResult `json:"codeExecutionResult,omitempty"`
 }
 
 type GeminiChatContent struct {
@@ -40,9 +63,11 @@ type GeminiChatSafetySettings struct {
 	Threshold string `json:"threshold"`
 }
 
-type GeminiChatTools struct {
-	GoogleSearch         any `json:"googleSearch,omitempty"`
-	FunctionDeclarations any `json:"functionDeclarations,omitempty"`
+type GeminiChatTool struct {
+	GoogleSearch          any `json:"googleSearch,omitempty"`
+	GoogleSearchRetrieval any `json:"googleSearchRetrieval,omitempty"`
+	CodeExecution         any `json:"codeExecution,omitempty"`
+	FunctionDeclarations  any `json:"functionDeclarations,omitempty"`
 }
 
 type GeminiChatGenerationConfig struct {
@@ -54,11 +79,12 @@ type GeminiChatGenerationConfig struct {
 	StopSequences    []string `json:"stopSequences,omitempty"`
 	ResponseMimeType string   `json:"responseMimeType,omitempty"`
 	ResponseSchema   any      `json:"responseSchema,omitempty"`
+	Seed             int64    `json:"seed,omitempty"`
 }
 
 type GeminiChatCandidate struct {
 	Content       GeminiChatContent        `json:"content"`
-	FinishReason  string                   `json:"finishReason"`
+	FinishReason  *string                  `json:"finishReason"`
 	Index         int64                    `json:"index"`
 	SafetyRatings []GeminiChatSafetyRating `json:"safetyRatings"`
 }
