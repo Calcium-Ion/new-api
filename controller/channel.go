@@ -97,6 +97,7 @@ func FetchUpstreamModels(c *gin.Context) {
 		})
 		return
 	}
+
 	channel, err := model.GetChannelById(id, true)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -105,34 +106,35 @@ func FetchUpstreamModels(c *gin.Context) {
 		})
 		return
 	}
-	if channel.Type != common.ChannelTypeOpenAI {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "仅支持 OpenAI 类型渠道",
-		})
-		return
+
+	//if channel.Type != common.ChannelTypeOpenAI {
+	//	c.JSON(http.StatusOK, gin.H{
+	//		"success": false,
+	//		"message": "仅支持 OpenAI 类型渠道",
+	//	})
+	//	return
+	//}
+	baseURL := common.ChannelBaseURLs[channel.Type]
+	if channel.GetBaseURL() == "" {
+		channel.BaseURL = &baseURL
 	}
-	url := fmt.Sprintf("%s/v1/models", *channel.BaseURL)
+	url := fmt.Sprintf("%s/v1/models", baseURL)
 	body, err := GetResponseBody("GET", url, channel, GetAuthHeader(channel.Key))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),
 		})
+		return
 	}
-	result := OpenAIModelsResponse{}
-	err = json.Unmarshal(body, &result)
-	if err != nil {
+
+	var result OpenAIModelsResponse
+	if err = json.Unmarshal(body, &result); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
-			"message": err.Error(),
+			"message": fmt.Sprintf("解析响应失败: %s", err.Error()),
 		})
-	}
-	if !result.Success {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "上游返回错误",
-		})
+		return
 	}
 
 	var ids []string
@@ -491,4 +493,80 @@ func UpdateChannel(c *gin.Context) {
 		"data":    channel,
 	})
 	return
+}
+
+func FetchModels(c *gin.Context) {
+	var req struct {
+		BaseURL string `json:"base_url"`
+		Key     string `json:"key"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid request",
+		})
+		return
+	}
+
+	baseURL := req.BaseURL
+	if baseURL == "" {
+		baseURL = "https://api.openai.com"
+	}
+
+	client := &http.Client{}
+	url := fmt.Sprintf("%s/v1/models", baseURL)
+
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	request.Header.Set("Authorization", "Bearer "+req.Key)
+
+	response, err := client.Do(request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	//check status code
+	if response.StatusCode != http.StatusOK {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to fetch models",
+		})
+		return
+	}
+	defer response.Body.Close()
+
+	var result struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+
+	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	var models []string
+	for _, model := range result.Data {
+		models = append(models, model.ID)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    models,
+	})
 }

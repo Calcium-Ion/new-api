@@ -193,14 +193,16 @@ const EditChannel = (props) => {
 
 
   const fetchUpstreamModelList = async (name) => {
-    if (inputs['type'] !== 1) {
-      showError(t('仅支持 OpenAI 接口格式'));
-      return;
-    }
+    // if (inputs['type'] !== 1) {
+    //   showError(t('仅支持 OpenAI 接口格式'));
+    //   return;
+    // }
     setLoading(true);
     const models = inputs['models'] || [];
     let err = false;
+
     if (isEdit) {
+      // 如果是编辑模式，使用已有的channel id获取模型列表
       const res = await API.get('/api/channel/fetch_models/' + channelId);
       if (res.data && res.data?.success) {
         models.push(...res.data.data);
@@ -208,30 +210,29 @@ const EditChannel = (props) => {
         err = true;
       }
     } else {
+      // 如果是新建模式，通过后端代理获取模型列表
       if (!inputs?.['key']) {
         showError(t('请填写密钥'));
         err = true;
       } else {
         try {
-          const host = new URL((inputs['base_url'] || 'https://api.openai.com'));
-
-          const url = `https://${host.hostname}/v1/models`;
-          const key = inputs['key'];
-          const res = await axios.get(url, {
-            headers: {
-              'Authorization': `Bearer ${key}`
-            }
+          const res = await API.post('/api/channel/fetch_models', {
+            base_url: inputs['base_url'],
+            key: inputs['key']
           });
-          if (res.data) {
-            models.push(...res.data.data.map((model) => model.id));
+          
+          if (res.data && res.data.success) {
+            models.push(...res.data.data);
           } else {
             err = true;
           }
         } catch (error) {
+          console.error('Error fetching models:', error);
           err = true;
         }
       }
     }
+
     if (!err) {
       handleInputChange(name, Array.from(new Set(models)));
       showSuccess(t('获取模型列表成功'));
@@ -638,7 +639,7 @@ const EditChannel = (props) => {
           {inputs.type === 21 && (
             <>
               <div style={{ marginTop: 10 }}>
-                <Typography.Text strong>知识库 ID：</Typography.Text>
+                <Typography.Text strong>��识库 ID：</Typography.Text>
               </div>
               <Input
                 label="知识库 ID"
