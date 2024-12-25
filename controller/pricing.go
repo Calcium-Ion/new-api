@@ -16,7 +16,7 @@ func GetPricing(c *gin.Context) {
 	}
 	var group string
 	if exists {
-		user, err := model.GetChannelById(userId.(int), false)
+		user, err := model.GetUserById(userId.(int), false)
 		if err == nil {
 			group = user.Group
 		}
