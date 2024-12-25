@@ -390,7 +390,7 @@ const EditToken = (props) => {
                 setUnlimitedQuota();
               }}
             >
-              {unlimited_quota ? t('取消���限额度') : t('设为无限额度')}
+              {unlimited_quota ? t('取消无限额度') : t('设为无限额度')}
             </Button>
           </div>
           <Divider />
