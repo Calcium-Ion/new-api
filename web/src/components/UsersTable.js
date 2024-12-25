@@ -406,7 +406,7 @@ const UsersTable = () => {
     if (searchKeyword === '') {
       await loadUsers(activePage - 1);
     } else {
-      await searchUsers();
+      await searchUsers(searchKeyword, searchGroup);
     }
   };
 
