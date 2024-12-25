@@ -99,7 +99,7 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		modelPrice = 0.0025 * modelRatio
 	}
 
-	groupRatio := common.GetGroupRatio(relayInfo.Group)
+	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 	userQuota, err := model.CacheGetUserQuota(relayInfo.UserId)
 
 	sizeRatio := 1.0

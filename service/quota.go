@@ -9,6 +9,7 @@ import (
 	"one-api/dto"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
+	"one-api/setting"
 	"strings"
 	"time"
 )
@@ -36,7 +37,7 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 	completionRatio := common.GetCompletionRatio(modelName)
 	audioRatio := common.GetAudioRatio(relayInfo.UpstreamModelName)
 	audioCompletionRatio := common.GetAudioCompletionRatio(modelName)
-	groupRatio := common.GetGroupRatio(relayInfo.Group)
+	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 	modelRatio := common.GetModelRatio(modelName)
 
 	ratio := groupRatio * modelRatio

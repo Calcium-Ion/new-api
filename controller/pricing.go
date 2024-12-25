@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"one-api/common"
 	"one-api/model"
+	"one-api/setting"
 )
 
 func GetPricing(c *gin.Context) {
@@ -11,7 +12,7 @@ func GetPricing(c *gin.Context) {
 	userId, exists := c.Get("id")
 	usableGroup := map[string]string{}
 	groupRatio := map[string]float64{}
-	for s, f := range common.GroupRatio {
+	for s, f := range setting.GetGroupRatioCopy() {
 		groupRatio[s] = f
 	}
 	var group string
@@ -22,9 +23,9 @@ func GetPricing(c *gin.Context) {
 		}
 	}
 
-	usableGroup = common.GetUserUsableGroups(group)
+	usableGroup = setting.GetUserUsableGroups(group)
 	// check groupRatio contains usableGroup
-	for group := range common.GroupRatio {
+	for group := range setting.GetGroupRatioCopy() {
 		if _, ok := usableGroup[group]; !ok {
 			delete(groupRatio, group)
 		}
