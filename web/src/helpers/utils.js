@@ -180,6 +180,9 @@ export function timestamp2string1(timestamp, dataExportDefaultTime = 'hour') {
   let month = (date.getMonth() + 1).toString();
   let day = date.getDate().toString();
   let hour = date.getHours().toString();
+  if (day === '24') {
+    console.log("timestamp", timestamp);
+  }
   if (month.length === 1) {
     month = '0' + month;
   }

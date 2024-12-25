@@ -59,6 +59,9 @@ export function renderNumber(num) {
 }
 
 export function renderQuotaNumberWithDigit(num, digits = 2) {
+  if (typeof num !== 'number' || isNaN(num)) {
+    return 0;
+  }
   let displayInCurrency = localStorage.getItem('display_in_currency');
   num = num.toFixed(digits);
   if (displayInCurrency) {
