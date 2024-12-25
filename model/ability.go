@@ -3,10 +3,11 @@ package model
 import (
 	"errors"
 	"fmt"
-	"github.com/samber/lo"
-	"gorm.io/gorm"
 	"one-api/common"
 	"strings"
+
+	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
 type Ability struct {
@@ -173,18 +174,67 @@ func (channel *Channel) DeleteAbilities() error {
 
 // UpdateAbilities updates abilities of this channel.
 // Make sure the channel is completed before calling this function.
-func (channel *Channel) UpdateAbilities() error {
-	// A quick and dirty way to update abilities
+func (channel *Channel) UpdateAbilities(tx *gorm.DB) error {
+	isNewTx := false
+	// 如果没有传入事务，创建新的事务
+	if tx == nil {
+		tx = DB.Begin()
+		if tx.Error != nil {
+			return tx.Error
+		}
+		isNewTx = true
+		defer func() {
+			if r := recover(); r != nil {
+				tx.Rollback()
+			}
+		}()
+	}
+
 	// First delete all abilities of this channel
-	err := channel.DeleteAbilities()
+	err := tx.Where("channel_id = ?", channel.Id).Delete(&Ability{}).Error
 	if err != nil {
+		if isNewTx {
+			tx.Rollback()
+		}
 		return err
 	}
+
 	// Then add new abilities
-	err = channel.AddAbilities()
-	if err != nil {
-		return err
+	models_ := strings.Split(channel.Models, ",")
+	groups_ := strings.Split(channel.Group, ",")
+	abilities := make([]Ability, 0, len(models_))
+	for _, model := range models_ {
+		for _, group := range groups_ {
+			ability := Ability{
+				Group:     group,
+				Model:     model,
+				ChannelId: channel.Id,
+				Enabled:   channel.Status == common.ChannelStatusEnabled,
+				Priority:  channel.Priority,
+				Weight:    uint(channel.GetWeight()),
+				Tag:       channel.Tag,
+			}
+			abilities = append(abilities, ability)
+		}
 	}
+
+	if len(abilities) > 0 {
+		for _, chunk := range lo.Chunk(abilities, 50) {
+			err = tx.Create(&chunk).Error
+			if err != nil {
+				if isNewTx {
+					tx.Rollback()
+				}
+				return err
+			}
+		}
+	}
+
+	// 如果是新创建的事务，需要提交
+	if isNewTx {
+		return tx.Commit().Error
+	}
+
 	return nil
 }
 
@@ -246,7 +296,7 @@ func FixAbility() (int, error) {
 		return 0, err
 	}
 	for _, channel := range channels {
-		err := channel.UpdateAbilities()
+		err := channel.UpdateAbilities(nil)
 		if err != nil {
 			common.SysError(fmt.Sprintf("Update abilities of channel %d failed: %s", channel.Id, err.Error()))
 		} else {

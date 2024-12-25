@@ -419,7 +419,8 @@ func EditTagChannels(c *gin.Context) {
 }
 
 type ChannelBatch struct {
-	Ids []int `json:"ids"`
+	Ids []int   `json:"ids"`
+	Tag *string `json:"tag"`
 }
 
 func DeleteChannelBatch(c *gin.Context) {
@@ -569,4 +570,30 @@ func FetchModels(c *gin.Context) {
 		"success": true,
 		"data":    models,
 	})
+}
+
+func BatchSetChannelTag(c *gin.Context) {
+	channelBatch := ChannelBatch{}
+	err := c.ShouldBindJSON(&channelBatch)
+	if err != nil || len(channelBatch.Ids) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "参数错误",
+		})
+		return
+	}
+	err = model.BatchSetChannelTag(channelBatch.Ids, channelBatch.Tag)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    len(channelBatch.Ids),
+	})
+	return
 }

@@ -548,8 +548,8 @@
   "是否用ID排序": "Whether to sort by ID",
   "确定？": "Sure?",
   "确定是否要删除禁用通道？": "Are you sure you want to delete the disabled channel?",
-  "开启批量删除": "Enable batch selection",
-  "是否开启批量删除": "Whether to enable batch selection",
+  "开启批量操作": "Enable batch selection",
+  "是否开启批量操作": "Whether to enable batch selection",
   "确定是否要删除所选通道？": "Are you sure you want to delete the selected channels?",
   "确定是否要修复数据库一致性？": "Are you sure you want to repair database consistency?",
   "进行该操作时，可能导致渠道访问错误，请仅在数据库出现问题时使用": "When performing this operation, it may cause channel access errors. Please only use it when there is a problem with the database.",
@@ -1237,5 +1237,8 @@
   "更多": "Expand more",
   "个模型": "models",
   "可用模型": "Available models",
-  "时间范围": "Time range"
+  "时间范围": "Time range",
+  "批量设置标签": "Batch set tag",
+  "请输入要设置的标签名称": "Please enter the tag name to be set",
+  "请输入标签名称": "Please enter the tag name"
 }

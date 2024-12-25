@@ -162,9 +162,15 @@ const ChannelsTable = () => {
         return (
           <div>
             <Space spacing={2}>
-              {text?.split(',').map((item, index) => {
-                return renderGroup(item);
-              })}
+              {text?.split(',')
+                .sort((a, b) => {
+                  if (a === 'default') return -1;
+                  if (b === 'default') return 1;
+                  return a.localeCompare(b);
+                })
+                .map((item, index) => {
+                  return renderGroup(item);
+                })}
             </Space>
           </div>
         );
@@ -507,6 +513,8 @@ const ChannelsTable = () => {
   const [selectedChannels, setSelectedChannels] = useState([]);
   const [showEditPriority, setShowEditPriority] = useState(false);
   const [enableTagMode, setEnableTagMode] = useState(false);
+  const [showBatchSetTag, setShowBatchSetTag] = useState(false);
+  const [batchSetTagValue, setBatchSetTagValue] = useState('');
 
 
   const removeRecord = (record) => {
@@ -968,6 +976,29 @@ const ChannelsTable = () => {
     }
   };
 
+  const batchSetChannelTag = async () => {
+    if (selectedChannels.length === 0) {
+      showError(t('请先选择要设置标签的渠道！'));
+      return;
+    }
+    if (batchSetTagValue === '') {
+      showError(t('标签不能为空！'));
+      return;
+    }
+    let ids = selectedChannels.map(channel => channel.id);
+    const res = await API.post('/api/channel/batch/tag', {
+      ids: ids,
+      tag: batchSetTagValue === '' ? null : batchSetTagValue
+    });
+    if (res.data.success) {
+      showSuccess(t('已为 ${count} 个渠道设置标签！').replace('${count}', res.data.data));
+      await refresh();
+      setShowBatchSetTag(false);
+    } else {
+      showError(res.data.message);
+    }
+  };
+
   return (
     <>
       <EditTagModal
@@ -1115,11 +1146,11 @@ const ChannelsTable = () => {
       </div>
       <div style={{ marginTop: 20 }}>
         <Space>
-          <Typography.Text strong>{t('开启批量删除')}</Typography.Text>
+          <Typography.Text strong>{t('开启批量操作')}</Typography.Text>
           <Switch
-            label={t('开启批量删除')}
+            label={t('开启批量操作')}
             uncheckedText={t('关')}
-            aria-label={t('是否开启批量删除')}
+            aria-label={t('是否开启批量操作')}
             onChange={(v) => {
               setEnableBatchDelete(v);
             }}
@@ -1167,7 +1198,17 @@ const ChannelsTable = () => {
               loadChannels(0, pageSize, idSort, v);
             }}
           />
+          <Button
+        disabled={!enableBatchDelete}
+        theme="light"
+        type="primary"
+        style={{ marginRight: 8 }}
+        onClick={() => setShowBatchSetTag(true)}
+      >
+        {t('批量设置标签')}
+      </Button>
         </Space>
+
       </div>
 
 
@@ -1201,6 +1242,23 @@ const ChannelsTable = () => {
             : null
         }
       />
+      <Modal
+        title={t('批量设置标签')}
+        visible={showBatchSetTag}
+        onOk={batchSetChannelTag}
+        onCancel={() => setShowBatchSetTag(false)}
+        maskClosable={false}
+        centered={true}
+      >
+        <div style={{ marginBottom: 20 }}>
+          <Typography.Text>{t('请输入要设置的标签名称')}</Typography.Text>
+        </div>
+        <Input
+          placeholder={t('请输入标签名称')}
+          value={batchSetTagValue}
+          onChange={(v) => setBatchSetTagValue(v)}
+        />
+      </Modal>
     </>
   );
 };
