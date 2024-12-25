@@ -10,18 +10,16 @@ func GetPricing(c *gin.Context) {
 	pricing := model.GetPricing()
 	userId, exists := c.Get("id")
 	usableGroup := map[string]string{}
-	groupRatio := common.GroupRatio
+	groupRatio := map[string]float64{}
+	for s, f := range common.GroupRatio {
+		groupRatio[s] = f
+	}
 	var group string
 	if exists {
 		user, err := model.GetChannelById(userId.(int), false)
-		if err != nil {
-			c.JSON(200, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
+		if err == nil {
+			group = user.Group
 		}
-		group = user.Group
 	}
 
 	usableGroup = common.GetUserUsableGroups(group)
