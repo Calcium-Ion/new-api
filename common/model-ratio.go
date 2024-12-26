@@ -356,7 +356,7 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 2
 	}
-	if strings.HasPrefix(name, "o1-") {
+	if strings.HasPrefix(name, "o1") {
 		return 4
 	}
 	if name == "chatgpt-4o-latest" {
