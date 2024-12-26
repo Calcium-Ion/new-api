@@ -143,7 +143,7 @@ const Detail = (props) => {
         content: [
           {
             key: (datum) => datum['Model'],
-            value: (datum) => renderQuotaNumberWithDigit(datum['rawQuota'] || 0, 4),
+            value: (datum) => renderQuota(datum['rawQuota'] || 0, 4),
           },
         ],
       },
