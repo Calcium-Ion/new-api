@@ -92,11 +92,11 @@ func getImageToken(imageUrl *dto.MessageImageUrl, model string, stream bool) (in
 	}
 	// TODO: 非流模式下不计算图片token数量
 	if !constant.GetMediaTokenNotStream && !stream {
-		return 1000, nil
+		return 256, nil
 	}
 	// 是否统计图片token
 	if !constant.GetMediaToken {
-		return 1000, nil
+		return 256, nil
 	}
 	// 同步One API的图片计费逻辑
 	if imageUrl.Detail == "auto" || imageUrl.Detail == "" {

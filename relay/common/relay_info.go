@@ -109,7 +109,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	}
 	if info.ChannelType == common.ChannelTypeOpenAI || info.ChannelType == common.ChannelTypeAnthropic ||
 		info.ChannelType == common.ChannelTypeAws || info.ChannelType == common.ChannelTypeGemini ||
-		info.ChannelType == common.ChannelCloudflare {
+		info.ChannelType == common.ChannelCloudflare || info.ChannelType == common.ChannelTypeAzure {
 		info.SupportStreamOptions = true
 	}
 	return info
