@@ -81,41 +81,24 @@ const ModelPricing = () => {
   }
   
   function renderAvailable(available) {
-    return available ? (
+    return (
       <Popover
-          content={
-            <div style={{ padding: 8 }}>{t('您的分组可以使用该模型')}</div>
-          }
-          position='top'
-          key={available}
-          style={{
-              backgroundColor: 'rgba(var(--semi-blue-4),1)',
-              borderColor: 'rgba(var(--semi-blue-4),1)',
-              color: 'var(--semi-color-white)',
-              borderWidth: 1,
-              borderStyle: 'solid',
-          }}
+        content={
+          <div style={{ padding: 8 }}>{t('您的分组可以使用该模型')}</div>
+        }
+        position='top'
+        key={available}
+        style={{
+          backgroundColor: 'rgba(var(--semi-blue-4),1)',
+          borderColor: 'rgba(var(--semi-blue-4),1)',
+          color: 'var(--semi-color-white)',
+          borderWidth: 1,
+          borderStyle: 'solid',
+        }}
       >
-          <IconVerify style={{ color: 'green' }}  size="large" />
+        <IconVerify style={{ color: 'green' }}  size="large" />
       </Popover>
-    ) : (
-      <Popover
-          content={
-            <div style={{ padding: 8 }}>{t('您的分组无权使用该模型')}</div>
-          }
-          position='top'
-          key={available}
-          style={{
-              backgroundColor: 'rgba(var(--semi-blue-4),1)',
-              borderColor: 'rgba(var(--semi-blue-4),1)',
-              color: 'var(--semi-color-white)',
-              borderWidth: 1,
-              borderStyle: 'solid',
-          }}
-      >
-          <IconUploadError style={{ color: '#FFA54F' }}  size="large" />
-      </Popover>
-    );
+    )
   }
 
   const columns = [

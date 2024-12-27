@@ -34,8 +34,9 @@ func UpdateUserUsableGroupsByJSONString(jsonStr string) error {
 func GetUserUsableGroups(userGroup string) map[string]string {
 	groupsCopy := GetUserUsableGroupsCopy()
 	if userGroup == "" {
-		// 如果userGroup为空，返回UserUsableGroups
-		return groupsCopy
+		if _, ok := groupsCopy["default"]; !ok {
+			groupsCopy["default"] = "default"
+		}
 	}
 	// 如果userGroup不在UserUsableGroups中，返回UserUsableGroups + userGroup
 	if _, ok := groupsCopy[userGroup]; !ok {
