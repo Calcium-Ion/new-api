@@ -9,3 +9,4 @@ logs
 web/dist
 .env
 one-api
+.DS_Store
