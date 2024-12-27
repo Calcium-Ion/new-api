@@ -5,13 +5,21 @@ import (
 	"one-api/common"
 )
 
-var UserUsableGroups = map[string]string{
+var userUsableGroups = map[string]string{
 	"default": "默认分组",
 	"vip":     "vip分组",
 }
 
+func GetUserUsableGroupsCopy() map[string]string {
+	copyUserUsableGroups := make(map[string]string)
+	for k, v := range userUsableGroups {
+		copyUserUsableGroups[k] = v
+	}
+	return copyUserUsableGroups
+}
+
 func UserUsableGroups2JSONString() string {
-	jsonBytes, err := json.Marshal(UserUsableGroups)
+	jsonBytes, err := json.Marshal(userUsableGroups)
 	if err != nil {
 		common.SysError("error marshalling user groups: " + err.Error())
 	}
@@ -19,29 +27,25 @@ func UserUsableGroups2JSONString() string {
 }
 
 func UpdateUserUsableGroupsByJSONString(jsonStr string) error {
-	UserUsableGroups = make(map[string]string)
-	return json.Unmarshal([]byte(jsonStr), &UserUsableGroups)
+	userUsableGroups = make(map[string]string)
+	return json.Unmarshal([]byte(jsonStr), &userUsableGroups)
 }
 
 func GetUserUsableGroups(userGroup string) map[string]string {
+	groupsCopy := GetUserUsableGroupsCopy()
 	if userGroup == "" {
 		// 如果userGroup为空，返回UserUsableGroups
-		return UserUsableGroups
+		return groupsCopy
 	}
 	// 如果userGroup不在UserUsableGroups中，返回UserUsableGroups + userGroup
-	if _, ok := UserUsableGroups[userGroup]; !ok {
-		appendUserUsableGroups := make(map[string]string)
-		for k, v := range UserUsableGroups {
-			appendUserUsableGroups[k] = v
-		}
-		appendUserUsableGroups[userGroup] = "用户分组"
-		return appendUserUsableGroups
+	if _, ok := groupsCopy[userGroup]; !ok {
+		groupsCopy[userGroup] = "用户分组"
 	}
 	// 如果userGroup在UserUsableGroups中，返回UserUsableGroups
-	return UserUsableGroups
+	return groupsCopy
 }
 
 func GroupInUserUsableGroups(groupName string) bool {
-	_, ok := UserUsableGroups[groupName]
+	_, ok := userUsableGroups[groupName]
 	return ok
 }
