@@ -50,6 +50,19 @@ const (
 	LogTypeSystem
 )
 
+func formatUserLogs(logs []*Log) {
+	for i := range logs {
+		var otherMap map[string]interface{}
+		otherMap = common.StrToMap(logs[i].Other)
+		if otherMap != nil {
+			// delete admin
+			delete(otherMap, "admin_info")
+		}
+		logs[i].Other = common.MapToJsonStr(otherMap)
+		logs[i].Id = logs[i].Id % 1024
+	}
+}
+
 func GetLogByKey(key string) (logs []*Log, err error) {
 	if os.Getenv("LOG_SQL_DSN") != "" {
 		var tk Token
@@ -60,6 +73,7 @@ func GetLogByKey(key string) (logs []*Log, err error) {
 	} else {
 		err = LOG_DB.Joins("left join tokens on tokens.id = logs.token_id").Where("tokens.key = ?", strings.TrimPrefix(key, "sk-")).Find(&logs).Error
 	}
+	formatUserLogs(logs)
 	return logs, err
 }
 
@@ -185,16 +199,7 @@ func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int
 		return nil, 0, err
 	}
 	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&logs).Error
-	for i := range logs {
-		var otherMap map[string]interface{}
-		otherMap = common.StrToMap(logs[i].Other)
-		if otherMap != nil {
-			// delete admin
-			delete(otherMap, "admin_info")
-		}
-		logs[i].Other = common.MapToJsonStr(otherMap)
-		logs[i].Id = logs[i].Id % 1024
-	}
+	formatUserLogs(logs)
 	return logs, total, err
 }
 
@@ -205,16 +210,7 @@ func SearchAllLogs(keyword string) (logs []*Log, err error) {
 
 func SearchUserLogs(userId int, keyword string) (logs []*Log, err error) {
 	err = LOG_DB.Where("user_id = ? and type = ?", userId, keyword).Order("id desc").Limit(common.MaxRecentItems).Find(&logs).Error
-	for i := range logs {
-		var otherMap map[string]interface{}
-		otherMap = common.StrToMap(logs[i].Other)
-		if otherMap != nil {
-			// delete admin
-			delete(otherMap, "admin_info")
-		}
-		logs[i].Other = common.MapToJsonStr(otherMap)
-		logs[i].Id = logs[i].Id % 1024
-	}
+	formatUserLogs(logs)
 	return logs, err
 }
 
