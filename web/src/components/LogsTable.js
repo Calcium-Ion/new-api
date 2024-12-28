@@ -185,7 +185,10 @@ const LogsTable = () => {
               size='small'
               color={stringToColor(text)}
               style={{ marginRight: 4 }}
-              onClick={() => showUserInfo(record.user_id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                showUserInfo(record.user_id)
+              }}
             >
               {typeof text === 'string' && text.slice(0, 1)}
             </Avatar>
@@ -205,8 +208,9 @@ const LogsTable = () => {
             <Tag
               color='grey'
               size='large'
-              onClick={() => {
-                copyText(text);
+              onClick={(event) => {
+                //cancel the row click event
+                copyText(event, text);
               }}
             >
               {' '}
@@ -265,8 +269,8 @@ const LogsTable = () => {
             <Tag
               color={stringToColor(text)}
               size='large'
-              onClick={() => {
-                copyText(text);
+              onClick={(event) => {
+                copyText(event, text);
               }}
             >
               {' '}
@@ -518,7 +522,7 @@ const LogsTable = () => {
     let expandDatesLocal = {};
     for (let i = 0; i < logs.length; i++) {
       logs[i].timestamp2string = timestamp2string(logs[i].created_at);
-      logs[i].key = i;
+      logs[i].key = logs[i].id;
       let other = getLogOther(logs[i].other);
       let expandDataLocal = [];
       if (isAdmin()) {
@@ -650,11 +654,12 @@ const LogsTable = () => {
     await loadLogs(activePage, pageSize, logType);
   };
 
-  const copyText = async (text) => {
+  const copyText = async (e, text) => {
+    e.stopPropagation();
     if (await copy(text)) {
       showSuccess('已复制：' + text);
     } else {
-      Modal.error({ title: '无法复制到剪贴板，请手动复制', content: text });
+      Modal.error({ title: t('无法复制到剪贴板，请手动复制'), content: text });
     }
   };
 

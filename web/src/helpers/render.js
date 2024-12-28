@@ -1,5 +1,6 @@
 import i18next from 'i18next';
-import { Tag } from '@douyinfe/semi-ui';
+import { Modal, Tag } from '@douyinfe/semi-ui';
+import { copy, showSuccess } from './utils.js';
 
 export function renderText(text, limit) {
   if (text.length > limit) {
@@ -38,6 +39,14 @@ export function renderGroup(group) {
           size='large'
           color={tagColors[group] || stringToColor(group)}
           key={group}
+          onClick={async (event) => {
+            event.stopPropagation();
+            if (await copy(group)) {
+              showSuccess(i18next.t('已复制：') + group);
+            } else {
+              Modal.error({ title: t('无法复制到剪贴板，请手动复制'), content: group });
+            }
+          }}
         >
           {group}
         </Tag>
