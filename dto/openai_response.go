@@ -86,6 +86,10 @@ type ToolCall struct {
 	Function FunctionCall `json:"function"`
 }
 
+func (c *ToolCall) SetIndex(i int) {
+	c.Index = &i
+}
+
 type FunctionCall struct {
 	Description string `json:"description,omitempty"`
 	Name        string `json:"name,omitempty"`
