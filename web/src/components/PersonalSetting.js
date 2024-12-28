@@ -146,8 +146,9 @@ const PersonalSetting = () => {
         let res = await API.get(`/api/user/models`);
         const {success, message, data} = res.data;
         if (success) {
-            setModels(data);
-            console.log(data);
+            if (data != null) {
+                setModels(data);
+            }
         } else {
             showError(message);
         }
