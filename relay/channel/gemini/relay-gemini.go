@@ -425,6 +425,7 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) (*dto.C
 			if part.FunctionCall != nil {
 				isTools = true
 				if call := getToolCall(&part); call != nil {
+					*call.Index = len(choice.Delta.ToolCalls)
 					choice.Delta.ToolCalls = append(choice.Delta.ToolCalls, *call)
 				}
 			} else {
