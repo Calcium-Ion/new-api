@@ -225,9 +225,12 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 						// 判断是否是url
 						if strings.HasPrefix(imageUrl.Url, "http") {
 							// 是url，获取图片的类型和base64编码的数据
-							mimeType, data, _ := service.GetImageFromUrl(imageUrl.Url)
-							claudeMediaMessage.Source.MediaType = mimeType
-							claudeMediaMessage.Source.Data = data
+							fileData, err := service.GetFileBase64FromUrl(imageUrl.Url)
+							if err != nil {
+								return nil, fmt.Errorf("get file base64 from url failed: %s", err.Error())
+							}
+							claudeMediaMessage.Source.MediaType = fileData.MimeType
+							claudeMediaMessage.Source.Data = fileData.Base64Data
 						} else {
 							_, format, base64String, err := service.DecodeBase64ImageData(imageUrl.Url)
 							if err != nil {

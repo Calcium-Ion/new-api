@@ -9,9 +9,12 @@ import (
 	"strings"
 )
 
-func DoImageRequest(originUrl string) (resp *http.Response, err error) {
+func DoDownloadRequest(originUrl string) (resp *http.Response, err error) {
 	if setting.EnableWorker() {
-		common.SysLog(fmt.Sprintf("downloading image from worker: %s", originUrl))
+		common.SysLog(fmt.Sprintf("downloading file from worker: %s", originUrl))
+		if !strings.HasPrefix(originUrl, "https") {
+			return nil, fmt.Errorf("only support https url")
+		}
 		workerUrl := setting.WorkerUrl
 		if !strings.HasSuffix(workerUrl, "/") {
 			workerUrl += "/"
@@ -20,7 +23,7 @@ func DoImageRequest(originUrl string) (resp *http.Response, err error) {
 		data := []byte(`{"url":"` + originUrl + `","key":"` + setting.WorkerValidKey + `"}`)
 		return http.Post(setting.WorkerUrl, "application/json", bytes.NewBuffer(data))
 	} else {
-		common.SysLog(fmt.Sprintf("downloading image from origin: %s", originUrl))
+		common.SysLog(fmt.Sprintf("downloading from origin: %s", originUrl))
 		return http.Get(originUrl)
 	}
 }

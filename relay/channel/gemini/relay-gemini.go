@@ -192,11 +192,14 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 				// 判断是否是url
 				if strings.HasPrefix(part.ImageUrl.(dto.MessageImageUrl).Url, "http") {
 					// 是url，获取图片的类型和base64编码的数据
-					mimeType, data, _ := service.GetImageFromUrl(part.ImageUrl.(dto.MessageImageUrl).Url)
+					fileData, err := service.GetFileBase64FromUrl(part.ImageUrl.(dto.MessageImageUrl).Url)
+					if err != nil {
+						return nil, fmt.Errorf("get file base64 from url failed: %s", err.Error())
+					}
 					parts = append(parts, GeminiPart{
 						InlineData: &GeminiInlineData{
-							MimeType: mimeType,
-							Data:     data,
+							MimeType: fileData.MimeType,
+							Data:     fileData.Base64Data,
 						},
 					})
 				} else {

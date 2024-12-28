@@ -82,6 +82,7 @@ You can add custom models gpt-4-gizmo-* in channels. These are third-party model
 - `GEMINI_MODEL_MAP`: Specify Gemini model versions (v1/v1beta), format: "model:version", comma-separated
 - `COHERE_SAFETY_SETTING`: Cohere model [safety settings](https://docs.cohere.com/docs/safety-modes#overview), options: `NONE`, `CONTEXTUAL`, `STRICT`, default `NONE`
 - `GEMINI_VISION_MAX_IMAGE_NUM`: Gemini model maximum image number, default `16`, set to `-1` to disable
+- `MAX_FILE_DOWNLOAD_MB`: Maximum file download size in MB, default `20`
 
 ## Deployment
 > [!TIP]

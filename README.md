@@ -88,6 +88,7 @@
 - `GEMINI_MODEL_MAP`：Gemini模型指定版本(v1/v1beta)，使用“模型:版本”指定，","分隔，例如：-e GEMINI_MODEL_MAP="gemini-1.5-pro-latest:v1beta,gemini-1.5-pro-001:v1beta"，为空则使用默认配置(v1beta)
 - `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`，`STRICT`，默认为 `NONE`。
 - `GEMINI_VISION_MAX_IMAGE_NUM`：Gemini模型最大图片数量，默认为 `16`，设置为 `-1` 则不限制。
+- `MAX_FILE_DOWNLOAD_MB`: 最大文件下载大小，单位 MB，默认为 `20`。
 ## 部署
 > [!TIP]
 > 最新版Docker镜像：`calciumion/new-api:latest`  
