@@ -370,7 +370,6 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 				choice.Message.SetToolCalls(tool_calls)
 				is_tool_call = true
 			}
-			// 过滤掉空行
 
 			choice.Message.SetStringContent(strings.Join(texts, "\n"))
 
@@ -425,6 +424,7 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) (*dto.C
 			if part.FunctionCall != nil {
 				isTools = true
 				if call := getToolCall(&part); call != nil {
+					call.SetIndex(len(choice.Delta.ToolCalls))
 					choice.Delta.ToolCalls = append(choice.Delta.ToolCalls, *call)
 				}
 			} else {
