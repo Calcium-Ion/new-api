@@ -6,11 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"one-api/middleware"
 	"one-api/model"
 	"one-api/service"
 	"one-api/setting"
+	"time"
 )
 
 func Playground(c *gin.Context) {
@@ -62,5 +64,6 @@ func Playground(c *gin.Context) {
 		return
 	}
 	middleware.SetupContextForSelectedChannel(c, channel, playgroundRequest.Model)
+	c.Set(constant.ContextKeyRequestStartTime, time.Now())
 	Relay(c)
 }
