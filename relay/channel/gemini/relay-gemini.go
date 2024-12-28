@@ -296,7 +296,8 @@ func getToolCall(item *GeminiPart) *dto.ToolCall {
 		ID:   fmt.Sprintf("call_%s", common.GetUUID()),
 		Type: "function",
 		Function: dto.FunctionCall{
-			Arguments: string(argsBytes),
+			// 不好评价，得去转义一下反斜杠，Gemini 的特性好像是，Google 返回的时候本身就会转义“\”
+			Arguments: strings.ReplaceAll(string(argsBytes), "\\\\", "\\"),
 			Name:      item.FunctionCall.FunctionName,
 		},
 	}
