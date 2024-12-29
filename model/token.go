@@ -258,37 +258,29 @@ func decreaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-func PreConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, quota int) (userQuota int, err error) {
+func PreConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, quota int) error {
 	if quota < 0 {
-		return 0, errors.New("quota 不能为负数！")
+		return errors.New("quota 不能为负数！")
 	}
 	if !relayInfo.IsPlayground {
 		token, err := GetTokenById(relayInfo.TokenId)
 		if err != nil {
-			return 0, err
+			return err
 		}
 		if !token.UnlimitedQuota && token.RemainQuota < quota {
-			return 0, errors.New("令牌额度不足")
+			return errors.New("令牌额度不足")
 		}
-	}
-	userQuota, err = GetUserQuota(relayInfo.UserId)
-	if err != nil {
-		return 0, err
-	}
-	if userQuota < quota {
-		return 0, errors.New(fmt.Sprintf("用户额度不足，剩余额度为 %d", userQuota))
 	}
 	if !relayInfo.IsPlayground {
-		err = DecreaseTokenQuota(relayInfo.TokenId, quota)
+		err := DecreaseTokenQuota(relayInfo.TokenId, quota)
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
-	err = DecreaseUserQuota(relayInfo.UserId, quota)
-	return userQuota - quota, err
+	return nil
 }
 
-func PostConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, userQuota int, quota int, preConsumedQuota int, sendEmail bool) (err error) {
+func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, userQuota int, quota int, preConsumedQuota int, sendEmail bool) (err error) {
 
 	if quota > 0 {
 		err = DecreaseUserQuota(relayInfo.UserId, quota)

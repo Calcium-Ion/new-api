@@ -23,7 +23,7 @@ func GetUserGroups(c *gin.Context) {
 	usableGroups := make(map[string]string)
 	userGroup := ""
 	userId := c.GetInt("id")
-	userGroup, _ = model.CacheGetUserGroup(userId)
+	userGroup, _ = model.GetUserGroup(userId, false)
 	for groupName, _ := range setting.GetGroupRatioCopy() {
 		// UserUsableGroups contains the groups that the user can use
 		userUsableGroups := setting.GetUserUsableGroups(userGroup)

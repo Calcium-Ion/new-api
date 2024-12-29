@@ -153,7 +153,7 @@ func updateSunoTaskAll(ctx context.Context, channelId int, taskIds []string, tas
 		if responseItem.FailReason != "" || task.Status == model.TaskStatusFailure {
 			common.LogInfo(ctx, task.TaskID+" 构建失败，"+task.FailReason)
 			task.Progress = "100%"
-			err = model.CacheUpdateUserQuota(task.UserId)
+			//err = model.CacheUpdateUserQuota(task.UserId) ?
 			if err != nil {
 				common.LogError(ctx, "error update user quota cache: "+err.Error())
 			} else {
