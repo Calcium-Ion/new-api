@@ -90,11 +90,6 @@ func SearchUsers(keyword string, group string) ([]*User, error) {
 	var users []*User
 	var err error
 
-	groupCol := "`group`"
-	if common.UsingPostgreSQL {
-		groupCol = `"group"`
-	}
-
 	// 尝试将关键字转换为整数ID
 	keywordInt, err := strconv.Atoi(keyword)
 	if err == nil {
@@ -511,11 +506,6 @@ func GetUserGroup(id int, fromDB bool) (group string, err error) {
 			return group, nil
 		}
 		// Don't return error - fall through to DB
-	}
-
-	groupCol := "`group`"
-	if common.UsingPostgreSQL {
-		groupCol = `"group"`
 	}
 
 	err = DB.Model(&User{}).Where("id = ?", id).Select(groupCol).Find(&group).Error
