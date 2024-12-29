@@ -5,11 +5,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"golang.org/x/image/webp"
 	"image"
 	"io"
 	"one-api/common"
 	"strings"
+
+	"golang.org/x/image/webp"
 )
 
 func DecodeBase64ImageData(base64String string) (image.Config, string, string, error) {
@@ -29,6 +30,31 @@ func DecodeBase64ImageData(base64String string) (image.Config, string, string, e
 	reader := bytes.NewReader(decodedData)
 	config, format, err := getImageConfig(reader)
 	return config, format, base64String, err
+}
+
+func DecodeBase64FileData(base64String string) (string, string, error) {
+	var mimeType string
+	var idx int
+	idx = strings.Index(base64String, ",")
+	if idx == -1 {
+		_, file_type, base64, err := DecodeBase64ImageData(base64String)
+		return "image/" + file_type, base64, err
+	}
+	mimeType = base64String[:idx]
+	base64String = base64String[idx+1:]
+	idx = strings.Index(mimeType, ";")
+	if idx == -1 {
+		_, file_type, base64, err := DecodeBase64ImageData(base64String)
+		return "image/" + file_type, base64, err
+	}
+	mimeType = mimeType[:idx]
+	idx = strings.Index(mimeType, ":")
+	if idx == -1 {
+		_, file_type, base64, err := DecodeBase64ImageData(base64String)
+		return "image/" + file_type, base64, err
+	}
+	mimeType = mimeType[idx+1:]
+	return mimeType, base64String, nil
 }
 
 // GetImageFromUrl 获取图片的类型和base64编码的数据
