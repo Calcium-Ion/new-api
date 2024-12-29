@@ -6,7 +6,8 @@ import (
 	"one-api/common"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/bytedance/gopkg/util/gopool"
 
 	"gorm.io/gorm"
 )
@@ -89,11 +90,6 @@ func SearchUsers(keyword string, group string) ([]*User, error) {
 	var users []*User
 	var err error
 
-	groupCol := "`group`"
-	if common.UsingPostgreSQL {
-		groupCol = `"group"`
-	}
-
 	// 尝试将关键字转换为整数ID
 	keywordInt, err := strconv.Atoi(keyword)
 	if err == nil {
@@ -107,7 +103,7 @@ func SearchUsers(keyword string, group string) ([]*User, error) {
 			return users, err
 		}
 	}
- 
+
 	err = nil
 
 	query := DB.Unscoped().Omit("password")
@@ -251,14 +247,12 @@ func (user *User) Update(updatePassword bool) error {
 	}
 	newUser := *user
 	DB.First(&user, user.Id)
-	err = DB.Model(user).Updates(newUser).Error
-	if err == nil {
-		if common.RedisEnabled {
-			_ = common.RedisSet(fmt.Sprintf("user_group:%d", user.Id), user.Group, time.Duration(UserId2GroupCacheSeconds)*time.Second)
-			_ = common.RedisSet(fmt.Sprintf("user_quota:%d", user.Id), strconv.Itoa(user.Quota), time.Duration(UserId2QuotaCacheSeconds)*time.Second)
-		}
+	if err = DB.Model(user).Updates(newUser).Error; err != nil {
+		return err
 	}
-	return err
+
+	// 更新缓存
+	return updateUserCache(user)
 }
 
 func (user *User) Edit(updatePassword bool) error {
@@ -269,6 +263,7 @@ func (user *User) Edit(updatePassword bool) error {
 			return err
 		}
 	}
+
 	newUser := *user
 	updates := map[string]interface{}{
 		"username":     newUser.Username,
@@ -279,23 +274,26 @@ func (user *User) Edit(updatePassword bool) error {
 	if updatePassword {
 		updates["password"] = newUser.Password
 	}
+
 	DB.First(&user, user.Id)
-	err = DB.Model(user).Updates(updates).Error
-	if err == nil {
-		if common.RedisEnabled {
-			_ = common.RedisSet(fmt.Sprintf("user_group:%d", user.Id), user.Group, time.Duration(UserId2GroupCacheSeconds)*time.Second)
-			_ = common.RedisSet(fmt.Sprintf("user_quota:%d", user.Id), strconv.Itoa(user.Quota), time.Duration(UserId2QuotaCacheSeconds)*time.Second)
-		}
+	if err = DB.Model(user).Updates(updates).Error; err != nil {
+		return err
 	}
-	return err
+
+	// 更新缓存
+	return updateUserCache(user)
 }
 
 func (user *User) Delete() error {
 	if user.Id == 0 {
 		return errors.New("id 为空！")
 	}
-	err := DB.Delete(user).Error
-	return err
+	if err := DB.Delete(user).Error; err != nil {
+		return err
+	}
+
+	// 清除缓存
+	return invalidateUserCache(user.Id)
 }
 
 func (user *User) HardDelete() error {
@@ -409,15 +407,33 @@ func IsAdmin(userId int) bool {
 	return user.Role >= common.RoleAdminUser
 }
 
-func IsUserEnabled(userId int) (bool, error) {
-	if userId == 0 {
-		return false, errors.New("user id is empty")
+// IsUserEnabled checks user status from Redis first, falls back to DB if needed
+func IsUserEnabled(id int, fromDB bool) (status bool, err error) {
+	defer func() {
+		// Update Redis cache asynchronously on successful DB read
+		if common.RedisEnabled {
+			gopool.Go(func() {
+				if err := updateUserStatusCache(id, status); err != nil {
+					common.SysError("failed to update user status cache: " + err.Error())
+				}
+			})
+		}
+	}()
+	if !fromDB && common.RedisEnabled {
+		// Try Redis first
+		status, err := getUserStatusCache(id)
+		if err == nil {
+			return status == common.UserStatusEnabled, nil
+		}
+		// Don't return error - fall through to DB
 	}
+
 	var user User
-	err := DB.Where("id = ?", userId).Select("status").Find(&user).Error
+	err = DB.Where("id = ?", id).Select("status").Find(&user).Error
 	if err != nil {
 		return false, err
 	}
+
 	return user.Status == common.UserStatusEnabled, nil
 }
 
@@ -433,14 +449,33 @@ func ValidateAccessToken(token string) (user *User) {
 	return nil
 }
 
-func GetUserQuota(id int) (quota int, err error) {
+// GetUserQuota gets quota from Redis first, falls back to DB if needed
+func GetUserQuota(id int, fromDB bool) (quota int, err error) {
+	defer func() {
+		// Update Redis cache asynchronously on successful DB read
+		if common.RedisEnabled && err == nil {
+			gopool.Go(func() {
+				if err := updateUserQuotaCache(id, quota); err != nil {
+					common.SysError("failed to update user quota cache: " + err.Error())
+				}
+			})
+		}
+	}()
+	if !fromDB && common.RedisEnabled {
+		quota, err := getUserQuotaCache(id)
+		if err == nil {
+			return quota, nil
+		}
+		// Don't return error - fall through to DB
+		//common.SysError("failed to get user quota from cache: " + err.Error())
+	}
+
 	err = DB.Model(&User{}).Where("id = ?", id).Select("quota").Find(&quota).Error
 	if err != nil {
-		if common.RedisEnabled {
-			go cacheSetUserQuota(id, quota)
-		}
+		return 0, err
 	}
-	return quota, err
+
+	return quota, nil
 }
 
 func GetUserUsedQuota(id int) (quota int, err error) {
@@ -453,20 +488,44 @@ func GetUserEmail(id int) (email string, err error) {
 	return email, err
 }
 
-func GetUserGroup(id int) (group string, err error) {
-	groupCol := "`group`"
-	if common.UsingPostgreSQL {
-		groupCol = `"group"`
+// GetUserGroup gets group from Redis first, falls back to DB if needed
+func GetUserGroup(id int, fromDB bool) (group string, err error) {
+	defer func() {
+		// Update Redis cache asynchronously on successful DB read
+		if common.RedisEnabled && err == nil {
+			gopool.Go(func() {
+				if err := updateUserGroupCache(id, group); err != nil {
+					common.SysError("failed to update user group cache: " + err.Error())
+				}
+			})
+		}
+	}()
+	if !fromDB && common.RedisEnabled {
+		group, err := getUserGroupCache(id)
+		if err == nil {
+			return group, nil
+		}
+		// Don't return error - fall through to DB
 	}
 
 	err = DB.Model(&User{}).Where("id = ?", id).Select(groupCol).Find(&group).Error
-	return group, err
+	if err != nil {
+		return "", err
+	}
+
+	return group, nil
 }
 
 func IncreaseUserQuota(id int, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
+	gopool.Go(func() {
+		err := cacheIncrUserQuota(id, quota)
+		if err != nil {
+			common.SysError("failed to increase user quota: " + err.Error())
+		}
+	})
 	if common.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeUserQuota, id, quota)
 		return nil
@@ -476,6 +535,9 @@ func IncreaseUserQuota(id int, quota int) (err error) {
 
 func increaseUserQuota(id int, quota int) (err error) {
 	err = DB.Model(&User{}).Where("id = ?", id).Update("quota", gorm.Expr("quota + ?", quota)).Error
+	if err != nil {
+		return err
+	}
 	return err
 }
 
@@ -483,6 +545,12 @@ func DecreaseUserQuota(id int, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
+	gopool.Go(func() {
+		err := cacheDecrUserQuota(id, quota)
+		if err != nil {
+			common.SysError("failed to decrease user quota: " + err.Error())
+		}
+	})
 	if common.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeUserQuota, id, -quota)
 		return nil
@@ -492,7 +560,21 @@ func DecreaseUserQuota(id int, quota int) (err error) {
 
 func decreaseUserQuota(id int, quota int) (err error) {
 	err = DB.Model(&User{}).Where("id = ?", id).Update("quota", gorm.Expr("quota - ?", quota)).Error
+	if err != nil {
+		return err
+	}
 	return err
+}
+
+func DeltaUpdateUserQuota(id int, delta int) (err error) {
+	if delta == 0 {
+		return nil
+	}
+	if delta > 0 {
+		return IncreaseUserQuota(id, delta)
+	} else {
+		return DecreaseUserQuota(id, -delta)
+	}
 }
 
 func GetRootUserEmail() (email string) {
@@ -518,7 +600,13 @@ func updateUserUsedQuotaAndRequestCount(id int, quota int, count int) {
 	).Error
 	if err != nil {
 		common.SysError("failed to update user used quota and request count: " + err.Error())
+		return
 	}
+
+	//// 更新缓存
+	//if err := invalidateUserCache(id); err != nil {
+	//	common.SysError("failed to invalidate user cache: " + err.Error())
+	//}
 }
 
 func updateUserUsedQuota(id int, quota int) {
@@ -539,9 +627,32 @@ func updateUserRequestCount(id int, count int) {
 	}
 }
 
-func GetUsernameById(id int) (username string, err error) {
+// GetUsernameById gets username from Redis first, falls back to DB if needed
+func GetUsernameById(id int, fromDB bool) (username string, err error) {
+	defer func() {
+		// Update Redis cache asynchronously on successful DB read
+		if common.RedisEnabled && err == nil {
+			gopool.Go(func() {
+				if err := updateUserNameCache(id, username); err != nil {
+					common.SysError("failed to update user name cache: " + err.Error())
+				}
+			})
+		}
+	}()
+	if !fromDB && common.RedisEnabled {
+		username, err := getUserNameCache(id)
+		if err == nil {
+			return username, nil
+		}
+		// Don't return error - fall through to DB
+	}
+
 	err = DB.Model(&User{}).Where("id = ?", id).Select("username").Find(&username).Error
-	return username, err
+	if err != nil {
+		return "", err
+	}
+
+	return username, nil
 }
 
 func IsLinuxDOIdAlreadyTaken(linuxDOId string) bool {

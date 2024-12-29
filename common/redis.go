@@ -2,9 +2,11 @@ package common
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
+	"fmt"
 	"os"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var RDB *redis.Client
@@ -103,4 +105,22 @@ func RedisDecrease(key string, value int64) error {
 		_ = RedisDel(key)
 	}
 	return nil
+}
+
+// RedisIncr Add this function to handle atomic increments
+func RedisIncr(key string, delta int) error {
+	ctx := context.Background()
+
+	// 检查键是否存在
+	exists, err := RDB.Exists(ctx, key).Result()
+	if err != nil {
+		return err
+	}
+	if exists == 0 {
+		return fmt.Errorf("key does not exist") // 键不存在，返回错误
+	}
+
+	// 键存在，执行INCRBY操作
+	result := RDB.IncrBy(ctx, key, int64(delta))
+	return result.Err()
 }
