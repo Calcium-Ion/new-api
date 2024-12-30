@@ -16,7 +16,7 @@ import (
 var groupCol string
 var keyCol string
 
-func init() {
+func initCol() {
 	if common.UsingPostgreSQL {
 		groupCol = `"group"`
 		keyCol = `"key"`
@@ -55,6 +55,9 @@ func createRootAccountIfNeed() error {
 }
 
 func chooseDB(envName string) (*gorm.DB, error) {
+	defer func() {
+		initCol()
+	}()
 	dsn := os.Getenv(envName)
 	if dsn != "" {
 		if strings.HasPrefix(dsn, "postgres://") {
