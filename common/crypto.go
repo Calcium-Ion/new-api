@@ -14,7 +14,7 @@ func GenerateHMACWithKey(key []byte, data string) string {
 }
 
 func GenerateHMAC(data string) string {
-	h := hmac.New(sha256.New, []byte(SessionSecret))
+	h := hmac.New(sha256.New, []byte(CryptoSecret))
 	h.Write([]byte(data))
 	return hex.EncodeToString(h.Sum(nil))
 }

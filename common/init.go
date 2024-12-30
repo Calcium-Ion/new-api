@@ -22,7 +22,7 @@ func printHelp() {
 	fmt.Println("Usage: one-api [--port <port>] [--log-dir <log directory>] [--version] [--help]")
 }
 
-func init() {
+func LoadEnv() {
 	flag.Parse()
 
 	if *PrintVersion {
@@ -44,6 +44,11 @@ func init() {
 		} else {
 			SessionSecret = ss
 		}
+	}
+	if os.Getenv("CRYPTO_SECRET") != "" {
+		CryptoSecret = os.Getenv("CRYPTO_SECRET")
+	} else {
+		CryptoSecret = SessionSecret
 	}
 	if os.Getenv("SQLITE_PATH") != "" {
 		SQLitePath = os.Getenv("SQLITE_PATH")

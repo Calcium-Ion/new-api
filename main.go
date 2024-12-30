@@ -33,8 +33,10 @@ var indexPage []byte
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		common.SysError("failed to load .env file: " + err.Error())
+		common.SysLog("Support for .env file is disabled")
 	}
+
+	common.LoadEnv()
 
 	common.SetupLogger()
 	common.SysLog("New API " + common.Version + " started")
