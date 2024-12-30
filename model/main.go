@@ -13,6 +13,20 @@ import (
 	"time"
 )
 
+var groupCol string
+var keyCol string
+
+func init() {
+	if common.UsingPostgreSQL {
+		groupCol = `"group"`
+		keyCol = `"key"`
+
+	} else {
+		groupCol = "`group`"
+		keyCol = "`key`"
+	}
+}
+
 var DB *gorm.DB
 
 var LOG_DB *gorm.DB
