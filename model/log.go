@@ -56,7 +56,7 @@ func formatUserLogs(logs []*Log) {
 func GetLogByKey(key string) (logs []*Log, err error) {
 	if os.Getenv("LOG_SQL_DSN") != "" {
 		var tk Token
-		if err = DB.Model(&Token{}).Where("`key`=?", strings.TrimPrefix(key, "sk-")).First(&tk).Error; err != nil {
+		if err = DB.Model(&Token{}).Where(keyCol+"=?", strings.TrimPrefix(key, "sk-")).First(&tk).Error; err != nil {
 			return nil, err
 		}
 		err = LOG_DB.Model(&Log{}).Where("token_id=?", tk.Id).Find(&logs).Error

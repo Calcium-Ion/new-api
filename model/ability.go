@@ -23,10 +23,6 @@ type Ability struct {
 func GetGroupModels(group string) []string {
 	var models []string
 	// Find distinct models
-	groupCol := "`group`"
-	if common.UsingPostgreSQL {
-		groupCol = `"group"`
-	}
 	DB.Table("abilities").Where(groupCol+" = ? and enabled = ?", group, true).Distinct("model").Pluck("model", &models)
 	return models
 }
@@ -45,10 +41,8 @@ func GetAllEnableAbilities() []Ability {
 }
 
 func getPriority(group string, model string, retry int) (int, error) {
-	groupCol := "`group`"
 	trueVal := "1"
 	if common.UsingPostgreSQL {
-		groupCol = `"group"`
 		trueVal = "true"
 	}
 
@@ -81,10 +75,8 @@ func getPriority(group string, model string, retry int) (int, error) {
 }
 
 func getChannelQuery(group string, model string, retry int) *gorm.DB {
-	groupCol := "`group`"
 	trueVal := "1"
 	if common.UsingPostgreSQL {
-		groupCol = `"group"`
 		trueVal = "true"
 	}
 	maxPrioritySubQuery := DB.Model(&Ability{}).Select("MAX(priority)").Where(groupCol+" = ? and model = ? and enabled = "+trueVal, group, model)
