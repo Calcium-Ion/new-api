@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
 	"gorm.io/gorm"
 	"one-api/common"
 	relaycommon "one-api/relay/common"
@@ -28,6 +29,10 @@ type Token struct {
 	UsedQuota          int            `json:"used_quota" gorm:"default:0"` // used quota
 	Group              string         `json:"group" gorm:"default:''"`
 	DeletedAt          gorm.DeletedAt `gorm:"index"`
+}
+
+func (token *Token) Clean() {
+	token.Key = ""
 }
 
 func (token *Token) GetIpLimitsMap() map[string]any {
@@ -71,7 +76,7 @@ func ValidateUserToken(key string) (token *Token, err error) {
 	if key == "" {
 		return nil, errors.New("未提供令牌")
 	}
-	token, err = CacheGetTokenByKey(key)
+	token, err = GetTokenByKey(key, false)
 	if err == nil {
 		if token.Status == common.TokenStatusExhausted {
 			keyPrefix := key[:3]
@@ -129,21 +134,37 @@ func GetTokenById(id int) (*Token, error) {
 	var err error = nil
 	err = DB.First(&token, "id = ?", id).Error
 	if err != nil {
-		if common.RedisEnabled {
-			go cacheSetToken(&token)
-		}
+		gopool.Go(func() {
+			if err := cacheSetToken(token); err != nil {
+				common.SysError("failed to update user status cache: " + err.Error())
+			}
+		})
 	}
 	return &token, err
 }
 
-func GetTokenByKey(key string) (*Token, error) {
-	keyCol := "`key`"
-	if common.UsingPostgreSQL {
-		keyCol = `"key"`
+func GetTokenByKey(key string, fromDB bool) (token *Token, err error) {
+	defer func() {
+		// Update Redis cache asynchronously on successful DB read
+		if shouldUpdateRedis(fromDB, err) && token != nil {
+			gopool.Go(func() {
+				if err := cacheSetToken(*token); err != nil {
+					common.SysError("failed to update user status cache: " + err.Error())
+				}
+			})
+		}
+	}()
+	if !fromDB && common.RedisEnabled {
+		// Try Redis first
+		token, err := cacheGetTokenByKey(key)
+		if err == nil {
+			return token, nil
+		}
+		// Don't return error - fall through to DB
 	}
-	var token Token
-	err := DB.Where(keyCol+" = ?", key).First(&token).Error
-	return &token, err
+	fromDB = true
+	err = DB.Where(keyCol+" = ?", key).First(&token).Error
+	return token, err
 }
 
 func (token *Token) Insert() error {
@@ -153,20 +174,48 @@ func (token *Token) Insert() error {
 }
 
 // Update Make sure your token's fields is completed, because this will update non-zero values
-func (token *Token) Update() error {
-	var err error
+func (token *Token) Update() (err error) {
+	defer func() {
+		if common.RedisEnabled && err == nil {
+			gopool.Go(func() {
+				err := cacheSetToken(*token)
+				if err != nil {
+					common.SysError("failed to update token cache: " + err.Error())
+				}
+			})
+		}
+	}()
 	err = DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota",
 		"model_limits_enabled", "model_limits", "allow_ips", "group").Updates(token).Error
 	return err
 }
 
-func (token *Token) SelectUpdate() error {
+func (token *Token) SelectUpdate() (err error) {
+	defer func() {
+		if common.RedisEnabled && err == nil {
+			gopool.Go(func() {
+				err := cacheSetToken(*token)
+				if err != nil {
+					common.SysError("failed to update token cache: " + err.Error())
+				}
+			})
+		}
+	}()
 	// This can update zero values
 	return DB.Model(token).Select("accessed_time", "status").Updates(token).Error
 }
 
-func (token *Token) Delete() error {
-	var err error
+func (token *Token) Delete() (err error) {
+	defer func() {
+		if common.RedisEnabled && err == nil {
+			gopool.Go(func() {
+				err := cacheDeleteToken(token.Key)
+				if err != nil {
+					common.SysError("failed to delete token cache: " + err.Error())
+				}
+			})
+		}
+	}()
 	err = DB.Delete(token).Error
 	return err
 }
@@ -214,10 +263,16 @@ func DeleteTokenById(id int, userId int) (err error) {
 	return token.Delete()
 }
 
-func IncreaseTokenQuota(id int, quota int) (err error) {
+func IncreaseTokenQuota(id int, key string, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
+	gopool.Go(func() {
+		err := cacheIncrTokenQuota(key, int64(quota))
+		if err != nil {
+			common.SysError("failed to increase token quota: " + err.Error())
+		}
+	})
 	if common.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeTokenQuota, id, quota)
 		return nil
@@ -236,10 +291,16 @@ func increaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-func DecreaseTokenQuota(id int, quota int) (err error) {
+func DecreaseTokenQuota(id int, key string, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
+	gopool.Go(func() {
+		err := cacheDecrTokenQuota(key, int64(quota))
+		if err != nil {
+			common.SysError("failed to decrease token quota: " + err.Error())
+		}
+	})
 	if common.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeTokenQuota, id, -quota)
 		return nil
@@ -262,20 +323,22 @@ func PreConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, quota int) error {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
-	if !relayInfo.IsPlayground {
-		token, err := GetTokenById(relayInfo.TokenId)
-		if err != nil {
-			return err
-		}
-		if !token.UnlimitedQuota && token.RemainQuota < quota {
-			return errors.New("令牌额度不足")
-		}
+	if relayInfo.IsPlayground {
+		return nil
 	}
-	if !relayInfo.IsPlayground {
-		err := DecreaseTokenQuota(relayInfo.TokenId, quota)
-		if err != nil {
-			return err
-		}
+	//if relayInfo.TokenUnlimited {
+	//	return nil
+	//}
+	token, err := GetTokenById(relayInfo.TokenId)
+	if err != nil {
+		return err
+	}
+	if !relayInfo.TokenUnlimited && token.RemainQuota < quota {
+		return errors.New("令牌额度不足")
+	}
+	err = DecreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, quota)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -293,9 +356,9 @@ func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, userQuota int, quota int
 
 	if !relayInfo.IsPlayground {
 		if quota > 0 {
-			err = DecreaseTokenQuota(relayInfo.TokenId, quota)
+			err = DecreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, quota)
 		} else {
-			err = IncreaseTokenQuota(relayInfo.TokenId, -quota)
+			err = IncreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, -quota)
 		}
 		if err != nil {
 			return err

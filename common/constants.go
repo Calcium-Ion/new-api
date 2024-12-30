@@ -30,6 +30,7 @@ var DefaultCollapseSidebar = false // default value of collapse sidebar
 // Any options with "Secret", "Token" in its key won't be return by GetOptions
 
 var SessionSecret = uuid.New().String()
+var CryptoSecret = uuid.New().String()
 
 var OptionMap map[string]string
 var OptionMapRWMutex sync.RWMutex
