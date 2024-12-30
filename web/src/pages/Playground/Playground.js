@@ -2,11 +2,12 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { UserContext } from '../../context/User/index.js';
 import { API, getUserIdFromLocalStorage, showError } from '../../helpers/index.js';
-import { Card, Chat, Input, Layout, Select, Slider, TextArea, Typography, Button } from '@douyinfe/semi-ui';
+import { Card, Chat, Input, Layout, Select, Slider, TextArea, Typography, Button, Highlight } from '@douyinfe/semi-ui';
 import { SSE } from 'sse';
 import { IconSetting } from '@douyinfe/semi-icons';
 import { StyleContext } from '../../context/Style/index.js';
 import { useTranslation } from 'react-i18next';
+import { renderGroupOption } from '../../helpers/render.js';
 
 const roleInfo = {
   user: {
@@ -97,15 +98,17 @@ const Playground = () => {
     let res = await API.get(`/api/user/self/groups`);
     const { success, message, data } = res.data;
     if (success) {
-      let localGroupOptions = Object.keys(data).map((group) => ({
-        label: data[group],
+      let localGroupOptions = Object.entries(data).map(([group, info]) => ({
+        label: info.desc,
         value: group,
+        ratio: info.ratio
       }));
 
       if (localGroupOptions.length === 0) {
         localGroupOptions = [{
           label: t('用户分组'),
           value: '',
+          ratio: 1
         }];
       } else {
         const localUser = JSON.parse(localStorage.getItem('user'));
@@ -326,12 +329,9 @@ const Playground = () => {
               }}
               value={inputs.group}
               autoComplete='new-password'
-              optionList={groups.map((group) => ({
-                ...group,
-                label: styleState.isMobile && group.label.length > 16
-                  ? group.label.substring(0, 16) + '...'
-                  : group.label,
-              }))}
+              optionList={groups}
+              renderOptionItem={renderGroupOption}
+              style={{ width: '100%' }}
             />
             <div style={{ marginTop: 10 }}>
               <Typography.Text strong>{t('模型')}：</Typography.Text>

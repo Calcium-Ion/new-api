@@ -7,7 +7,7 @@ import {
   showSuccess,
   timestamp2string,
 } from '../../helpers';
-import { renderQuotaWithPrompt } from '../../helpers/render';
+import { renderGroupOption, renderQuotaWithPrompt } from '../../helpers/render';
 import {
   AutoComplete,
   Banner,
@@ -97,9 +97,10 @@ const EditToken = (props) => {
     let res = await API.get(`/api/user/self/groups`);
     const { success, message, data } = res.data;
     if (success) {
-      let localGroupOptions = Object.keys(data).map((group) => ({
-        label: data[group],
+      let localGroupOptions = Object.entries(data).map(([group, info]) => ({
+        label: info.desc,
         value: group,
+        ratio: info.ratio
       }));
       setGroups(localGroupOptions);
     } else {
@@ -449,6 +450,8 @@ const EditToken = (props) => {
               onChange={(value) => {
                 handleInputChange('group', value);
               }}
+              position={'topLeft'}
+              renderOptionItem={renderGroupOption}
               value={inputs.group}
               autoComplete='new-password'
               optionList={groups}

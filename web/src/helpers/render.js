@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { Modal, Tag } from '@douyinfe/semi-ui';
+import { Modal, Tag, Typography } from '@douyinfe/semi-ui';
 import { copy, showSuccess } from './utils.js';
 
 export function renderText(text, limit) {
@@ -54,6 +54,81 @@ export function renderGroup(group) {
     </span>
   );
 }
+
+export function renderRatio(ratio) {
+  let color = 'green';
+  if (ratio > 5) {
+    color = 'red';
+  } else if (ratio > 3) {
+    color = 'orange';
+  } else if (ratio > 1) {
+    color = 'blue';
+  }
+  return <Tag color={color}>{ratio} {i18next.t('倍率')}</Tag>;
+}
+
+export const renderGroupOption = (item) => {
+  const {
+    disabled,
+    selected,
+    label,
+    value,
+    focused,
+    className,
+    style,
+    onMouseEnter,
+    onClick,
+    empty,
+    emptyContent,
+    ...rest
+  } = item;
+  
+  const baseStyle = {
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    padding: '8px 16px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    backgroundColor: focused ? 'var(--semi-color-fill-0)' : 'transparent',
+    opacity: disabled ? 0.5 : 1,
+    ...(selected && {
+      backgroundColor: 'var(--semi-color-primary-light-default)',
+    }),
+    '&:hover': {
+      backgroundColor: !disabled && 'var(--semi-color-fill-1)'
+    }
+  };
+
+  const handleClick = () => {
+    if (!disabled && onClick) {
+      onClick();
+    }
+  };
+
+  const handleMouseEnter = (e) => {
+    if (!disabled && onMouseEnter) {
+      onMouseEnter(e);
+    }
+  };
+  
+  return (
+    <div 
+      style={baseStyle}
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <Typography.Text strong type={disabled ? 'tertiary' : undefined}>
+          {value}
+        </Typography.Text>
+        <Typography.Text type="secondary" size="small">
+          {label}
+        </Typography.Text>
+      </div>
+      {item.ratio && renderRatio(item.ratio)}
+    </div>
+  );
+};
 
 export function renderNumber(num) {
   if (num >= 1000000000) {
@@ -352,7 +427,7 @@ export const modelColorMap = {
   'gpt-3.5-turbo-0613': 'rgb(60,179,113)', // 海洋绿
   'gpt-3.5-turbo-1106': 'rgb(32,178,170)', // 浅海洋绿
   'gpt-3.5-turbo-16k': 'rgb(149,252,206)', // 淡橙色
-  'gpt-3.5-turbo-16k-0613': 'rgb(119,255,214)', // 淡桃���
+  'gpt-3.5-turbo-16k-0613': 'rgb(119,255,214)', // 淡桃
   'gpt-3.5-turbo-instruct': 'rgb(175,238,238)', // 粉蓝色
   'gpt-4': 'rgb(135,206,235)', // 天蓝色
   // 'gpt-4-0314': 'rgb(70,130,180)', // 钢蓝色
@@ -375,7 +450,7 @@ export const modelColorMap = {
   'text-embedding-ada-002': 'rgb(255,182,193)', // 浅粉红
   'text-embedding-v1': 'rgb(255,174,185)', // 浅粉红色（略有区别）
   'text-moderation-latest': 'rgb(255,130,171)', // 强粉色
-  'text-moderation-stable': 'rgb(255,160,122)', // 浅珊瑚色（���Babbage相同，表示同一类功能）
+  'text-moderation-stable': 'rgb(255,160,122)', // 浅珊瑚色（与Babbage相同，表示同一类功能）
   'tts-1': 'rgb(255,140,0)', // 深橙色
   'tts-1-1106': 'rgb(255,165,0)', // 橙色
   'tts-1-hd': 'rgb(255,215,0)', // 金色
