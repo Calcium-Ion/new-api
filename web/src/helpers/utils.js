@@ -49,8 +49,18 @@ export async function copy(text) {
   try {
     await navigator.clipboard.writeText(text);
   } catch (e) {
-    okay = false;
-    console.error(e);
+    try {
+      // 构建input 执行 复制命令
+      var _input = window.document.createElement("input");
+      _input.value = text;
+      window.document.body.appendChild(_input);
+      _input.select();
+      window.document.execCommand("Copy");
+      window.document.body.removeChild(_input);
+    } catch (e) {
+      okay = false;
+      console.error(e);
+    }
   }
   return okay;
 }
