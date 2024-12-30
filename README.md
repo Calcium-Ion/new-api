@@ -89,6 +89,7 @@
 - `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`，`STRICT`，默认为 `NONE`。
 - `GEMINI_VISION_MAX_IMAGE_NUM`：Gemini模型最大图片数量，默认为 `16`，设置为 `-1` 则不限制。
 - `MAX_FILE_DOWNLOAD_MB`: 最大文件下载大小，单位 MB，默认为 `20`。
+- `CRYPTO_SECRET`：加密密钥，用于加密数据库内容。
 ## 部署
 > [!TIP]
 > 最新版Docker镜像：`calciumion/new-api:latest`  
@@ -97,6 +98,10 @@
 > ```
 > docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
 > ```
+
+### 多机部署
+- 必须设置环境变量 `SESSION_SECRET`，否则会导致多机部署时登录状态不一致。
+- 如果公用Redis，必须设置 `CRYPTO_SECRET`，否则会导致多机部署时Redis内容无法解密。
 
 ### 部署要求
 - 本地数据库（默认）：SQLite（Docker 部署默认使用 SQLite，必须挂载 `/data` 目录到宿主机）

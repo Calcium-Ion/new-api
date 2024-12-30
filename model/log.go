@@ -12,16 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var groupCol string
-
-func init() {
-	if common.UsingPostgreSQL {
-		groupCol = `"group"`
-	} else {
-		groupCol = "`group`"
-	}
-}
-
 type Log struct {
 	Id               int    `json:"id" gorm:"index:idx_created_at_id,priority:1"`
 	UserId           int    `json:"user_id" gorm:"index"`

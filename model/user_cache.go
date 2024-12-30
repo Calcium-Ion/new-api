@@ -93,24 +93,24 @@ func updateUserNameCache(userId int, username string) error {
 }
 
 // updateUserCache updates all user cache fields
-func updateUserCache(user *User) error {
+func updateUserCache(userId int, username string, userGroup string, quota int, status int) error {
 	if !common.RedisEnabled {
 		return nil
 	}
 
-	if err := updateUserGroupCache(user.Id, user.Group); err != nil {
+	if err := updateUserGroupCache(userId, userGroup); err != nil {
 		return fmt.Errorf("update group cache: %w", err)
 	}
 
-	if err := updateUserQuotaCache(user.Id, user.Quota); err != nil {
+	if err := updateUserQuotaCache(userId, quota); err != nil {
 		return fmt.Errorf("update quota cache: %w", err)
 	}
 
-	if err := updateUserStatusCache(user.Id, user.Status == common.UserStatusEnabled); err != nil {
+	if err := updateUserStatusCache(userId, status == common.UserStatusEnabled); err != nil {
 		return fmt.Errorf("update status cache: %w", err)
 	}
 
-	if err := updateUserNameCache(user.Id, user.Username); err != nil {
+	if err := updateUserNameCache(userId, username); err != nil {
 		return fmt.Errorf("update username cache: %w", err)
 	}
 
@@ -193,7 +193,7 @@ func getUserCache(userId int) (*userCache, error) {
 }
 
 // Add atomic quota operations
-func cacheIncrUserQuota(userId int, delta int) error {
+func cacheIncrUserQuota(userId int, delta int64) error {
 	if !common.RedisEnabled {
 		return nil
 	}
@@ -201,6 +201,6 @@ func cacheIncrUserQuota(userId int, delta int) error {
 	return common.RedisIncr(key, delta)
 }
 
-func cacheDecrUserQuota(userId int, delta int) error {
+func cacheDecrUserQuota(userId int, delta int64) error {
 	return cacheIncrUserQuota(userId, -delta)
 }

@@ -252,7 +252,7 @@ func (user *User) Update(updatePassword bool) error {
 	}
 
 	// 更新缓存
-	return updateUserCache(user)
+	return updateUserCache(user.Id, user.Username, user.Group, user.Quota, user.Status)
 }
 
 func (user *User) Edit(updatePassword bool) error {
@@ -281,7 +281,7 @@ func (user *User) Edit(updatePassword bool) error {
 	}
 
 	// 更新缓存
-	return updateUserCache(user)
+	return updateUserCache(user.Id, user.Username, user.Group, user.Quota, user.Status)
 }
 
 func (user *User) Delete() error {
@@ -411,7 +411,7 @@ func IsAdmin(userId int) bool {
 func IsUserEnabled(id int, fromDB bool) (status bool, err error) {
 	defer func() {
 		// Update Redis cache asynchronously on successful DB read
-		if common.RedisEnabled {
+		if shouldUpdateRedis(fromDB, err) {
 			gopool.Go(func() {
 				if err := updateUserStatusCache(id, status); err != nil {
 					common.SysError("failed to update user status cache: " + err.Error())
@@ -427,7 +427,7 @@ func IsUserEnabled(id int, fromDB bool) (status bool, err error) {
 		}
 		// Don't return error - fall through to DB
 	}
-
+	fromDB = true
 	var user User
 	err = DB.Where("id = ?", id).Select("status").Find(&user).Error
 	if err != nil {
@@ -453,7 +453,7 @@ func ValidateAccessToken(token string) (user *User) {
 func GetUserQuota(id int, fromDB bool) (quota int, err error) {
 	defer func() {
 		// Update Redis cache asynchronously on successful DB read
-		if common.RedisEnabled && err == nil {
+		if shouldUpdateRedis(fromDB, err) {
 			gopool.Go(func() {
 				if err := updateUserQuotaCache(id, quota); err != nil {
 					common.SysError("failed to update user quota cache: " + err.Error())
@@ -469,7 +469,7 @@ func GetUserQuota(id int, fromDB bool) (quota int, err error) {
 		// Don't return error - fall through to DB
 		//common.SysError("failed to get user quota from cache: " + err.Error())
 	}
-
+	fromDB = true
 	err = DB.Model(&User{}).Where("id = ?", id).Select("quota").Find(&quota).Error
 	if err != nil {
 		return 0, err
@@ -492,7 +492,7 @@ func GetUserEmail(id int) (email string, err error) {
 func GetUserGroup(id int, fromDB bool) (group string, err error) {
 	defer func() {
 		// Update Redis cache asynchronously on successful DB read
-		if common.RedisEnabled && err == nil {
+		if shouldUpdateRedis(fromDB, err) {
 			gopool.Go(func() {
 				if err := updateUserGroupCache(id, group); err != nil {
 					common.SysError("failed to update user group cache: " + err.Error())
@@ -507,7 +507,7 @@ func GetUserGroup(id int, fromDB bool) (group string, err error) {
 		}
 		// Don't return error - fall through to DB
 	}
-
+	fromDB = true
 	err = DB.Model(&User{}).Where("id = ?", id).Select(groupCol).Find(&group).Error
 	if err != nil {
 		return "", err
@@ -521,7 +521,7 @@ func IncreaseUserQuota(id int, quota int) (err error) {
 		return errors.New("quota 不能为负数！")
 	}
 	gopool.Go(func() {
-		err := cacheIncrUserQuota(id, quota)
+		err := cacheIncrUserQuota(id, int64(quota))
 		if err != nil {
 			common.SysError("failed to increase user quota: " + err.Error())
 		}
@@ -546,7 +546,7 @@ func DecreaseUserQuota(id int, quota int) (err error) {
 		return errors.New("quota 不能为负数！")
 	}
 	gopool.Go(func() {
-		err := cacheDecrUserQuota(id, quota)
+		err := cacheDecrUserQuota(id, int64(quota))
 		if err != nil {
 			common.SysError("failed to decrease user quota: " + err.Error())
 		}
@@ -631,7 +631,7 @@ func updateUserRequestCount(id int, count int) {
 func GetUsernameById(id int, fromDB bool) (username string, err error) {
 	defer func() {
 		// Update Redis cache asynchronously on successful DB read
-		if common.RedisEnabled && err == nil {
+		if shouldUpdateRedis(fromDB, err) {
 			gopool.Go(func() {
 				if err := updateUserNameCache(id, username); err != nil {
 					common.SysError("failed to update user name cache: " + err.Error())
@@ -646,7 +646,7 @@ func GetUsernameById(id int, fromDB bool) (username string, err error) {
 		}
 		// Don't return error - fall through to DB
 	}
-
+	fromDB = true
 	err = DB.Model(&User{}).Where("id = ?", id).Select("username").Find(&username).Error
 	if err != nil {
 		return "", err

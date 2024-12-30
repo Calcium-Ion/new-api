@@ -88,3 +88,7 @@ func RecordExist(err error) (bool, error) {
 	}
 	return false, err
 }
+
+func shouldUpdateRedis(fromDB bool, err error) bool {
+	return common.RedisEnabled && fromDB && err == nil
+}
