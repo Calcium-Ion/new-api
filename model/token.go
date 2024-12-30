@@ -133,7 +133,7 @@ func GetTokenById(id int) (*Token, error) {
 	token := Token{Id: id}
 	var err error = nil
 	err = DB.First(&token, "id = ?", id).Error
-	if err != nil {
+	if shouldUpdateRedis(true, err) {
 		gopool.Go(func() {
 			if err := cacheSetToken(token); err != nil {
 				common.SysError("failed to update user status cache: " + err.Error())
@@ -176,7 +176,7 @@ func (token *Token) Insert() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (token *Token) Update() (err error) {
 	defer func() {
-		if common.RedisEnabled && err == nil {
+		if shouldUpdateRedis(true, err) {
 			gopool.Go(func() {
 				err := cacheSetToken(*token)
 				if err != nil {
@@ -192,7 +192,7 @@ func (token *Token) Update() (err error) {
 
 func (token *Token) SelectUpdate() (err error) {
 	defer func() {
-		if common.RedisEnabled && err == nil {
+		if shouldUpdateRedis(true, err) {
 			gopool.Go(func() {
 				err := cacheSetToken(*token)
 				if err != nil {
@@ -207,7 +207,7 @@ func (token *Token) SelectUpdate() (err error) {
 
 func (token *Token) Delete() (err error) {
 	defer func() {
-		if common.RedisEnabled && err == nil {
+		if shouldUpdateRedis(true, err) {
 			gopool.Go(func() {
 				err := cacheDeleteToken(token.Key)
 				if err != nil {
@@ -267,12 +267,14 @@ func IncreaseTokenQuota(id int, key string, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
-	gopool.Go(func() {
-		err := cacheIncrTokenQuota(key, int64(quota))
-		if err != nil {
-			common.SysError("failed to increase token quota: " + err.Error())
-		}
-	})
+	if common.RedisEnabled {
+		gopool.Go(func() {
+			err := cacheIncrTokenQuota(key, int64(quota))
+			if err != nil {
+				common.SysError("failed to increase token quota: " + err.Error())
+			}
+		})
+	}
 	if common.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeTokenQuota, id, quota)
 		return nil
@@ -295,12 +297,14 @@ func DecreaseTokenQuota(id int, key string, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
-	gopool.Go(func() {
-		err := cacheDecrTokenQuota(key, int64(quota))
-		if err != nil {
-			common.SysError("failed to decrease token quota: " + err.Error())
-		}
-	})
+	if common.RedisEnabled {
+		gopool.Go(func() {
+			err := cacheDecrTokenQuota(key, int64(quota))
+			if err != nil {
+				common.SysError("failed to decrease token quota: " + err.Error())
+			}
+		})
+	}
 	if common.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeTokenQuota, id, -quota)
 		return nil

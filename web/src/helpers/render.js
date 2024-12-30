@@ -64,7 +64,7 @@ export function renderRatio(ratio) {
   } else if (ratio > 1) {
     color = 'blue';
   }
-  return <Tag color={color}>{ratio} {i18next.t('倍率')}</Tag>;
+  return <Tag color={color}>{ratio}x {i18next.t('倍率')}</Tag>;
 }
 
 export const renderGroupOption = (item) => {
