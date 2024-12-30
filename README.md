@@ -101,7 +101,7 @@
 
 ### 多机部署
 - 必须设置环境变量 `SESSION_SECRET`，否则会导致多机部署时登录状态不一致。
-- 如果公用Redis，必须设置 `CRYPTO_SECRET`，否则会导致多机部署时Redis内容无法解密。
+- 如果公用Redis，必须设置 `CRYPTO_SECRET`，否则会导致多机部署时Redis内容无法获取。
 
 ### 部署要求
 - 本地数据库（默认）：SQLite（Docker 部署默认使用 SQLite，必须挂载 `/data` 目录到宿主机）

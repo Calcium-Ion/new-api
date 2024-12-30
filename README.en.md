@@ -83,6 +83,7 @@ You can add custom models gpt-4-gizmo-* in channels. These are third-party model
 - `COHERE_SAFETY_SETTING`: Cohere model [safety settings](https://docs.cohere.com/docs/safety-modes#overview), options: `NONE`, `CONTEXTUAL`, `STRICT`, default `NONE`
 - `GEMINI_VISION_MAX_IMAGE_NUM`: Gemini model maximum image number, default `16`, set to `-1` to disable
 - `MAX_FILE_DOWNLOAD_MB`: Maximum file download size in MB, default `20`
+- `CRYPTO_SECRET`: Encryption key for encrypting database content
 
 ## Deployment
 > [!TIP]
@@ -92,6 +93,10 @@ You can add custom models gpt-4-gizmo-* in channels. These are third-party model
 > ```
 > docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
 > ```
+
+### Multi-Server Deployment
+- Must set `SESSION_SECRET` environment variable, otherwise login state will not be consistent across multiple servers.
+- If using a public Redis, must set `CRYPTO_SECRET` environment variable, otherwise Redis content will not be able to be obtained in multi-server deployment.
 
 ### Requirements
 - Local database (default): SQLite (Docker deployment must mount `/data` directory)
