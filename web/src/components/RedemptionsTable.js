@@ -412,7 +412,7 @@ const RedemptionsTable = () => {
           pageSize: pageSize,
           total: tokenCount,
           showSizeChanger: true,
-          pageSizeOpts: [2, 20, 50, 100],
+          pageSizeOpts: [10, 20, 50, 100],
           formatPageText: (page) =>
             t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
               start: page.currentStart,
