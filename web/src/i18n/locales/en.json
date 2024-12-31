@@ -1240,5 +1240,7 @@
   "时间范围": "Time range",
   "批量设置标签": "Batch set tag",
   "请输入要设置的标签名称": "Please enter the tag name to be set",
-  "请输入标签名称": "Please enter the tag name"
+  "请输入标签名称": "Please enter the tag name",
+  "支持搜索用户的 ID、用户名、显示名称和邮箱地址": "Support searching for user ID, username, display name, and email address",
+  "已注销": "Logged out"
 }

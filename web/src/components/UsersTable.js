@@ -327,20 +327,22 @@ const UsersTable = () => {
     }
   };
 
-  const searchUsers = async (searchKeyword, searchGroup) => {
+  const searchUsers = async (startIdx, pageSize, searchKeyword, searchGroup) => {
     if (searchKeyword === '' && searchGroup === '') {
-      // if keyword is blank, load files instead.
-      await loadUsers(activePage, pageSize);
-      return;
+        // if keyword is blank, load files instead.
+        await loadUsers(startIdx, pageSize);
+        return;
     }
     setSearching(true);
-    const res = await API.get(`/api/user/search?keyword=${searchKeyword}&group=${searchGroup}`);
+    const res = await API.get(`/api/user/search?keyword=${searchKeyword}&group=${searchGroup}&p=${startIdx}&page_size=${pageSize}`);
     const { success, message, data } = res.data;
     if (success) {
-      setUsers(data);
-      setActivePage(1);
+        const newPageData = data.items;
+        setActivePage(data.page);
+        setUserCount(data.total);
+        setUserFormat(newPageData);
     } else {
-      showError(message);
+        showError(message);
     }
     setSearching(false);
   };
@@ -349,29 +351,14 @@ const UsersTable = () => {
     setSearchKeyword(value.trim());
   };
 
-  const sortUser = (key) => {
-    if (users.length === 0) return;
-    setLoading(true);
-    let sortedUsers = [...users];
-    sortedUsers.sort((a, b) => {
-      return ('' + a[key]).localeCompare(b[key]);
-    });
-    if (sortedUsers[0].id === users[0].id) {
-      sortedUsers.reverse();
-    }
-    setUsers(sortedUsers);
-    setLoading(false);
-  };
-
   const handlePageChange = (page) => {
     setActivePage(page);
-    loadUsers(page, pageSize).then((r) => {});
+    if (searchKeyword === '' && searchGroup === '') {
+        loadUsers(page, pageSize).then();
+    } else {
+        searchUsers(page, pageSize, searchKeyword, searchGroup).then();
+    }
   };
-
-  const pageData = users.slice(
-    (activePage - 1) * ITEMS_PER_PAGE,
-    activePage * ITEMS_PER_PAGE,
-  );
 
   const closeAddUser = () => {
     setShowAddUser(false);
@@ -438,29 +425,32 @@ const UsersTable = () => {
       ></EditUser>
       <Form
         onSubmit={() => {
-          searchUsers(searchKeyword, searchGroup);
+          searchUsers(activePage, pageSize, searchKeyword, searchGroup);
         }}
         labelPosition='left'
       >
         <div style={{ display: 'flex' }}>
           <Space>
-            <Form.Input
-              label={t('搜索关键字')}
-              icon='search'
-              field='keyword'
-              iconPosition='left'
-              placeholder={t('搜索用户的 ID，用户名，显示名称，以及邮箱地址 ...')}
-              value={searchKeyword}
-              loading={searching}
-              onChange={(value) => handleKeywordChange(value)}
-            />
+            <Tooltip content={t('支持搜索用户的 ID、用户名、显示名称和邮箱地址')}>
+              <Form.Input
+                label={t('搜索关键字')}
+                icon='search'
+                field='keyword'
+                iconPosition='left'
+                placeholder={t('搜索关键字')}
+                value={searchKeyword}
+                loading={searching}
+                onChange={(value) => handleKeywordChange(value)}
+              />
+            </Tooltip>
+            
             <Form.Select
               field='group'
               label={t('分组')}
               optionList={groupOptions}
               onChange={(value) => {
                 setSearchGroup(value);
-                searchUsers(searchKeyword, value);
+                searchUsers(activePage, pageSize, searchKeyword, value);
               }}
             />
             <Button
