@@ -829,7 +829,7 @@ const LogsTable = () => {
               t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
                 start: page.currentStart,
                 end: page.currentEnd,
-                total: users.length
+                total: logs.length
               }),
             currentPage: activePage,
             pageSize: pageSize,
