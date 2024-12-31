@@ -11,9 +11,10 @@ import (
 	"strings"
 	"sync"
 
+	"one-api/constant"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"one-api/constant"
 )
 
 type LoginRequest struct {
@@ -242,10 +243,14 @@ func Register(c *gin.Context) {
 
 func GetAllUsers(c *gin.Context) {
 	p, _ := strconv.Atoi(c.Query("p"))
-	if p < 0 {
-		p = 0
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if p < 1 {
+		p = 1
 	}
-	users, err := model.GetAllUsers(p*common.ItemsPerPage, common.ItemsPerPage)
+	if pageSize < 0 {
+		pageSize = common.ItemsPerPage
+	}
+	users, total, err := model.GetAllUsers((p-1)*pageSize, pageSize)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -256,7 +261,12 @@ func GetAllUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    users,
+		"data": gin.H{
+			"items":     users,
+			"total":     total,
+			"page":      p,
+			"page_size": pageSize,
+		},
 	})
 	return
 }

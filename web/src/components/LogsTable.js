@@ -825,6 +825,12 @@ const LogsTable = () => {
           dataSource={logs}
           rowKey="key"
           pagination={{
+            formatPageText: (page) =>
+              t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
+                start: page.currentStart,
+                end: page.currentEnd,
+                total: users.length
+              }),
             currentPage: activePage,
             pageSize: pageSize,
             total: logCount,

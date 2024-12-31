@@ -231,6 +231,7 @@ const UsersTable = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
+  const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchGroup, setSearchGroup] = useState('');
@@ -241,14 +242,6 @@ const UsersTable = () => {
   const [editingUser, setEditingUser] = useState({
     id: undefined,
   });
-
-  const setCount = (data) => {
-    if (data.length >= activePage * ITEMS_PER_PAGE) {
-      setUserCount(data.length + 1);
-    } else {
-      setUserCount(data.length);
-    }
-  };
 
   const removeRecord = (key) => {
     let newDataSource = [...users];
@@ -263,37 +256,30 @@ const UsersTable = () => {
     }
   };
 
-  const loadUsers = async (startIdx) => {
-    const res = await API.get(`/api/user/?p=${startIdx}`);
+  const setUserFormat = (users) => {
+    for (let i = 0; i < users.length; i++) {
+      users[i].key = users[i].id;
+    }
+    setUsers(users);
+  }
+
+  const loadUsers = async (startIdx, pageSize) => {
+    const res = await API.get(`/api/user/?p=${startIdx}&page_size=${pageSize}`);
     const { success, message, data } = res.data;
     if (success) {
-      if (startIdx === 0) {
-        setUsers(data);
-        setCount(data);
-      } else {
-        let newUsers = users;
-        newUsers.push(...data);
-        setUsers(newUsers);
-        setCount(newUsers);
-      }
+      const newPageData = data.items;
+      setActivePage(data.page);
+      setUserCount(data.total);
+      setUserFormat(newPageData);
     } else {
       showError(message);
     }
     setLoading(false);
   };
 
-  const onPaginationChange = (e, { activePage }) => {
-    (async () => {
-      if (activePage === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
-        // In this case we have to load more data and then append them.
-        await loadUsers(activePage - 1);
-      }
-      setActivePage(activePage);
-    })();
-  };
 
   useEffect(() => {
-    loadUsers(0)
+    loadUsers(0, pageSize)
       .then()
       .catch((reason) => {
         showError(reason);
@@ -344,8 +330,7 @@ const UsersTable = () => {
   const searchUsers = async (searchKeyword, searchGroup) => {
     if (searchKeyword === '' && searchGroup === '') {
       // if keyword is blank, load files instead.
-      await loadUsers(0);
-      setActivePage(1);
+      await loadUsers(activePage, pageSize);
       return;
     }
     setSearching(true);
@@ -380,10 +365,7 @@ const UsersTable = () => {
 
   const handlePageChange = (page) => {
     setActivePage(page);
-    if (page === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
-      // In this case we have to load more data and then append them.
-      loadUsers(page - 1).then((r) => {});
-    }
+    loadUsers(page, pageSize).then((r) => {});
   };
 
   const pageData = users.slice(
@@ -403,8 +385,9 @@ const UsersTable = () => {
   };
 
   const refresh = async () => {
+    setActivePage(1)
     if (searchKeyword === '') {
-      await loadUsers(activePage - 1);
+      await loadUsers(activePage, pageSize);
     } else {
       await searchUsers(searchKeyword, searchGroup);
     }
@@ -427,6 +410,17 @@ const UsersTable = () => {
     } catch (error) {
       showError(error.message);
     }
+  };
+
+  const handlePageSizeChange = async (size) => {
+    localStorage.setItem('page-size', size + '');
+    setPageSize(size);
+    setActivePage(1);
+    loadUsers(activePage, size)
+      .then()
+      .catch((reason) => {
+        showError(reason);
+      });
   };
 
   return (
@@ -492,7 +486,7 @@ const UsersTable = () => {
 
       <Table
         columns={columns}
-        dataSource={pageData}
+        dataSource={users}
         pagination={{
           formatPageText: (page) =>
             t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
@@ -501,9 +495,13 @@ const UsersTable = () => {
               total: users.length
             }),
           currentPage: activePage,
-          pageSize: ITEMS_PER_PAGE,
+          pageSize: pageSize,
           total: userCount,
-          pageSizeOpts: [10, 20, 50, 100],
+          pageSizeOpts: [2, 20, 50, 100],
+          showSizeChanger: true,
+          onPageSizeChange: (size) => {
+            handlePageSizeChange(size);
+          },
           onPageChange: handlePageChange,
         }}
         loading={loading}

@@ -19,7 +19,11 @@ const AddUser = (props) => {
 
   const submit = async () => {
     setLoading(true);
-    if (inputs.username === '' || inputs.password === '') return;
+    if (inputs.username === '' || inputs.password === '') {
+      setLoading(false);
+      showError('用户名和密码不能为空！');
+      return;
+    }
     const res = await API.post(`/api/user/`, inputs);
     const { success, message } = res.data;
     if (success) {
