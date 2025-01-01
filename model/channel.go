@@ -119,6 +119,7 @@ func SearchChannels(keyword string, group string, model string, idSort bool) ([]
 	// 如果是 PostgreSQL，使用双引号
 	if common.UsingPostgreSQL {
 		keyCol = `"key"`
+		modelsCol = `"models"`
 	}
 
 	order := "priority desc"
