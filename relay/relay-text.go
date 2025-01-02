@@ -112,6 +112,7 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	var promptTokens int
 	if value, exists := c.Get("prompt_tokens"); exists {
 		promptTokens = value.(int)
+		relayInfo.PromptTokens = promptTokens
 	} else {
 		promptTokens, err = getPromptTokens(textRequest, relayInfo)
 		// count messages token error 计算promptTokens错误
