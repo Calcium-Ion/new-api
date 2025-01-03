@@ -431,12 +431,23 @@ func GetCompletionRatio(name string) float64 {
 }
 
 func GetAudioRatio(name string) float64 {
-	if strings.HasPrefix(name, "gpt-4o-realtime") {
-		return 20
-	} else if strings.HasPrefix(name, "gpt-4o-audio") {
-		return 40
-	} else if strings.HasPrefix(name, "gpt-4o-mini-realtime") {
-		return 10 / 0.6
+	if strings.Contains(name, "-realtime") {
+		if strings.HasSuffix(name, "gpt-4o-realtime-preview-2024-12-17") {
+			return 8
+		} else if strings.Contains(name, "mini") {
+			return 10 / 0.6
+		} else {
+			return 20
+		}
+	}
+	if strings.Contains(name, "-audio") {
+		if strings.HasSuffix(name, "gpt-4o-audio-preview-2024-12-17") {
+			return 16
+		} else if strings.Contains(name, "mini") {
+			return 10 / 0.15
+		} else {
+			return 40
+		}
 	}
 	return 20
 }
