@@ -32,30 +32,34 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4-0613": 15,
 	"gpt-4-32k":  30,
 	//"gpt-4-32k-0314":               30, //deprecated
-	"gpt-4-32k-0613":                  30,
-	"gpt-4-1106-preview":              5,    // $10 / 1M tokens
-	"gpt-4-0125-preview":              5,    // $10 / 1M tokens
-	"gpt-4-turbo-preview":             5,    // $10 / 1M tokens
-	"gpt-4-vision-preview":            5,    // $10 / 1M tokens
-	"gpt-4-1106-vision-preview":       5,    // $10 / 1M tokens
-	"chatgpt-4o-latest":               2.5,  // $5 / 1M tokens
-	"gpt-4o":                          1.25, // $2.5 / 1M tokens
-	"gpt-4o-audio-preview":            1.25, // $2.5 / 1M tokens
-	"gpt-4o-audio-preview-2024-10-01": 1.25, // $2.5 / 1M tokens
-	"gpt-4o-2024-05-13":               2.5,  // $5 / 1M tokens
-	"gpt-4o-2024-08-06":               1.25, // $2.5 / 1M tokens
-	"gpt-4o-2024-11-20":               1.25, // $2.5 / 1M tokens
-	"gpt-4o-realtime-preview":         2.5,
-	"o1":                              7.5,
-	"o1-2024-12-17":                   7.5,
-	"o1-preview":                      7.5,
-	"o1-preview-2024-09-12":           7.5,
-	"o1-mini":                         1.5,
-	"o1-mini-2024-09-12":              1.5,
-	"gpt-4o-mini":                     0.075,
-	"gpt-4o-mini-2024-07-18":          0.075,
-	"gpt-4-turbo":                     5, // $0.01 / 1K tokens
-	"gpt-4-turbo-2024-04-09":          5, // $0.01 / 1K tokens
+	"gpt-4-32k-0613":                          30,
+	"gpt-4-1106-preview":                      5,    // $10 / 1M tokens
+	"gpt-4-0125-preview":                      5,    // $10 / 1M tokens
+	"gpt-4-turbo-preview":                     5,    // $10 / 1M tokens
+	"gpt-4-vision-preview":                    5,    // $10 / 1M tokens
+	"gpt-4-1106-vision-preview":               5,    // $10 / 1M tokens
+	"chatgpt-4o-latest":                       2.5,  // $5 / 1M tokens
+	"gpt-4o":                                  1.25, // $2.5 / 1M tokens
+	"gpt-4o-audio-preview":                    1.25, // $2.5 / 1M tokens
+	"gpt-4o-audio-preview-2024-10-01":         1.25, // $2.5 / 1M tokens
+	"gpt-4o-2024-05-13":                       2.5,  // $5 / 1M tokens
+	"gpt-4o-2024-08-06":                       1.25, // $2.5 / 1M tokens
+	"gpt-4o-2024-11-20":                       1.25, // $2.5 / 1M tokens
+	"gpt-4o-realtime-preview":                 2.5,
+	"gpt-4o-realtime-preview-2024-10-01":      2.5,
+	"gpt-4o-realtime-preview-2024-12-17":      2.5,
+	"gpt-4o-mini-realtime-preview":            0.3,
+	"gpt-4o-mini-realtime-preview-2024-12-17": 0.3,
+	"o1":                     7.5,
+	"o1-2024-12-17":          7.5,
+	"o1-preview":             7.5,
+	"o1-preview-2024-09-12":  7.5,
+	"o1-mini":                1.5,
+	"o1-mini-2024-09-12":     1.5,
+	"gpt-4o-mini":            0.075,
+	"gpt-4o-mini-2024-07-18": 0.075,
+	"gpt-4-turbo":            5, // $0.01 / 1K tokens
+	"gpt-4-turbo-2024-04-09": 5, // $0.01 / 1K tokens
 	//"gpt-3.5-turbo-0301":           0.75, //deprecated
 	"gpt-3.5-turbo":          0.25,
 	"gpt-3.5-turbo-0613":     0.75,
@@ -431,12 +435,16 @@ func GetAudioRatio(name string) float64 {
 		return 20
 	} else if strings.HasPrefix(name, "gpt-4o-audio") {
 		return 40
+	} else if strings.HasPrefix(name, "gpt-4o-mini-realtime") {
+		return 10 / 0.6
 	}
 	return 20
 }
 
 func GetAudioCompletionRatio(name string) float64 {
 	if strings.HasPrefix(name, "gpt-4o-realtime") {
+		return 2
+	} else if strings.HasPrefix(name, "gpt-4o-mini-realtime") {
 		return 2
 	}
 	return 2
