@@ -315,6 +315,9 @@ export function renderAudioModelPrice(
     if (completionRatio === undefined) {
       completionRatio = 0;
     }
+
+    // try toFixed audioRatio
+    audioRatio = parseFloat(audioRatio).toFixed(6);
     // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
     let inputRatioPrice = modelRatio * 2.0;
     let completionRatioPrice = modelRatio * 2.0 * completionRatio;
