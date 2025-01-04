@@ -326,13 +326,31 @@ export function renderAudioModelPrice(
     return (
       <>
         <article>
-          <p>提示：${inputRatioPrice} * {groupRatio} = ${inputRatioPrice * groupRatio} / 1M tokens</p>
-          <p>补全：${completionRatioPrice} * {groupRatio} = ${completionRatioPrice * groupRatio} / 1M tokens</p>
-          <p>音频提示：${inputRatioPrice} * {groupRatio} * {audioRatio} = ${inputRatioPrice * audioRatio * groupRatio} / 1M tokens</p>
-          <p>音频补全：${inputRatioPrice} * {groupRatio} * {audioRatio} * {audioCompletionRatio} = ${inputRatioPrice * audioRatio * audioCompletionRatio * groupRatio} / 1M tokens</p>
-          <p></p>
+          <p>{i18next.t('提示：${{price}} * {{ratio}} = ${{total}} / 1M tokens', {
+            price: inputRatioPrice,
+            ratio: groupRatio,
+            total: inputRatioPrice * groupRatio
+          })}</p>
+          <p>{i18next.t('补全：${{price}} * {{ratio}} = ${{total}} / 1M tokens', {
+            price: completionRatioPrice,
+            ratio: groupRatio,
+            total: completionRatioPrice * groupRatio
+          })}</p>
+          <p>{i18next.t('音频提示：${{price}} * {{ratio}} * {{audioRatio}} = ${{total}} / 1M tokens', {
+            price: inputRatioPrice,
+            ratio: groupRatio,
+            audioRatio,
+            total: inputRatioPrice * audioRatio * groupRatio
+          })}</p>
+          <p>{i18next.t('音频补全：${{price}} * {{ratio}} * {{audioRatio}} * {{audioCompRatio}} = ${{total}} / 1M tokens', {
+            price: inputRatioPrice,
+            ratio: groupRatio,
+            audioRatio,
+            audioCompRatio: audioCompletionRatio,
+            total: inputRatioPrice * audioRatio * audioCompletionRatio * groupRatio
+          })}</p>
           <p>
-            {i18next.t('提示 {{input}} tokens / 1M tokens * ${{price}} + 补全 {{completion}} tokens / 1M tokens * ${{compPrice}} +', {
+            {i18next.t('文字提示 {{input}} tokens / 1M tokens * ${{price}} + 文字补全 {{completion}} tokens / 1M tokens * ${{compPrice}} +', {
               input: inputTokens,
               price: inputRatioPrice,
               completion: completionTokens,
@@ -340,13 +358,21 @@ export function renderAudioModelPrice(
             })}
           </p>
           <p>
-            音频提示 {audioInputTokens} tokens / 1M tokens * ${inputRatioPrice} * {audioRatio} + 音频补全 {audioCompletionTokens} tokens / 1M tokens * ${inputRatioPrice} * {audioRatio} * {audioCompletionRatio}
+            {i18next.t('音频提示 {{input}} tokens / 1M tokens * ${{price}} * {{audioRatio}} + 音频补全 {{completion}} tokens / 1M tokens * ${{price}} * {{audioRatio}} * {{audioCompRatio}}', {
+              input: audioInputTokens,
+              completion: audioCompletionTokens,
+              price: inputRatioPrice,
+              audioRatio,
+              audioCompRatio: audioCompletionRatio
+            })}
           </p>
           <p>
-            （文字 + 音频） * 分组 {groupRatio} =
-            ${price.toFixed(6)}
+            {i18next.t('（文字 + 音频）* 分组倍率 {{ratio}} = ${{total}}', {
+              ratio: groupRatio,
+              total: price.toFixed(6)
+            })}
           </p>
-          <p>仅供参考，以实际扣费为准</p>
+          <p>{i18next.t('仅供参考，以实际扣费为准')}</p>
         </article>
       </>
     );
@@ -377,13 +403,13 @@ const colors = [
   'red',
   'teal',
   'violet',
-  'yellow',
+  'yellow'
 ];
 
 // 基础10色色板 (N ≤ 10)
 const baseColors = [
   '#1664FF', // 主色
-  '#1AC6FF', 
+  '#1AC6FF',
   '#FF8A00',
   '#3CC780',
   '#7442D4',
