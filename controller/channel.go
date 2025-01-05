@@ -277,7 +277,7 @@ func AddChannel(c *gin.Context) {
 		// Validate the length of the model name
 		models := strings.Split(localChannel.Models, ",")
 		for _, model := range models {
-			if len(model) > 256 {
+			if len(model) > 255 {
 				c.JSON(http.StatusOK, gin.H{
 					"success": false,
 					"message": fmt.Sprintf("模型名称过长: %s", model),
