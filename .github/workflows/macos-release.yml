@@ -9,7 +9,7 @@ on:
       - '!*-alpha*'
 jobs:
   release:
-    runs-on: macos-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v3
