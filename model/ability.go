@@ -12,7 +12,7 @@ import (
 
 type Ability struct {
 	Group     string  `json:"group" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
-	Model     string  `json:"model" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
+	Model     string  `json:"model" gorm:"type:varchar(255);primaryKey;autoIncrement:false"`
 	ChannelId int     `json:"channel_id" gorm:"primaryKey;autoIncrement:false;index"`
 	Enabled   bool    `json:"enabled"`
 	Priority  *int64  `json:"priority" gorm:"bigint;default:0;index"`
@@ -278,7 +278,6 @@ func FixAbility() (int, error) {
 		return 0, err
 	}
 	var channels []Channel
-
 	if len(abilityChannelIds) == 0 {
 		err = DB.Find(&channels).Error
 	} else {

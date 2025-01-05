@@ -274,6 +274,17 @@ func AddChannel(c *gin.Context) {
 		}
 		localChannel := channel
 		localChannel.Key = key
+		// Validate the length of the model name
+		models := strings.Split(localChannel.Models, ",")
+		for _, model := range models {
+			if len(model) > 255 {
+				c.JSON(http.StatusOK, gin.H{
+					"success": false,
+					"message": fmt.Sprintf("模型名称过长: %s", model),
+				})
+				return
+			}
+		}
 		channels = append(channels, localChannel)
 	}
 	err = model.BatchInsertChannels(channels)
