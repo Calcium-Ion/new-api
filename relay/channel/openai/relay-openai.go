@@ -65,8 +65,12 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	scanner.Split(bufio.ScanLines)
 
 	service.SetEventStreamHeaders(c)
-
-	ticker := time.NewTicker(time.Duration(constant.StreamingTimeout) * time.Second)
+	streamingTimeout := time.Duration(constant.StreamingTimeout) * time.Second
+	if strings.HasPrefix(info.UpstreamModelName, "o1") || strings.HasPrefix(info.UpstreamModelName, "o3") {
+		// twice timeout for o1 model
+		streamingTimeout *= 2
+	}
+	ticker := time.NewTicker(streamingTimeout)
 	defer ticker.Stop()
 
 	stopChan := make(chan bool)
