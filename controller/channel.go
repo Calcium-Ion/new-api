@@ -510,6 +510,7 @@ func UpdateChannel(c *gin.Context) {
 func FetchModels(c *gin.Context) {
 	var req struct {
 		BaseURL string `json:"base_url"`
+		Type    int    `json:"type"`
 		Key     string `json:"key"`
 	}
 
@@ -523,7 +524,7 @@ func FetchModels(c *gin.Context) {
 
 	baseURL := req.BaseURL
 	if baseURL == "" {
-		baseURL = "https://api.openai.com"
+		baseURL = common.ChannelBaseURLs[req.Type]
 	}
 
 	client := &http.Client{}
