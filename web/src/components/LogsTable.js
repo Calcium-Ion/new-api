@@ -236,7 +236,12 @@ const LogsTable = () => {
               </>
             );
          } else {
-           let other = JSON.parse(record.other);
+           let other = null;
+           try {
+             other = JSON.parse(record.other);
+           } catch (e) {
+             console.error(`Failed to parse record.other: "${record.other}".`, e);
+           }
            if (other === null) {
              return <></>;
            }
