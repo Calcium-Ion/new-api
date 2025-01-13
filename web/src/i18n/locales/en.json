@@ -853,7 +853,7 @@
   "数量": "quantity",
   "请选择或输入创建令牌的数量": "Please select or enter the number of tokens to create",
   "请选择渠道": "Please select a channel",
-  "允许的IP，一行一个": "Allowed IPs, one per line",
+  "允许的IP，一行一个，不填写则不限制": "Allowed IPs, one per line, not filled in means no restrictions",
   "IP黑名单": "IP blacklist",
   "不允许的IP，一行一个": "IPs not allowed, one per line",
   "请选择该渠道所支持的模型": "Please select the model supported by this channel",

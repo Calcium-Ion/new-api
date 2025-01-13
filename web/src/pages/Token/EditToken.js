@@ -401,7 +401,7 @@ const EditToken = (props) => {
           <TextArea
             label={t('IP白名单')}
             name='allow_ips'
-            placeholder={t('允许的IP，一行一个')}
+            placeholder={t('允许的IP，一行一个，不填写则不限制')}
             onChange={(value) => {
               handleInputChange('allow_ips', value);
             }}
