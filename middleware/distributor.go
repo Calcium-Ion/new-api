@@ -239,5 +239,7 @@ func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, mode
 		c.Set("plugin", channel.Other)
 	case common.ChannelCloudflare:
 		c.Set("api_version", channel.Other)
+	case common.ChannelTypeMokaAI:
+		c.Set("api_version", channel.Other)
 	}
 }
