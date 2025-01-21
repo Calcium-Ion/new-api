@@ -71,7 +71,7 @@ type GeminiChatTool struct {
 }
 
 type GeminiChatGenerationConfig struct {
-	Temperature      float64  `json:"temperature,omitempty"`
+	Temperature      *float64 `json:"temperature,omitempty"`
 	TopP             float64  `json:"topP,omitempty"`
 	TopK             float64  `json:"topK,omitempty"`
 	MaxOutputTokens  uint     `json:"maxOutputTokens,omitempty"`
