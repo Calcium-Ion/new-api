@@ -27,6 +27,7 @@ type Log struct {
 	UseTime          int    `json:"use_time" gorm:"default:0"`
 	IsStream         bool   `json:"is_stream" gorm:"default:false"`
 	ChannelId        int    `json:"channel" gorm:"index"`
+	ChannelName      string `json:"channel_name" gorm:"->"`
 	TokenId          int    `json:"token_id" gorm:"default:0;index"`
 	Group            string `json:"group" gorm:"index"`
 	Other            string `json:"other"`
@@ -130,6 +131,10 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 	} else {
 		tx = LOG_DB.Where("type = ?", logType)
 	}
+
+	tx = tx.Joins("LEFT JOIN channels ON logs.channel_id = channels.id")
+	tx = tx.Select("logs.*, channels.name as channel_name")
+
 	if modelName != "" {
 		tx = tx.Where("model_name like ?", modelName)
 	}
@@ -169,6 +174,10 @@ func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int
 	} else {
 		tx = LOG_DB.Where("user_id = ? and type = ?", userId, logType)
 	}
+
+	tx = tx.Joins("LEFT JOIN channels ON logs.channel_id = channels.id")
+	tx = tx.Select("logs.*, channels.name as channel_name")
+
 	if modelName != "" {
 		tx = tx.Where("model_name like ?", modelName)
 	}
