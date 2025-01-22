@@ -510,6 +510,7 @@ func UpdateChannel(c *gin.Context) {
 func FetchModels(c *gin.Context) {
 	var req struct {
 		BaseURL string `json:"base_url"`
+		Type    int    `json:"type"`
 		Key     string `json:"key"`
 	}
 
@@ -523,7 +524,7 @@ func FetchModels(c *gin.Context) {
 
 	baseURL := req.BaseURL
 	if baseURL == "" {
-		baseURL = "https://api.openai.com"
+		baseURL = common.ChannelBaseURLs[req.Type]
 	}
 
 	client := &http.Client{}
@@ -538,7 +539,11 @@ func FetchModels(c *gin.Context) {
 		return
 	}
 
-	request.Header.Set("Authorization", "Bearer "+req.Key)
+	// remove line breaks and extra spaces.
+	key := strings.TrimSpace(req.Key)
+	// If the key contains a line break, only take the first part.
+	key = strings.Split(key, "\n")[0]
+	request.Header.Set("Authorization", "Bearer "+key)
 
 	response, err := client.Do(request)
 	if err != nil {
