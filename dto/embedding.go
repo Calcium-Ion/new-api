@@ -1,19 +1,6 @@
-package mokaai
+package dto
 
-import "one-api/dto"
-
-
-type Request struct {
-	Messages    []dto.Message `json:"messages,omitempty"`
-	Lora        string        `json:"lora,omitempty"`
-	MaxTokens   int           `json:"max_tokens,omitempty"`
-	Prompt      string        `json:"prompt,omitempty"`
-	Raw         bool          `json:"raw,omitempty"`
-	Stream      bool          `json:"stream,omitempty"`
-	Temperature float64       `json:"temperature,omitempty"`
-}
-
-type Options struct {
+type EmbeddingOptions struct {
 	Seed             int      `json:"seed,omitempty"`
 	Temperature      *float64 `json:"temperature,omitempty"`
 	TopK             int      `json:"top_k,omitempty"`
@@ -27,4 +14,17 @@ type Options struct {
 type EmbeddingRequest struct {
 	Model string   `json:"model"`
 	Input []string `json:"input"`
+}
+
+type EmbeddingResponseItem struct {
+	Object    string    `json:"object"`
+	Index     int       `json:"index"`
+	Embedding []float64 `json:"embedding"`
+}
+
+type EmbeddingResponse struct {
+	Object string                        `json:"object"`
+	Data   []EmbeddingResponseItem `json:"data"`
+	Model  string                        `json:"model"`
+	Usage  `json:"usage"`
 }

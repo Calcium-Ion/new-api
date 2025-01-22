@@ -3,27 +3,17 @@ package mokaai
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
-	// "one-api/relay/adaptor"
-	// "one-api/relay/meta"
-	// "one-api/relay/model"
-	// "one-api/relay/constant"
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
+	"strings"
 )
 
 type Adaptor struct {
-}
-
-// ConvertImageRequest implements adaptor.Adaptor.
-func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.ImageRequest) (any, error) {
-	//TODO implement me
-	return nil, errors.New("not implemented")
 }
 
 func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.AudioRequest) (io.Reader, error) {
@@ -31,26 +21,28 @@ func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInf
 	return nil, errors.New("not implemented")
 }
 
-func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
+func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.ImageRequest) (any, error) {
 	//TODO implement me
 	return nil, errors.New("not implemented")
 }
-func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
+
+func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
+	//TODO implement me
+	return request, nil
 }
 
+func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 
-func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo)  (string, error) {
-	
-	var urlPrefix = info.BaseUrl
-	
-	switch info.RelayMode {
-	case constant.RelayModeChatCompletions:
-		return fmt.Sprintf("%s/chat/completions", urlPrefix), nil
-	case constant.RelayModeEmbeddings:
-		return fmt.Sprintf("%s/embeddings", urlPrefix), nil
-	default:
-		return fmt.Sprintf("%s/run/%s", urlPrefix, info.UpstreamModelName), nil
+}
+
+func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
+	// https://cloud.baidu.com/doc/WENXINWORKSHOP/s/clntwmv7t
+	suffix := "chat/"
+	if strings.HasPrefix(info.UpstreamModelName, "m3e") {
+		suffix = "embeddings"
 	}
+	fullRequestURL := fmt.Sprintf("%s/%s", info.BaseUrl, suffix)
+	return fullRequestURL, nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
@@ -64,14 +56,16 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		return nil, errors.New("request is nil")
 	}
 	switch info.RelayMode {
-	case constant.RelayModeChatCompletions:
-		return nil, errors.New("not implemented")
-	case  constant.RelayModeEmbeddings:
-		// return ConvertCompletionsRequest(*request), nil
-		return ConvertEmbeddingRequest(*request), nil
+	case constant.RelayModeEmbeddings:
+		baiduEmbeddingRequest := embeddingRequestOpenAI2Moka(*request)
+		return baiduEmbeddingRequest, nil
 	default:
 		return nil, errors.New("not implemented")
 	}
+}
+
+func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
+	return nil, nil
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
@@ -79,18 +73,13 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
-	switch info.RelayMode {
 		
-	case constant.RelayModeAudioTranscription:
-	case constant.RelayModeAudioTranslation:
-	case constant.RelayModeChatCompletions:
-		fallthrough
+	switch info.RelayMode {
 	case constant.RelayModeEmbeddings:
-		if info.IsStream {
-			err, usage = StreamHandler(c, resp, info)
-		} else {
-			err, usage = Handler(c, resp, info)
-		}
+		err, usage = mokaEmbeddingHandler(c, resp)
+	default:
+		// err, usage = mokaHandler(c, resp)
+		
 	}
 	return
 }
