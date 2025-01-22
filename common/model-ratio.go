@@ -401,10 +401,13 @@ func GetCompletionRatio(name string) float64 {
 		case "command-r-plus-08-2024":
 			return 4
 		default:
-			return 2
+			return 4
 		}
 	}
 	if strings.HasPrefix(name, "deepseek") {
+		if name == "deepseek-reasoner" {
+			return 4
+		}
 		return 2
 	}
 	if strings.HasPrefix(name, "ERNIE-Speed-") {
