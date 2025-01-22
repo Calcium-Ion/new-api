@@ -129,38 +129,38 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 	if logType == LogTypeUnknown {
 		tx = LOG_DB
 	} else {
-		tx = LOG_DB.Where("type = ?", logType)
+		tx = LOG_DB.Where("logs.type = ?", logType)
 	}
 
 	tx = tx.Joins("LEFT JOIN channels ON logs.channel_id = channels.id")
 	tx = tx.Select("logs.*, channels.name as channel_name")
 
 	if modelName != "" {
-		tx = tx.Where("model_name like ?", modelName)
+		tx = tx.Where("logs.model_name like ?", modelName)
 	}
 	if username != "" {
-		tx = tx.Where("username = ?", username)
+		tx = tx.Where("logs.username = ?", username)
 	}
 	if tokenName != "" {
-		tx = tx.Where("token_name = ?", tokenName)
+		tx = tx.Where("logs.token_name = ?", tokenName)
 	}
 	if startTimestamp != 0 {
-		tx = tx.Where("created_at >= ?", startTimestamp)
+		tx = tx.Where("logs.created_at >= ?", startTimestamp)
 	}
 	if endTimestamp != 0 {
-		tx = tx.Where("created_at <= ?", endTimestamp)
+		tx = tx.Where("logs.created_at <= ?", endTimestamp)
 	}
 	if channel != 0 {
-		tx = tx.Where("channel_id = ?", channel)
+		tx = tx.Where("logs.channel_id = ?", channel)
 	}
 	if group != "" {
-		tx = tx.Where(groupCol+" = ?", group)
+		tx = tx.Where("logs."+groupCol+" = ?", group)
 	}
 	err = tx.Model(&Log{}).Count(&total).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&logs).Error
+	err = tx.Order("logs.id desc").Limit(num).Offset(startIdx).Find(&logs).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -170,34 +170,34 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int64, modelName string, tokenName string, startIdx int, num int, group string) (logs []*Log, total int64, err error) {
 	var tx *gorm.DB
 	if logType == LogTypeUnknown {
-		tx = LOG_DB.Where("user_id = ?", userId)
+		tx = LOG_DB.Where("logs.user_id = ?", userId)
 	} else {
-		tx = LOG_DB.Where("user_id = ? and type = ?", userId, logType)
+		tx = LOG_DB.Where("logs.user_id = ? and logs.type = ?", userId, logType)
 	}
 
 	tx = tx.Joins("LEFT JOIN channels ON logs.channel_id = channels.id")
 	tx = tx.Select("logs.*, channels.name as channel_name")
 
 	if modelName != "" {
-		tx = tx.Where("model_name like ?", modelName)
+		tx = tx.Where("logs.model_name like ?", modelName)
 	}
 	if tokenName != "" {
-		tx = tx.Where("token_name = ?", tokenName)
+		tx = tx.Where("logs.token_name = ?", tokenName)
 	}
 	if startTimestamp != 0 {
-		tx = tx.Where("created_at >= ?", startTimestamp)
+		tx = tx.Where("logs.created_at >= ?", startTimestamp)
 	}
 	if endTimestamp != 0 {
-		tx = tx.Where("created_at <= ?", endTimestamp)
+		tx = tx.Where("logs.created_at <= ?", endTimestamp)
 	}
 	if group != "" {
-		tx = tx.Where(groupCol+" = ?", group)
+		tx = tx.Where("logs."+groupCol+" = ?", group)
 	}
 	err = tx.Model(&Log{}).Count(&total).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&logs).Error
+	err = tx.Order("logs.id desc").Limit(num).Offset(startIdx).Find(&logs).Error
 	formatUserLogs(logs)
 	return logs, total, err
 }
