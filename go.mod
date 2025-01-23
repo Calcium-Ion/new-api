@@ -31,8 +31,8 @@ require (
 	golang.org/x/image v0.23.0
 	gorm.io/driver/mysql v1.4.3
 	gorm.io/driver/postgres v1.5.2
-	gorm.io/driver/sqlite v1.4.3
-	gorm.io/gorm v1.25.0
+	gorm.io/driver/sqlite v1.1.4
+	gorm.io/gorm v1.25.7
 )
 
 require (
