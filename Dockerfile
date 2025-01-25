@@ -25,7 +25,7 @@ FROM alpine
 RUN apk update \
     && apk upgrade \
     && apk add --no-cache ca-certificates tzdata ffmpeg \
-    && update-ca-certificates 2>/dev/null || true
+    && update-ca-certificates
 
 COPY --from=builder2 /build/one-api /
 EXPOSE 3000
