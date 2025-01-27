@@ -43,6 +43,7 @@ const (
 
 func formatUserLogs(logs []*Log) {
 	for i := range logs {
+		logs[i].ChannelName = ""
 		var otherMap map[string]interface{}
 		otherMap = common.StrToMap(logs[i].Other)
 		if otherMap != nil {
