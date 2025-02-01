@@ -56,6 +56,8 @@ var defaultModelRatio = map[string]float64{
 	"o1-preview-2024-09-12":  7.5,
 	"o1-mini":                1.5,
 	"o1-mini-2024-09-12":     1.5,
+	"o3-mini":                0.55,
+	"o3-mini-2025-01-31":     0.55,
 	"gpt-4o-mini":            0.075,
 	"gpt-4o-mini-2024-07-18": 0.075,
 	"gpt-4-turbo":            5, // $0.01 / 1K tokens
@@ -366,7 +368,7 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 2
 	}
-	if strings.HasPrefix(name, "o1") {
+	if strings.HasPrefix(name, "o1") || strings.HasPrefix(name, "o3") {
 		return 4
 	}
 	if name == "chatgpt-4o-latest" {
