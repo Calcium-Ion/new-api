@@ -966,7 +966,6 @@ const EditChannel = (props) => {
             value={inputs.weight}
             autoComplete="new-password"
           />
-          {inputs.type === 8 && (
           <>
             <div style={{ marginTop: 10 }}>
               <Typography.Text strong>
@@ -999,9 +998,8 @@ const EditChannel = (props) => {
               }}
             >
               {t('填入模板')}
-              </Typography.Text>
-            </>
-          )}
+            </Typography.Text>
+          </>
         </Spin>
       </SideSheet>
     </>
