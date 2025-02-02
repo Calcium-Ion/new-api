@@ -982,23 +982,37 @@ const EditChannel = (props) => {
               value={inputs.setting}
               autoComplete="new-password"
             />
-            <Typography.Text
-              style={{
-                color: 'rgba(var(--semi-blue-5), 1)',
-                userSelect: 'none',
-                cursor: 'pointer'
-              }}
-              onClick={() => {
-                handleInputChange(
-                  'setting',
-                  JSON.stringify({
-                    force_format: true
-                  }, null, 2)
-                );
-              }}
-            >
-              {t('填入模板')}
-            </Typography.Text>
+            <Space>
+              <Typography.Text
+                style={{
+                  color: 'rgba(var(--semi-blue-5), 1)',
+                  userSelect: 'none',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  handleInputChange(
+                    'setting',
+                    JSON.stringify({
+                      force_format: true
+                    }, null, 2)
+                  );
+                }}
+              >
+                {t('填入模板')}
+              </Typography.Text>
+              <Typography.Text
+                style={{
+                  color: 'rgba(var(--semi-blue-5), 1)',
+                  userSelect: 'none',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  window.open('https://github.com/Calcium-Ion/new-api/blob/main/docs/channel/other_setting.md');
+                }}
+              >
+                {t('设置说明')}
+              </Typography.Text>
+            </Space>
           </>
         </Spin>
       </SideSheet>
