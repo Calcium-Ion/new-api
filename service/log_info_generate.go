@@ -15,6 +15,9 @@ func GenerateTextOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, m
 	other["frt"] = float64(relayInfo.FirstResponseTime.UnixMilli() - relayInfo.StartTime.UnixMilli())
 	adminInfo := make(map[string]interface{})
 	adminInfo["use_channel"] = ctx.GetStringSlice("use_channel")
+	if relayInfo.ReasoningEffort != "" {
+		adminInfo["reasoning_effort"] = relayInfo.ReasoningEffort
+	}
 	other["admin_info"] = adminInfo
 	return other
 }

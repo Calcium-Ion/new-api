@@ -45,6 +45,7 @@ type RelayInfo struct {
 	RealtimeTools        []dto.RealTimeTool
 	IsFirstRequest       bool
 	AudioUsage           bool
+	ReasoningEffort      string
 	ChannelSetting       map[string]interface{}
 }
 

@@ -608,7 +608,12 @@ const LogsTable = () => {
           key: t('计费过程'),
           value: content,
         });
-
+        if (other?.reasoning_effort) {
+          expandDataLocal.push({
+            key: t('Reasoning Effort'),
+            value: other.reasoning_effort,
+          });
+        }
       }
       expandDatesLocal[logs[i].key] = expandDataLocal;
     }
