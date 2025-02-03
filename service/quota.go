@@ -182,9 +182,9 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	audioOutTokens := usage.CompletionTokenDetails.AudioTokens
 
 	tokenName := ctx.GetString("token_name")
-	completionRatio := common.GetCompletionRatio(relayInfo.UpstreamModelName)
-	audioRatio := common.GetAudioRatio(relayInfo.UpstreamModelName)
-	audioCompletionRatio := common.GetAudioCompletionRatio(relayInfo.UpstreamModelName)
+	completionRatio := common.GetCompletionRatio(relayInfo.RecodeModelName)
+	audioRatio := common.GetAudioRatio(relayInfo.RecodeModelName)
+	audioCompletionRatio := common.GetAudioCompletionRatio(relayInfo.RecodeModelName)
 
 	quotaInfo := QuotaInfo{
 		InputDetails: TokenDetails{
@@ -195,7 +195,7 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 			TextTokens:  textOutTokens,
 			AudioTokens: audioOutTokens,
 		},
-		ModelName:  relayInfo.UpstreamModelName,
+		ModelName:  relayInfo.RecodeModelName,
 		UsePrice:   usePrice,
 		ModelRatio: modelRatio,
 		GroupRatio: groupRatio,
@@ -218,7 +218,7 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 		quota = 0
 		logContent += fmt.Sprintf("（可能是上游超时）")
 		common.LogError(ctx, fmt.Sprintf("total tokens is 0, cannot consume quota, userId %d, channelId %d, "+
-			"tokenId %d, model %s， pre-consumed quota %d", relayInfo.UserId, relayInfo.ChannelId, relayInfo.TokenId, relayInfo.UpstreamModelName, preConsumedQuota))
+			"tokenId %d, model %s， pre-consumed quota %d", relayInfo.UserId, relayInfo.ChannelId, relayInfo.TokenId, relayInfo.RecodeModelName, preConsumedQuota))
 	} else {
 		quotaDelta := quota - preConsumedQuota
 		if quotaDelta != 0 {
@@ -231,7 +231,7 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 		model.UpdateChannelUsedQuota(relayInfo.ChannelId, quota)
 	}
 
-	logModel := relayInfo.UpstreamModelName
+	logModel := relayInfo.RecodeModelName
 	if extraContent != "" {
 		logContent += ", " + extraContent
 	}

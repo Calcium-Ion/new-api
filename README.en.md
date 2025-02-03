@@ -59,6 +59,10 @@
 13. 🎵 Added [Suno API](https://github.com/Suno-API/Suno-API) interface support, [Integration Guide](Suno.md)
 14. 🔄 Support for Rerank models, compatible with Cohere and Jina, can integrate with Dify, [Integration Guide](Rerank.md)
 15. ⚡ **[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime/integration)** - Support for OpenAI's Realtime API, including Azure channels
+16. 🧠 Support for setting reasoning effort through model name suffix:
+    - Add suffix `-high` to set high reasoning effort (e.g., `o3-mini-high`)
+    - Add suffix `-medium` to set medium reasoning effort
+    - Add suffix `-low` to set low reasoning effort
 
 ## Model Support
 This version additionally supports:
@@ -84,6 +88,7 @@ You can add custom models gpt-4-gizmo-* in channels. These are third-party model
 - `GEMINI_VISION_MAX_IMAGE_NUM`: Gemini model maximum image number, default `16`, set to `-1` to disable
 - `MAX_FILE_DOWNLOAD_MB`: Maximum file download size in MB, default `20`
 - `CRYPTO_SECRET`: Encryption key for encrypting database content
+- `AZURE_DEFAULT_API_VERSION`: Azure channel default API version, if not specified in channel settings, use this version, default `2024-12-01-preview`
 
 ## Deployment
 > [!TIP]

@@ -21,6 +21,8 @@ var GetMediaTokenNotStream = common.GetEnvOrDefaultBool("GET_MEDIA_TOKEN_NOT_STR
 
 var UpdateTask = common.GetEnvOrDefaultBool("UPDATE_TASK", true)
 
+var AzureDefaultAPIVersion = common.GetEnvOrDefaultString("AZURE_DEFAULT_API_VERSION", "2024-12-01-preview")
+
 var GeminiModelMap = map[string]string{
 	"gemini-1.0-pro": "v1",
 }
