@@ -117,11 +117,11 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		if strings.HasPrefix(request.Model, "o3") {
 			request.Temperature = nil
 		}
-		if strings.HasSuffix(request.Model, "high") {
+		if strings.HasSuffix(request.Model, "-high") {
 			request.ReasoningEffort = "high"
-		} else if strings.HasSuffix(request.Model, "low") {
+		} else if strings.HasSuffix(request.Model, "-low") {
 			request.ReasoningEffort = "low"
-		} else if strings.HasSuffix(request.Model, "medium") {
+		} else if strings.HasSuffix(request.Model, "-medium") {
 			request.ReasoningEffort = "medium"
 		}
 	}
