@@ -128,7 +128,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 			request.Model = strings.TrimSuffix(request.Model, "-medium")
 		}
 		info.ReasoningEffort = request.ReasoningEffort
-		//info.UpstreamModelName = request.Model
+		info.UpstreamModelName = request.Model
 	}
 	if request.Model == "o1" || request.Model == "o1-2024-12-17" || strings.HasPrefix(request.Model, "o3") {
 		//修改第一个Message的内容，将system改为developer
