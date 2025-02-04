@@ -42,7 +42,6 @@ func NewProxyHttpClient(proxyURL string) (*http.Client, error) {
 		return http.DefaultClient, nil
 	}
 
-	// 解析代理URL
 	parsedURL, err := url.Parse(proxyURL)
 	if err != nil {
 		return nil, err
@@ -57,8 +56,20 @@ func NewProxyHttpClient(proxyURL string) (*http.Client, error) {
 		}, nil
 
 	case "socks5":
+		// 获取认证信息
+		var auth *proxy.Auth
+		if parsedURL.User != nil {
+			auth = &proxy.Auth{
+				User:     parsedURL.User.Username(),
+				Password: "",
+			}
+			if password, ok := parsedURL.User.Password(); ok {
+				auth.Password = password
+			}
+		}
+
 		// 创建 SOCKS5 代理拨号器
-		dialer, err := proxy.SOCKS5("tcp", parsedURL.Host, nil, proxy.Direct)
+		dialer, err := proxy.SOCKS5("tcp", parsedURL.Host, auth, proxy.Direct)
 		if err != nil {
 			return nil, err
 		}
