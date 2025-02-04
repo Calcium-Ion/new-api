@@ -50,16 +50,24 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4o-realtime-preview-2024-12-17":      2.5,
 	"gpt-4o-mini-realtime-preview":            0.3,
 	"gpt-4o-mini-realtime-preview-2024-12-17": 0.3,
-	"o1":                     7.5,
-	"o1-2024-12-17":          7.5,
-	"o1-preview":             7.5,
-	"o1-preview-2024-09-12":  7.5,
-	"o1-mini":                1.5,
-	"o1-mini-2024-09-12":     1.5,
-	"gpt-4o-mini":            0.075,
-	"gpt-4o-mini-2024-07-18": 0.075,
-	"gpt-4-turbo":            5, // $0.01 / 1K tokens
-	"gpt-4-turbo-2024-04-09": 5, // $0.01 / 1K tokens
+	"o1":                        7.5,
+	"o1-2024-12-17":             7.5,
+	"o1-preview":                7.5,
+	"o1-preview-2024-09-12":     7.5,
+	"o1-mini":                   0.55,
+	"o1-mini-2024-09-12":        0.55,
+	"o3-mini":                   0.55,
+	"o3-mini-2025-01-31":        0.55,
+	"o3-mini-high":              0.55,
+	"o3-mini-2025-01-31-high":   0.55,
+	"o3-mini-low":               0.55,
+	"o3-mini-2025-01-31-low":    0.55,
+	"o3-mini-medium":            0.55,
+	"o3-mini-2025-01-31-medium": 0.55,
+	"gpt-4o-mini":               0.075,
+	"gpt-4o-mini-2024-07-18":    0.075,
+	"gpt-4-turbo":               5, // $0.01 / 1K tokens
+	"gpt-4-turbo-2024-04-09":    5, // $0.01 / 1K tokens
 	//"gpt-3.5-turbo-0301":           0.75, //deprecated
 	"gpt-3.5-turbo":          0.25,
 	"gpt-3.5-turbo-0613":     0.75,
@@ -342,6 +350,12 @@ func UpdateCompletionRatioByJSONString(jsonStr string) error {
 }
 
 func GetCompletionRatio(name string) float64 {
+	if strings.Contains(name, "/") {
+		if ratio, ok := CompletionRatio[name]; ok {
+			return ratio
+		}
+	}
+	lowercaseName := strings.ToLower(name)
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
@@ -360,7 +374,7 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 2
 	}
-	if strings.HasPrefix(name, "o1") {
+	if strings.HasPrefix(name, "o1") || strings.HasPrefix(name, "o3") {
 		return 4
 	}
 	if name == "chatgpt-4o-latest" {
@@ -404,8 +418,8 @@ func GetCompletionRatio(name string) float64 {
 			return 4
 		}
 	}
-	if strings.HasPrefix(name, "deepseek") {
-		if name == "deepseek-reasoner" {
+	if strings.HasPrefix(lowercaseName, "deepseek") {
+		if strings.HasSuffix(lowercaseName, "reasoner") || strings.HasSuffix(lowercaseName, "r1") {
 			return 4
 		}
 		return 2

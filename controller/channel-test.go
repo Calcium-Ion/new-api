@@ -170,6 +170,7 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 		Model:  "", // this will be set later
 		Stream: false,
 	}
+
 	// 先判断是否为 Embedding 模型
 	if strings.Contains(strings.ToLower(model), "embedding") ||
 		strings.HasPrefix(model, "m3e") ||  // m3e 系列模型
@@ -180,10 +181,10 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 		return testRequest
 	}
 	// 并非Embedding 模型
-	if strings.HasPrefix(model, "o1") {
+	if strings.HasPrefix(model, "o1") || strings.HasPrefix(model, "o3") {
 		testRequest.MaxCompletionTokens = 10
 	} else if strings.HasPrefix(model, "gemini-2.0-flash-thinking") {
-		testRequest.MaxTokens = 2
+		testRequest.MaxTokens = 10
 	} else {
 		testRequest.MaxTokens = 1
 	}

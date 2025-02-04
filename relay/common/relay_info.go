@@ -30,6 +30,7 @@ type RelayInfo struct {
 	RelayMode            int
 	UpstreamModelName    string
 	OriginModelName      string
+	RecodeModelName      string
 	RequestURLPath       string
 	ApiVersion           string
 	PromptTokens         int
@@ -45,6 +46,7 @@ type RelayInfo struct {
 	RealtimeTools        []dto.RealTimeTool
 	IsFirstRequest       bool
 	AudioUsage           bool
+	ReasoningEffort      string
 	ChannelSetting       map[string]interface{}
 }
 
@@ -87,6 +89,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		FirstResponseTime: startTime.Add(-time.Second),
 		OriginModelName:   c.GetString("original_model"),
 		UpstreamModelName: c.GetString("original_model"),
+		RecodeModelName:   c.GetString("recode_model"),
 		ApiType:           apiType,
 		ApiVersion:        c.GetString("api_version"),
 		ApiKey:            strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),

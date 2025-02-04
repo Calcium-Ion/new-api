@@ -218,6 +218,7 @@ const EditChannel = (props) => {
         try {
           const res = await API.post('/api/channel/fetch_models', {
             base_url: inputs['base_url'],
+            type: inputs['type'],
             key: inputs['key']
           });
           
@@ -885,7 +886,7 @@ const EditChannel = (props) => {
             </Typography.Text>
           </div>
           <TextArea
-            placeholder={t('此项可选，用于复写返回的状态码，比如将claude渠道的400错误复写为500（用于重试），请勿滥用该功能，例如：') + 
+            placeholder={t('此项可选，用于复写返回的状态码，比如将claude渠道的400错误复写为500（用于重试），请勿滥用该功能，例如：') +
               '\n' + JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2)}
             name="status_code_mapping"
             onChange={(value) => {
@@ -965,7 +966,6 @@ const EditChannel = (props) => {
             value={inputs.weight}
             autoComplete="new-password"
           />
-          {inputs.type === 8 && (
           <>
             <div style={{ marginTop: 10 }}>
               <Typography.Text strong>
@@ -982,25 +982,38 @@ const EditChannel = (props) => {
               value={inputs.setting}
               autoComplete="new-password"
             />
-            <Typography.Text
-              style={{
-                color: 'rgba(var(--semi-blue-5), 1)', 
-                userSelect: 'none',
-                cursor: 'pointer'
-              }}
-              onClick={() => {
-                handleInputChange(
-                  'setting',
-                  JSON.stringify({
-                    force_format: true
-                  }, null, 2)
-                );
-              }}
-            >
-              {t('填入模板')}
+            <Space>
+              <Typography.Text
+                style={{
+                  color: 'rgba(var(--semi-blue-5), 1)',
+                  userSelect: 'none',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  handleInputChange(
+                    'setting',
+                    JSON.stringify({
+                      force_format: true
+                    }, null, 2)
+                  );
+                }}
+              >
+                {t('填入模板')}
               </Typography.Text>
-            </>
-          )}  
+              <Typography.Text
+                style={{
+                  color: 'rgba(var(--semi-blue-5), 1)',
+                  userSelect: 'none',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  window.open('https://github.com/Calcium-Ion/new-api/blob/main/docs/channel/other_setting.md');
+                }}
+              >
+                {t('设置说明')}
+              </Typography.Text>
+            </Space>
+          </>
         </Spin>
       </SideSheet>
     </>

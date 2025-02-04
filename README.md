@@ -65,6 +65,10 @@
 14. 🔄 支持Rerank模型，目前兼容Cohere和Jina，可接入Dify，[对接文档](Rerank.md)
 15. ⚡ **[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime/integration)** - 支持OpenAI的Realtime API，支持Azure渠道
 16. 支持使用路由/chat2link 进入聊天界面
+17. 🧠 支持通过模型名称后缀设置 reasoning effort：
+    - 添加后缀 `-high` 设置为 high reasoning effort (例如: `o3-mini-high`)
+    - 添加后缀 `-medium` 设置为 medium reasoning effort (例如: `o3-mini-medium`)
+    - 添加后缀 `-low` 设置为 low reasoning effort (例如: `o3-mini-low`)
 
 ## 模型支持
 此版本额外支持以下模型：
@@ -85,11 +89,12 @@
 - `GET_MEDIA_TOKEN`：是否统计图片token，默认为 `true`，关闭后将不再在本地计算图片token，可能会导致和上游计费不同，此项覆盖 `GET_MEDIA_TOKEN_NOT_STREAM` 选项作用。
 - `GET_MEDIA_TOKEN_NOT_STREAM`：是否在非流（`stream=false`）情况下统计图片token，默认为 `true`。
 - `UPDATE_TASK`：是否更新异步任务（Midjourney、Suno），默认为 `true`，关闭后将不会更新任务进度。
-- `GEMINI_MODEL_MAP`：Gemini模型指定版本(v1/v1beta)，使用“模型:版本”指定，","分隔，例如：-e GEMINI_MODEL_MAP="gemini-1.5-pro-latest:v1beta,gemini-1.5-pro-001:v1beta"，为空则使用默认配置(v1beta)
-- `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`，`STRICT`，默认为 `NONE`。
+- `GEMINI_MODEL_MAP`：Gemini模型指定版本(v1/v1beta)，使用"模型:版本"指定，","分隔，例如：-e GEMINI_MODEL_MAP="gemini-1.5-pro-latest:v1beta,gemini-1.5-pro-001:v1beta"，为空则使用默认配置(v1beta)
+- `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`, `STRICT`，默认为 `NONE`。
 - `GEMINI_VISION_MAX_IMAGE_NUM`：Gemini模型最大图片数量，默认为 `16`，设置为 `-1` 则不限制。
 - `MAX_FILE_DOWNLOAD_MB`: 最大文件下载大小，单位 MB，默认为 `20`。
 - `CRYPTO_SECRET`：加密密钥，用于加密数据库内容。
+- `AZURE_DEFAULT_API_VERSION`：Azure渠道默认API版本，如果渠道设置中未指定API版本，则使用此版本，默认为 `2024-12-01-preview`
 ## 部署
 > [!TIP]
 > 最新版Docker镜像：`calciumion/new-api:latest`  
