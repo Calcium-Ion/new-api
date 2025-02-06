@@ -40,11 +40,10 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		} else {
 			version = "v1beta"
 		}
-	}
-
-	// 如果模型里帶exp或preview字样，且开启了自动切换到beta版本，则使用beta版本
-	if constant.GeminiAutoExp && (strings.Contains(info.UpstreamModelName, "exp") || strings.Contains(info.UpstreamModelName, "preview")) {
-		version = "v1beta"
+		// 如果模型里帶exp或preview字样，且开启了自动切换到beta版本，则使用beta版本
+		if constant.GeminiAutoExp && (strings.Contains(info.UpstreamModelName, "exp") || strings.Contains(info.UpstreamModelName, "preview")) {
+			version = "v1beta"
+		}
 	}
 
 	action := "generateContent"
