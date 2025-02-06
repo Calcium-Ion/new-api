@@ -32,12 +32,16 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	// 从映射中获取模型名称对应的版本，如果找不到就使用 info.ApiVersion 或默认的版本 "v1beta"
 	version, beta := constant.GeminiModelMap[info.UpstreamModelName]
+	// 如果模型里帶exp,自動使用beta
 	if !beta {
 		if info.ApiVersion != "" {
 			version = info.ApiVersion
 		} else {
 			version = "v1beta"
 		}
+	}
+	if constant.GeminiAutoExp && strings.Contains(info.UpstreamModelName, "exp") {
+		version = "v1beta"
 	}
 
 	action := "generateContent"
