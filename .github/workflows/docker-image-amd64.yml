@@ -11,7 +11,7 @@ on:
         required: false
 jobs:
   push_to_registries:
-    name: Push Docker image to multiple registries
+    name: Push Docker image to ghcr
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -23,12 +23,6 @@ jobs:
       - name: Save version info
         run: |
           git describe --tags > VERSION 
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
@@ -42,8 +36,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            calciumion/new-api
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ github.repository }}-jyc
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v3
