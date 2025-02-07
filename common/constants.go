@@ -43,6 +43,7 @@ var PasswordRegisterEnabled = true
 var EmailVerificationEnabled = false
 var GitHubOAuthEnabled = false
 var LinuxDOOAuthEnabled = false
+var LDAPAuthEnabled = false
 var WeChatAuthEnabled = false
 var TelegramOAuthEnabled = false
 var TurnstileCheckEnabled = false
@@ -79,6 +80,17 @@ var GitHubClientSecret = ""
 
 var LinuxDOClientId = ""
 var LinuxDOClientSecret = ""
+
+var (
+	LDAPHost         = ""
+	LDAPPort         = 389
+	LDAPBaseDN       = ""
+	LDAPBindUsername = ""
+	LDAPBindPassword = ""
+	LDAPUserFilter   = ""
+	LDAPEmailAttr    = ""
+	LDAPNameAttr     = ""
+)
 
 var WeChatServerAddress = ""
 var WeChatServerToken = ""

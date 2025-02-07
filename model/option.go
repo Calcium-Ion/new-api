@@ -106,10 +106,20 @@ func InitOptionMap() {
 	common.OptionMap["CheckSensitiveEnabled"] = strconv.FormatBool(setting.CheckSensitiveEnabled)
 	common.OptionMap["DemoSiteEnabled"] = strconv.FormatBool(setting.DemoSiteEnabled)
 	common.OptionMap["CheckSensitiveOnPromptEnabled"] = strconv.FormatBool(setting.CheckSensitiveOnPromptEnabled)
-	//common.OptionMap["CheckSensitiveOnCompletionEnabled"] = strconv.FormatBool(constant.CheckSensitiveOnCompletionEnabled)
 	common.OptionMap["StopOnSensitiveEnabled"] = strconv.FormatBool(setting.StopOnSensitiveEnabled)
 	common.OptionMap["SensitiveWords"] = setting.SensitiveWordsToString()
 	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(setting.StreamCacheQueueLength)
+
+	// LDAP 相关配置
+	common.OptionMap["LDAPAuthEnabled"] = strconv.FormatBool(common.LDAPAuthEnabled)
+	common.OptionMap["LDAPHost"] = common.LDAPHost
+	common.OptionMap["LDAPPort"] = strconv.Itoa(common.LDAPPort)
+	common.OptionMap["LDAPBaseDN"] = common.LDAPBaseDN
+	common.OptionMap["LDAPBindUsername"] = common.LDAPBindUsername
+	common.OptionMap["LDAPBindPassword"] = common.LDAPBindPassword
+	common.OptionMap["LDAPUserFilter"] = common.LDAPUserFilter
+	common.OptionMap["LDAPEmailAttr"] = common.LDAPEmailAttr
+	common.OptionMap["LDAPNameAttr"] = common.LDAPNameAttr
 
 	common.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
@@ -177,6 +187,8 @@ func updateOptionMap(key string, value string) (err error) {
 			common.EmailVerificationEnabled = boolValue
 		case "GitHubOAuthEnabled":
 			common.GitHubOAuthEnabled = boolValue
+		case "LDAPAuthEnabled":
+			common.LDAPAuthEnabled = boolValue
 		case "LinuxDOOAuthEnabled":
 			common.LinuxDOOAuthEnabled = boolValue
 		case "WeChatAuthEnabled":
@@ -225,8 +237,6 @@ func updateOptionMap(key string, value string) (err error) {
 			setting.DemoSiteEnabled = boolValue
 		case "CheckSensitiveOnPromptEnabled":
 			setting.CheckSensitiveOnPromptEnabled = boolValue
-		//case "CheckSensitiveOnCompletionEnabled":
-		//	constant.CheckSensitiveOnCompletionEnabled = boolValue
 		case "StopOnSensitiveEnabled":
 			setting.StopOnSensitiveEnabled = boolValue
 		case "SMTPSSLEnabled":
@@ -337,6 +347,22 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.SensitiveWordsFromString(value)
 	case "StreamCacheQueueLength":
 		setting.StreamCacheQueueLength, _ = strconv.Atoi(value)
+	case "LDAPHost":
+		common.LDAPHost = value
+	case "LDAPPort":
+		common.LDAPPort, _ = strconv.Atoi(value)
+	case "LDAPBaseDN":
+		common.LDAPBaseDN = value
+	case "LDAPBindUsername":
+		common.LDAPBindUsername = value
+	case "LDAPBindPassword":
+		common.LDAPBindPassword = value
+	case "LDAPUserFilter":
+		common.LDAPUserFilter = value
+	case "LDAPEmailAttr":
+		common.LDAPEmailAttr = value
+	case "LDAPNameAttr":
+		common.LDAPNameAttr = value
 	}
 	return err
 }

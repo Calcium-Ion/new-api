@@ -40,6 +40,7 @@ func GetStatus(c *gin.Context) {
 			"github_client_id":         common.GitHubClientId,
 			"linuxdo_oauth":            common.LinuxDOOAuthEnabled,
 			"linuxdo_client_id":        common.LinuxDOClientId,
+			"ldap_auth":                common.LDAPAuthEnabled,
 			"telegram_oauth":           common.TelegramOAuthEnabled,
 			"telegram_bot_name":        common.TelegramBotName,
 			"system_name":              common.SystemName,

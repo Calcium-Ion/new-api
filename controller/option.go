@@ -51,6 +51,14 @@ func UpdateOption(c *gin.Context) {
 			})
 			return
 		}
+	case "LDAPAuthEnabled":
+		if option.Value == "true" && (common.LDAPHost == "" || common.LDAPBaseDN == "" || common.LDAPBindUsername == "") {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无法启用 LDAP 认证，请先填入 LDAP 服务器相关配置信息！",
+			})
+			return
+		}
 	case "LinuxDOOAuthEnabled":
 		if option.Value == "true" && common.LinuxDOClientId == "" {
 			c.JSON(http.StatusOK, gin.H{
