@@ -17,7 +17,8 @@ type FormatJsonSchema struct {
 type GeneralOpenAIRequest struct {
 	Model               string          `json:"model,omitempty"`
 	Messages            []Message       `json:"messages,omitempty"`
-	Prompt              any             `json:"prompt,omitempty"`
+	Prompt              any             `json:"suffix,omitempty"`
+	Suffix              any             `json:"prompt,omitempty"`
 	Stream              bool            `json:"stream,omitempty"`
 	StreamOptions       *StreamOptions  `json:"stream_options,omitempty"`
 	MaxTokens           uint            `json:"max_tokens,omitempty"`
