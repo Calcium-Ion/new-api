@@ -68,6 +68,12 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		} else {
 			err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
 		}
+	case constant.RelayModeCompletions:
+		if info.IsStream {
+			err, usage = openai.OaiStreamHandler(c, resp, info)
+		} else {
+			err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+		}
 	case constant.RelayModeEmbeddings:
 		err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
 	}
