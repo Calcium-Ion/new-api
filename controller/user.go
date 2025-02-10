@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"one-api/constant"
+	"one-api/service"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -23,9 +24,9 @@ type LoginRequest struct {
 }
 
 func Login(c *gin.Context) {
-	if !common.PasswordLoginEnabled {
+	if !common.PasswordLoginEnabled && !common.LDAPAuthEnabled {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "管理员关闭了密码登录",
+			"message": "管理员关闭了密码登录和LDAP登录",
 			"success": false,
 		})
 		return
@@ -48,19 +49,42 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	user := model.User{
-		Username: username,
-		Password: password,
+
+	// 先尝试 LDAP 登录
+	if common.LDAPAuthEnabled {
+		ldapService, err := service.NewLDAPService()
+		if err == nil {
+			defer ldapService.Close()
+			user, err := ldapService.Authenticate(username, password)
+			if err == nil {
+				setupLogin(user, c)
+				return
+			}
+		}
 	}
-	err = user.ValidateAndFill()
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"message": err.Error(),
-			"success": false,
-		})
+
+	// 如果 LDAP 登录失败或未启用，尝试本地密码登录
+	if common.PasswordLoginEnabled {
+		user := model.User{
+			Username: username,
+			Password: password,
+		}
+		err = user.ValidateAndFill()
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"message": err.Error(),
+				"success": false,
+			})
+			return
+		}
+		setupLogin(&user, c)
 		return
 	}
-	setupLogin(&user, c)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "登录失败",
+		"success": false,
+	})
 }
 
 // setup session & cookies and then return user info

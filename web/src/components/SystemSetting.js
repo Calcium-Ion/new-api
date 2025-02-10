@@ -56,6 +56,16 @@ const SystemSetting = () => {
     LinuxDOOAuthEnabled: '',
     LinuxDOClientId: '',
     LinuxDOClientSecret: '',
+    // LDAP Auth
+    LDAPAuthEnabled: '',
+    LDAPHost: '',
+    LDAPPort: '',
+    LDAPBaseDN: '',
+    LDAPBindUsername: '',
+    LDAPBindPassword: '',
+    LDAPUserFilter: '',
+    LDAPEmailAttr: 'mail',
+    LDAPNameAttr: 'displayName',
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
@@ -97,7 +107,7 @@ const SystemSetting = () => {
   useEffect(() => {
     getOptions().then();
   }, []);
-  useEffect(() => {}, [inputs.EmailDomainWhitelist]);
+  useEffect(() => { }, [inputs.EmailDomainWhitelist]);
 
   const updateOption = async (key, value) => {
     setLoading(true);
@@ -107,6 +117,7 @@ const SystemSetting = () => {
       case 'EmailVerificationEnabled':
       case 'GitHubOAuthEnabled':
       case 'LinuxDOOAuthEnabled':
+      case 'LDAPAuthEnabled':
       case 'WeChatAuthEnabled':
       case 'TelegramOAuthEnabled':
       case 'TurnstileCheckEnabled':
@@ -169,7 +180,15 @@ const SystemSetting = () => {
       name === 'TelegramBotToken' ||
       name === 'TelegramBotName' ||
       name === 'LinuxDOClientId' ||
-      name === 'LinuxDOClientSecret'
+      name === 'LinuxDOClientSecret' ||
+      name === 'LDAPHost' ||
+      name === 'LDAPPort' ||
+      name === 'LDAPBaseDN' ||
+      name === 'LDAPBindUsername' ||
+      name === 'LDAPBindPassword' ||
+      name === 'LDAPUserFilter' ||
+      name === 'LDAPEmailAttr' ||
+      name === 'LDAPNameAttr'
     ) {
       setInputs((inputs) => ({ ...inputs, [name]: value }));
     } else {
@@ -240,7 +259,7 @@ const SystemSetting = () => {
   const submitEmailDomainWhitelist = async () => {
     if (
       originInputs['EmailDomainWhitelist'] !==
-        inputs.EmailDomainWhitelist.join(',') &&
+      inputs.EmailDomainWhitelist.join(',') &&
       inputs.SMTPToken !== ''
     ) {
       await updateOption(
@@ -335,6 +354,33 @@ const SystemSetting = () => {
       inputs.LinuxDOClientSecret !== ''
     ) {
       await updateOption('LinuxDOClientSecret', inputs.LinuxDOClientSecret);
+    }
+  };
+
+  const submitLDAPSettings = async () => {
+    if (originInputs['LDAPHost'] !== inputs.LDAPHost) {
+      await updateOption('LDAPHost', inputs.LDAPHost);
+    }
+    if (originInputs['LDAPPort'] !== inputs.LDAPPort && inputs.LDAPPort !== '') {
+      await updateOption('LDAPPort', inputs.LDAPPort);
+    }
+    if (originInputs['LDAPBaseDN'] !== inputs.LDAPBaseDN) {
+      await updateOption('LDAPBaseDN', inputs.LDAPBaseDN);
+    }
+    if (originInputs['LDAPBindUsername'] !== inputs.LDAPBindUsername) {
+      await updateOption('LDAPBindUsername', inputs.LDAPBindUsername);
+    }
+    if (originInputs['LDAPBindPassword'] !== inputs.LDAPBindPassword && inputs.LDAPBindPassword !== '') {
+      await updateOption('LDAPBindPassword', inputs.LDAPBindPassword);
+    }
+    if (originInputs['LDAPUserFilter'] !== inputs.LDAPUserFilter) {
+      await updateOption('LDAPUserFilter', inputs.LDAPUserFilter);
+    }
+    if (originInputs['LDAPEmailAttr'] !== inputs.LDAPEmailAttr) {
+      await updateOption('LDAPEmailAttr', inputs.LDAPEmailAttr);
+    }
+    if (originInputs['LDAPNameAttr'] !== inputs.LDAPNameAttr) {
+      await updateOption('LDAPNameAttr', inputs.LDAPNameAttr);
     }
   };
 
@@ -511,6 +557,12 @@ const SystemSetting = () => {
               checked={inputs.LinuxDOOAuthEnabled === 'true'}
               label='允许通过 LinuxDO 账户登录 & 注册'
               name='LinuxDOOAuthEnabled'
+              onChange={handleInputChange}
+            />
+            <Form.Checkbox
+              checked={inputs.LDAPAuthEnabled === 'true'}
+              label='允许通过 LDAP 账户登录 & 注册'
+              name='LDAPAuthEnabled'
               onChange={handleInputChange}
             />
             <Form.Checkbox
@@ -852,6 +904,79 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitLinuxDOOAuth}>
             保存 LinuxDO OAuth 设置
+          </Form.Button>
+          <Divider />
+          <Header as='h3' inverted={isDark}>
+            配置 LDAP 认证
+            <Header.Subheader>
+              用以支持通过 LDAP 进行用户认证，请确保 LDAP 服务器配置正确
+            </Header.Subheader>
+          </Header>
+          <Form.Group widths={3}>
+            <Form.Input
+              label='LDAP 服务器地址'
+              name='LDAPHost'
+              onChange={handleInputChange}
+              value={inputs.LDAPHost}
+              placeholder='例如：ldap.example.com'
+            />
+            <Form.Input
+              label='LDAP 端口'
+              name='LDAPPort'
+              onChange={handleInputChange}
+              value={inputs.LDAPPort}
+              placeholder='默认：389'
+            />
+            <Form.Input
+              label='LDAP Base DN'
+              name='LDAPBaseDN'
+              onChange={handleInputChange}
+              value={inputs.LDAPBaseDN}
+              placeholder='例如：dc=example,dc=com'
+            />
+          </Form.Group>
+          <Form.Group widths={3}>
+            <Form.Input
+              label='LDAP Bind DN'
+              name='LDAPBindUsername'
+              onChange={handleInputChange}
+              value={inputs.LDAPBindUsername}
+              placeholder='例如：uid=admin,ou=people,dc=example,dc=com'
+            />
+            <Form.Input
+              label='LDAP Bind Password'
+              name='LDAPBindPassword'
+              type='password'
+              onChange={handleInputChange}
+              value={inputs.LDAPBindPassword}
+              placeholder='敏感信息不会发送到前端显示'
+            />
+            <Form.Input
+              label='LDAP User DN Search Filter'
+              name='LDAPUserFilter'
+              onChange={handleInputChange}
+              value={inputs.LDAPUserFilter}
+              placeholder='例如：(&(uid=%s)(memberOf=cn=newapi,ou=groups,dc=example,dc=com))'
+            />
+          </Form.Group>
+          <Form.Group widths={3}>
+            <Form.Input
+              label='LDAP Email Attribute'
+              name='LDAPEmailAttr'
+              onChange={handleInputChange}
+              value={inputs.LDAPEmailAttr}
+              placeholder='例如：mail'
+            />
+            <Form.Input
+              label='LDAP Name Attribute'
+              name='LDAPNameAttr'
+              onChange={handleInputChange}
+              value={inputs.LDAPNameAttr}
+              placeholder='例如：displayName'
+            />
+          </Form.Group>
+          <Form.Button onClick={submitLDAPSettings}>
+            保存 LDAP 设置
           </Form.Button>
         </Form>
       </Grid.Column>
