@@ -40,7 +40,7 @@ var ModelList = []string{
 	"Pro/meta-llama/Meta-Llama-3-8B-Instruct",
 	"Pro/mistralai/Mistral-7B-Instruct-v0.2",
 	"black-forest-labs/FLUX.1-schnell",
-	"iic/SenseVoiceSmall",
+	"FunAudioLLM/SenseVoiceSmall",
 	"netease-youdao/bce-embedding-base_v1",
 	"BAAI/bge-m3",
 	"internlm/internlm2_5-20b-chat",

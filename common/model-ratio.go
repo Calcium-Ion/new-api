@@ -191,8 +191,9 @@ var defaultModelRatio = map[string]float64{
 	"command-r-plus":         1.5,
 	"command-r-08-2024":      0.075,
 	"command-r-plus-08-2024": 1.25,
-	"deepseek-chat":          0.07,
-	"deepseek-coder":         0.07,
+	"deepseek-chat":          0.27 / 2,
+	"deepseek-coder":         0.27 / 2,
+	"deepseek-reasoner":      0.55 / 2, // 0.55 / 1k tokens
 	// Perplexity online 模型对搜索额外收费，有需要应自行调整，此处不计入搜索费用
 	"llama-3-sonar-small-32k-chat":   0.2 / 1000 * USD,
 	"llama-3-sonar-small-32k-online": 0.2 / 1000 * USD,
@@ -418,11 +419,9 @@ func GetCompletionRatio(name string) float64 {
 			return 4
 		}
 	}
-	if strings.HasPrefix(lowercaseName, "deepseek") {
-		if strings.HasSuffix(lowercaseName, "reasoner") || strings.HasSuffix(lowercaseName, "r1") {
-			return 4
-		}
-		return 2
+	// hint 只给官方上4倍率，由于开源模型供应商自行定价，不对其进行补全倍率进行强制对齐
+	if lowercaseName == "deepseek-chat" || lowercaseName == "deepseek-reasoner" {
+		return 4
 	}
 	if strings.HasPrefix(name, "ERNIE-Speed-") {
 		return 2
