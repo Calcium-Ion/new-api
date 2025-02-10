@@ -846,9 +846,10 @@ func EmailBind(c *gin.Context) {
 		})
 		return
 	}
-	id := c.GetInt("id")
+	session := sessions.Default(c)
+	id := session.Get("id")
 	user := model.User{
-		Id: id,
+		Id: id.(int),
 	}
 	err := user.FillUserById()
 	if err != nil {

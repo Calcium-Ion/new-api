@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
@@ -142,9 +143,10 @@ func WeChatBind(c *gin.Context) {
 		})
 		return
 	}
-	id := c.GetInt("id")
+	session := sessions.Default(c)
+	id := session.Get("id")
 	user := model.User{
-		Id: id,
+		Id: id.(int),
 	}
 	err = user.FillUserById()
 	if err != nil {
