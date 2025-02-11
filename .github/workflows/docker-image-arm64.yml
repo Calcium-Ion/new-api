@@ -51,10 +51,6 @@ jobs:
           images: |
             calciumion/new-api
             ghcr.io/${{ github.repository }}
-
-      - name: Update Go dependencies
-        run: go get -u ./...
-
       - name: Build and push Docker images
         uses: docker/build-push-action@v3
         with:
