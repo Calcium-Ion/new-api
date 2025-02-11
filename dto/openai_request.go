@@ -86,11 +86,13 @@ func (r GeneralOpenAIRequest) ParseInput() []string {
 }
 
 type Message struct {
-	Role       string          `json:"role"`
-	Content    json.RawMessage `json:"content"`
-	Name       *string         `json:"name,omitempty"`
-	ToolCalls  json.RawMessage `json:"tool_calls,omitempty"`
-	ToolCallId string          `json:"tool_call_id,omitempty"`
+	Role             string          `json:"role"`
+	Content          json.RawMessage `json:"content"`
+	Name             *string         `json:"name,omitempty"`
+	Prefix           *bool           `json:"prefix,omitempty"`
+	ReasoningContent string          `json:"reasoning_content,omitempty"`
+	ToolCalls        json.RawMessage `json:"tool_calls,omitempty"`
+	ToolCallId       string          `json:"tool_call_id,omitempty"`
 }
 
 type MediaContent struct {
@@ -115,6 +117,17 @@ const (
 	ContentTypeImageURL   = "image_url"
 	ContentTypeInputAudio = "input_audio"
 )
+
+func (m *Message) GetPrefix() bool {
+	if m.Prefix == nil {
+		return false
+	}
+	return *m.Prefix
+}
+
+func (m *Message) SetPrefix(prefix bool) {
+	m.Prefix = &prefix
+}
 
 func (m *Message) ParseToolCalls() []ToolCall {
 	if m.ToolCalls == nil {

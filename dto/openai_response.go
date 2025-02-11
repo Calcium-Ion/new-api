@@ -81,7 +81,7 @@ func (c *ChatCompletionsStreamResponseChoiceDelta) GetContentString() string {
 type ToolCall struct {
 	// Index is not nil only in chat completion chunk object
 	Index    *int         `json:"index,omitempty"`
-	ID       string       `json:"id"`
+	ID       string       `json:"id,omitempty"`
 	Type     any          `json:"type"`
 	Function FunctionCall `json:"function"`
 }
