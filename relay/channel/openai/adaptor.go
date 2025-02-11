@@ -149,6 +149,11 @@ func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dt
 	return nil, errors.New("not implemented")
 }
 
+func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
+	//TODO implement me
+	return nil, errors.New("not implemented")
+}
+
 func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.AudioRequest) (io.Reader, error) {
 	a.ResponseFormat = request.ResponseFormat
 	if info.RelayMode == constant.RelayModeAudioSpeech {

@@ -44,7 +44,7 @@ function renderTimestamp(timestamp) {
 
 const ChannelsTable = () => {
   const { t } = useTranslation();
-  
+
   let type2label = undefined;
 
   const renderType = (type) => {
@@ -559,7 +559,7 @@ const ChannelsTable = () => {
       if (!enableTagMode) {
         channelDates.push(channels[i]);
       } else {
-        let tag = channels[i].tag?channels[i].tag:"";
+        let tag = channels[i].tag ? channels[i].tag : "";
         // find from channelTags
         let tagIndex = channelTags[tag];
         let tagChannelDates = undefined;
@@ -805,6 +805,9 @@ const ChannelsTable = () => {
       record.response_time = time * 1000;
       record.test_time = Date.now() / 1000;
       showInfo(t('通道 ${name} 测试成功，耗时 ${time.toFixed(2)} 秒。').replace('${name}', record.name).replace('${time.toFixed(2)}', time.toFixed(2)));
+
+      // 刷新列表
+      await refresh();
     } else {
       showError(message);
     }
@@ -838,6 +841,8 @@ const ChannelsTable = () => {
       record.balance = balance;
       record.balance_updated_time = Date.now() / 1000;
       showInfo(t('通道 ${name} 余额更新成功！').replace('${name}', record.name));
+      // 刷新列表
+      await refresh();
     } else {
       showError(message);
     }
@@ -1186,7 +1191,7 @@ const ChannelsTable = () => {
         </Space>
       </div>
       <div style={{ marginTop: 20 }}>
-      <Space>
+        <Space>
           <Typography.Text strong>{t('标签聚合模式')}</Typography.Text>
           <Switch
             checked={enableTagMode}
@@ -1199,14 +1204,14 @@ const ChannelsTable = () => {
             }}
           />
           <Button
-        disabled={!enableBatchDelete}
-        theme="light"
-        type="primary"
-        style={{ marginRight: 8 }}
-        onClick={() => setShowBatchSetTag(true)}
-      >
-        {t('批量设置标签')}
-      </Button>
+            disabled={!enableBatchDelete}
+            theme="light"
+            type="primary"
+            style={{ marginRight: 8 }}
+            onClick={() => setShowBatchSetTag(true)}
+          >
+            {t('批量设置标签')}
+          </Button>
         </Space>
 
       </div>

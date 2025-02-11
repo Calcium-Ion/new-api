@@ -1,4 +1,4 @@
-package deepseek
+package mokaai
 
 import (
 	"errors"
@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"one-api/dto"
 	"one-api/relay/channel"
-	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/constant"
+	"strings"
 )
 
 type Adaptor struct {
@@ -25,16 +26,28 @@ func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInf
 	return nil, errors.New("not implemented")
 }
 
+func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
+	//TODO implement me
+	return request, nil
+}
+
 func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
+
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	return fmt.Sprintf("%s/chat/completions", info.BaseUrl), nil
+	// https://cloud.baidu.com/doc/WENXINWORKSHOP/s/clntwmv7t
+	suffix := "chat/"
+	if strings.HasPrefix(info.UpstreamModelName, "m3e") {
+		suffix = "embeddings"
+	}
+	fullRequestURL := fmt.Sprintf("%s/%s", info.BaseUrl, suffix)
+	return fullRequestURL, nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
-	req.Set("Authorization", "Bearer "+info.ApiKey)
+	req.Set("Authorization", fmt.Sprintf("Bearer %s", info.ApiKey))
 	return nil
 }
 
@@ -42,28 +55,31 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	return request, nil
+	switch info.RelayMode {
+	case constant.RelayModeEmbeddings:
+		baiduEmbeddingRequest := embeddingRequestOpenAI2Moka(*request)
+		return baiduEmbeddingRequest, nil
+	default:
+		return nil, errors.New("not implemented")
+	}
 }
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
 	return nil, nil
 }
 
-func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
-	//TODO implement me
-	return nil, errors.New("not implemented")
-}
-
-
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	return channel.DoApiRequest(a, c, info, requestBody)
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
-	if info.IsStream {
-		err, usage = openai.OaiStreamHandler(c, resp, info)
-	} else {
-		err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+		
+	switch info.RelayMode {
+	case constant.RelayModeEmbeddings:
+		err, usage = mokaEmbeddingHandler(c, resp)
+	default:
+		// err, usage = mokaHandler(c, resp)
+		
 	}
 	return
 }

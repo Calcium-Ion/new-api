@@ -125,5 +125,12 @@ export const CHANNEL_OPTIONS = [
     value: 21,
     color: 'purple',
     label: '知识库：AI Proxy'
+  },
+  {
+    key: 47,
+    text: '嵌入模型：MokaAI M3E',
+    value: 47,
+    color: 'purple',
+    label: '嵌入模型：MokaAI M3E'
   }
 ];
