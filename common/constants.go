@@ -231,8 +231,9 @@ const (
 	ChannelTypeVertexAi       = 41
 	ChannelTypeMistral        = 42
 	ChannelTypeDeepSeek       = 43
-	ChannelTypeMokaAI         = 47
-	ChannelTypeVolcEngine     = 48
+	ChannelTypeMokaAI         = 44
+	ChannelTypeVolcEngine     = 45
+	ChannelTypeBaiduV2        = 46
 	ChannelTypeDummy          // this one is only for count, do not add any channel after this
 
 )
@@ -282,6 +283,7 @@ var ChannelBaseURLs = []string{
 	"",                                          //41
 	"https://api.mistral.ai",                    //42
 	"https://api.deepseek.com",                  //43
-	"https://api.moka.ai",                       //43
-	"https://ark.cn-beijing.volces.com",         //44
+	"https://api.moka.ai",                       //44
+	"https://ark.cn-beijing.volces.com",         //45
+	"https://qianfan.baidubce.com",              //46
 }

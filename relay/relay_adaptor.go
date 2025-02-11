@@ -6,6 +6,7 @@ import (
 	"one-api/relay/channel/ali"
 	"one-api/relay/channel/aws"
 	"one-api/relay/channel/baidu"
+	"one-api/relay/channel/baidu_v2"
 	"one-api/relay/channel/claude"
 	"one-api/relay/channel/cloudflare"
 	"one-api/relay/channel/cohere"
@@ -80,6 +81,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &mokaai.Adaptor{}
 	case constant.APITypeVolcEngine:
 		return &volcengine.Adaptor{}
+	case constant.APITypeBaiduV2:
+		return &baidu_v2.Adaptor{}
 	}
 	return nil
 }

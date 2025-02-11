@@ -1,4 +1,4 @@
-package deepseek
+package baidu_v2
 
 import (
 	"errors"
@@ -29,7 +29,7 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	return fmt.Sprintf("%s/v1/chat/completions", info.BaseUrl), nil
+	return fmt.Sprintf("%s/v2/chat/completions", info.BaseUrl), nil
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
