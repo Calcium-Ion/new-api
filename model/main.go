@@ -1,9 +1,9 @@
 package model
 
 import (
+	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
 	"one-api/common"
