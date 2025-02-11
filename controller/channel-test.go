@@ -58,17 +58,17 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 				testModel = "gpt-3.5-turbo"
 			}
 		}
-	} else {
-		modelMapping := *channel.ModelMapping
-		if modelMapping != "" && modelMapping != "{}" {
-			modelMap := make(map[string]string)
-			err := json.Unmarshal([]byte(modelMapping), &modelMap)
-			if err != nil {
-				return err, service.OpenAIErrorWrapperLocal(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
-			}
-			if modelMap[testModel] != "" {
-				testModel = modelMap[testModel]
-			}
+	}
+
+	modelMapping := *channel.ModelMapping
+	if modelMapping != "" && modelMapping != "{}" {
+		modelMap := make(map[string]string)
+		err := json.Unmarshal([]byte(modelMapping), &modelMap)
+		if err != nil {
+			return err, service.OpenAIErrorWrapperLocal(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
+		}
+		if modelMap[testModel] != "" {
+			testModel = modelMap[testModel]
 		}
 	}
 
