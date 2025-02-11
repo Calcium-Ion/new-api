@@ -9,25 +9,16 @@ RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat VERSION) bun run b
 
 FROM golang:alpine AS builder2
 
-RUN apk add --no-cache \
-    gcc \
-    musl-dev \
-    sqlite-dev \
-    build-base
-
 ENV GO111MODULE=on \
-    CGO_ENABLED=1 \
+    CGO_ENABLED=0 \
     GOOS=linux
 
 WORKDIR /build
-
 ADD go.mod go.sum ./
 RUN go mod download
-
 COPY . .
 COPY --from=builder /build/dist ./web/dist
-RUN go build -trimpath -ldflags "-s -w -X 'one-api/common.Version=$(cat VERSION)' -linkmode external -extldflags '-static'" -o one-api
-
+RUN go build -ldflags "-s -w -X 'one-api/common.Version=$(cat VERSION)' -extldflags '-static'" -o one-api
 
 FROM alpine
 
