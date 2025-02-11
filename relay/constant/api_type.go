@@ -28,6 +28,7 @@ const (
 	APITypeMistral
 	APITypeDeepSeek
 	APITypeMokaAI
+	APITypeVolcEngine
 	APITypeDummy // this one is only for count, do not add any channel after this
 )
 
@@ -80,6 +81,8 @@ func ChannelType2APIType(channelType int) (int, bool) {
 		apiType = APITypeDeepSeek
 	case common.ChannelTypeMokaAI:
 		apiType = APITypeMokaAI
+	case common.ChannelTypeVolcEngine:
+		apiType = APITypeVolcEngine
 	}
 	if apiType == -1 {
 		return APITypeOpenAI, false

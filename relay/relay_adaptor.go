@@ -23,6 +23,7 @@ import (
 	"one-api/relay/channel/task/suno"
 	"one-api/relay/channel/tencent"
 	"one-api/relay/channel/vertex"
+	"one-api/relay/channel/volcengine"
 	"one-api/relay/channel/xunfei"
 	"one-api/relay/channel/zhipu"
 	"one-api/relay/channel/zhipu_4v"
@@ -77,6 +78,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &deepseek.Adaptor{}
 	case constant.APITypeMokaAI:
 		return &mokaai.Adaptor{}
+	case constant.APITypeVolcEngine:
+		return &volcengine.Adaptor{}
 	}
 	return nil
 }

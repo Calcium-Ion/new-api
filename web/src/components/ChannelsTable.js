@@ -53,11 +53,11 @@ const ChannelsTable = () => {
       for (let i = 0; i < CHANNEL_OPTIONS.length; i++) {
         type2label[CHANNEL_OPTIONS[i].value] = CHANNEL_OPTIONS[i];
       }
-      type2label[0] = { value: 0, text: t('未知类型'), color: 'grey' };
+      type2label[0] = { value: 0, label: t('未知类型'), color: 'grey' };
     }
     return (
       <Tag size="large" color={type2label[type]?.color}>
-        {type2label[type]?.text}
+        {type2label[type]?.label}
       </Tag>
     );
   };
