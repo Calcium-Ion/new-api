@@ -146,9 +146,8 @@ func main() {
 	// Initialize session store
 	store := cookie.NewStore([]byte(common.SessionSecret))
 	store.Options(sessions.Options{
-		Path:     "/api",
-		Secure:   false,
-		HttpOnly: true,
+		Path:   "/",
+		Secure: false,
 	})
 	server.Use(sessions.Sessions("session", store))
 
