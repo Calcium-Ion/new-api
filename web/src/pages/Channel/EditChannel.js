@@ -520,12 +520,12 @@ const EditChannel = (props) => {
           {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && inputs.type !== 36 && (
             <>
               <div style={{ marginTop: 10 }}>
-                <Typography.Text strong>{t('代理')}：</Typography.Text>
+                <Typography.Text strong>{t('BaseURL')}：</Typography.Text>
               </div>
               <Input
-                label={t('代理')}
+                label={t('BaseURL')}
                 name="base_url"
-                placeholder={t('此项可选，用于通过代理站来进行 API 调用')}
+                placeholder={t('此项可选，用于通过代理站来进行 API 调用，末尾不要带/v1和/')}
                 onChange={(value) => {
                   handleInputChange('base_url', value);
                 }}

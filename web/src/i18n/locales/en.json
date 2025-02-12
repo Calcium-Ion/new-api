@@ -1108,7 +1108,7 @@
   "如果你对接的是上游One API或者New API等转发项目，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。": "If you are connecting to upstream One API or New API forwarding projects, please use OpenAI type. Do not use this type unless you know what you are doing.",
   "完整的 Base URL，支持变量{model}": "Complete Base URL, supports variable {model}",
   "请输入完整的URL，例如：https://api.openai.com/v1/chat/completions": "Please enter complete URL, e.g.: https://api.openai.com/v1/chat/completions",
-  "此项可选，用于通过代理站来进行 API 调用": "Optional, used for API calls through proxy sites",
+  "此项可选，用于通过代理站来进行 API 调用，末尾不要带/v1和/": "Optional for API calls through proxy sites, do not end with /v1 and /",
   "私有部署地址": "Private Deployment Address",
   "请输入私有部署地址，格式为：https://fastgpt.run/api/openapi": "Please enter private deployment address, format: https://fastgpt.run/api/openapi",
   "注意非Chat API，请务必填写正确的API地址，否则可能导致无法使用": "Note: For non-Chat API, please make sure to enter the correct API address, otherwise it may not work",
