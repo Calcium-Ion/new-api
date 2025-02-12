@@ -91,13 +91,10 @@ You can add custom models gpt-4-gizmo-* in channels. These are third-party model
 - `AZURE_DEFAULT_API_VERSION`: Azure channel default API version, if not specified in channel settings, use this version, default `2024-12-01-preview`
 
 ## Deployment
+
 > [!TIP]
 > Latest Docker image: `calciumion/new-api:latest`  
-> Default account: root, password: 123456  
-> Update command:
-> ```
-> docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
-> ```
+> Default account: root, password: 123456
 
 ### Multi-Server Deployment
 - Must set `SESSION_SECRET` environment variable, otherwise login state will not be consistent across multiple servers.
@@ -107,14 +104,29 @@ You can add custom models gpt-4-gizmo-* in channels. These are third-party model
 - Local database (default): SQLite (Docker deployment must mount `/data` directory)
 - Remote database: MySQL >= 5.7.8, PgSQL >= 9.6
 
+### Deployment with BT Panel
+Install BT Panel (**version 9.2.0** or above) from [BT Panel Official Website](https://www.bt.cn/new/download.html), choose the stable version script to download and install.  
+After installation, log in to BT Panel and click Docker in the menu bar. First-time access will prompt to install Docker service. Click Install Now and follow the prompts to complete installation.  
+After installation, find **New-API** in the app store, click install, configure basic options to complete installation.  
+[Pictorial Guide](BT.md)
+
 ### Docker Deployment
+
 ### Using Docker Compose (Recommended)
 ```shell
 # Clone project
 git clone https://github.com/Calcium-Ion/new-api.git
 cd new-api
 # Edit docker-compose.yml as needed
+# nano docker-compose.yml
+# vim docker-compose.yml
 # Start
+docker-compose up -d
+```
+
+#### Update Version
+```shell
+docker-compose pull
 docker-compose up -d
 ```
 
@@ -122,9 +134,26 @@ docker-compose up -d
 ```shell
 # SQLite deployment:
 docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+
 # MySQL deployment (add -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi"), modify database connection parameters as needed
 # Example:
 docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+```
+
+#### Update Version
+```shell
+# Pull the latest image
+docker pull calciumion/new-api:latest
+# Stop and remove the old container
+docker stop new-api
+docker rm new-api
+# Run the new container with the same parameters as before
+docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+```
+
+Alternatively, you can use Watchtower for automatic updates (not recommended, may cause database incompatibility):
+```shell
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
 ```
 
 ## Channel Retry

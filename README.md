@@ -96,13 +96,10 @@
 - `CRYPTO_SECRET`：加密密钥，用于加密数据库内容。
 - `AZURE_DEFAULT_API_VERSION`：Azure渠道默认API版本，如果渠道设置中未指定API版本，则使用此版本，默认为 `2024-12-01-preview`
 ## 部署
+
 > [!TIP]
 > 最新版Docker镜像：`calciumion/new-api:latest`  
-> 默认账号root 密码123456  
-> 更新指令：
-> ```
-> docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
-> ```
+> 默认账号root 密码123456
 
 ### 多机部署
 - 必须设置环境变量 `SESSION_SECRET`，否则会导致多机部署时登录状态不一致。
@@ -119,13 +116,25 @@
 [图文教程](BT.md)
 
 ### 基于 Docker 进行部署
+
+> [!TIP]
+> 默认管理员账号root 密码123456
+
 ### 使用 Docker Compose 部署（推荐）
 ```shell
 # 下载项目
 git clone https://github.com/Calcium-Ion/new-api.git
 cd new-api
 # 按需编辑 docker-compose.yml
+# nano docker-compose.yml
+# vim docker-compose.yml
 # 启动
+docker-compose up -d
+```
+
+#### 更新版本
+```shell
+docker-compose pull
 docker-compose up -d
 ```
 
@@ -133,9 +142,26 @@ docker-compose up -d
 ```shell
 # 使用 SQLite 的部署命令：
 docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+
 # 使用 MySQL 的部署命令，在上面的基础上添加 `-e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi"`，请自行修改数据库连接参数。
 # 例如：
 docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+```
+
+#### 更新版本
+```shell
+# 拉取最新镜像
+docker pull calciumion/new-api:latest
+# 停止并删除旧容器
+docker stop new-api
+docker rm new-api
+# 使用相同参数运行新容器
+docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+```
+
+或者使用 Watchtower 自动更新（不推荐，可能会导致数据库不兼容）：
+```shell
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
 ```
 
 ## 渠道重试
