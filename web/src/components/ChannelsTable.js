@@ -1124,6 +1124,17 @@ const ChannelsTable = () => {
               setEnableBatchDelete(v);
             }}
           ></Switch>
+          <Typography.Text strong>{t('标签聚合模式')}</Typography.Text>
+          <Switch
+              checked={enableTagMode}
+              label={t('标签聚合模式')}
+              uncheckedText={t('关')}
+              aria-label={t('是否启用标签聚合')}
+              onChange={(v) => {
+                setEnableTagMode(v);
+                loadChannels(0, pageSize, idSort, v);
+              }}
+          />
           <Popconfirm
             title={t('确定是否要删除所选通道？')}
             content={t('此修改将不可逆')}
@@ -1154,23 +1165,6 @@ const ChannelsTable = () => {
           </Popconfirm>
         </Space>
       </div>
-      <div style={{ marginTop: 20 }}>
-      <Space>
-          <Typography.Text strong>{t('标签聚合模式')}</Typography.Text>
-          <Switch
-            checked={enableTagMode}
-            label={t('标签聚合模式')}
-            uncheckedText={t('关')}
-            aria-label={t('是否启用标签聚合')}
-            onChange={(v) => {
-              setEnableTagMode(v);
-              loadChannels(0, pageSize, idSort, v);
-            }}
-          />
-        </Space>
-      </div>
-
-
       <Table
         className={'channel-table'}
         style={{ marginTop: 15 }}
