@@ -49,9 +49,6 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		return nil, errors.New("request is nil")
 	}
 	switch info.RelayMode {
-	case constant.RelayModeEmbeddings:
-		baiduEmbeddingRequest := embeddingRequestOpenAI2Ali(*request)
-		return baiduEmbeddingRequest, nil
 	default:
 		aliReq := requestOpenAI2Ali(*request)
 		return aliReq, nil
@@ -68,8 +65,7 @@ func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dt
 }
 
 func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
-	//TODO implement me
-	return nil, errors.New("not implemented")
+	return embeddingRequestOpenAI2Ali(request), nil
 }
 
 func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.AudioRequest) (io.Reader, error) {

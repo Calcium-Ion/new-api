@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pkoukk/tiktoken-go"
 	"image"
 	"log"
 	"math"
@@ -14,6 +13,8 @@ import (
 	relaycommon "one-api/relay/common"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/pkoukk/tiktoken-go"
 )
 
 // tokenEncoderMap won't grow after initialization
@@ -321,6 +322,12 @@ func CountTokenInput(input any, model string) (int, error) {
 		text := ""
 		for _, s := range v {
 			text += s
+		}
+		return CountTextToken(text, model)
+	case []interface{}:
+		text := ""
+		for _, item := range v {
+			text += fmt.Sprintf("%v", item)
 		}
 		return CountTextToken(text, model)
 	}

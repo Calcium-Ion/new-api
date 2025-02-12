@@ -34,7 +34,7 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	case relayconstant.RelayModeRerank:
 		err = relay.RerankHelper(c, relayMode)
 	case relayconstant.RelayModeEmbeddings:
-		err = relay.EmbeddingHelper(c,relayMode)
+		err = relay.EmbeddingHelper(c)
 	default:
 		err = relay.TextHelper(c)
 	}
@@ -56,11 +56,6 @@ func Relay(c *gin.Context) {
 	group := c.GetString("group")
 	originalModel := c.GetString("original_model")
 	var openaiErr *dto.OpenAIErrorWithStatusCode
-
-	//获取request body 并输出到日志
-	requestBody, _ := common.GetRequestBody(c)
-	common.LogInfo(c, fmt.Sprintf("relayMode: %d ,request body: %s",relayMode, string(requestBody)))
-	
 
 	for i := 0; i <= common.RetryTimes; i++ {
 		channel, err := getChannel(c, group, originalModel, i)
@@ -161,7 +156,6 @@ func WssRelay(c *gin.Context) {
 }
 
 func relayRequest(c *gin.Context, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {
-	common.LogInfo(c, fmt.Sprintf("relayMode: %d ,channel Id : %s",relayMode, string(channel.Id)))
 	addUsedChannel(c, channel.Id)
 	requestBody, _ := common.GetRequestBody(c)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
