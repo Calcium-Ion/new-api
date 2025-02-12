@@ -133,9 +133,6 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 		tx = LOG_DB.Where("logs.type = ?", logType)
 	}
 
-	tx = tx.Joins("LEFT JOIN channels ON logs.channel_id = channels.id")
-	tx = tx.Select("logs.*, channels.name as channel_name")
-
 	if modelName != "" {
 		tx = tx.Where("logs.model_name like ?", modelName)
 	}
@@ -165,6 +162,30 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 	if err != nil {
 		return nil, 0, err
 	}
+
+	channelIds := make([]int, 0)
+	channelMap := make(map[int]string)
+	for _, log := range logs {
+		if log.ChannelId != 0 {
+			channelIds = append(channelIds, log.ChannelId)
+		}
+	}
+	if len(channelIds) > 0 {
+		var channels []struct {
+			Id   int    `gorm:"column:id"`
+			Name string `gorm:"column:name"`
+		}
+		if err = DB.Table("channels").Select("id, name").Where("id IN ?", channelIds).Find(&channels).Error; err != nil {
+			return logs, total, err
+		}
+		for _, channel := range channels {
+			channelMap[channel.Id] = channel.Name
+		}
+		for i := range logs {
+			logs[i].ChannelName = channelMap[logs[i].ChannelId]
+		}
+	}
+
 	return logs, total, err
 }
 
@@ -175,9 +196,6 @@ func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int
 	} else {
 		tx = LOG_DB.Where("logs.user_id = ? and logs.type = ?", userId, logType)
 	}
-
-	tx = tx.Joins("LEFT JOIN channels ON logs.channel_id = channels.id")
-	tx = tx.Select("logs.*, channels.name as channel_name")
 
 	if modelName != "" {
 		tx = tx.Where("logs.model_name like ?", modelName)
@@ -199,6 +217,10 @@ func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int
 		return nil, 0, err
 	}
 	err = tx.Order("logs.id desc").Limit(num).Offset(startIdx).Find(&logs).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
 	formatUserLogs(logs)
 	return logs, total, err
 }
