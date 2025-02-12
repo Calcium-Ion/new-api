@@ -42,7 +42,7 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
 	}
 }
 
-func requestOpenAI2Embeddings(request dto.GeneralOpenAIRequest) *OllamaEmbeddingRequest {
+func requestOpenAI2Embeddings(request dto.EmbeddingRequest) *OllamaEmbeddingRequest {
 	return &OllamaEmbeddingRequest{
 		Model: request.Model,
 		Input: request.ParseInput(),
@@ -123,9 +123,9 @@ func ollamaEmbeddingHandler(c *gin.Context, resp *http.Response, promptTokens in
 }
 
 func flattenEmbeddings(embeddings [][]float64) []float64 {
-flattened := []float64{}
-for _, row := range embeddings {
-	flattened = append(flattened, row...)
-}
-return flattened
+	flattened := []float64{}
+	for _, row := range embeddings {
+		flattened = append(flattened, row...)
+	}
+	return flattened
 }

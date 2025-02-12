@@ -3,8 +3,10 @@ package model
 import (
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"one-api/common"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type Redemption struct {
@@ -21,16 +23,80 @@ type Redemption struct {
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
 }
 
-func GetAllRedemptions(startIdx int, num int) ([]*Redemption, error) {
-	var redemptions []*Redemption
-	var err error
-	err = DB.Order("id desc").Limit(num).Offset(startIdx).Find(&redemptions).Error
-	return redemptions, err
+func GetAllRedemptions(startIdx int, num int) (redemptions []*Redemption, total int64, err error) {
+	// 开始事务
+	tx := DB.Begin()
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 获取总数
+	err = tx.Model(&Redemption{}).Count(&total).Error
+	if err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+
+	// 获取分页数据
+	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&redemptions).Error
+	if err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
+		return nil, 0, err
+	}
+
+	return redemptions, total, nil
 }
 
-func SearchRedemptions(keyword string) (redemptions []*Redemption, err error) {
-	err = DB.Where("id = ? or name LIKE ?", keyword, keyword+"%").Find(&redemptions).Error
-	return redemptions, err
+func SearchRedemptions(keyword string, startIdx int, num int) (redemptions []*Redemption, total int64, err error) {
+	tx := DB.Begin()
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Build query based on keyword type
+	query := tx.Model(&Redemption{})
+
+	// Only try to convert to ID if the string represents a valid integer
+	if id, err := strconv.Atoi(keyword); err == nil {
+		query = query.Where("id = ? OR name LIKE ?", id, keyword+"%")
+	} else {
+		query = query.Where("name LIKE ?", keyword+"%")
+	}
+
+	// Get total count
+	err = query.Count(&total).Error
+	if err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+
+	// Get paginated data
+	err = query.Order("id desc").Limit(num).Offset(startIdx).Find(&redemptions).Error
+	if err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+
+	if err = tx.Commit().Error; err != nil {
+		return nil, 0, err
+	}
+
+	return redemptions, total, nil
 }
 
 func GetRedemptionById(id int) (*Redemption, error) {

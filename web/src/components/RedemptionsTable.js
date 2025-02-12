@@ -178,6 +178,7 @@ const RedemptionsTable = () => {
   const [searching, setSearching] = useState(false);
   const [tokenCount, setTokenCount] = useState(ITEMS_PER_PAGE);
   const [selectedKeys, setSelectedKeys] = useState([]);
+  const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [editingRedemption, setEditingRedemption] = useState({
     id: undefined,
   });
@@ -187,40 +188,20 @@ const RedemptionsTable = () => {
     setShowEdit(false);
   };
 
-  // const setCount = (data) => {
-  //     if (data.length >= (activePage) * ITEMS_PER_PAGE) {
-  //         setTokenCount(data.length + 1);
-  //     } else {
-  //         setTokenCount(data.length);
-  //     }
-  // }
-
   const setRedemptionFormat = (redeptions) => {
-    // for (let i = 0; i < redeptions.length; i++) {
-    //     redeptions[i].key = '' + redeptions[i].id;
-    // }
-    // data.key = '' + data.id
     setRedemptions(redeptions);
-    if (redeptions.length >= activePage * ITEMS_PER_PAGE) {
-      setTokenCount(redeptions.length + 1);
-    } else {
-      setTokenCount(redeptions.length);
-    }
   };
 
-  const loadRedemptions = async (startIdx) => {
-    const res = await API.get(`/api/redemption/?p=${startIdx}`);
+  const loadRedemptions = async (startIdx, pageSize) => {
+    const res = await API.get(`/api/redemption/?p=${startIdx}&page_size=${pageSize}`);
     const { success, message, data } = res.data;
     if (success) {
-      if (startIdx === 0) {
-        setRedemptionFormat(data);
-      } else {
-        let newRedemptions = redemptions;
-        newRedemptions.push(...data);
-        setRedemptionFormat(newRedemptions);
-      }
+        const newPageData = data.items;
+        setActivePage(data.page);
+        setTokenCount(data.total);
+        setRedemptionFormat(newPageData);
     } else {
-      showError(message);
+        showError(message);
     }
     setLoading(false);
   };
@@ -248,16 +229,15 @@ const RedemptionsTable = () => {
 
   const onPaginationChange = (e, { activePage }) => {
     (async () => {
-      if (activePage === Math.ceil(redemptions.length / ITEMS_PER_PAGE) + 1) {
-        // In this case we have to load more data and then append them.
-        await loadRedemptions(activePage - 1);
+      if (activePage === Math.ceil(redemptions.length / pageSize) + 1) {
+        await loadRedemptions(activePage - 1, pageSize);
       }
       setActivePage(activePage);
     })();
   };
 
   useEffect(() => {
-    loadRedemptions(0)
+    loadRedemptions(0, pageSize)
       .then()
       .catch((reason) => {
         showError(reason);
@@ -265,7 +245,7 @@ const RedemptionsTable = () => {
   }, []);
 
   const refresh = async () => {
-    await loadRedemptions(activePage - 1);
+    await loadRedemptions(activePage - 1, pageSize);
   };
 
   const manageRedemption = async (id, action, record) => {
@@ -300,23 +280,21 @@ const RedemptionsTable = () => {
     }
   };
 
-  const searchRedemptions = async () => {
+  const searchRedemptions = async (keyword, page, pageSize) => {
     if (searchKeyword === '') {
-      // if keyword is blank, load files instead.
-      await loadRedemptions(0);
-      setActivePage(1);
-      return;
+        await loadRedemptions(page, pageSize);
+        return;
     }
     setSearching(true);
-    const res = await API.get(
-      `/api/redemption/search?keyword=${searchKeyword}`,
-    );
+    const res = await API.get(`/api/redemption/search?keyword=${keyword}&p=${page}&page_size=${pageSize}`);
     const { success, message, data } = res.data;
     if (success) {
-      setRedemptions(data);
-      setActivePage(1);
+        const newPageData = data.items;
+        setActivePage(data.page);
+        setTokenCount(data.total);
+        setRedemptionFormat(newPageData);
     } else {
-      showError(message);
+        showError(message);
     }
     setSearching(false);
   };
@@ -341,16 +319,14 @@ const RedemptionsTable = () => {
 
   const handlePageChange = (page) => {
     setActivePage(page);
-    if (page === Math.ceil(redemptions.length / ITEMS_PER_PAGE) + 1) {
-      // In this case we have to load more data and then append them.
-      loadRedemptions(page - 1).then((r) => {});
+    if (searchKeyword === '') {
+      loadRedemptions(page, pageSize).then();
+    } else {
+      searchRedemptions(searchKeyword, page, pageSize).then();
     }
   };
 
-  let pageData = redemptions.slice(
-    (activePage - 1) * ITEMS_PER_PAGE,
-    activePage * ITEMS_PER_PAGE,
-  );
+  let pageData = redemptions;
   const rowSelection = {
     onSelect: (record, selected) => {},
     onSelectAll: (selected, selectedRows) => {},
@@ -379,7 +355,9 @@ const RedemptionsTable = () => {
         visiable={showEdit}
         handleClose={closeEdit}
       ></EditRedemption>
-      <Form onSubmit={searchRedemptions}>
+      <Form onSubmit={()=> {
+        searchRedemptions(searchKeyword, activePage, pageSize).then();
+      }}>
         <Form.Input
           label={t('搜索关键字')}
           field='keyword'
@@ -431,20 +409,25 @@ const RedemptionsTable = () => {
         dataSource={pageData}
         pagination={{
           currentPage: activePage,
-          pageSize: ITEMS_PER_PAGE,
+          pageSize: pageSize,
           total: tokenCount,
-          // showSizeChanger: true,
-          // pageSizeOptions: [10, 20, 50, 100],
+          showSizeChanger: true,
+          pageSizeOpts: [10, 20, 50, 100],
           formatPageText: (page) =>
             t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
               start: page.currentStart,
               end: page.currentEnd,
-              total: redemptions.length
+              total: tokenCount
             }),
-          // onPageSizeChange: (size) => {
-          //   setPageSize(size);
-          //   setActivePage(1);
-          // },
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setActivePage(1);
+            if (searchKeyword === '') {
+              loadRedemptions(1, size).then();
+            } else {
+              searchRedemptions(searchKeyword, 1, size).then();
+            }
+          },
           onPageChange: handlePageChange,
         }}
         loading={loading}

@@ -44,7 +44,7 @@ function renderTimestamp(timestamp) {
 
 const ChannelsTable = () => {
   const { t } = useTranslation();
-  
+
   let type2label = undefined;
 
   const renderType = (type) => {
@@ -53,11 +53,11 @@ const ChannelsTable = () => {
       for (let i = 0; i < CHANNEL_OPTIONS.length; i++) {
         type2label[CHANNEL_OPTIONS[i].value] = CHANNEL_OPTIONS[i];
       }
-      type2label[0] = { value: 0, text: t('未知类型'), color: 'grey' };
+      type2label[0] = { value: 0, label: t('未知类型'), color: 'grey' };
     }
     return (
       <Tag size="large" color={type2label[type]?.color}>
-        {type2label[type]?.text}
+        {type2label[type]?.label}
       </Tag>
     );
   };
@@ -162,9 +162,15 @@ const ChannelsTable = () => {
         return (
           <div>
             <Space spacing={2}>
-              {text?.split(',').map((item, index) => {
-                return renderGroup(item);
-              })}
+              {text?.split(',')
+                .sort((a, b) => {
+                  if (a === 'default') return -1;
+                  if (b === 'default') return 1;
+                  return a.localeCompare(b);
+                })
+                .map((item, index) => {
+                  return renderGroup(item);
+                })}
             </Space>
           </div>
         );
@@ -507,6 +513,8 @@ const ChannelsTable = () => {
   const [selectedChannels, setSelectedChannels] = useState([]);
   const [showEditPriority, setShowEditPriority] = useState(false);
   const [enableTagMode, setEnableTagMode] = useState(false);
+  const [showBatchSetTag, setShowBatchSetTag] = useState(false);
+  const [batchSetTagValue, setBatchSetTagValue] = useState('');
 
 
   const removeRecord = (record) => {
@@ -551,7 +559,7 @@ const ChannelsTable = () => {
       if (!enableTagMode) {
         channelDates.push(channels[i]);
       } else {
-        let tag = channels[i].tag?channels[i].tag:"";
+        let tag = channels[i].tag ? channels[i].tag : "";
         // find from channelTags
         let tagIndex = channelTags[tag];
         let tagChannelDates = undefined;
@@ -797,6 +805,9 @@ const ChannelsTable = () => {
       record.response_time = time * 1000;
       record.test_time = Date.now() / 1000;
       showInfo(t('通道 ${name} 测试成功，耗时 ${time.toFixed(2)} 秒。').replace('${name}', record.name).replace('${time.toFixed(2)}', time.toFixed(2)));
+
+      // 刷新列表
+      await refresh();
     } else {
       showError(message);
     }
@@ -830,6 +841,8 @@ const ChannelsTable = () => {
       record.balance = balance;
       record.balance_updated_time = Date.now() / 1000;
       showInfo(t('通道 ${name} 余额更新成功！').replace('${name}', record.name));
+      // 刷新列表
+      await refresh();
     } else {
       showError(message);
     }
@@ -965,6 +978,29 @@ const ChannelsTable = () => {
       };
     } else {
       return {};
+    }
+  };
+
+  const batchSetChannelTag = async () => {
+    if (selectedChannels.length === 0) {
+      showError(t('请先选择要设置标签的渠道！'));
+      return;
+    }
+    if (batchSetTagValue === '') {
+      showError(t('标签不能为空！'));
+      return;
+    }
+    let ids = selectedChannels.map(channel => channel.id);
+    const res = await API.post('/api/channel/batch/tag', {
+      ids: ids,
+      tag: batchSetTagValue === '' ? null : batchSetTagValue
+    });
+    if (res.data.success) {
+      showSuccess(t('已为 ${count} 个渠道设置标签！').replace('${count}', res.data.data));
+      await refresh();
+      setShowBatchSetTag(false);
+    } else {
+      showError(res.data.message);
     }
   };
 
@@ -1115,26 +1151,15 @@ const ChannelsTable = () => {
       </div>
       <div style={{ marginTop: 20 }}>
         <Space>
-          <Typography.Text strong>{t('开启批量删除')}</Typography.Text>
+          <Typography.Text strong>{t('开启批量操作')}</Typography.Text>
           <Switch
-            label={t('开启批量删除')}
+            label={t('开启批量操作')}
             uncheckedText={t('关')}
-            aria-label={t('是否开启批量删除')}
+            aria-label={t('是否开启批量操作')}
             onChange={(v) => {
               setEnableBatchDelete(v);
             }}
           ></Switch>
-          <Typography.Text strong>{t('标签聚合模式')}</Typography.Text>
-          <Switch
-              checked={enableTagMode}
-              label={t('标签聚合模式')}
-              uncheckedText={t('关')}
-              aria-label={t('是否启用标签聚合')}
-              onChange={(v) => {
-                setEnableTagMode(v);
-                loadChannels(0, pageSize, idSort, v);
-              }}
-          />
           <Popconfirm
             title={t('确定是否要删除所选通道？')}
             content={t('此修改将不可逆')}
@@ -1165,6 +1190,33 @@ const ChannelsTable = () => {
           </Popconfirm>
         </Space>
       </div>
+      <div style={{ marginTop: 20 }}>
+        <Space>
+          <Typography.Text strong>{t('标签聚合模式')}</Typography.Text>
+          <Switch
+            checked={enableTagMode}
+            label={t('标签聚合模式')}
+            uncheckedText={t('关')}
+            aria-label={t('是否启用标签聚合')}
+            onChange={(v) => {
+              setEnableTagMode(v);
+              loadChannels(0, pageSize, idSort, v);
+            }}
+          />
+          <Button
+            disabled={!enableBatchDelete}
+            theme="light"
+            type="primary"
+            style={{ marginRight: 8 }}
+            onClick={() => setShowBatchSetTag(true)}
+          >
+            {t('批量设置标签')}
+          </Button>
+        </Space>
+
+      </div>
+
+
       <Table
         className={'channel-table'}
         style={{ marginTop: 15 }}
@@ -1195,6 +1247,23 @@ const ChannelsTable = () => {
             : null
         }
       />
+      <Modal
+        title={t('批量设置标签')}
+        visible={showBatchSetTag}
+        onOk={batchSetChannelTag}
+        onCancel={() => setShowBatchSetTag(false)}
+        maskClosable={false}
+        centered={true}
+      >
+        <div style={{ marginBottom: 20 }}>
+          <Typography.Text>{t('请输入要设置的标签名称')}</Typography.Text>
+        </div>
+        <Input
+          placeholder={t('请输入标签名称')}
+          value={batchSetTagValue}
+          onChange={(v) => setBatchSetTagValue(v)}
+        />
+      </Modal>
     </>
   );
 };

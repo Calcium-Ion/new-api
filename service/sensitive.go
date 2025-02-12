@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
-	"one-api/constant"
 	"one-api/dto"
+	"one-api/setting"
 	"strings"
 )
 
@@ -56,7 +56,7 @@ func CheckSensitiveInput(input any) error {
 
 // SensitiveWordContains 是否包含敏感词，返回是否包含敏感词和敏感词列表
 func SensitiveWordContains(text string) (bool, []string) {
-	if len(constant.SensitiveWords) == 0 {
+	if len(setting.SensitiveWords) == 0 {
 		return false, nil
 	}
 	checkText := strings.ToLower(text)
@@ -75,7 +75,7 @@ func SensitiveWordContains(text string) (bool, []string) {
 
 // SensitiveWordReplace 敏感词替换，返回是否包含敏感词和替换后的文本
 func SensitiveWordReplace(text string, returnImmediately bool) (bool, []string, string) {
-	if len(constant.SensitiveWords) == 0 {
+	if len(setting.SensitiveWords) == 0 {
 		return false, nil, text
 	}
 	checkText := strings.ToLower(text)

@@ -1,11 +1,5 @@
 package constant
 
-var MjNotifyEnabled = false
-var MjAccountFilterEnabled = false
-var MjModeClearEnabled = false
-var MjForwardUrlEnabled = true
-var MjActionCheckSuccessEnabled = true
-
 const (
 	MjErrorUnknown = 5
 	MjRequestError = 4

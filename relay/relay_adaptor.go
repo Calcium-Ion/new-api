@@ -6,6 +6,7 @@ import (
 	"one-api/relay/channel/ali"
 	"one-api/relay/channel/aws"
 	"one-api/relay/channel/baidu"
+	"one-api/relay/channel/baidu_v2"
 	"one-api/relay/channel/claude"
 	"one-api/relay/channel/cloudflare"
 	"one-api/relay/channel/cohere"
@@ -14,6 +15,7 @@ import (
 	"one-api/relay/channel/gemini"
 	"one-api/relay/channel/jina"
 	"one-api/relay/channel/mistral"
+	"one-api/relay/channel/mokaai"
 	"one-api/relay/channel/ollama"
 	"one-api/relay/channel/openai"
 	"one-api/relay/channel/palm"
@@ -22,6 +24,7 @@ import (
 	"one-api/relay/channel/task/suno"
 	"one-api/relay/channel/tencent"
 	"one-api/relay/channel/vertex"
+	"one-api/relay/channel/volcengine"
 	"one-api/relay/channel/xunfei"
 	"one-api/relay/channel/zhipu"
 	"one-api/relay/channel/zhipu_4v"
@@ -74,6 +77,12 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &mistral.Adaptor{}
 	case constant.APITypeDeepSeek:
 		return &deepseek.Adaptor{}
+	case constant.APITypeMokaAI:
+		return &mokaai.Adaptor{}
+	case constant.APITypeVolcEngine:
+		return &volcengine.Adaptor{}
+	case constant.APITypeBaiduV2:
+		return &baidu_v2.Adaptor{}
 	}
 	return nil
 }

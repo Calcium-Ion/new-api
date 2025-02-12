@@ -10,6 +10,7 @@ import (
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+	"one-api/setting"
 )
 
 func getRerankPromptToken(rerankRequest dto.RerankRequest) int {
@@ -57,7 +58,7 @@ func RerankHelper(c *gin.Context, relayMode int) (openaiErr *dto.OpenAIErrorWith
 
 	relayInfo.UpstreamModelName = rerankRequest.Model
 	modelPrice, success := common.GetModelPrice(rerankRequest.Model, false)
-	groupRatio := common.GetGroupRatio(relayInfo.Group)
+	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 
 	var preConsumedQuota int
 	var ratio float64

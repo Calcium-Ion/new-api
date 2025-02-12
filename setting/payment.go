@@ -1,4 +1,4 @@
-package constant
+package setting
 
 var PayAddress = ""
 var CustomCallbackAddress = ""

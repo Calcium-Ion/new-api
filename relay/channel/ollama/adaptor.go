@@ -46,16 +46,15 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	switch info.RelayMode {
-	case relayconstant.RelayModeEmbeddings:
-		return requestOpenAI2Embeddings(*request), nil
-	default:
-		return requestOpenAI2Ollama(*request), nil
-	}
+	return requestOpenAI2Ollama(*request), nil
 }
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
 	return nil, nil
+}
+
+func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
+	return requestOpenAI2Embeddings(request), nil
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {

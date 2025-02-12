@@ -1,4 +1,4 @@
-package constant
+package setting
 
 var ServerAddress = "http://localhost:3000"
 var WorkerUrl = ""

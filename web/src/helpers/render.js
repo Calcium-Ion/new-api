@@ -1,5 +1,6 @@
 import i18next from 'i18next';
-import { Tag } from '@douyinfe/semi-ui';
+import { Modal, Tag, Typography } from '@douyinfe/semi-ui';
+import { copy, showSuccess } from './utils.js';
 
 export function renderText(text, limit) {
   if (text.length > limit) {
@@ -38,6 +39,14 @@ export function renderGroup(group) {
           size='large'
           color={tagColors[group] || stringToColor(group)}
           key={group}
+          onClick={async (event) => {
+            event.stopPropagation();
+            if (await copy(group)) {
+              showSuccess(i18next.t('已复制：') + group);
+            } else {
+              Modal.error({ title: t('无法复制到剪贴板，请手动复制'), content: group });
+            }
+          }}
         >
           {group}
         </Tag>
@@ -45,6 +54,81 @@ export function renderGroup(group) {
     </span>
   );
 }
+
+export function renderRatio(ratio) {
+  let color = 'green';
+  if (ratio > 5) {
+    color = 'red';
+  } else if (ratio > 3) {
+    color = 'orange';
+  } else if (ratio > 1) {
+    color = 'blue';
+  }
+  return <Tag color={color}>{ratio}x {i18next.t('倍率')}</Tag>;
+}
+
+export const renderGroupOption = (item) => {
+  const {
+    disabled,
+    selected,
+    label,
+    value,
+    focused,
+    className,
+    style,
+    onMouseEnter,
+    onClick,
+    empty,
+    emptyContent,
+    ...rest
+  } = item;
+  
+  const baseStyle = {
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    padding: '8px 16px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    backgroundColor: focused ? 'var(--semi-color-fill-0)' : 'transparent',
+    opacity: disabled ? 0.5 : 1,
+    ...(selected && {
+      backgroundColor: 'var(--semi-color-primary-light-default)',
+    }),
+    '&:hover': {
+      backgroundColor: !disabled && 'var(--semi-color-fill-1)'
+    }
+  };
+
+  const handleClick = () => {
+    if (!disabled && onClick) {
+      onClick();
+    }
+  };
+
+  const handleMouseEnter = (e) => {
+    if (!disabled && onMouseEnter) {
+      onMouseEnter(e);
+    }
+  };
+  
+  return (
+    <div 
+      style={baseStyle}
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <Typography.Text strong type={disabled ? 'tertiary' : undefined}>
+          {value}
+        </Typography.Text>
+        <Typography.Text type="secondary" size="small">
+          {label}
+        </Typography.Text>
+      </div>
+      {item.ratio && renderRatio(item.ratio)}
+    </div>
+  );
+};
 
 export function renderNumber(num) {
   if (num >= 1000000000) {
@@ -59,6 +143,9 @@ export function renderNumber(num) {
 }
 
 export function renderQuotaNumberWithDigit(num, digits = 2) {
+  if (typeof num !== 'number' || isNaN(num)) {
+    return 0;
+  }
   let displayInCurrency = localStorage.getItem('display_in_currency');
   num = num.toFixed(digits);
   if (displayInCurrency) {
@@ -228,6 +315,9 @@ export function renderAudioModelPrice(
     if (completionRatio === undefined) {
       completionRatio = 0;
     }
+
+    // try toFixed audioRatio
+    audioRatio = parseFloat(audioRatio).toFixed(6);
     // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
     let inputRatioPrice = modelRatio * 2.0;
     let completionRatioPrice = modelRatio * 2.0 * completionRatio;
@@ -239,13 +329,31 @@ export function renderAudioModelPrice(
     return (
       <>
         <article>
-          <p>提示：${inputRatioPrice} * {groupRatio} = ${inputRatioPrice * groupRatio} / 1M tokens</p>
-          <p>补全：${completionRatioPrice} * {groupRatio} = ${completionRatioPrice * groupRatio} / 1M tokens</p>
-          <p>音频提示：${inputRatioPrice} * {groupRatio} * {audioRatio} = ${inputRatioPrice * audioRatio * groupRatio} / 1M tokens</p>
-          <p>音频补全：${inputRatioPrice} * {groupRatio} * {audioRatio} * {audioCompletionRatio} = ${inputRatioPrice * audioRatio * audioCompletionRatio * groupRatio} / 1M tokens</p>
-          <p></p>
+          <p>{i18next.t('提示：${{price}} * {{ratio}} = ${{total}} / 1M tokens', {
+            price: inputRatioPrice,
+            ratio: groupRatio,
+            total: inputRatioPrice * groupRatio
+          })}</p>
+          <p>{i18next.t('补全：${{price}} * {{ratio}} = ${{total}} / 1M tokens', {
+            price: completionRatioPrice,
+            ratio: groupRatio,
+            total: completionRatioPrice * groupRatio
+          })}</p>
+          <p>{i18next.t('音频提示：${{price}} * {{ratio}} * {{audioRatio}} = ${{total}} / 1M tokens', {
+            price: inputRatioPrice,
+            ratio: groupRatio,
+            audioRatio,
+            total: inputRatioPrice * audioRatio * groupRatio
+          })}</p>
+          <p>{i18next.t('音频补全：${{price}} * {{ratio}} * {{audioRatio}} * {{audioCompRatio}} = ${{total}} / 1M tokens', {
+            price: inputRatioPrice,
+            ratio: groupRatio,
+            audioRatio,
+            audioCompRatio: audioCompletionRatio,
+            total: inputRatioPrice * audioRatio * audioCompletionRatio * groupRatio
+          })}</p>
           <p>
-            {i18next.t('提示 {{input}} tokens / 1M tokens * ${{price}} + 补全 {{completion}} tokens / 1M tokens * ${{compPrice}} +', {
+            {i18next.t('文字提示 {{input}} tokens / 1M tokens * ${{price}} + 文字补全 {{completion}} tokens / 1M tokens * ${{compPrice}} +', {
               input: inputTokens,
               price: inputRatioPrice,
               completion: completionTokens,
@@ -253,13 +361,21 @@ export function renderAudioModelPrice(
             })}
           </p>
           <p>
-            音频提示 {audioInputTokens} tokens / 1M tokens * ${inputRatioPrice} * {audioRatio} + 音频补全 {audioCompletionTokens} tokens / 1M tokens * ${inputRatioPrice} * {audioRatio} * {audioCompletionRatio}
+            {i18next.t('音频提示 {{input}} tokens / 1M tokens * ${{price}} * {{audioRatio}} + 音频补全 {{completion}} tokens / 1M tokens * ${{price}} * {{audioRatio}} * {{audioCompRatio}}', {
+              input: audioInputTokens,
+              completion: audioCompletionTokens,
+              price: inputRatioPrice,
+              audioRatio,
+              audioCompRatio: audioCompletionRatio
+            })}
           </p>
           <p>
-            （文字 + 音频） * 分组 {groupRatio} =
-            ${price.toFixed(6)}
+            {i18next.t('（文字 + 音频）* 分组倍率 {{ratio}} = ${{total}}', {
+              ratio: groupRatio,
+              total: price.toFixed(6)
+            })}
           </p>
-          <p>仅供参考，以实际扣费为准</p>
+          <p>{i18next.t('仅供参考，以实际扣费为准')}</p>
         </article>
       </>
     );
@@ -290,13 +406,13 @@ const colors = [
   'red',
   'teal',
   'violet',
-  'yellow',
+  'yellow'
 ];
 
 // 基础10色色板 (N ≤ 10)
 const baseColors = [
   '#1664FF', // 主色
-  '#1AC6FF', 
+  '#1AC6FF',
   '#FF8A00',
   '#3CC780',
   '#7442D4',
@@ -340,7 +456,7 @@ export const modelColorMap = {
   'gpt-3.5-turbo-0613': 'rgb(60,179,113)', // 海洋绿
   'gpt-3.5-turbo-1106': 'rgb(32,178,170)', // 浅海洋绿
   'gpt-3.5-turbo-16k': 'rgb(149,252,206)', // 淡橙色
-  'gpt-3.5-turbo-16k-0613': 'rgb(119,255,214)', // 淡桃���
+  'gpt-3.5-turbo-16k-0613': 'rgb(119,255,214)', // 淡桃
   'gpt-3.5-turbo-instruct': 'rgb(175,238,238)', // 粉蓝色
   'gpt-4': 'rgb(135,206,235)', // 天蓝色
   // 'gpt-4-0314': 'rgb(70,130,180)', // 钢蓝色
@@ -363,7 +479,7 @@ export const modelColorMap = {
   'text-embedding-ada-002': 'rgb(255,182,193)', // 浅粉红
   'text-embedding-v1': 'rgb(255,174,185)', // 浅粉红色（略有区别）
   'text-moderation-latest': 'rgb(255,130,171)', // 强粉色
-  'text-moderation-stable': 'rgb(255,160,122)', // 浅珊瑚色（���Babbage相同，表示同一类功能）
+  'text-moderation-stable': 'rgb(255,160,122)', // 浅珊瑚色（与Babbage相同，表示同一类功能）
   'tts-1': 'rgb(255,140,0)', // 深橙色
   'tts-1-1106': 'rgb(255,165,0)', // 橙色
   'tts-1-hd': 'rgb(255,215,0)', // 金色

@@ -30,6 +30,7 @@ var DefaultCollapseSidebar = false // default value of collapse sidebar
 // Any options with "Secret", "Token" in its key won't be return by GetOptions
 
 var SessionSecret = uuid.New().String()
+var CryptoSecret = uuid.New().String()
 
 var OptionMap map[string]string
 var OptionMapRWMutex sync.RWMutex
@@ -230,8 +231,10 @@ const (
 	ChannelTypeVertexAi       = 41
 	ChannelTypeMistral        = 42
 	ChannelTypeDeepSeek       = 43
-
-	ChannelTypeDummy // this one is only for count, do not add any channel after this
+	ChannelTypeMokaAI         = 44
+	ChannelTypeVolcEngine     = 45
+	ChannelTypeBaiduV2        = 46
+	ChannelTypeDummy          // this one is only for count, do not add any channel after this
 
 )
 
@@ -280,4 +283,7 @@ var ChannelBaseURLs = []string{
 	"",                                          //41
 	"https://api.mistral.ai",                    //42
 	"https://api.deepseek.com",                  //43
+	"https://api.moka.ai",                       //44
+	"https://ark.cn-beijing.volces.com",         //45
+	"https://qianfan.baidubce.com",              //46
 }

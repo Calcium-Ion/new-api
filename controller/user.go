@@ -6,13 +6,15 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/model"
+	"one-api/setting"
 	"strconv"
 	"strings"
 	"sync"
 
+	"one-api/constant"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"one-api/constant"
 )
 
 type LoginRequest struct {
@@ -241,10 +243,14 @@ func Register(c *gin.Context) {
 
 func GetAllUsers(c *gin.Context) {
 	p, _ := strconv.Atoi(c.Query("p"))
-	if p < 0 {
-		p = 0
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if p < 1 {
+		p = 1
 	}
-	users, err := model.GetAllUsers(p*common.ItemsPerPage, common.ItemsPerPage)
+	if pageSize < 0 {
+		pageSize = common.ItemsPerPage
+	}
+	users, total, err := model.GetAllUsers((p-1)*pageSize, pageSize)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -255,7 +261,12 @@ func GetAllUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    users,
+		"data": gin.H{
+			"items":     users,
+			"total":     total,
+			"page":      p,
+			"page_size": pageSize,
+		},
 	})
 	return
 }
@@ -263,7 +274,16 @@ func GetAllUsers(c *gin.Context) {
 func SearchUsers(c *gin.Context) {
 	keyword := c.Query("keyword")
 	group := c.Query("group")
-	users, err := model.SearchUsers(keyword, group)
+	p, _ := strconv.Atoi(c.Query("p"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if p < 1 {
+		p = 1
+	}
+	if pageSize < 0 {
+		pageSize = common.ItemsPerPage
+	}
+	startIdx := (p - 1) * pageSize
+	users, total, err := model.SearchUsers(keyword, group, startIdx, pageSize)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -274,7 +294,12 @@ func SearchUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    users,
+		"data": gin.H{
+			"items":     users,
+			"total":     total,
+			"page":      p,
+			"page_size": pageSize,
+		},
 	})
 	return
 }
@@ -454,7 +479,15 @@ func GetUserModels(c *gin.Context) {
 		})
 		return
 	}
-	models := model.GetGroupModels(user.Group)
+	groups := setting.GetUserUsableGroups(user.Group)
+	var models []string
+	for group := range groups {
+		for _, g := range model.GetGroupModels(group) {
+			if !common.StringsContains(models, g) {
+				models = append(models, g)
+			}
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -813,9 +846,10 @@ func EmailBind(c *gin.Context) {
 		})
 		return
 	}
-	id := c.GetInt("id")
+	session := sessions.Default(c)
+	id := session.Get("id")
 	user := model.User{
-		Id: id,
+		Id: id.(int),
 	}
 	err := user.FillUserById()
 	if err != nil {

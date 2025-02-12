@@ -57,12 +57,22 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}
-	return CovertGemini2OpenAI(*request), nil
+	ai, err := CovertGemini2OpenAI(*request)
+	if err != nil {
+		return nil, err
+	}
+	return ai, nil
 }
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
 	return nil, nil
 }
+
+func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
+	//TODO implement me
+	return nil, errors.New("not implemented")
+}
+
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	return channel.DoApiRequest(a, c, info, requestBody)
@@ -72,7 +82,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	if info.IsStream {
 		err, usage = GeminiChatStreamHandler(c, resp, info)
 	} else {
-		err, usage = GeminiChatHandler(c, resp)
+		err, usage = GeminiChatHandler(c, resp, info)
 	}
 	return
 }

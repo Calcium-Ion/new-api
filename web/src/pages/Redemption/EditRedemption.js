@@ -71,7 +71,7 @@ const EditRedemption = (props) => {
     let name = inputs.name;
     if (!isEdit && inputs.name === '') {
       // set default name
-      name = t('新建兑换码') + ' ' + renderQuota(quota);
+      name = renderQuota(quota);
     }
     setLoading(true);
     let localInputs = inputs;

@@ -15,6 +15,7 @@ import (
 	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
+	"one-api/setting"
 	"strings"
 	"time"
 
@@ -92,25 +93,34 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		}
 	}
 	relayInfo.UpstreamModelName = textRequest.Model
+	relayInfo.RecodeModelName = textRequest.Model
 	modelPrice, getModelPriceSuccess := common.GetModelPrice(textRequest.Model, false)
-	groupRatio := common.GetGroupRatio(relayInfo.Group)
+	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 
 	var preConsumedQuota int
 	var ratio float64
 	var modelRatio float64
 	//err := service.SensitiveWordsCheck(textRequest)
 
-	if constant.ShouldCheckPromptSensitive() {
+	if setting.ShouldCheckPromptSensitive() {
 		err = checkRequestSensitive(textRequest, relayInfo)
 		if err != nil {
 			return service.OpenAIErrorWrapperLocal(err, "sensitive_words_detected", http.StatusBadRequest)
 		}
 	}
 
-	promptTokens, err := getPromptTokens(textRequest, relayInfo)
-	// count messages token error 计算promptTokens错误
-	if err != nil {
-		return service.OpenAIErrorWrapper(err, "count_token_messages_failed", http.StatusInternalServerError)
+	// 获取 promptTokens，如果上下文中已经存在，则直接使用
+	var promptTokens int
+	if value, exists := c.Get("prompt_tokens"); exists {
+		promptTokens = value.(int)
+		relayInfo.PromptTokens = promptTokens
+	} else {
+		promptTokens, err = getPromptTokens(textRequest, relayInfo)
+		// count messages token error 计算promptTokens错误
+		if err != nil {
+			return service.OpenAIErrorWrapper(err, "count_token_messages_failed", http.StatusInternalServerError)
+		}
+		c.Set("prompt_tokens", promptTokens)
 	}
 
 	if !getModelPriceSuccess {
@@ -209,10 +219,10 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		return openaiErr
 	}
 
-	if strings.HasPrefix(relayInfo.UpstreamModelName, "gpt-4o-audio") {
-		service.PostAudioConsumeQuota(c, relayInfo, usage.(*dto.Usage), ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, modelPrice, getModelPriceSuccess, "")
+	if strings.HasPrefix(relayInfo.RecodeModelName, "gpt-4o-audio") {
+		service.PostAudioConsumeQuota(c, relayInfo, usage.(*dto.Usage), preConsumedQuota, userQuota, modelRatio, groupRatio, modelPrice, getModelPriceSuccess, "")
 	} else {
-		postConsumeQuota(c, relayInfo, textRequest.Model, usage.(*dto.Usage), ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, modelPrice, getModelPriceSuccess, "")
+		postConsumeQuota(c, relayInfo, relayInfo.RecodeModelName, usage.(*dto.Usage), ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, modelPrice, getModelPriceSuccess, "")
 	}
 	return nil
 }
@@ -222,7 +232,7 @@ func getPromptTokens(textRequest *dto.GeneralOpenAIRequest, info *relaycommon.Re
 	var err error
 	switch info.RelayMode {
 	case relayconstant.RelayModeChatCompletions:
-		promptTokens, err = service.CountTokenChatRequest(*textRequest, textRequest.Model)
+		promptTokens, err = service.CountTokenChatRequest(info, *textRequest)
 	case relayconstant.RelayModeCompletions:
 		promptTokens, err = service.CountTokenInput(textRequest.Prompt, textRequest.Model)
 	case relayconstant.RelayModeModerations:
@@ -254,7 +264,7 @@ func checkRequestSensitive(textRequest *dto.GeneralOpenAIRequest, info *relaycom
 
 // 预扣费并返回用户剩余配额
 func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommon.RelayInfo) (int, int, *dto.OpenAIErrorWithStatusCode) {
-	userQuota, err := model.CacheGetUserQuota(relayInfo.UserId)
+	userQuota, err := model.GetUserQuota(relayInfo.UserId, false)
 	if err != nil {
 		return 0, 0, service.OpenAIErrorWrapperLocal(err, "get_user_quota_failed", http.StatusInternalServerError)
 	}
@@ -263,10 +273,6 @@ func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommo
 	}
 	if userQuota-preConsumedQuota < 0 {
 		return 0, 0, service.OpenAIErrorWrapperLocal(fmt.Errorf("chat pre-consumed quota failed, user quota: %d, need quota: %d", userQuota, preConsumedQuota), "insufficient_user_quota", http.StatusBadRequest)
-	}
-	err = model.CacheDecreaseUserQuota(relayInfo.UserId, preConsumedQuota)
-	if err != nil {
-		return 0, 0, service.OpenAIErrorWrapperLocal(err, "decrease_user_quota_failed", http.StatusInternalServerError)
 	}
 	if userQuota > 100*preConsumedQuota {
 		// 用户额度充足，判断令牌额度是否充足
@@ -285,10 +291,15 @@ func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommo
 			common.LogInfo(c, fmt.Sprintf("user %d with unlimited token has enough quota %d, trusted and no need to pre-consume", relayInfo.UserId, userQuota))
 		}
 	}
+
 	if preConsumedQuota > 0 {
-		userQuota, err = model.PreConsumeTokenQuota(relayInfo, preConsumedQuota)
+		err = model.PreConsumeTokenQuota(relayInfo, preConsumedQuota)
 		if err != nil {
 			return 0, 0, service.OpenAIErrorWrapperLocal(err, "pre_consume_token_quota_failed", http.StatusForbidden)
+		}
+		err = model.DecreaseUserQuota(relayInfo.UserId, preConsumedQuota)
+		if err != nil {
+			return 0, 0, service.OpenAIErrorWrapperLocal(err, "decrease_user_quota_failed", http.StatusInternalServerError)
 		}
 	}
 	return preConsumedQuota, userQuota, nil
@@ -299,7 +310,7 @@ func returnPreConsumedQuota(c *gin.Context, relayInfo *relaycommon.RelayInfo, us
 		go func() {
 			relayInfoCopy := *relayInfo
 
-			err := model.PostConsumeTokenQuota(&relayInfoCopy, userQuota, -preConsumedQuota, 0, false)
+			err := model.PostConsumeQuota(&relayInfoCopy, userQuota, -preConsumedQuota, 0, false)
 			if err != nil {
 				common.SysError("error return pre-consumed quota: " + err.Error())
 			}
@@ -357,14 +368,10 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, modelN
 		//}
 		quotaDelta := quota - preConsumedQuota
 		if quotaDelta != 0 {
-			err := model.PostConsumeTokenQuota(relayInfo, userQuota, quotaDelta, preConsumedQuota, true)
+			err := model.PostConsumeQuota(relayInfo, userQuota, quotaDelta, preConsumedQuota, true)
 			if err != nil {
 				common.LogError(ctx, "error consuming token remain quota: "+err.Error())
 			}
-		}
-		err := model.CacheUpdateUserQuota(relayInfo.UserId)
-		if err != nil {
-			common.LogError(ctx, "error update user quota cache: "+err.Error())
 		}
 		model.UpdateUserUsedQuotaAndRequestCount(relayInfo.UserId, quota)
 		model.UpdateChannelUsedQuota(relayInfo.ChannelId, quota)
@@ -384,7 +391,7 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, modelN
 	}
 	other := service.GenerateTextOtherInfo(ctx, relayInfo, modelRatio, groupRatio, completionRatio, modelPrice)
 	model.RecordConsumeLog(ctx, relayInfo.UserId, relayInfo.ChannelId, promptTokens, completionTokens, logModel,
-		tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, other)
+		tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, relayInfo.Group, other)
 
 	//if quota != 0 {
 	//

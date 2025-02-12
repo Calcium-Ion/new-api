@@ -10,25 +10,8 @@ import (
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+	"one-api/setting"
 )
-
-//func getAndValidateWssRequest(c *gin.Context, ws *websocket.Conn) (*dto.RealtimeEvent, error) {
-//	_, p, err := ws.ReadMessage()
-//	if err != nil {
-//		return nil, err
-//	}
-//	realtimeEvent := &dto.RealtimeEvent{}
-//	err = json.Unmarshal(p, realtimeEvent)
-//	if err != nil {
-//		return nil, err
-//	}
-//	// save the original request
-//	if realtimeEvent.Session == nil {
-//		return nil, errors.New("session object is nil")
-//	}
-//	c.Set("first_wss_request", p)
-//	return realtimeEvent, nil
-//}
 
 func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	relayInfo := relaycommon.GenRelayInfoWs(c, ws)
@@ -57,7 +40,7 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 	}
 	//relayInfo.UpstreamModelName = textRequest.Model
 	modelPrice, getModelPriceSuccess := common.GetModelPrice(relayInfo.UpstreamModelName, false)
-	groupRatio := common.GetGroupRatio(relayInfo.Group)
+	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 
 	var preConsumedQuota int
 	var ratio float64
@@ -128,32 +111,7 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 		return openaiErr
 	}
-	service.PostWssConsumeQuota(c, relayInfo, relayInfo.UpstreamModelName, usage.(*dto.RealtimeUsage), ratio, preConsumedQuota, userQuota, modelRatio, groupRatio, modelPrice, getModelPriceSuccess, "")
+	service.PostWssConsumeQuota(c, relayInfo, relayInfo.UpstreamModelName, usage.(*dto.RealtimeUsage), preConsumedQuota,
+		userQuota, modelRatio, groupRatio, modelPrice, getModelPriceSuccess, "")
 	return nil
 }
-
-//func getWssPromptTokens(textRequest *dto.RealtimeEvent, info *relaycommon.RelayInfo) (int, error) {
-//	var promptTokens int
-//	var err error
-//	switch info.RelayMode {
-//	default:
-//		promptTokens, err = service.CountTokenRealtime(*textRequest, info.UpstreamModelName)
-//	}
-//	info.PromptTokens = promptTokens
-//	return promptTokens, err
-//}
-
-//func checkWssRequestSensitive(textRequest *dto.GeneralOpenAIRequest, info *relaycommon.RelayInfo) error {
-//	var err error
-//	switch info.RelayMode {
-//	case relayconstant.RelayModeChatCompletions:
-//		err = service.CheckSensitiveMessages(textRequest.Messages)
-//	case relayconstant.RelayModeCompletions:
-//		err = service.CheckSensitiveInput(textRequest.Prompt)
-//	case relayconstant.RelayModeModerations:
-//		err = service.CheckSensitiveInput(textRequest.Input)
-//	case relayconstant.RelayModeEmbeddings:
-//		err = service.CheckSensitiveInput(textRequest.Input)
-//	}
-//	return err
-//}

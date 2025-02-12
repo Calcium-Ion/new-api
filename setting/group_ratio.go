@@ -1,33 +1,47 @@
-package common
+package setting
 
 import (
 	"encoding/json"
 	"errors"
+	"one-api/common"
 )
 
-var GroupRatio = map[string]float64{
+var groupRatio = map[string]float64{
 	"default": 1,
 	"vip":     1,
 	"svip":    1,
 }
 
+func GetGroupRatioCopy() map[string]float64 {
+	groupRatioCopy := make(map[string]float64)
+	for k, v := range groupRatio {
+		groupRatioCopy[k] = v
+	}
+	return groupRatioCopy
+}
+
+func ContainsGroupRatio(name string) bool {
+	_, ok := groupRatio[name]
+	return ok
+}
+
 func GroupRatio2JSONString() string {
-	jsonBytes, err := json.Marshal(GroupRatio)
+	jsonBytes, err := json.Marshal(groupRatio)
 	if err != nil {
-		SysError("error marshalling model ratio: " + err.Error())
+		common.SysError("error marshalling model ratio: " + err.Error())
 	}
 	return string(jsonBytes)
 }
 
 func UpdateGroupRatioByJSONString(jsonStr string) error {
-	GroupRatio = make(map[string]float64)
-	return json.Unmarshal([]byte(jsonStr), &GroupRatio)
+	groupRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &groupRatio)
 }
 
 func GetGroupRatio(name string) float64 {
-	ratio, ok := GroupRatio[name]
+	ratio, ok := groupRatio[name]
 	if !ok {
-		SysError("group ratio not found: " + name)
+		common.SysError("group ratio not found: " + name)
 		return 1
 	}
 	return ratio

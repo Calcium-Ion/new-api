@@ -1,0 +1,7 @@
+.github
+.git
+*.md
+.vscode
+.gitignore
+Makefile
+docs

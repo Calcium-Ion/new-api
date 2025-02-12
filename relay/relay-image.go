@@ -9,11 +9,11 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
-	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+	"one-api/setting"
 	"strings"
 )
 
@@ -59,7 +59,7 @@ func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	//if imageRequest.N != 0 && (imageRequest.N < 1 || imageRequest.N > 10) {
 	//	return service.OpenAIErrorWrapper(errors.New("n must be between 1 and 10"), "invalid_field_value", http.StatusBadRequest)
 	//}
-	if constant.ShouldCheckPromptSensitive() {
+	if setting.ShouldCheckPromptSensitive() {
 		err := service.CheckSensitiveInput(imageRequest.Prompt)
 		if err != nil {
 			return nil, err
@@ -99,8 +99,8 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		modelPrice = 0.0025 * modelRatio
 	}
 
-	groupRatio := common.GetGroupRatio(relayInfo.Group)
-	userQuota, err := model.CacheGetUserQuota(relayInfo.UserId)
+	groupRatio := setting.GetGroupRatio(relayInfo.Group)
+	userQuota, err := model.GetUserQuota(relayInfo.UserId, false)
 
 	sizeRatio := 1.0
 	// Size

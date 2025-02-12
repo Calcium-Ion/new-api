@@ -231,6 +231,7 @@ const UsersTable = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
+  const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchGroup, setSearchGroup] = useState('');
@@ -241,14 +242,6 @@ const UsersTable = () => {
   const [editingUser, setEditingUser] = useState({
     id: undefined,
   });
-
-  const setCount = (data) => {
-    if (data.length >= activePage * ITEMS_PER_PAGE) {
-      setUserCount(data.length + 1);
-    } else {
-      setUserCount(data.length);
-    }
-  };
 
   const removeRecord = (key) => {
     let newDataSource = [...users];
@@ -263,37 +256,30 @@ const UsersTable = () => {
     }
   };
 
-  const loadUsers = async (startIdx) => {
-    const res = await API.get(`/api/user/?p=${startIdx}`);
+  const setUserFormat = (users) => {
+    for (let i = 0; i < users.length; i++) {
+      users[i].key = users[i].id;
+    }
+    setUsers(users);
+  }
+
+  const loadUsers = async (startIdx, pageSize) => {
+    const res = await API.get(`/api/user/?p=${startIdx}&page_size=${pageSize}`);
     const { success, message, data } = res.data;
     if (success) {
-      if (startIdx === 0) {
-        setUsers(data);
-        setCount(data);
-      } else {
-        let newUsers = users;
-        newUsers.push(...data);
-        setUsers(newUsers);
-        setCount(newUsers);
-      }
+      const newPageData = data.items;
+      setActivePage(data.page);
+      setUserCount(data.total);
+      setUserFormat(newPageData);
     } else {
       showError(message);
     }
     setLoading(false);
   };
 
-  const onPaginationChange = (e, { activePage }) => {
-    (async () => {
-      if (activePage === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
-        // In this case we have to load more data and then append them.
-        await loadUsers(activePage - 1);
-      }
-      setActivePage(activePage);
-    })();
-  };
 
   useEffect(() => {
-    loadUsers(0)
+    loadUsers(0, pageSize)
       .then()
       .catch((reason) => {
         showError(reason);
@@ -341,21 +327,22 @@ const UsersTable = () => {
     }
   };
 
-  const searchUsers = async (searchKeyword, searchGroup) => {
+  const searchUsers = async (startIdx, pageSize, searchKeyword, searchGroup) => {
     if (searchKeyword === '' && searchGroup === '') {
-      // if keyword is blank, load files instead.
-      await loadUsers(0);
-      setActivePage(1);
-      return;
+        // if keyword is blank, load files instead.
+        await loadUsers(startIdx, pageSize);
+        return;
     }
     setSearching(true);
-    const res = await API.get(`/api/user/search?keyword=${searchKeyword}&group=${searchGroup}`);
+    const res = await API.get(`/api/user/search?keyword=${searchKeyword}&group=${searchGroup}&p=${startIdx}&page_size=${pageSize}`);
     const { success, message, data } = res.data;
     if (success) {
-      setUsers(data);
-      setActivePage(1);
+        const newPageData = data.items;
+        setActivePage(data.page);
+        setUserCount(data.total);
+        setUserFormat(newPageData);
     } else {
-      showError(message);
+        showError(message);
     }
     setSearching(false);
   };
@@ -364,32 +351,14 @@ const UsersTable = () => {
     setSearchKeyword(value.trim());
   };
 
-  const sortUser = (key) => {
-    if (users.length === 0) return;
-    setLoading(true);
-    let sortedUsers = [...users];
-    sortedUsers.sort((a, b) => {
-      return ('' + a[key]).localeCompare(b[key]);
-    });
-    if (sortedUsers[0].id === users[0].id) {
-      sortedUsers.reverse();
-    }
-    setUsers(sortedUsers);
-    setLoading(false);
-  };
-
   const handlePageChange = (page) => {
     setActivePage(page);
-    if (page === Math.ceil(users.length / ITEMS_PER_PAGE) + 1) {
-      // In this case we have to load more data and then append them.
-      loadUsers(page - 1).then((r) => {});
+    if (searchKeyword === '' && searchGroup === '') {
+        loadUsers(page, pageSize).then();
+    } else {
+        searchUsers(page, pageSize, searchKeyword, searchGroup).then();
     }
   };
-
-  const pageData = users.slice(
-    (activePage - 1) * ITEMS_PER_PAGE,
-    activePage * ITEMS_PER_PAGE,
-  );
 
   const closeAddUser = () => {
     setShowAddUser(false);
@@ -403,10 +372,11 @@ const UsersTable = () => {
   };
 
   const refresh = async () => {
+    setActivePage(1)
     if (searchKeyword === '') {
-      await loadUsers(activePage - 1);
+      await loadUsers(activePage, pageSize);
     } else {
-      await searchUsers();
+      await searchUsers(searchKeyword, searchGroup);
     }
   };
 
@@ -429,6 +399,17 @@ const UsersTable = () => {
     }
   };
 
+  const handlePageSizeChange = async (size) => {
+    localStorage.setItem('page-size', size + '');
+    setPageSize(size);
+    setActivePage(1);
+    loadUsers(activePage, size)
+      .then()
+      .catch((reason) => {
+        showError(reason);
+      });
+  };
+
   return (
     <>
       <AddUser
@@ -444,29 +425,32 @@ const UsersTable = () => {
       ></EditUser>
       <Form
         onSubmit={() => {
-          searchUsers(searchKeyword, searchGroup);
+          searchUsers(activePage, pageSize, searchKeyword, searchGroup);
         }}
         labelPosition='left'
       >
         <div style={{ display: 'flex' }}>
           <Space>
-            <Form.Input
-              label={t('搜索关键字')}
-              icon='search'
-              field='keyword'
-              iconPosition='left'
-              placeholder={t('搜索用户的 ID，用户名，显示名称，以及邮箱地址 ...')}
-              value={searchKeyword}
-              loading={searching}
-              onChange={(value) => handleKeywordChange(value)}
-            />
+            <Tooltip content={t('支持搜索用户的 ID、用户名、显示名称和邮箱地址')}>
+              <Form.Input
+                label={t('搜索关键字')}
+                icon='search'
+                field='keyword'
+                iconPosition='left'
+                placeholder={t('搜索关键字')}
+                value={searchKeyword}
+                loading={searching}
+                onChange={(value) => handleKeywordChange(value)}
+              />
+            </Tooltip>
+            
             <Form.Select
               field='group'
               label={t('分组')}
               optionList={groupOptions}
               onChange={(value) => {
                 setSearchGroup(value);
-                searchUsers(searchKeyword, value);
+                searchUsers(activePage, pageSize, searchKeyword, value);
               }}
             />
             <Button
@@ -492,7 +476,7 @@ const UsersTable = () => {
 
       <Table
         columns={columns}
-        dataSource={pageData}
+        dataSource={users}
         pagination={{
           formatPageText: (page) =>
             t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
@@ -501,9 +485,13 @@ const UsersTable = () => {
               total: users.length
             }),
           currentPage: activePage,
-          pageSize: ITEMS_PER_PAGE,
+          pageSize: pageSize,
           total: userCount,
           pageSizeOpts: [10, 20, 50, 100],
+          showSizeChanger: true,
+          onPageSizeChange: (size) => {
+            handlePageSizeChange(size);
+          },
           onPageChange: handlePageChange,
         }}
         loading={loading}

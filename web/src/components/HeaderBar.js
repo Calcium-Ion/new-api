@@ -199,7 +199,7 @@ const HeaderBar = () => {
                       </Dropdown.Menu>
                     }
                   >
-                    <Nav.Item itemKey={'new-year'} text={'🏮'} />
+                    <Nav.Item itemKey={'new-year'} text={'🎉'} />
                   </Dropdown>
                 )}
                 {/* <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} /> */}

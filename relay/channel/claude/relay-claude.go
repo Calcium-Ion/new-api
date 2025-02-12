@@ -225,9 +225,12 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 						// 判断是否是url
 						if strings.HasPrefix(imageUrl.Url, "http") {
 							// 是url，获取图片的类型和base64编码的数据
-							mimeType, data, _ := service.GetImageFromUrl(imageUrl.Url)
-							claudeMediaMessage.Source.MediaType = mimeType
-							claudeMediaMessage.Source.Data = data
+							fileData, err := service.GetFileBase64FromUrl(imageUrl.Url)
+							if err != nil {
+								return nil, fmt.Errorf("get file base64 from url failed: %s", err.Error())
+							}
+							claudeMediaMessage.Source.MediaType = fileData.MimeType
+							claudeMediaMessage.Source.Data = fileData.Base64Data
 						} else {
 							_, format, base64String, err := service.DecodeBase64ImageData(imageUrl.Url)
 							if err != nil {
@@ -240,14 +243,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 					claudeMediaMessages = append(claudeMediaMessages, claudeMediaMessage)
 				}
 				if message.ToolCalls != nil {
-					for _, tc := range message.ToolCalls.([]interface{}) {
-						toolCallJSON, _ := json.Marshal(tc)
-						var toolCall dto.ToolCall
-						err := json.Unmarshal(toolCallJSON, &toolCall)
-						if err != nil {
-							common.SysError("tool call is not a dto.ToolCall: " + fmt.Sprintf("%v", tc))
-							continue
-						}
+					for _, toolCall := range message.ParseToolCalls() {
 						inputObj := make(map[string]any)
 						if err := json.Unmarshal([]byte(toolCall.Function.Arguments), &inputObj); err != nil {
 							common.SysError("tool call function arguments is not a map[string]any: " + fmt.Sprintf("%v", toolCall.Function.Arguments))
@@ -393,7 +389,7 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	}
 	choice.SetStringContent(responseText)
 	if len(tools) > 0 {
-		choice.Message.ToolCalls = tools
+		choice.Message.SetToolCalls(tools)
 	}
 	fullTextResponse.Model = claudeResponse.Model
 	choices = append(choices, choice)

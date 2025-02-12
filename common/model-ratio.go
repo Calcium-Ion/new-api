@@ -32,28 +32,42 @@ var defaultModelRatio = map[string]float64{
 	"gpt-4-0613": 15,
 	"gpt-4-32k":  30,
 	//"gpt-4-32k-0314":               30, //deprecated
-	"gpt-4-32k-0613":                  30,
-	"gpt-4-1106-preview":              5,    // $10 / 1M tokens
-	"gpt-4-0125-preview":              5,    // $10 / 1M tokens
-	"gpt-4-turbo-preview":             5,    // $10 / 1M tokens
-	"gpt-4-vision-preview":            5,    // $10 / 1M tokens
-	"gpt-4-1106-vision-preview":       5,    // $10 / 1M tokens
-	"chatgpt-4o-latest":               2.5,  // $5 / 1M tokens
-	"gpt-4o":                          1.25, // $2.5 / 1M tokens
-	"gpt-4o-audio-preview":            1.25, // $2.5 / 1M tokens
-	"gpt-4o-audio-preview-2024-10-01": 1.25, // $2.5 / 1M tokens
-	"gpt-4o-2024-05-13":               2.5,  // $5 / 1M tokens
-	"gpt-4o-2024-08-06":               1.25, // $2.5 / 1M tokens
-	"gpt-4o-2024-11-20":               1.25, // $2.5 / 1M tokens
-	"gpt-4o-realtime-preview":         2.5,
-	"o1-preview":                      7.5,
-	"o1-preview-2024-09-12":           7.5,
-	"o1-mini":                         1.5,
-	"o1-mini-2024-09-12":              1.5,
-	"gpt-4o-mini":                     0.075,
-	"gpt-4o-mini-2024-07-18":          0.075,
-	"gpt-4-turbo":                     5, // $0.01 / 1K tokens
-	"gpt-4-turbo-2024-04-09":          5, // $0.01 / 1K tokens
+	"gpt-4-32k-0613":                          30,
+	"gpt-4-1106-preview":                      5,    // $10 / 1M tokens
+	"gpt-4-0125-preview":                      5,    // $10 / 1M tokens
+	"gpt-4-turbo-preview":                     5,    // $10 / 1M tokens
+	"gpt-4-vision-preview":                    5,    // $10 / 1M tokens
+	"gpt-4-1106-vision-preview":               5,    // $10 / 1M tokens
+	"chatgpt-4o-latest":                       2.5,  // $5 / 1M tokens
+	"gpt-4o":                                  1.25, // $2.5 / 1M tokens
+	"gpt-4o-audio-preview":                    1.25, // $2.5 / 1M tokens
+	"gpt-4o-audio-preview-2024-10-01":         1.25, // $2.5 / 1M tokens
+	"gpt-4o-2024-05-13":                       2.5,  // $5 / 1M tokens
+	"gpt-4o-2024-08-06":                       1.25, // $2.5 / 1M tokens
+	"gpt-4o-2024-11-20":                       1.25, // $2.5 / 1M tokens
+	"gpt-4o-realtime-preview":                 2.5,
+	"gpt-4o-realtime-preview-2024-10-01":      2.5,
+	"gpt-4o-realtime-preview-2024-12-17":      2.5,
+	"gpt-4o-mini-realtime-preview":            0.3,
+	"gpt-4o-mini-realtime-preview-2024-12-17": 0.3,
+	"o1":                        7.5,
+	"o1-2024-12-17":             7.5,
+	"o1-preview":                7.5,
+	"o1-preview-2024-09-12":     7.5,
+	"o1-mini":                   0.55,
+	"o1-mini-2024-09-12":        0.55,
+	"o3-mini":                   0.55,
+	"o3-mini-2025-01-31":        0.55,
+	"o3-mini-high":              0.55,
+	"o3-mini-2025-01-31-high":   0.55,
+	"o3-mini-low":               0.55,
+	"o3-mini-2025-01-31-low":    0.55,
+	"o3-mini-medium":            0.55,
+	"o3-mini-2025-01-31-medium": 0.55,
+	"gpt-4o-mini":               0.075,
+	"gpt-4o-mini-2024-07-18":    0.075,
+	"gpt-4-turbo":               5, // $0.01 / 1K tokens
+	"gpt-4-turbo-2024-04-09":    5, // $0.01 / 1K tokens
 	//"gpt-3.5-turbo-0301":           0.75, //deprecated
 	"gpt-3.5-turbo":          0.25,
 	"gpt-3.5-turbo-0613":     0.75,
@@ -177,8 +191,9 @@ var defaultModelRatio = map[string]float64{
 	"command-r-plus":         1.5,
 	"command-r-08-2024":      0.075,
 	"command-r-plus-08-2024": 1.25,
-	"deepseek-chat":          0.07,
-	"deepseek-coder":         0.07,
+	"deepseek-chat":          0.27 / 2,
+	"deepseek-coder":         0.27 / 2,
+	"deepseek-reasoner":      0.55 / 2, // 0.55 / 1k tokens
 	// Perplexity online 模型对搜索额外收费，有需要应自行调整，此处不计入搜索费用
 	"llama-3-sonar-small-32k-chat":   0.2 / 1000 * USD,
 	"llama-3-sonar-small-32k-online": 0.2 / 1000 * USD,
@@ -336,9 +351,12 @@ func UpdateCompletionRatioByJSONString(jsonStr string) error {
 }
 
 func GetCompletionRatio(name string) float64 {
-	if ratio, ok := CompletionRatio[name]; ok {
-		return ratio
+	if strings.Contains(name, "/") {
+		if ratio, ok := CompletionRatio[name]; ok {
+			return ratio
+		}
 	}
+	lowercaseName := strings.ToLower(name)
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
 	}
@@ -357,7 +375,7 @@ func GetCompletionRatio(name string) float64 {
 		}
 		return 2
 	}
-	if strings.HasPrefix(name, "o1-") {
+	if strings.HasPrefix(name, "o1") || strings.HasPrefix(name, "o3") {
 		return 4
 	}
 	if name == "chatgpt-4o-latest" {
@@ -398,11 +416,12 @@ func GetCompletionRatio(name string) float64 {
 		case "command-r-plus-08-2024":
 			return 4
 		default:
-			return 2
+			return 4
 		}
 	}
-	if strings.HasPrefix(name, "deepseek") {
-		return 2
+	// hint 只给官方上4倍率，由于开源模型供应商自行定价，不对其进行补全倍率进行强制对齐
+	if lowercaseName == "deepseek-chat" || lowercaseName == "deepseek-reasoner" {
+		return 4
 	}
 	if strings.HasPrefix(name, "ERNIE-Speed-") {
 		return 2
@@ -421,20 +440,38 @@ func GetCompletionRatio(name string) float64 {
 	case "llama3-70b-8192":
 		return 0.79 / 0.59
 	}
+	if ratio, ok := CompletionRatio[name]; ok {
+		return ratio
+	}
 	return 1
 }
 
 func GetAudioRatio(name string) float64 {
-	if strings.HasPrefix(name, "gpt-4o-realtime") {
-		return 20
-	} else if strings.HasPrefix(name, "gpt-4o-audio") {
-		return 40
+	if strings.Contains(name, "-realtime") {
+		if strings.HasSuffix(name, "gpt-4o-realtime-preview-2024-12-17") {
+			return 8
+		} else if strings.Contains(name, "mini") {
+			return 10 / 0.6
+		} else {
+			return 20
+		}
+	}
+	if strings.Contains(name, "-audio") {
+		if strings.HasSuffix(name, "gpt-4o-audio-preview-2024-12-17") {
+			return 16
+		} else if strings.Contains(name, "mini") {
+			return 10 / 0.15
+		} else {
+			return 40
+		}
 	}
 	return 20
 }
 
 func GetAudioCompletionRatio(name string) float64 {
 	if strings.HasPrefix(name, "gpt-4o-realtime") {
+		return 2
+	} else if strings.HasPrefix(name, "gpt-4o-mini-realtime") {
 		return 2
 	}
 	return 2

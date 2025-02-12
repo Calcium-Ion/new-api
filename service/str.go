@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	goahocorasick "github.com/anknown/ahocorasick"
-	"one-api/constant"
+	"one-api/setting"
 	"strings"
 )
 
@@ -70,7 +70,7 @@ func InitAc() *goahocorasick.Machine {
 func readRunes() [][]rune {
 	var dict [][]rune
 
-	for _, word := range constant.SensitiveWords {
+	for _, word := range setting.SensitiveWords {
 		word = strings.ToLower(word)
 		l := bytes.TrimSpace([]byte(word))
 		dict = append(dict, bytes.Runes(l))

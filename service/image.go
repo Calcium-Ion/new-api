@@ -5,11 +5,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"golang.org/x/image/webp"
 	"image"
 	"io"
 	"one-api/common"
 	"strings"
+
+	"golang.org/x/image/webp"
 )
 
 func DecodeBase64ImageData(base64String string) (image.Config, string, string, error) {
@@ -31,14 +32,39 @@ func DecodeBase64ImageData(base64String string) (image.Config, string, string, e
 	return config, format, base64String, err
 }
 
+func DecodeBase64FileData(base64String string) (string, string, error) {
+	var mimeType string
+	var idx int
+	idx = strings.Index(base64String, ",")
+	if idx == -1 {
+		_, file_type, base64, err := DecodeBase64ImageData(base64String)
+		return "image/" + file_type, base64, err
+	}
+	mimeType = base64String[:idx]
+	base64String = base64String[idx+1:]
+	idx = strings.Index(mimeType, ";")
+	if idx == -1 {
+		_, file_type, base64, err := DecodeBase64ImageData(base64String)
+		return "image/" + file_type, base64, err
+	}
+	mimeType = mimeType[:idx]
+	idx = strings.Index(mimeType, ":")
+	if idx == -1 {
+		_, file_type, base64, err := DecodeBase64ImageData(base64String)
+		return "image/" + file_type, base64, err
+	}
+	mimeType = mimeType[idx+1:]
+	return mimeType, base64String, nil
+}
+
 // GetImageFromUrl 获取图片的类型和base64编码的数据
 func GetImageFromUrl(url string) (mimeType string, data string, err error) {
-	resp, err := DoImageRequest(url)
+	resp, err := DoDownloadRequest(url)
 	if err != nil {
-		return
+		return "", "", err
 	}
 	if !strings.HasPrefix(resp.Header.Get("Content-Type"), "image/") {
-		return
+		return "", "", fmt.Errorf("invalid content type: %s, required image/*", resp.Header.Get("Content-Type"))
 	}
 	defer resp.Body.Close()
 	buffer := bytes.NewBuffer(nil)
@@ -52,7 +78,7 @@ func GetImageFromUrl(url string) (mimeType string, data string, err error) {
 }
 
 func DecodeUrlImageData(imageUrl string) (image.Config, string, error) {
-	response, err := DoImageRequest(imageUrl)
+	response, err := DoDownloadRequest(imageUrl)
 	if err != nil {
 		common.SysLog(fmt.Sprintf("fail to get image from url: %s", err.Error()))
 		return image.Config{}, "", err
@@ -62,6 +88,12 @@ func DecodeUrlImageData(imageUrl string) (image.Config, string, error) {
 	if response.StatusCode != 200 {
 		err = errors.New(fmt.Sprintf("fail to get image from url: %s", response.Status))
 		return image.Config{}, "", err
+	}
+
+	mimeType := response.Header.Get("Content-Type")
+
+	if !strings.HasPrefix(mimeType, "image/") {
+		return image.Config{}, "", fmt.Errorf("invalid content type: %s, required image/*", mimeType)
 	}
 
 	var readData []byte

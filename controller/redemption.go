@@ -1,19 +1,24 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/common"
 	"one-api/model"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetAllRedemptions(c *gin.Context) {
 	p, _ := strconv.Atoi(c.Query("p"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
 	if p < 0 {
 		p = 0
 	}
-	redemptions, err := model.GetAllRedemptions(p*common.ItemsPerPage, common.ItemsPerPage)
+	if pageSize < 1 {
+		pageSize = common.ItemsPerPage
+	}
+	redemptions, total, err := model.GetAllRedemptions((p-1)*pageSize, pageSize)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -24,14 +29,27 @@ func GetAllRedemptions(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    redemptions,
+		"data": gin.H{
+			"items":     redemptions,
+			"total":     total,
+			"page":      p,
+			"page_size": pageSize,
+		},
 	})
 	return
 }
 
 func SearchRedemptions(c *gin.Context) {
 	keyword := c.Query("keyword")
-	redemptions, err := model.SearchRedemptions(keyword)
+	p, _ := strconv.Atoi(c.Query("p"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if p < 0 {
+		p = 0
+	}
+	if pageSize < 1 {
+		pageSize = common.ItemsPerPage
+	}
+	redemptions, total, err := model.SearchRedemptions(keyword, (p-1)*pageSize, pageSize)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -42,7 +60,12 @@ func SearchRedemptions(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    redemptions,
+		"data": gin.H{
+			"items":     redemptions,
+			"total":     total,
+			"page":      p,
+			"page_size": pageSize,
+		},
 	})
 	return
 }

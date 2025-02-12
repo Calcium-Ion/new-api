@@ -1,9 +1,9 @@
 package model
 
 import (
+	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
 	"one-api/common"
@@ -12,6 +12,20 @@ import (
 	"sync"
 	"time"
 )
+
+var groupCol string
+var keyCol string
+
+func initCol() {
+	if common.UsingPostgreSQL {
+		groupCol = `"group"`
+		keyCol = `"key"`
+
+	} else {
+		groupCol = "`group`"
+		keyCol = "`key`"
+	}
+}
 
 var DB *gorm.DB
 
@@ -41,6 +55,9 @@ func createRootAccountIfNeed() error {
 }
 
 func chooseDB(envName string) (*gorm.DB, error) {
+	defer func() {
+		initCol()
+	}()
 	dsn := os.Getenv(envName)
 	if dsn != "" {
 		if strings.HasPrefix(dsn, "postgres://") {
@@ -102,12 +119,9 @@ func InitDB() (err error) {
 		if !common.IsMasterNode {
 			return nil
 		}
-		//if common.UsingMySQL {
-		//	_, _ = sqlDB.Exec("DROP INDEX idx_channels_key ON channels;")             // TODO: delete this line when most users have upgraded
-		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY action VARCHAR(40);")   // TODO: delete this line when most users have upgraded
-		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY progress VARCHAR(30);") // TODO: delete this line when most users have upgraded
-		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY status VARCHAR(20);")   // TODO: delete this line when most users have upgraded
-		//}
+		if common.UsingMySQL {
+			_, _ = sqlDB.Exec("ALTER TABLE channels MODIFY model_mapping TEXT;") // TODO: delete this line when most users have upgraded
+		}
 		common.SysLog("database migration started")
 		err = migrateDB()
 		return err

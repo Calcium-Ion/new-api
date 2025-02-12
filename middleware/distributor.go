@@ -10,8 +10,10 @@ import (
 	"one-api/model"
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
+	"one-api/setting"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,16 +40,16 @@ func Distribute() func(c *gin.Context) {
 			abortWithOpenAiMessage(c, http.StatusBadRequest, "Invalid request, "+err.Error())
 			return
 		}
-		userGroup, _ := model.CacheGetUserGroup(userId)
+		userGroup, _ := model.GetUserGroup(userId, false)
 		tokenGroup := c.GetString("token_group")
 		if tokenGroup != "" {
 			// check common.UserUsableGroups[userGroup]
-			if _, ok := common.GetUserUsableGroups(userGroup)[tokenGroup]; !ok {
+			if _, ok := setting.GetUserUsableGroups(userGroup)[tokenGroup]; !ok {
 				abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("令牌分组 %s 已被禁用", tokenGroup))
 				return
 			}
 			// check group in common.GroupRatio
-			if _, ok := common.GroupRatio[tokenGroup]; !ok {
+			if !setting.ContainsGroupRatio(tokenGroup) {
 				abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("分组 %s 已被弃用", tokenGroup))
 				return
 			}
@@ -112,6 +114,7 @@ func Distribute() func(c *gin.Context) {
 				}
 			}
 		}
+		c.Set(constant.ContextKeyRequestStartTime, time.Now())
 		SetupContextForSelectedChannel(c, channel, modelRequest.Model)
 		c.Next()
 	}
@@ -235,6 +238,8 @@ func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, mode
 	case common.ChannelTypeAli:
 		c.Set("plugin", channel.Other)
 	case common.ChannelCloudflare:
+		c.Set("api_version", channel.Other)
+	case common.ChannelTypeMokaAI:
 		c.Set("api_version", channel.Other)
 	}
 }

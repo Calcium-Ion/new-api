@@ -49,8 +49,18 @@ export async function copy(text) {
   try {
     await navigator.clipboard.writeText(text);
   } catch (e) {
-    okay = false;
-    console.error(e);
+    try {
+      // 构建input 执行 复制命令
+      var _input = window.document.createElement("input");
+      _input.value = text;
+      window.document.body.appendChild(_input);
+      _input.select();
+      window.document.execCommand("Copy");
+      window.document.body.removeChild(_input);
+    } catch (e) {
+      okay = false;
+      console.error(e);
+    }
   }
   return okay;
 }
@@ -180,6 +190,9 @@ export function timestamp2string1(timestamp, dataExportDefaultTime = 'hour') {
   let month = (date.getMonth() + 1).toString();
   let day = date.getDate().toString();
   let hour = date.getHours().toString();
+  if (day === '24') {
+    console.log("timestamp", timestamp);
+  }
   if (month.length === 1) {
     month = '0' + month;
   }

@@ -135,7 +135,10 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		c.Set("request_model", request.Model)
 		return vertexClaudeReq, nil
 	} else if a.RequestMode == RequestModeGemini {
-		geminiRequest := gemini.CovertGemini2OpenAI(*request)
+		geminiRequest, err := gemini.CovertGemini2OpenAI(*request)
+		if err != nil {
+			return nil, err
+		}
 		c.Set("request_model", request.Model)
 		return geminiRequest, nil
 	} else if a.RequestMode == RequestModeLlama {
@@ -147,6 +150,12 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
 	return nil, nil
 }
+
+func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
+	//TODO implement me
+	return nil, errors.New("not implemented")
+}
+
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	return channel.DoApiRequest(a, c, info, requestBody)
@@ -167,7 +176,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		case RequestModeClaude:
 			err, usage = claude.ClaudeHandler(c, resp, claude.RequestModeMessage, info)
 		case RequestModeGemini:
-			err, usage = gemini.GeminiChatHandler(c, resp)
+			err, usage = gemini.GeminiChatHandler(c, resp, info)
 		case RequestModeLlama:
 			err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.OriginModelName)
 		}

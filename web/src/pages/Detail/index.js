@@ -143,8 +143,7 @@ const Detail = (props) => {
         content: [
           {
             key: (datum) => datum['Model'],
-            value: (datum) =>
-              renderQuotaNumberWithDigit(parseFloat(datum['Usage']), 4),
+            value: (datum) => renderQuota(datum['rawQuota'] || 0, 4),
           },
         ],
       },
@@ -152,22 +151,28 @@ const Detail = (props) => {
         content: [
           {
             key: (datum) => datum['Model'],
-            value: (datum) => datum['Usage'],
+            value: (datum) => datum['rawQuota'] || 0,
           },
         ],
         updateContent: (array) => {
           array.sort((a, b) => b.value - a.value);
           let sum = 0;
           for (let i = 0; i < array.length; i++) {
-            sum += parseFloat(array[i].value);
-            array[i].value = renderQuotaNumberWithDigit(
-              parseFloat(array[i].value),
-              4,
-            );
+            if (array[i].key == "其他") {
+              continue;
+            }
+            let value = parseFloat(array[i].value);
+            if (isNaN(value)) {
+              value = 0;
+            }
+            if (array[i].datum && array[i].datum.TimeSum) {
+              sum = array[i].datum.TimeSum;
+            }
+            array[i].value = renderQuota(value, 4);
           }
           array.unshift({
             key: t('总计'),
-            value: renderQuotaNumberWithDigit(sum, 4),
+            value: renderQuota(sum, 4),
           });
           return array;
         },
@@ -212,19 +217,8 @@ const Detail = (props) => {
             created_at: now.getTime() / 1000,
           });
         }
-        // 根据dataExportDefaultTime重制时间粒度
-        let timeGranularity = 3600;
-        if (dataExportDefaultTime === 'day') {
-          timeGranularity = 86400;
-        } else if (dataExportDefaultTime === 'week') {
-          timeGranularity = 604800;
-        }
         // sort created_at
         data.sort((a, b) => a.created_at - b.created_at);
-        data.forEach((item) => {
-          item['created_at'] =
-            Math.floor(item['created_at'] / timeGranularity) * timeGranularity;
-        });
         updateChartData(data);
       } else {
         showError(message);
@@ -250,14 +244,14 @@ const Detail = (props) => {
     let uniqueModels = new Set();
     let totalTokens = 0;
 
-    // 收集所有唯一的模型名称和时间点
-    let uniqueTimes = new Set();
+    // 收集所有唯一的模型名称
     data.forEach(item => {
       uniqueModels.add(item.model_name);
-      uniqueTimes.add(timestamp2string1(item.created_at, dataExportDefaultTime));
       totalTokens += item.token_used;
+      totalQuota += item.quota;
+      totalTimes += item.count;
     });
-    
+
     // 处理颜色映射
     const newModelColors = {};
     Array.from(uniqueModels).forEach((modelName) => {
@@ -267,56 +261,82 @@ const Detail = (props) => {
     });
     setModelColors(newModelColors);
 
-    // 处理饼图数据
-    for (let item of data) {
-      totalQuota += item.quota;
-      totalTimes += item.count;
-      
-      let pieItem = newPieData.find((it) => it.type === item.model_name);
-      if (pieItem) {
-        pieItem.value += item.count;
-      } else {
-        newPieData.push({
-          type: item.model_name,
-          value: item.count,
+    // 按时间和模型聚合数据
+    let aggregatedData = new Map();
+    data.forEach(item => {
+      const timeKey = timestamp2string1(item.created_at, dataExportDefaultTime);
+      const modelKey = item.model_name;
+      const key = `${timeKey}-${modelKey}`;
+
+      if (!aggregatedData.has(key)) {
+        aggregatedData.set(key, {
+          time: timeKey,
+          model: modelKey,
+          quota: 0,
+          count: 0
         });
       }
+      
+      const existing = aggregatedData.get(key);
+      existing.quota += item.quota;
+      existing.count += item.count;
+    });
+
+    // 处理饼图数据
+    let modelTotals = new Map();
+    for (let [_, value] of aggregatedData) {
+      if (!modelTotals.has(value.model)) {
+        modelTotals.set(value.model, 0);
+      }
+      modelTotals.set(value.model, modelTotals.get(value.model) + value.count);
     }
 
-    // 处理柱状图数据
-    let timePoints = Array.from(uniqueTimes);
+    newPieData = Array.from(modelTotals).map(([model, count]) => ({
+      type: model,
+      value: count
+    }));
+
+    // 生成时间点序列
+    let timePoints = Array.from(new Set([...aggregatedData.values()].map(d => d.time)));
     if (timePoints.length < 7) {
-      // 根据时间粒度生成合适的时间点
-      const generateTimePoints = () => {
-        let lastTime = Math.max(...data.map(item => item.created_at));
-        let points = [];
-        let interval = dataExportDefaultTime === 'hour' ? 3600 
+      const lastTime = Math.max(...data.map(item => item.created_at));
+      const interval = dataExportDefaultTime === 'hour' ? 3600 
                       : dataExportDefaultTime === 'day' ? 86400 
                       : 604800;
-
-        for (let i = 0; i < 7; i++) {
-          points.push(timestamp2string1(lastTime - (i * interval), dataExportDefaultTime));
-        }
-        return points.reverse();
-      };
-
-      timePoints = generateTimePoints();
+      
+      timePoints = Array.from({length: 7}, (_, i) => 
+        timestamp2string1(lastTime - (6-i) * interval, dataExportDefaultTime)
+      );
     }
 
-    // 为每个时间点和模型生成数据
+    // 生成柱状图数据
     timePoints.forEach(time => {
-      Array.from(uniqueModels).forEach(model => {
-        let existingData = data.find(item => 
-          timestamp2string1(item.created_at, dataExportDefaultTime) === time && 
-          item.model_name === model
-        );
-
-        newLineData.push({
+      // 为每个时间点收集所有模型的数据
+      let timeData = Array.from(uniqueModels).map(model => {
+        const key = `${time}-${model}`;
+        const aggregated = aggregatedData.get(key);
+        return {
           Time: time,
           Model: model,
-          Usage: existingData ? parseFloat(getQuotaWithUnit(existingData.quota)) : 0
-        });
+          rawQuota: aggregated?.quota || 0,
+          Usage: aggregated?.quota ? getQuotaWithUnit(aggregated.quota, 4) : 0
+        };
       });
+      
+      // 计算该时间点的总计
+      const timeSum = timeData.reduce((sum, item) => sum + item.rawQuota, 0);
+      
+      // 按照 rawQuota 从大到小排序
+      timeData.sort((a, b) => b.rawQuota - a.rawQuota);
+      
+      // 为每个数据点添加该时间的总计
+      timeData = timeData.map(item => ({
+        ...item,
+        TimeSum: timeSum
+      }));
+      
+      // 将排序后的数据添加到 newLineData
+      newLineData.push(...timeData);
     });
 
     // 排序

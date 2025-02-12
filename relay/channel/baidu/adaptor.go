@@ -109,9 +109,6 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		return nil, errors.New("request is nil")
 	}
 	switch info.RelayMode {
-	case constant.RelayModeEmbeddings:
-		baiduEmbeddingRequest := embeddingRequestOpenAI2Baidu(*request)
-		return baiduEmbeddingRequest, nil
 	default:
 		baiduRequest := requestOpenAI2Baidu(*request)
 		return baiduRequest, nil
@@ -120,6 +117,11 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
 	return nil, nil
+}
+
+func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
+	baiduEmbeddingRequest := embeddingRequestOpenAI2Baidu(request)
+	return baiduEmbeddingRequest, nil
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {

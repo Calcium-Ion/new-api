@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - name: Build Frontend
         env:
           CI: ""
@@ -38,7 +38,7 @@ jobs:
       - name: Build Backend (arm64)
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-aarch64-linux-gnu
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y gcc-aarch64-linux-gnu
           CC=aarch64-linux-gnu-gcc CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -ldflags "-s -w -X 'one-api/common.Version=$(git describe --tags)' -extldflags '-static'" -o one-api-arm64
 
       - name: Release

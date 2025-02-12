@@ -2,8 +2,9 @@ package common
 
 import (
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
-	"one-api/relay/constant"
+	relayconstant "one-api/relay/constant"
 	"strings"
 	"time"
 
@@ -29,6 +30,7 @@ type RelayInfo struct {
 	RelayMode            int
 	UpstreamModelName    string
 	OriginModelName      string
+	RecodeModelName      string
 	RequestURLPath       string
 	ApiVersion           string
 	PromptTokens         int
@@ -44,6 +46,7 @@ type RelayInfo struct {
 	RealtimeTools        []dto.RealTimeTool
 	IsFirstRequest       bool
 	AudioUsage           bool
+	ReasoningEffort      string
 	ChannelSetting       map[string]interface{}
 }
 
@@ -66,13 +69,13 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	userId := c.GetInt("id")
 	group := c.GetString("group")
 	tokenUnlimited := c.GetBool("token_unlimited_quota")
-	startTime := time.Now()
+	startTime := c.GetTime(constant.ContextKeyRequestStartTime)
 	// firstResponseTime = time.Now() - 1 second
 
-	apiType, _ := constant.ChannelType2APIType(channelType)
+	apiType, _ := relayconstant.ChannelType2APIType(channelType)
 
 	info := &RelayInfo{
-		RelayMode:         constant.Path2RelayMode(c.Request.URL.Path),
+		RelayMode:         relayconstant.Path2RelayMode(c.Request.URL.Path),
 		BaseUrl:           c.GetString("base_url"),
 		RequestURLPath:    c.Request.URL.String(),
 		ChannelType:       channelType,
@@ -86,6 +89,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		FirstResponseTime: startTime.Add(-time.Second),
 		OriginModelName:   c.GetString("original_model"),
 		UpstreamModelName: c.GetString("original_model"),
+		RecodeModelName:   c.GetString("recode_model"),
 		ApiType:           apiType,
 		ApiVersion:        c.GetString("api_version"),
 		ApiKey:            strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
@@ -108,7 +112,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	}
 	if info.ChannelType == common.ChannelTypeOpenAI || info.ChannelType == common.ChannelTypeAnthropic ||
 		info.ChannelType == common.ChannelTypeAws || info.ChannelType == common.ChannelTypeGemini ||
-		info.ChannelType == common.ChannelCloudflare {
+		info.ChannelType == common.ChannelCloudflare || info.ChannelType == common.ChannelTypeAzure {
 		info.SupportStreamOptions = true
 	}
 	return info
@@ -158,10 +162,10 @@ func GenTaskRelayInfo(c *gin.Context) *TaskRelayInfo {
 	group := c.GetString("group")
 	startTime := time.Now()
 
-	apiType, _ := constant.ChannelType2APIType(channelType)
+	apiType, _ := relayconstant.ChannelType2APIType(channelType)
 
 	info := &TaskRelayInfo{
-		RelayMode:      constant.Path2RelayMode(c.Request.URL.Path),
+		RelayMode:      relayconstant.Path2RelayMode(c.Request.URL.Path),
 		BaseUrl:        c.GetString("base_url"),
 		RequestURLPath: c.Request.URL.String(),
 		ChannelType:    channelType,
