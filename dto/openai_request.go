@@ -18,6 +18,7 @@ type GeneralOpenAIRequest struct {
 	Model               string          `json:"model,omitempty"`
 	Messages            []Message       `json:"messages,omitempty"`
 	Prompt              any             `json:"prompt,omitempty"`
+	Suffix              any             `json:"suffix,omitempty"`
 	Stream              bool            `json:"stream,omitempty"`
 	StreamOptions       *StreamOptions  `json:"stream_options,omitempty"`
 	MaxTokens           uint            `json:"max_tokens,omitempty"`
