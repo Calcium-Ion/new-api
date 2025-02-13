@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	goahocorasick "github.com/anknown/ahocorasick"
-	"one-api/setting"
 	"strings"
 )
 
@@ -57,9 +56,9 @@ func RemoveDuplicate(s []string) []string {
 	return result
 }
 
-func InitAc() *goahocorasick.Machine {
+func InitAc(words []string) *goahocorasick.Machine {
 	m := new(goahocorasick.Machine)
-	dict := readRunes()
+	dict := readRunes(words)
 	if err := m.Build(dict); err != nil {
 		fmt.Println(err)
 		return nil
@@ -67,14 +66,36 @@ func InitAc() *goahocorasick.Machine {
 	return m
 }
 
-func readRunes() [][]rune {
+func readRunes(words []string) [][]rune {
 	var dict [][]rune
 
-	for _, word := range setting.SensitiveWords {
+	for _, word := range words {
 		word = strings.ToLower(word)
 		l := bytes.TrimSpace([]byte(word))
 		dict = append(dict, bytes.Runes(l))
 	}
 
 	return dict
+}
+
+func AcSearch(findText string, dict []string, stopImmediately bool) (bool, []string) {
+	if len(dict) == 0 {
+		return false, nil
+	}
+	if len(findText) == 0 {
+		return false, nil
+	}
+	m := InitAc(dict)
+	if m == nil {
+		return false, nil
+	}
+	hits := m.MultiPatternSearch([]rune(findText), stopImmediately)
+	if len(hits) > 0 {
+		words := make([]string, 0)
+		for _, hit := range hits {
+			words = append(words, string(hit.Word))
+		}
+		return true, words
+	}
+	return false, nil
 }

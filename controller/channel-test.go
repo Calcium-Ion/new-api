@@ -41,36 +41,34 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	
+
 	requestPath := "/v1/chat/completions"
-	
+
 	// 先判断是否为 Embedding 模型
 	if strings.Contains(strings.ToLower(testModel), "embedding") ||
-		strings.HasPrefix(testModel, "m3e") ||  // m3e 系列模型
-		strings.Contains(testModel, "bge-") ||  // bge 系列模型
+		strings.HasPrefix(testModel, "m3e") || // m3e 系列模型
+		strings.Contains(testModel, "bge-") || // bge 系列模型
 		testModel == "text-embedding-v1" ||
-		channel.Type == common.ChannelTypeMokaAI{      // 其他 embedding 模型
-		requestPath = "/v1/embeddings"  // 修改请求路径
+		channel.Type == common.ChannelTypeMokaAI { // 其他 embedding 模型
+		requestPath = "/v1/embeddings" // 修改请求路径
 	}
-	
+
 	c.Request = &http.Request{
 		Method: "POST",
-		URL:    &url.URL{Path: requestPath},  // 使用动态路径
+		URL:    &url.URL{Path: requestPath}, // 使用动态路径
 		Body:   nil,
 		Header: make(http.Header),
 	}
 
 	if testModel == "" {
-		common.SysLog(fmt.Sprintf("testModel 为空， channel 的 TestModel 是 %s", string(*channel.TestModel)))
 		if channel.TestModel != nil && *channel.TestModel != "" {
 			testModel = *channel.TestModel
 		} else {
 			if len(channel.GetModels()) > 0 {
 				testModel = channel.GetModels()[0]
 			} else {
-				testModel = "gpt-3.5-turbo"
+				testModel = "gpt-4o-mini"
 			}
-			common.SysLog(fmt.Sprintf("testModel 为空， channel 的 TestModel 为空：", string(testModel)))
 		}
 	}
 
@@ -102,7 +100,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 
 	request := buildTestRequest(testModel)
 	meta.UpstreamModelName = testModel
-	common.SysLog(fmt.Sprintf("testing channel %d with model %s , meta %s ", channel.Id, testModel, meta))
+	common.SysLog(fmt.Sprintf("testing channel %d with model %s , meta %v ", channel.Id, testModel, meta))
 
 	adaptor.Init(meta)
 
@@ -173,9 +171,9 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 
 	// 先判断是否为 Embedding 模型
 	if strings.Contains(strings.ToLower(model), "embedding") ||
-		strings.HasPrefix(model, "m3e") ||  // m3e 系列模型
-		strings.Contains(model, "bge-") ||  // bge 系列模型
-		model == "text-embedding-v1" {      // 其他 embedding 模型
+		strings.HasPrefix(model, "m3e") || // m3e 系列模型
+		strings.Contains(model, "bge-") || // bge 系列模型
+		model == "text-embedding-v1" { // 其他 embedding 模型
 		// Embedding 请求
 		testRequest.Input = []string{"hello world"}
 		return testRequest

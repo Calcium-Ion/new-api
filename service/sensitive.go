@@ -60,17 +60,7 @@ func SensitiveWordContains(text string) (bool, []string) {
 		return false, nil
 	}
 	checkText := strings.ToLower(text)
-	// 构建一个AC自动机
-	m := InitAc()
-	hits := m.MultiPatternSearch([]rune(checkText), false)
-	if len(hits) > 0 {
-		words := make([]string, 0)
-		for _, hit := range hits {
-			words = append(words, string(hit.Word))
-		}
-		return true, words
-	}
-	return false, nil
+	return AcSearch(checkText, setting.SensitiveWords, false)
 }
 
 // SensitiveWordReplace 敏感词替换，返回是否包含敏感词和替换后的文本
@@ -79,7 +69,7 @@ func SensitiveWordReplace(text string, returnImmediately bool) (bool, []string, 
 		return false, nil, text
 	}
 	checkText := strings.ToLower(text)
-	m := InitAc()
+	m := InitAc(setting.SensitiveWords)
 	hits := m.MultiPatternSearch([]rune(checkText), returnImmediately)
 	if len(hits) > 0 {
 		words := make([]string, 0)

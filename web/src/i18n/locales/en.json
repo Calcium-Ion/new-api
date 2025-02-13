@@ -201,7 +201,7 @@
   "相关 API 显示令牌额度而非用户额度": "Related APIs show token quota instead of user quota",
   "保存通用设置": "Save General Settings",
   "监控设置": "Monitoring Settings",
-  "最长响应时间": "Maximum Response Time",
+  "测试所有渠道的最长响应时间": "Maximum response time for testing all channels",
   "单位秒": "Unit: seconds",
   "当运行通道全部测试时": "When running all channel tests",
   "超过此时间将自动禁用通道": "Channels exceeding this time will be automatically disabled",
@@ -1246,5 +1246,8 @@
   "请输入要设置的标签名称": "Please enter the tag name to be set",
   "请输入标签名称": "Please enter the tag name",
   "支持搜索用户的 ID、用户名、显示名称和邮箱地址": "Support searching for user ID, username, display name, and email address",
-  "已注销": "Logged out"
+  "已注销": "Logged out",
+  "自动禁用关键词": "Automatic disable keywords",
+  "一行一个，不区分大小写": "One line per keyword, not case-sensitive",
+  "当上游通道返回错误中包含这些关键词时（不区分大小写），自动禁用通道": "When the upstream channel returns an error containing these keywords (not case-sensitive), automatically disable the channel"
 }

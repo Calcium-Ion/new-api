@@ -59,6 +59,7 @@ const OperationSetting = () => {
     RetryTimes: 0,
     Chats: "[]",
     DemoSiteEnabled: false,
+    AutomaticDisableKeywords: '',
   });
 
   let [loading, setLoading] = useState(false);

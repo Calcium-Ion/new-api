@@ -6,6 +6,7 @@ import (
 	"one-api/common"
 	relaymodel "one-api/dto"
 	"one-api/model"
+	"one-api/setting"
 	"strings"
 )
 
@@ -64,21 +65,10 @@ func ShouldDisableChannel(channelType int, err *relaymodel.OpenAIErrorWithStatus
 	case "forbidden":
 		return true
 	}
-	if strings.HasPrefix(err.Error.Message, "Your credit balance is too low") { // anthropic
-		return true
-	} else if strings.HasPrefix(err.Error.Message, "This organization has been disabled.") {
-		return true
-	} else if strings.HasPrefix(err.Error.Message, "You exceeded your current quota") {
-		return true
-	} else if strings.HasPrefix(err.Error.Message, "Permission denied") {
-		return true
-	}
 
-	if strings.Contains(err.Error.Message, "The security token included in the request is invalid") { // anthropic
-		return true
-	} else if strings.Contains(err.Error.Message, "Operation not allowed") {
-		return true
-	} else if strings.Contains(err.Error.Message, "Your account is not authorized") {
+	lowerMessage := strings.ToLower(err.Error.Message)
+	search, _ := AcSearch(lowerMessage, setting.AutomaticDisableKeywords, true)
+	if search {
 		return true
 	}
 
