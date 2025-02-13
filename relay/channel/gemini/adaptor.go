@@ -10,6 +10,7 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
+	"strings"
 )
 
 type Adaptor struct {
@@ -32,10 +33,15 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	// 从映射中获取模型名称对应的版本，如果找不到就使用 info.ApiVersion 或默认的版本 "v1beta"
 	version, beta := constant.GeminiModelMap[info.UpstreamModelName]
+
 	if !beta {
 		if info.ApiVersion != "" {
 			version = info.ApiVersion
 		} else {
+			version = "v1beta"
+		}
+		// 如果模型里帶exp或preview字样，且开启了自动切换到beta版本，则使用beta版本
+		if constant.GeminiAutoExp && (strings.Contains(info.UpstreamModelName, "exp") || strings.Contains(info.UpstreamModelName, "preview")) {
 			version = "v1beta"
 		}
 	}
