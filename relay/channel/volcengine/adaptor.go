@@ -11,6 +11,7 @@ import (
 	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
+	"strings"
 )
 
 type Adaptor struct {
@@ -32,6 +33,9 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	switch info.RelayMode {
 	case constant.RelayModeChatCompletions:
+		if strings.HasPrefix(info.UpstreamModelName, "bot") {
+			return fmt.Sprintf("%s/api/v3/bots/chat/completions", info.BaseUrl), nil
+		}
 		return fmt.Sprintf("%s/api/v3/chat/completions", info.BaseUrl), nil
 	case constant.RelayModeEmbeddings:
 		return fmt.Sprintf("%s/api/v3/embeddings", info.BaseUrl), nil

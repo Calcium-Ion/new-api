@@ -90,7 +90,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			if len(data) < 6 { // ignore blank line or wrong format
 				continue
 			}
-			if data[:5] != "data: " && data[:6] != "[DONE]" {
+			if data[:5] != "data:" && data[:6] != "[DONE]" {
 				continue
 			}
 			mu.Lock()
