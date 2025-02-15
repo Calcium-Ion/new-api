@@ -798,16 +798,52 @@ const ChannelsTable = () => {
     setSearching(false);
   };
 
+  const updateChannelProperty = (channelId, updateFn) => {
+    // Create a new copy of channels array
+    const newChannels = [...channels];
+    
+    // Find and update the correct channel
+    newChannels.forEach(channel => {
+      if (channel.children !== undefined) {
+        // If this is a tag group, search in its children
+        channel.children.forEach(child => {
+          if (child.id === channelId) {
+            updateFn(child);
+          }
+        });
+      } else if (channel.id === channelId) {
+        // Direct channel match
+        updateFn(channel);
+      }
+    });
+    
+    // Update state with new array to trigger re-render
+    setChannels(newChannels);
+  };
+
   const testChannel = async (record, model) => {
     const res = await API.get(`/api/channel/test/${record.id}?model=${model}`);
     const { success, message, time } = res.data;
     if (success) {
-      record.response_time = time * 1000;
-      record.test_time = Date.now() / 1000;
+      updateChannelProperty(record.id, (channel) => {
+        channel.response_time = time * 1000;
+        channel.test_time = Date.now() / 1000;
+      });
       showInfo(t('通道 ${name} 测试成功，耗时 ${time.toFixed(2)} 秒。').replace('${name}', record.name).replace('${time.toFixed(2)}', time.toFixed(2)));
+    } else {
+      showError(message);
+    }
+  };
 
-      // 刷新列表
-      await refresh();
+  const updateChannelBalance = async (record) => {
+    const res = await API.get(`/api/channel/update_balance/${record.id}/`);
+    const { success, message, balance } = res.data;
+    if (success) {
+      updateChannelProperty(record.id, (channel) => {
+        channel.balance = balance;
+        channel.balance_updated_time = Date.now() / 1000;
+      });
+      showInfo(t('通道 ${name} 余额更新成功！').replace('${name}', record.name));
     } else {
       showError(message);
     }
@@ -828,20 +864,6 @@ const ChannelsTable = () => {
     const { success, message, data } = res.data;
     if (success) {
       showSuccess(t('已删除所有禁用渠道，共计 ${data} 个').replace('${data}', data));
-      await refresh();
-    } else {
-      showError(message);
-    }
-  };
-
-  const updateChannelBalance = async (record) => {
-    const res = await API.get(`/api/channel/update_balance/${record.id}/`);
-    const { success, message, balance } = res.data;
-    if (success) {
-      record.balance = balance;
-      record.balance_updated_time = Date.now() / 1000;
-      showInfo(t('通道 ${name} 余额更新成功！').replace('${name}', record.name));
-      // 刷新列表
       await refresh();
     } else {
       showError(message);
