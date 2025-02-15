@@ -357,6 +357,13 @@ const ChannelsTable = () => {
       dataIndex: 'operate',
       render: (text, record, index) => {
         if (record.children === undefined) {
+          // 构建模型测试菜单
+          const modelMenuItems = record.models.split(',').map(model => ({
+            node: 'item',
+            name: model,
+            onClick: () => testChannel(record, model)
+          }));
+
           return (
             <div>
               <SplitButtonGroup
@@ -374,7 +381,7 @@ const ChannelsTable = () => {
                 <Dropdown
                   trigger="click"
                   position="bottomRight"
-                  menu={record.test_models}
+                  menu={modelMenuItems}  // 使用即时生成的菜单项
                 >
                   <Button
                     style={{ padding: '8px 4px' }}
@@ -545,17 +552,6 @@ const ChannelsTable = () => {
     let channelTags = {};
     for (let i = 0; i < channels.length; i++) {
       channels[i].key = '' + channels[i].id;
-      let test_models = [];
-      channels[i].models.split(',').forEach((item, index) => {
-        test_models.push({
-          node: 'item',
-          name: item,
-          onClick: () => {
-            testChannel(channels[i], item);
-          }
-        });
-      });
-      channels[i].test_models = test_models;
       if (!enableTagMode) {
         channelDates.push(channels[i]);
       } else {
@@ -801,7 +797,8 @@ const ChannelsTable = () => {
   const updateChannelProperty = (channelId, updateFn) => {
     // Create a new copy of channels array
     const newChannels = [...channels];
-    
+    let updated = false;
+
     // Find and update the correct channel
     newChannels.forEach(channel => {
       if (channel.children !== undefined) {
@@ -809,26 +806,32 @@ const ChannelsTable = () => {
         channel.children.forEach(child => {
           if (child.id === channelId) {
             updateFn(child);
+            updated = true;
           }
         });
       } else if (channel.id === channelId) {
         // Direct channel match
         updateFn(channel);
+        updated = true;
       }
     });
-    
-    // Update state with new array to trigger re-render
-    setChannels(newChannels);
+
+    // Only update state if we actually modified a channel
+    if (updated) {
+      setChannels(newChannels);
+    }
   };
 
   const testChannel = async (record, model) => {
     const res = await API.get(`/api/channel/test/${record.id}?model=${model}`);
     const { success, message, time } = res.data;
     if (success) {
+      // Also update the channels state to persist the change
       updateChannelProperty(record.id, (channel) => {
         channel.response_time = time * 1000;
         channel.test_time = Date.now() / 1000;
       });
+      
       showInfo(t('通道 ${name} 测试成功，耗时 ${time.toFixed(2)} 秒。').replace('${name}', record.name).replace('${time.toFixed(2)}', time.toFixed(2)));
     } else {
       showError(message);
