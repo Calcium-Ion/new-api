@@ -351,10 +351,8 @@ func UpdateCompletionRatioByJSONString(jsonStr string) error {
 }
 
 func GetCompletionRatio(name string) float64 {
-	if strings.Contains(name, "/") {
-		if ratio, ok := CompletionRatio[name]; ok {
-			return ratio
-		}
+	if ratio, ok := CompletionRatio[name]; ok {
+		return ratio
 	}
 	lowercaseName := strings.ToLower(name)
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
