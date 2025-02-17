@@ -109,3 +109,30 @@ type GeminiUsageMetadata struct {
 	CandidatesTokenCount int `json:"candidatesTokenCount"`
 	TotalTokenCount      int `json:"totalTokenCount"`
 }
+
+// Imagen related structs
+type GeminiImageRequest struct {
+	Instances  []GeminiImageInstance `json:"instances"`
+	Parameters GeminiImageParameters `json:"parameters"`
+}
+
+type GeminiImageInstance struct {
+	Prompt string `json:"prompt"`
+}
+
+type GeminiImageParameters struct {
+	SampleCount      int    `json:"sampleCount,omitempty"`
+	AspectRatio      string `json:"aspectRatio,omitempty"`
+	PersonGeneration string `json:"personGeneration,omitempty"`
+}
+
+type GeminiImageResponse struct {
+	Predictions []GeminiImagePrediction `json:"predictions"`
+}
+
+type GeminiImagePrediction struct {
+	MimeType           string `json:"mimeType"`
+	BytesBase64Encoded string `json:"bytesBase64Encoded"`
+	RaiFilteredReason  string `json:"raiFilteredReason,omitempty"`
+	SafetyAttributes   any    `json:"safetyAttributes,omitempty"`
+}
