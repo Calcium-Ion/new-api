@@ -25,6 +25,17 @@ func NotifyUser(user *model.UserCache, data dto.Notify) error {
 	if !ok {
 		notifyType = constant.NotifyTypeEmail
 	}
+
+	// Check notification limit
+	canSend, err := CheckNotificationLimit(user.Id, data.Type)
+	if err != nil {
+		common.SysError(fmt.Sprintf("failed to check notification limit: %s", err.Error()))
+		return err
+	}
+	if !canSend {
+		return fmt.Errorf("notification limit exceeded for user %d with type %s", user.Id, notifyType)
+	}
+
 	switch notifyType {
 	case constant.NotifyTypeEmail:
 		userEmail := user.Email
@@ -46,7 +57,7 @@ func NotifyUser(user *model.UserCache, data dto.Notify) error {
 		// TODO: 实现webhook通知
 		_ = webhookURL // 临时处理未使用警告，等待webhook实现
 	}
-	return nil // 添加缺失的return
+	return nil
 }
 
 func sendEmailNotify(userEmail string, data dto.Notify) error {

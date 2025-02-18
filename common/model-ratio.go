@@ -356,6 +356,13 @@ func CompletionRatio2JSONString() string {
 	return string(jsonBytes)
 }
 
+func UpdateCompletionRatioByJSONString(jsonStr string) error {
+	CompletionRatioMutex.Lock()
+	defer CompletionRatioMutex.Unlock()
+	CompletionRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &CompletionRatio)
+}
+
 func GetCompletionRatio(name string) float64 {
 	GetCompletionRatioMap()
 
