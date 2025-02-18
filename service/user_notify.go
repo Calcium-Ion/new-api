@@ -9,17 +9,12 @@ import (
 	"strings"
 )
 
-func notifyRootUser(subject string, content string) {
-	if common.RootUserEmail == "" {
-		common.RootUserEmail = model.GetRootUserEmail()
-	}
-	err := common.SendEmail(subject, common.RootUserEmail, content)
-	if err != nil {
-		common.SysError(fmt.Sprintf("failed to send email: %s", err.Error()))
-	}
+func NotifyRootUser(t string, subject string, content string) {
+	user := model.GetRootUser().ToBaseUser()
+	_ = NotifyUser(&user, dto.NewNotify(t, subject, content, nil))
 }
 
-func NotifyUser(user *model.UserCache, data dto.Notify) error {
+func NotifyUser(user *model.UserBase, data dto.Notify) error {
 	userSetting := user.GetSetting()
 	notifyType, ok := userSetting[constant.UserSettingNotifyType]
 	if !ok {

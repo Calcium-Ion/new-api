@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"one-api/common"
-	relaymodel "one-api/dto"
+	"one-api/dto"
 	"one-api/model"
 	"one-api/setting"
 	"strings"
@@ -15,17 +15,17 @@ func DisableChannel(channelId int, channelName string, reason string) {
 	model.UpdateChannelStatusById(channelId, common.ChannelStatusAutoDisabled, reason)
 	subject := fmt.Sprintf("通道「%s」（#%d）已被禁用", channelName, channelId)
 	content := fmt.Sprintf("通道「%s」（#%d）已被禁用，原因：%s", channelName, channelId, reason)
-	notifyRootUser(subject, content)
+	NotifyRootUser(subject, content, dto.NotifyTypeChannelUpdate)
 }
 
 func EnableChannel(channelId int, channelName string) {
 	model.UpdateChannelStatusById(channelId, common.ChannelStatusEnabled, "")
 	subject := fmt.Sprintf("通道「%s」（#%d）已被启用", channelName, channelId)
 	content := fmt.Sprintf("通道「%s」（#%d）已被启用", channelName, channelId)
-	notifyRootUser(subject, content)
+	NotifyRootUser(subject, content, dto.NotifyTypeChannelUpdate)
 }
 
-func ShouldDisableChannel(channelType int, err *relaymodel.OpenAIErrorWithStatusCode) bool {
+func ShouldDisableChannel(channelType int, err *dto.OpenAIErrorWithStatusCode) bool {
 	if !common.AutomaticDisableChannelEnabled {
 		return false
 	}
@@ -75,7 +75,7 @@ func ShouldDisableChannel(channelType int, err *relaymodel.OpenAIErrorWithStatus
 	return false
 }
 
-func ShouldEnableChannel(err error, openaiWithStatusErr *relaymodel.OpenAIErrorWithStatusCode, status int) bool {
+func ShouldEnableChannel(err error, openaiWithStatusErr *dto.OpenAIErrorWithStatusCode, status int) bool {
 	if !common.AutomaticEnableChannelEnabled {
 		return false
 	}

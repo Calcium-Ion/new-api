@@ -870,9 +870,6 @@ func EmailBind(c *gin.Context) {
 		})
 		return
 	}
-	if user.Role == common.RoleRootUser {
-		common.RootUserEmail = email
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",

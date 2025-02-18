@@ -10,8 +10,8 @@ import (
 	"github.com/bytedance/gopkg/util/gopool"
 )
 
-// UserCache struct remains the same as it represents the cached data structure
-type UserCache struct {
+// UserBase struct remains the same as it represents the cached data structure
+type UserBase struct {
 	Id       int    `json:"id"`
 	Group    string `json:"group"`
 	Email    string `json:"email"`
@@ -21,14 +21,14 @@ type UserCache struct {
 	Setting  string `json:"setting"`
 }
 
-func (user *UserCache) GetSetting() map[string]interface{} {
+func (user *UserBase) GetSetting() map[string]interface{} {
 	if user.Setting == "" {
 		return nil
 	}
 	return common.StrToMap(user.Setting)
 }
 
-func (user *UserCache) SetSetting(setting map[string]interface{}) {
+func (user *UserBase) SetSetting(setting map[string]interface{}) {
 	settingBytes, err := json.Marshal(setting)
 	if err != nil {
 		common.SysError("failed to marshal setting: " + err.Error())
@@ -56,25 +56,15 @@ func updateUserCache(user User) error {
 		return nil
 	}
 
-	cache := &UserCache{
-		Id:       user.Id,
-		Group:    user.Group,
-		Quota:    user.Quota,
-		Status:   user.Status,
-		Username: user.Username,
-		Setting:  user.Setting,
-		Email:    user.Email,
-	}
-
 	return common.RedisHSetObj(
 		getUserCacheKey(user.Id),
-		cache,
+		user.ToBaseUser(),
 		time.Duration(constant.UserId2QuotaCacheSeconds)*time.Second,
 	)
 }
 
 // GetUserCache gets complete user cache from hash
-func GetUserCache(userId int) (userCache *UserCache, err error) {
+func GetUserCache(userId int) (userCache *UserBase, err error) {
 	var user *User
 	var fromDB bool
 	defer func() {
@@ -102,7 +92,7 @@ func GetUserCache(userId int) (userCache *UserCache, err error) {
 	}
 
 	// Create cache object from user data
-	userCache = &UserCache{
+	userCache = &UserBase{
 		Id:       user.Id,
 		Group:    user.Group,
 		Quota:    user.Quota,

@@ -42,6 +42,19 @@ type User struct {
 	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
 }
 
+func (user *User) ToBaseUser() UserBase {
+	cache := UserBase{
+		Id:       user.Id,
+		Group:    user.Group,
+		Quota:    user.Quota,
+		Status:   user.Status,
+		Username: user.Username,
+		Setting:  user.Setting,
+		Email:    user.Email,
+	}
+	return cache
+}
+
 func (user *User) GetAccessToken() string {
 	if user.AccessToken == nil {
 		return ""
@@ -687,9 +700,14 @@ func DeltaUpdateUserQuota(id int, delta int) (err error) {
 	}
 }
 
-func GetRootUserEmail() (email string) {
-	DB.Model(&User{}).Where("role = ?", common.RoleRootUser).Select("email").Find(&email)
-	return email
+//func GetRootUserEmail() (email string) {
+//	DB.Model(&User{}).Where("role = ?", common.RoleRootUser).Select("email").Find(&email)
+//	return email
+//}
+
+func GetRootUser() (user *User) {
+	DB.Where("role = ?", common.RoleRootUser).First(&user)
+	return user
 }
 
 func UpdateUserUsedQuotaAndRequestCount(id int, quota int) {
