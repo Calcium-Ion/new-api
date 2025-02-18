@@ -16,6 +16,8 @@ var ModelList = []string{
 	"gemini-2.0-pro-exp",
 	// thinking exp
 	"gemini-2.0-flash-thinking-exp",
+	// imagen models
+	"imagen-3.0-generate-002",
 }
 
 var ChannelName = "google gemini"
