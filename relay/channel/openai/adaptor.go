@@ -119,7 +119,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 			request.MaxCompletionTokens = request.MaxTokens
 			request.MaxTokens = 0
 		}
-		if strings.HasPrefix(request.Model, "o3") {
+		if strings.HasPrefix(request.Model, "o3") || strings.HasPrefix(request.Model, "o1") {
 			request.Temperature = nil
 		}
 		if strings.HasSuffix(request.Model, "-high") {
