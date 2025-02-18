@@ -3,13 +3,11 @@ package model
 import (
 	"errors"
 	"fmt"
+	"one-api/common"
+	"strings"
+
 	"github.com/bytedance/gopkg/util/gopool"
 	"gorm.io/gorm"
-	"one-api/common"
-	relaycommon "one-api/relay/common"
-	"one-api/setting"
-	"strconv"
-	"strings"
 )
 
 type Token struct {
@@ -321,81 +319,4 @@ func decreaseTokenQuota(id int, quota int) (err error) {
 		},
 	).Error
 	return err
-}
-
-func PreConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, quota int) error {
-	if quota < 0 {
-		return errors.New("quota 不能为负数！")
-	}
-	if relayInfo.IsPlayground {
-		return nil
-	}
-	//if relayInfo.TokenUnlimited {
-	//	return nil
-	//}
-	token, err := GetTokenById(relayInfo.TokenId)
-	if err != nil {
-		return err
-	}
-	if !relayInfo.TokenUnlimited && token.RemainQuota < quota {
-		return errors.New("令牌额度不足")
-	}
-	err = DecreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, quota)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, userQuota int, quota int, preConsumedQuota int, sendEmail bool) (err error) {
-
-	if quota > 0 {
-		err = DecreaseUserQuota(relayInfo.UserId, quota)
-	} else {
-		err = IncreaseUserQuota(relayInfo.UserId, -quota)
-	}
-	if err != nil {
-		return err
-	}
-
-	if !relayInfo.IsPlayground {
-		if quota > 0 {
-			err = DecreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, quota)
-		} else {
-			err = IncreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, -quota)
-		}
-		if err != nil {
-			return err
-		}
-	}
-
-	if sendEmail {
-		if (quota + preConsumedQuota) != 0 {
-			quotaTooLow := userQuota >= common.QuotaRemindThreshold && userQuota-(quota+preConsumedQuota) < common.QuotaRemindThreshold
-			noMoreQuota := userQuota-(quota+preConsumedQuota) <= 0
-			if quotaTooLow || noMoreQuota {
-				go func() {
-					email, err := GetUserEmail(relayInfo.UserId)
-					if err != nil {
-						common.SysError("failed to fetch user email: " + err.Error())
-					}
-					prompt := "您的额度即将用尽"
-					if noMoreQuota {
-						prompt = "您的额度已用尽"
-					}
-					if email != "" {
-						topUpLink := fmt.Sprintf("%s/topup", setting.ServerAddress)
-						err = common.SendEmail(prompt, email,
-							fmt.Sprintf("%s，当前剩余额度为 %d，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='%s'>%s</a>", prompt, userQuota, topUpLink, topUpLink))
-						if err != nil {
-							common.SysError("failed to send email" + err.Error())
-						}
-						common.SysLog("user quota is low, consumed quota: " + strconv.Itoa(quota) + ", user quota: " + strconv.Itoa(userQuota))
-					}
-				}()
-			}
-		}
-	}
-
-	return nil
 }

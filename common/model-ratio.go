@@ -477,20 +477,6 @@ func GetAudioCompletionRatio(name string) float64 {
 	return 2
 }
 
-//func GetAudioPricePerMinute(name string) float64 {
-//	if strings.HasPrefix(name, "gpt-4o-realtime") {
-//		return 0.06
-//	}
-//	return 0.06
-//}
-//
-//func GetAudioCompletionPricePerMinute(name string) float64 {
-//	if strings.HasPrefix(name, "gpt-4o-realtime") {
-//		return 0.24
-//	}
-//	return 0.24
-//}
-
 func GetCompletionRatioMap() map[string]float64 {
 	if CompletionRatio == nil {
 		CompletionRatio = defaultCompletionRatio

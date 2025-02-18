@@ -100,6 +100,14 @@ func LogQuota(quota int) string {
 	}
 }
 
+func FormatQuota(quota int) string {
+	if DisplayInCurrencyEnabled {
+		return fmt.Sprintf("＄%.6f", float64(quota)/QuotaPerUnit)
+	} else {
+		return fmt.Sprintf("%d", quota)
+	}
+}
+
 // LogJson 仅供测试使用 only for test
 func LogJson(ctx context.Context, msg string, obj any) {
 	jsonStr, err := json.Marshal(obj)
