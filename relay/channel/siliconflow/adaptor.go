@@ -36,6 +36,8 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		return fmt.Sprintf("%s/v1/embeddings", info.BaseUrl), nil
 	} else if info.RelayMode == constant.RelayModeChatCompletions {
 		return fmt.Sprintf("%s/v1/chat/completions", info.BaseUrl), nil
+	} else if info.RelayMode == constant.RelayModeCompletions {
+		return fmt.Sprintf("%s/v1/completions", info.BaseUrl), nil
 	}
 	return "", errors.New("invalid relay mode")
 }
@@ -67,6 +69,12 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	case constant.RelayModeRerank:
 		err, usage = siliconflowRerankHandler(c, resp)
 	case constant.RelayModeChatCompletions:
+		if info.IsStream {
+			err, usage = openai.OaiStreamHandler(c, resp, info)
+		} else {
+			err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+		}
+	case constant.RelayModeCompletions:
 		if info.IsStream {
 			err, usage = openai.OaiStreamHandler(c, resp, info)
 		} else {

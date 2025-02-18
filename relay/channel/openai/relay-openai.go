@@ -5,6 +5,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"io"
 	"math"
@@ -20,10 +23,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
 
 func sendStreamData(c *gin.Context, data string, forceFormat bool) error {
@@ -91,11 +90,12 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			if len(data) < 6 { // ignore blank line or wrong format
 				continue
 			}
-			if data[:6] != "data: " && data[:6] != "[DONE]" {
+			if data[:5] != "data:" && data[:6] != "[DONE]" {
 				continue
 			}
 			mu.Lock()
-			data = data[6:]
+			data = data[5:]
+			data = strings.TrimSpace(data)
 			if !strings.HasPrefix(data, "[DONE]") {
 				if lastStreamData != "" {
 					err := sendStreamData(c, lastStreamData, forceFormat)

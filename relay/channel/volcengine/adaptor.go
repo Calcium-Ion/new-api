@@ -13,6 +13,7 @@ import (
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
 	"one-api/service"
+	"strings"
 )
 
 type Adaptor struct {
@@ -32,13 +33,15 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	var context = ""
-	if info.Cache {
-		context = "context/"
-	}
 	switch info.RelayMode {
 	case constant.RelayModeChatCompletions:
-		return fmt.Sprintf("%s/api/v3/%schat/completions", info.BaseUrl, context), nil
+		if strings.HasPrefix(info.UpstreamModelName, "bot") {
+			return fmt.Sprintf("%s/api/v3/bots/chat/completions", info.BaseUrl), nil
+		}
+		if info.Cache {
+			return fmt.Sprintf("%s/api/v3/context/chat/completions", info.BaseUrl), nil
+		}
+		return fmt.Sprintf("%s/api/v3/chat/completions", info.BaseUrl), nil
 	case constant.RelayModeEmbeddings:
 		return fmt.Sprintf("%s/api/v3/embeddings", info.BaseUrl), nil
 	case constant.RelayModeContext:

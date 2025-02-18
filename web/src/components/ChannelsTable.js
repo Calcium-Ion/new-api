@@ -357,6 +357,13 @@ const ChannelsTable = () => {
       dataIndex: 'operate',
       render: (text, record, index) => {
         if (record.children === undefined) {
+          // 构建模型测试菜单
+          const modelMenuItems = record.models.split(',').map(model => ({
+            node: 'item',
+            name: model,
+            onClick: () => testChannel(record, model)
+          }));
+
           return (
             <div>
               <SplitButtonGroup
@@ -374,7 +381,7 @@ const ChannelsTable = () => {
                 <Dropdown
                   trigger="click"
                   position="bottomRight"
-                  menu={record.test_models}
+                  menu={modelMenuItems}  // 使用即时生成的菜单项
                 >
                   <Button
                     style={{ padding: '8px 4px' }}
@@ -545,17 +552,6 @@ const ChannelsTable = () => {
     let channelTags = {};
     for (let i = 0; i < channels.length; i++) {
       channels[i].key = '' + channels[i].id;
-      let test_models = [];
-      channels[i].models.split(',').forEach((item, index) => {
-        test_models.push({
-          node: 'item',
-          name: item,
-          onClick: () => {
-            testChannel(channels[i], item);
-          }
-        });
-      });
-      channels[i].test_models = test_models;
       if (!enableTagMode) {
         channelDates.push(channels[i]);
       } else {
@@ -798,16 +794,59 @@ const ChannelsTable = () => {
     setSearching(false);
   };
 
+  const updateChannelProperty = (channelId, updateFn) => {
+    // Create a new copy of channels array
+    const newChannels = [...channels];
+    let updated = false;
+
+    // Find and update the correct channel
+    newChannels.forEach(channel => {
+      if (channel.children !== undefined) {
+        // If this is a tag group, search in its children
+        channel.children.forEach(child => {
+          if (child.id === channelId) {
+            updateFn(child);
+            updated = true;
+          }
+        });
+      } else if (channel.id === channelId) {
+        // Direct channel match
+        updateFn(channel);
+        updated = true;
+      }
+    });
+
+    // Only update state if we actually modified a channel
+    if (updated) {
+      setChannels(newChannels);
+    }
+  };
+
   const testChannel = async (record, model) => {
     const res = await API.get(`/api/channel/test/${record.id}?model=${model}`);
     const { success, message, time } = res.data;
     if (success) {
-      record.response_time = time * 1000;
-      record.test_time = Date.now() / 1000;
+      // Also update the channels state to persist the change
+      updateChannelProperty(record.id, (channel) => {
+        channel.response_time = time * 1000;
+        channel.test_time = Date.now() / 1000;
+      });
+      
       showInfo(t('通道 ${name} 测试成功，耗时 ${time.toFixed(2)} 秒。').replace('${name}', record.name).replace('${time.toFixed(2)}', time.toFixed(2)));
+    } else {
+      showError(message);
+    }
+  };
 
-      // 刷新列表
-      await refresh();
+  const updateChannelBalance = async (record) => {
+    const res = await API.get(`/api/channel/update_balance/${record.id}/`);
+    const { success, message, balance } = res.data;
+    if (success) {
+      updateChannelProperty(record.id, (channel) => {
+        channel.balance = balance;
+        channel.balance_updated_time = Date.now() / 1000;
+      });
+      showInfo(t('通道 ${name} 余额更新成功！').replace('${name}', record.name));
     } else {
       showError(message);
     }
@@ -828,20 +867,6 @@ const ChannelsTable = () => {
     const { success, message, data } = res.data;
     if (success) {
       showSuccess(t('已删除所有禁用渠道，共计 ${data} 个').replace('${data}', data));
-      await refresh();
-    } else {
-      showError(message);
-    }
-  };
-
-  const updateChannelBalance = async (record) => {
-    const res = await API.get(`/api/channel/update_balance/${record.id}/`);
-    const { success, message, balance } = res.data;
-    if (success) {
-      record.balance = balance;
-      record.balance_updated_time = Date.now() / 1000;
-      showInfo(t('通道 ${name} 余额更新成功！').replace('${name}', record.name));
-      // 刷新列表
       await refresh();
     } else {
       showError(message);
