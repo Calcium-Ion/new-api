@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
 	"io"
 	"math"
 	"net/http"
@@ -307,14 +308,14 @@ func preConsumeQuota(c *gin.Context, preConsumedQuota int, relayInfo *relaycommo
 
 func returnPreConsumedQuota(c *gin.Context, relayInfo *relaycommon.RelayInfo, userQuota int, preConsumedQuota int) {
 	if preConsumedQuota != 0 {
-		go func() {
+		gopool.Go(func() {
 			relayInfoCopy := *relayInfo
 
 			err := service.PostConsumeQuota(&relayInfoCopy, -preConsumedQuota, 0, false)
 			if err != nil {
 				common.SysError("error return pre-consumed quota: " + err.Error())
 			}
-		}()
+		})
 	}
 }
 

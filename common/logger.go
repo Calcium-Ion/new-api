@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
@@ -80,9 +81,9 @@ func logHelper(ctx context.Context, level string, msg string) {
 	if logCount > maxLogCount && !setupLogWorking {
 		logCount = 0
 		setupLogWorking = true
-		go func() {
+		gopool.Go(func() {
 			SetupLogger()
-		}()
+		})
 	}
 }
 

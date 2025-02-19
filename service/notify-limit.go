@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
 	"one-api/common"
 	"one-api/constant"
 	"strconv"
@@ -27,7 +28,7 @@ func getDuration() time.Duration {
 
 // startCleanupTask starts a background task to clean up expired entries
 func startCleanupTask() {
-	go func() {
+	gopool.Go(func() {
 		for {
 			time.Sleep(time.Hour)
 			now := time.Now()
@@ -40,7 +41,7 @@ func startCleanupTask() {
 				return true
 			})
 		}
-	}()
+	})
 }
 
 // CheckNotificationLimit checks if the user has exceeded their notification limit

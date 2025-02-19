@@ -1,21 +1,8 @@
 package common
 
 import (
-	"fmt"
-	"runtime/debug"
 	"time"
 )
-
-func SafeGoroutine(f func()) {
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				SysError(fmt.Sprintf("child goroutine panic occured: error: %v, stack: %s", r, string(debug.Stack())))
-			}
-		}()
-		f()
-	}()
-}
 
 func SafeSendBool(ch chan bool, value bool) (closed bool) {
 	defer func() {
