@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import { Modal, Tag, Typography } from '@douyinfe/semi-ui';
-import { copy, showSuccess } from './utils.js';
+import { copy, isMobile, showSuccess } from './utils.js';
 
 export function renderText(text, limit) {
   if (text.length > limit) {
@@ -65,6 +65,73 @@ export function renderRatio(ratio) {
     color = 'blue';
   }
   return <Tag color={color}>{ratio}x {i18next.t('倍率')}</Tag>;
+}
+
+const measureTextWidth = (text, style = {
+  fontSize: '14px',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+}, containerWidth) => {
+  const span = document.createElement('span');
+  
+  span.style.visibility = 'hidden';
+  span.style.position = 'absolute';
+  span.style.whiteSpace = 'nowrap';
+  span.style.fontSize = style.fontSize;
+  span.style.fontFamily = style.fontFamily;
+  
+  span.textContent = text;
+  
+  document.body.appendChild(span);
+  const width = span.offsetWidth;
+  
+  document.body.removeChild(span);
+  
+  return width;
+};
+
+export function truncateText(text, maxWidth = 200) {
+  if (!isMobile()) {
+    return text;
+  }
+  if (!text) return text;
+  
+  try {
+    // Handle percentage-based maxWidth
+    let actualMaxWidth = maxWidth;
+    if (typeof maxWidth === 'string' && maxWidth.endsWith('%')) {
+      const percentage = parseFloat(maxWidth) / 100;
+      // Use window width as fallback container width
+      actualMaxWidth = window.innerWidth * percentage;
+    }
+    
+    const width = measureTextWidth(text);
+    if (width <= actualMaxWidth) return text;
+    
+    let left = 0;
+    let right = text.length;
+    let result = text;
+    
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      const truncated = text.slice(0, mid) + '...';
+      const currentWidth = measureTextWidth(truncated);
+      
+      if (currentWidth <= actualMaxWidth) {
+        result = truncated;
+        left = mid + 1;
+      } else {
+        right = mid - 1;
+      }
+    }
+    
+    return result;
+  } catch (error) {
+    console.warn('Text measurement failed, falling back to character count', error);
+    if (text.length > 20) {
+      return text.slice(0, 17) + '...';
+    }
+    return text;
+  }
 }
 
 export const renderGroupOption = (item) => {

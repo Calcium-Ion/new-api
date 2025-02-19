@@ -80,7 +80,7 @@ const SiderBar = () => {
         itemKey: 'channel',
         to: '/channel',
         icon: <IconLayers />,
-        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
+        className: isAdmin() ? '' : 'tableHiddle',
       },
       {
         text: t('聊天'),
@@ -101,7 +101,7 @@ const SiderBar = () => {
         icon: <IconCalendarClock />,
         className:
           localStorage.getItem('enable_data_export') === 'true'
-            ? 'semi-navigation-item-normal'
+            ? ''
             : 'tableHiddle',
       },
       {
@@ -109,7 +109,7 @@ const SiderBar = () => {
         itemKey: 'redemption',
         to: '/redemption',
         icon: <IconGift />,
-        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
+        className: isAdmin() ? '' : 'tableHiddle',
       },
       {
         text: t('钱包'),
@@ -122,7 +122,7 @@ const SiderBar = () => {
         itemKey: 'user',
         to: '/user',
         icon: <IconUser />,
-        className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle',
+        className: isAdmin() ? '' : 'tableHiddle',
       },
       {
         text: t('日志'),
@@ -137,7 +137,7 @@ const SiderBar = () => {
         icon: <IconImage />,
         className:
           localStorage.getItem('enable_drawing') === 'true'
-            ? 'semi-navigation-item-normal'
+            ? ''
             : 'tableHiddle',
       },
       {
@@ -147,7 +147,7 @@ const SiderBar = () => {
         icon: <IconChecklistStroked />,
         className:
             localStorage.getItem('enable_task') === 'true'
-                ? 'semi-navigation-item-normal'
+                ? ''
                 : 'tableHiddle',
       },
       {
