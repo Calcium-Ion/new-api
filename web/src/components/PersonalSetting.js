@@ -78,6 +78,7 @@ const PersonalSetting = () => {
         webhookSecret: '',
         notificationEmail: ''
     });
+    const [showWebhookDocs, setShowWebhookDocs] = useState(false);
 
     useEffect(() => {
         let status = localStorage.getItem('status');
@@ -771,7 +772,32 @@ const PersonalSetting = () => {
                                                 placeholder={t('请输入Webhook地址，例如: https://example.com/webhook')}
                                             />
                                             <Typography.Text type="secondary" style={{marginTop: 8, display: 'block'}}>
-                                                {t('系统将以 POST 方式发送通知，请确保地址可以接收 POST 请求')}
+                                                {t('只支持https，系统将以 POST 方式发送通知，请确保地址可以接收 POST 请求')}
+                                            </Typography.Text>
+                                            <Typography.Text type="secondary" style={{marginTop: 8, display: 'block'}}>
+                                                <div style={{cursor: 'pointer'}} onClick={() => setShowWebhookDocs(!showWebhookDocs)}>
+                                                    {t('Webhook请求结构')} {showWebhookDocs ? '▼' : '▶'}
+                                                </div>
+                                                <Collapsible isOpen={showWebhookDocs}>
+                                                    <pre style={{marginTop: 4, background: 'var(--semi-color-fill-0)', padding: 8, borderRadius: 4}}>
+{`{
+    "type": "quota_exceed",      // 通知类型
+    "title": "标题",             // 通知标题
+    "content": "通知内容",       // 通知内容，支持 {{value}} 变量占位符
+    "values": ["值1", "值2"],    // 按顺序替换content中的 {{value}} 占位符
+    "timestamp": 1739950503      // 时间戳
+}
+
+示例：
+{
+    "type": "quota_exceed",
+    "title": "额度预警通知",
+    "content": "您的额度即将用尽，当前剩余额度为 {{value}}",
+    "values": ["$0.99"],
+    "timestamp": 1739950503
+}`}
+                                                    </pre>
+                                                </Collapsible>
                                             </Typography.Text>
                                         </div>
                                     </div>

@@ -49,8 +49,19 @@ func NotifyUser(user *model.UserBase, data dto.Notify) error {
 			common.SysError(fmt.Sprintf("user %d has no webhook url, skip sending webhook", user.Id))
 			return nil
 		}
-		// TODO: 实现webhook通知
-		_ = webhookURL // 临时处理未使用警告，等待webhook实现
+		webhookURLStr, ok := webhookURL.(string)
+		if !ok {
+			common.SysError(fmt.Sprintf("user %d webhook url is not string type", user.Id))
+			return nil
+		}
+
+		// 获取 webhook secret
+		var webhookSecret string
+		if secret, ok := userSetting[constant.UserSettingWebhookSecret]; ok {
+			webhookSecret, _ = secret.(string)
+		}
+
+		return SendWebhookNotify(webhookURLStr, webhookSecret, data)
 	}
 	return nil
 }
