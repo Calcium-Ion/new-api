@@ -368,6 +368,17 @@ const SystemSetting = () => {
             </a>
             ）
           </Header>
+          <Message info>
+            注意：代理功能仅对图片请求和 Webhook 请求生效，不会影响其他 API 请求。如需配置 API 请求代理，请参考
+            <a 
+              href='https://github.com/Calcium-Ion/new-api/blob/main/docs/channel/other_setting.md'
+              target='_blank'
+              rel='noreferrer'
+            >
+              {' '}API 代理设置文档
+            </a>
+            。
+          </Message>
           <Form.Group widths='equal'>
             <Form.Input
               label='Worker地址，不填写则不启用代理'
