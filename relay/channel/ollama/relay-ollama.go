@@ -39,6 +39,9 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
 		ResponseFormat:   request.ResponseFormat,
 		FrequencyPenalty: request.FrequencyPenalty,
 		PresencePenalty:  request.PresencePenalty,
+		Prompt:           request.Prompt,
+		StreamOptions:    request.StreamOptions,
+		Suffix:           request.Suffix,
 	}
 }
 
