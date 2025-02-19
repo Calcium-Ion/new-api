@@ -47,6 +47,8 @@ type GeneralOpenAIRequest struct {
 	Dimensions          int             `json:"dimensions,omitempty"`
 	Modalities          any             `json:"modalities,omitempty"`
 	Audio               any             `json:"audio,omitempty"`
+	// SessionCache or PrefixCache context id
+	ContextId string `json:"context_id,omitempty"`
 }
 
 type OpenAITools struct {

@@ -5,3 +5,4 @@
 .gitignore
 Makefile
 docs
+**/node_modules/

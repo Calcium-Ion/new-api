@@ -1,6 +1,7 @@
 package volcengine
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ import (
 	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
+	"one-api/service"
 	"strings"
 )
 
@@ -36,9 +38,14 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		if strings.HasPrefix(info.UpstreamModelName, "bot") {
 			return fmt.Sprintf("%s/api/v3/bots/chat/completions", info.BaseUrl), nil
 		}
+		if info.Cache {
+			return fmt.Sprintf("%s/api/v3/context/chat/completions", info.BaseUrl), nil
+		}
 		return fmt.Sprintf("%s/api/v3/chat/completions", info.BaseUrl), nil
 	case constant.RelayModeEmbeddings:
 		return fmt.Sprintf("%s/api/v3/embeddings", info.BaseUrl), nil
+	case constant.RelayModeContext:
+		return fmt.Sprintf("%s/api/v3/context/create", info.BaseUrl), nil
 	default:
 	}
 	return "", fmt.Errorf("unsupported relay mode: %d", info.RelayMode)
@@ -79,8 +86,66 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		}
 	case constant.RelayModeEmbeddings:
 		err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+	case constant.RelayModeContext:
+		err, usage = BaseHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
 	}
 	return
+}
+
+func BaseHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+	var simpleResponse = dto.SimpleResponse{
+		Usage: dto.Usage{
+			PromptTokens:     promptTokens,
+			CompletionTokens: 0,
+			TotalTokens:      promptTokens,
+		},
+	}
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+	}
+	err = resp.Body.Close()
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	//err = json.Unmarshal(responseBody, &simpleResponse)
+	//if err != nil {
+	//	return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+	//}
+	//if simpleResponse.Error.Type != "" {
+	//	return &dto.OpenAIErrorWithStatusCode{
+	//		Error:      simpleResponse.Error,
+	//		StatusCode: resp.StatusCode,
+	//	}, nil
+	//}
+	// Reset response body
+	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+	// We shouldn't set the header before we parse the response body, because the parse part may fail.
+	// And then we will have to send an error response, but in this case, the header has already been set.
+	// So the httpClient will be confused by the response.
+	// For example, Postman will report error, and we cannot check the response at all.
+	for k, v := range resp.Header {
+		c.Writer.Header().Set(k, v[0])
+	}
+	c.Writer.WriteHeader(resp.StatusCode)
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "copy_response_body_failed", http.StatusInternalServerError), nil
+	}
+	resp.Body.Close()
+	//if simpleResponse.Usage.TotalTokens == 0 || (simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.CompletionTokens == 0) {
+	//	completionTokens := 0
+	//	for _, choice := range simpleResponse.Choices {
+	//		ctkm, _ := service.CountTextToken(string(choice.Message.Content), model)
+	//		completionTokens += ctkm
+	//	}
+	//	simpleResponse.Usage = dto.Usage{
+	//		PromptTokens:     promptTokens,
+	//		CompletionTokens: completionTokens,
+	//		TotalTokens:      promptTokens + completionTokens,
+	//	}
+	//}
+	return nil, &simpleResponse.Usage
 }
 
 func (a *Adaptor) GetModelList() []string {

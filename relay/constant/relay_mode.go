@@ -40,6 +40,7 @@ const (
 	RelayModeRerank
 
 	RelayModeRealtime
+	RelayModeContext
 )
 
 func Path2RelayMode(path string) int {
@@ -68,6 +69,8 @@ func Path2RelayMode(path string) int {
 		relayMode = RelayModeRerank
 	} else if strings.HasPrefix(path, "/v1/realtime") {
 		relayMode = RelayModeRealtime
+	} else if strings.HasPrefix(path, "/v1/context") {
+		relayMode = RelayModeContext
 	}
 	return relayMode
 }
