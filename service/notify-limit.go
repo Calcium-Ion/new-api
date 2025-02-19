@@ -68,7 +68,7 @@ func checkRedisLimit(userId int, notifyType string) (bool, error) {
 	}
 
 	currentCount, _ := strconv.Atoi(count)
-	limit := constant.DefaultNotifyHourlyLimit
+	limit := constant.NotifyLimitCount
 
 	// Check if limit is already reached
 	if currentCount >= limit {
@@ -107,7 +107,7 @@ func checkMemoryLimit(userId int, notifyType string) (bool, error) {
 	currentLimit.Count++
 
 	// Check against limits
-	limit := constant.DefaultNotifyHourlyLimit
+	limit := constant.NotifyLimitCount
 
 	// Store updated count
 	notifyLimitStore.Store(key, currentLimit)

@@ -29,7 +29,7 @@ var GeminiModelMap = map[string]string{
 
 var GeminiVisionMaxImageNum = common.GetEnvOrDefault("GEMINI_VISION_MAX_IMAGE_NUM", 16)
 
-var DefaultNotifyHourlyLimit = common.GetEnvOrDefault("NOTIFY_HOURLY_LIMIT", 2)
+var NotifyLimitCount = common.GetEnvOrDefault("NOTIFY_LIMIT_COUNT", 2)
 var NotificationLimitDurationMinute = common.GetEnvOrDefault("NOTIFICATION_LIMIT_DURATION_MINUTE", 10)
 
 func InitEnv() {

@@ -95,6 +95,9 @@
 - `MAX_FILE_DOWNLOAD_MB`: 最大文件下载大小，单位 MB，默认为 `20`。
 - `CRYPTO_SECRET`：加密密钥，用于加密数据库内容。
 - `AZURE_DEFAULT_API_VERSION`：Azure渠道默认API版本，如果渠道设置中未指定API版本，则使用此版本，默认为 `2024-12-01-preview`
+- `NOTIFICATION_LIMIT_DURATION_MINUTE`：通知限制的持续时间（分钟），默认为 `10`。
+- `NOTIFY_LIMIT_COUNT`：用户通知在指定持续时间内的最大数量，默认为 `2`。
+
 ## 部署
 
 > [!TIP]
