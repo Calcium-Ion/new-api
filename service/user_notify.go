@@ -11,7 +11,7 @@ import (
 
 func NotifyRootUser(t string, subject string, content string) {
 	user := model.GetRootUser().ToBaseUser()
-	_ = NotifyUser(&user, dto.NewNotify(t, subject, content, nil))
+	_ = NotifyUser(user, dto.NewNotify(t, subject, content, nil))
 }
 
 func NotifyUser(user *model.UserBase, data dto.Notify) error {

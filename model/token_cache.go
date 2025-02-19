@@ -52,7 +52,7 @@ func cacheSetTokenField(key string, field string, value string) error {
 func cacheGetTokenByKey(key string) (*Token, error) {
 	hmacKey := common.GenerateHMAC(key)
 	if !common.RedisEnabled {
-		return nil, nil
+		return nil, fmt.Errorf("redis is not enabled")
 	}
 	var token Token
 	err := common.RedisHGetObj(fmt.Sprintf("token:%s", hmacKey), &token)

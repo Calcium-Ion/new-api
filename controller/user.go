@@ -472,7 +472,7 @@ func GetUserModels(c *gin.Context) {
 	if err != nil {
 		id = c.GetInt("id")
 	}
-	user, err := model.GetUserById(id, true)
+	user, err := model.GetUserCache(id)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

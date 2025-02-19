@@ -79,7 +79,7 @@ func GetUserCache(userId int) (userCache *UserBase, err error) {
 	}()
 
 	// Try getting from Redis first
-	err = common.RedisHGetObj(getUserCacheKey(userId), &userCache)
+	userCache, err = cacheGetUserBase(userId)
 	if err == nil {
 		return userCache, nil
 	}
@@ -103,6 +103,19 @@ func GetUserCache(userId int) (userCache *UserBase, err error) {
 	}
 
 	return userCache, nil
+}
+
+func cacheGetUserBase(userId int) (*UserBase, error) {
+	if !common.RedisEnabled {
+		return nil, fmt.Errorf("redis is not enabled")
+	}
+	var userCache UserBase
+	// Try getting from Redis first
+	err := common.RedisHGetObj(getUserCacheKey(userId), &userCache)
+	if err != nil {
+		return nil, err
+	}
+	return &userCache, nil
 }
 
 // Add atomic quota operations using hash fields

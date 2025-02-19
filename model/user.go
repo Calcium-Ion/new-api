@@ -42,8 +42,8 @@ type User struct {
 	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
 }
 
-func (user *User) ToBaseUser() UserBase {
-	cache := UserBase{
+func (user *User) ToBaseUser() *UserBase {
+	cache := &UserBase{
 		Id:       user.Id,
 		Group:    user.Group,
 		Quota:    user.Quota,
