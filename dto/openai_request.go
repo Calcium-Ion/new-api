@@ -88,8 +88,10 @@ func (r GeneralOpenAIRequest) ParseInput() []string {
 }
 
 type Message struct {
-	Role             string          `json:"role"`
-	Content          json.RawMessage `json:"content"`
+	Role    string          `json:"role"`
+	Content json.RawMessage `json:"content"`
+	// parsedContent not json field
+	parsedContent    []MediaContent
 	Name             *string         `json:"name,omitempty"`
 	Prefix           *bool           `json:"prefix,omitempty"`
 	ReasoningContent string          `json:"reasoning_content,omitempty"`
@@ -160,6 +162,11 @@ func (m *Message) SetStringContent(content string) {
 	m.Content = jsonContent
 }
 
+func (m *Message) SetMediaContent(content []MediaContent) {
+	jsonContent, _ := json.Marshal(content)
+	m.Content = jsonContent
+}
+
 func (m *Message) IsStringContent() bool {
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
@@ -169,7 +176,15 @@ func (m *Message) IsStringContent() bool {
 }
 
 func (m *Message) ParseContent() []MediaContent {
+	if m.parsedContent != nil {
+		return m.parsedContent
+	}
 	var contentList []MediaContent
+	defer func() {
+		if len(contentList) > 0 {
+			m.parsedContent = contentList
+		}
+	}()
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
 		contentList = append(contentList, MediaContent{

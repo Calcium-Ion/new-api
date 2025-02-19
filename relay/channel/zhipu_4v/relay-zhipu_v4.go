@@ -90,8 +90,7 @@ func requestOpenAI2Zhipu(request dto.GeneralOpenAIRequest) *dto.GeneralOpenAIReq
 					mediaMessages[j] = mediaMessage
 				}
 			}
-			messageRaw, _ := json.Marshal(mediaMessages)
-			message.Content = messageRaw
+			message.SetMediaContent(mediaMessages)
 		}
 		messages = append(messages, dto.Message{
 			Role:       message.Role,

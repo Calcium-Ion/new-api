@@ -9,14 +9,36 @@ import (
 	"net/http"
 	"one-api/dto"
 	"one-api/service"
+	"strings"
 )
 
-func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
+func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) (*OllamaRequest, error) {
 	messages := make([]dto.Message, 0, len(request.Messages))
 	for _, message := range request.Messages {
+		if !message.IsStringContent() {
+			mediaMessages := message.ParseContent()
+			for j, mediaMessage := range mediaMessages {
+				if mediaMessage.Type == dto.ContentTypeImageURL {
+					imageUrl := mediaMessage.ImageUrl.(dto.MessageImageUrl)
+					// check if not base64
+					if strings.HasPrefix(imageUrl.Url, "http") {
+						fileData, err := service.GetFileBase64FromUrl(imageUrl.Url)
+						if err != nil {
+							return nil, err
+						}
+						imageUrl.Url = fmt.Sprintf("data:%s;base64,%s", fileData.MimeType, fileData.Base64Data)
+					}
+					mediaMessage.ImageUrl = imageUrl
+					mediaMessages[j] = mediaMessage
+				}
+			}
+			message.SetMediaContent(mediaMessages)
+		}
 		messages = append(messages, dto.Message{
-			Role:    message.Role,
-			Content: message.Content,
+			Role:       message.Role,
+			Content:    message.Content,
+			ToolCalls:  message.ToolCalls,
+			ToolCallId: message.ToolCallId,
 		})
 	}
 	str, ok := request.Stop.(string)
@@ -42,7 +64,7 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) *OllamaRequest {
 		Prompt:           request.Prompt,
 		StreamOptions:    request.StreamOptions,
 		Suffix:           request.Suffix,
-	}
+	}, nil
 }
 
 func requestOpenAI2Embeddings(request dto.EmbeddingRequest) *OllamaEmbeddingRequest {
