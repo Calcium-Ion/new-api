@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"one-api/common"
 	"one-api/model"
 	"one-api/setting"
@@ -471,7 +472,7 @@ func GetUserModels(c *gin.Context) {
 	if err != nil {
 		id = c.GetInt("id")
 	}
-	user, err := model.GetUserById(id, true)
+	user, err := model.GetUserCache(id)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -869,9 +870,6 @@ func EmailBind(c *gin.Context) {
 		})
 		return
 	}
-	if user.Role == common.RoleRootUser {
-		common.RootUserEmail = email
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -912,4 +910,116 @@ func TopUp(c *gin.Context) {
 		"data":    quota,
 	})
 	return
+}
+
+type UpdateUserSettingRequest struct {
+	QuotaWarningType      string `json:"notify_type"`
+	QuotaWarningThreshold int    `json:"quota_warning_threshold"`
+	WebhookUrl            string `json:"webhook_url,omitempty"`
+	WebhookSecret         string `json:"webhook_secret,omitempty"`
+	NotificationEmail     string `json:"notification_email,omitempty"`
+}
+
+func UpdateUserSetting(c *gin.Context) {
+	var req UpdateUserSettingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "无效的参数",
+		})
+		return
+	}
+
+	// 验证预警类型
+	if req.QuotaWarningType != constant.NotifyTypeEmail && req.QuotaWarningType != constant.NotifyTypeWebhook {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "无效的预警类型",
+		})
+		return
+	}
+
+	// 验证预警阈值
+	if req.QuotaWarningThreshold <= 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "预警阈值必须大于0",
+		})
+		return
+	}
+
+	// 如果是webhook类型,验证webhook地址
+	if req.QuotaWarningType == constant.NotifyTypeWebhook {
+		if req.WebhookUrl == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "Webhook地址不能为空",
+			})
+			return
+		}
+		// 验证URL格式
+		if _, err := url.ParseRequestURI(req.WebhookUrl); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无效的Webhook地址",
+			})
+			return
+		}
+	}
+
+	// 如果是邮件类型，验证邮箱地址
+	if req.QuotaWarningType == constant.NotifyTypeEmail && req.NotificationEmail != "" {
+		// 验证邮箱格式
+		if !strings.Contains(req.NotificationEmail, "@") {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无效的邮箱地址",
+			})
+			return
+		}
+	}
+
+	userId := c.GetInt("id")
+	user, err := model.GetUserById(userId, true)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// 构建设置
+	settings := map[string]interface{}{
+		constant.UserSettingNotifyType:            req.QuotaWarningType,
+		constant.UserSettingQuotaWarningThreshold: req.QuotaWarningThreshold,
+	}
+
+	// 如果是webhook类型,添加webhook相关设置
+	if req.QuotaWarningType == constant.NotifyTypeWebhook {
+		settings[constant.UserSettingWebhookUrl] = req.WebhookUrl
+		if req.WebhookSecret != "" {
+			settings[constant.UserSettingWebhookSecret] = req.WebhookSecret
+		}
+	}
+
+	// 如果提供了通知邮箱，添加到设置中
+	if req.QuotaWarningType == constant.NotifyTypeEmail && req.NotificationEmail != "" {
+		settings[constant.UserSettingNotificationEmail] = req.NotificationEmail
+	}
+
+	// 更新用户设置
+	user.SetSetting(settings)
+	if err := user.Update(false); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "更新设置失败: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "设置已更新",
+	})
 }

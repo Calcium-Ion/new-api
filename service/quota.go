@@ -3,8 +3,10 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/bytedance/gopkg/util/gopool"
 	"math"
 	"one-api/common"
+	constant2 "one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
@@ -99,7 +101,7 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 		return errors.New(fmt.Sprintf("令牌额度不足，剩余额度为 %d", token.RemainQuota))
 	}
 
-	err = model.PostConsumeQuota(relayInfo, 0, quota, 0, false)
+	err = PostConsumeQuota(relayInfo, quota, 0, false)
 	if err != nil {
 		return err
 	}
@@ -222,7 +224,7 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	} else {
 		quotaDelta := quota - preConsumedQuota
 		if quotaDelta != 0 {
-			err := model.PostConsumeQuota(relayInfo, userQuota, quotaDelta, preConsumedQuota, true)
+			err := PostConsumeQuota(relayInfo, quotaDelta, preConsumedQuota, true)
 			if err != nil {
 				common.LogError(ctx, "error consuming token remain quota: "+err.Error())
 			}
@@ -238,4 +240,89 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	other := GenerateAudioOtherInfo(ctx, relayInfo, usage, modelRatio, groupRatio, completionRatio, audioRatio, audioCompletionRatio, modelPrice)
 	model.RecordConsumeLog(ctx, relayInfo.UserId, relayInfo.ChannelId, usage.PromptTokens, usage.CompletionTokens, logModel,
 		tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, relayInfo.Group, other)
+}
+
+func PreConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, quota int) error {
+	if quota < 0 {
+		return errors.New("quota 不能为负数！")
+	}
+	if relayInfo.IsPlayground {
+		return nil
+	}
+	//if relayInfo.TokenUnlimited {
+	//	return nil
+	//}
+	token, err := model.GetTokenByKey(relayInfo.TokenKey, false)
+	if err != nil {
+		return err
+	}
+	if !relayInfo.TokenUnlimited && token.RemainQuota < quota {
+		return errors.New("令牌额度不足")
+	}
+	err = model.DecreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, quota)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQuota int, sendEmail bool) (err error) {
+
+	if quota > 0 {
+		err = model.DecreaseUserQuota(relayInfo.UserId, quota)
+	} else {
+		err = model.IncreaseUserQuota(relayInfo.UserId, -quota)
+	}
+	if err != nil {
+		return err
+	}
+
+	if !relayInfo.IsPlayground {
+		if quota > 0 {
+			err = model.DecreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, quota)
+		} else {
+			err = model.IncreaseTokenQuota(relayInfo.TokenId, relayInfo.TokenKey, -quota)
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	if sendEmail {
+		if (quota + preConsumedQuota) != 0 {
+			checkAndSendQuotaNotify(relayInfo.UserId, quota, preConsumedQuota)
+		}
+	}
+
+	return nil
+}
+
+func checkAndSendQuotaNotify(userId int, quota int, preConsumedQuota int) {
+	gopool.Go(func() {
+		userCache, err := model.GetUserCache(userId)
+		if err != nil {
+			common.SysError("failed to get user cache: " + err.Error())
+		}
+		userSetting := userCache.GetSetting()
+		threshold := common.QuotaRemindThreshold
+		if userCustomThreshold, ok := userSetting[constant2.UserSettingQuotaWarningThreshold]; ok {
+			threshold = int(userCustomThreshold.(float64))
+		}
+
+		//noMoreQuota := userCache.Quota-(quota+preConsumedQuota) <= 0
+		quotaTooLow := false
+		consumeQuota := quota + preConsumedQuota
+		if userCache.Quota-consumeQuota < threshold {
+			quotaTooLow = true
+		}
+		if quotaTooLow {
+			prompt := "您的额度即将用尽"
+			topUpLink := fmt.Sprintf("%s/topup", setting.ServerAddress)
+			content := "{{value}}，当前剩余额度为 {{value}}，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='{{value}}'>{{value}}</a>"
+			err = NotifyUser(userCache, dto.NewNotify(dto.NotifyTypeQuotaExceed, prompt, content, []interface{}{prompt, common.FormatQuota(userCache.Quota), topUpLink, topUpLink}))
+			if err != nil {
+				common.SysError(fmt.Sprintf("failed to send quota notify to user %d: %s", userId, err.Error()))
+			}
+		}
+	})
 }

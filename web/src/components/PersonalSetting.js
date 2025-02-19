@@ -26,6 +26,10 @@ import {
     Tag,
     Typography,
     Collapsible,
+    Select,
+    Radio,
+    RadioGroup,
+    AutoComplete,
 } from '@douyinfe/semi-ui';
 import {
     getQuotaPerUnit,
@@ -67,14 +71,16 @@ const PersonalSetting = () => {
     const [transferAmount, setTransferAmount] = useState(0);
     const [isModelsExpanded, setIsModelsExpanded] = useState(false);
     const MODELS_DISPLAY_COUNT = 10;  // 默认显示的模型数量
+    const [notificationSettings, setNotificationSettings] = useState({
+        warningType: 'email',
+        warningThreshold: 100000,
+        webhookUrl: '',
+        webhookSecret: '',
+        notificationEmail: ''
+    });
+    const [showWebhookDocs, setShowWebhookDocs] = useState(false);
 
     useEffect(() => {
-        // let user = localStorage.getItem('user');
-        // if (user) {
-        //   userDispatch({ type: 'login', payload: user });
-        // }
-        // console.log(localStorage.getItem('user'))
-
         let status = localStorage.getItem('status');
         if (status) {
             status = JSON.parse(status);
@@ -104,6 +110,19 @@ const PersonalSetting = () => {
         }
         return () => clearInterval(countdownInterval); // Clean up on unmount
     }, [disableButton, countdown]);
+
+    useEffect(() => {
+        if (userState?.user?.setting) {
+            const settings = JSON.parse(userState.user.setting);
+            setNotificationSettings({
+                warningType: settings.notify_type || 'email',
+                warningThreshold: settings.quota_warning_threshold || 500000,
+                webhookUrl: settings.webhook_url || '',
+                webhookSecret: settings.webhook_secret || '',
+                notificationEmail: settings.notification_email || ''
+            });
+        }
+    }, [userState?.user?.setting]);
 
     const handleInputChange = (name, value) => {
         setInputs((inputs) => ({...inputs, [name]: value}));
@@ -300,7 +319,36 @@ const PersonalSetting = () => {
         }
     };
 
+    const handleNotificationSettingChange = (type, value) => {
+        setNotificationSettings(prev => ({
+            ...prev,
+            [type]: value.target ? value.target.value : value  // 处理 Radio 事件对象
+        }));
+    };
+
+    const saveNotificationSettings = async () => {
+        try {
+            const res = await API.put('/api/user/setting', {
+                notify_type: notificationSettings.warningType,
+                quota_warning_threshold: notificationSettings.warningThreshold,
+                webhook_url: notificationSettings.webhookUrl,
+                webhook_secret: notificationSettings.webhookSecret,
+                notification_email: notificationSettings.notificationEmail
+            });
+            
+            if (res.data.success) {
+                showSuccess(t('通知设置已更新'));
+                await getUserData();
+            } else {
+                showError(res.data.message);
+            }
+        } catch (error) {
+            showError(t('更新通知设置失败'));
+        }
+    };
+
     return (
+
         <div>
             <Layout>
                 <Layout.Content>
@@ -526,9 +574,7 @@ const PersonalSetting = () => {
                             </div>
                             <div style={{marginTop: 10}}>
                                 <Typography.Text strong>{t('微信')}</Typography.Text>
-                                <div
-                                    style={{display: 'flex', justifyContent: 'space-between'}}
-                                >
+                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
                                     <div>
                                         <Input
                                             value={
@@ -541,12 +587,16 @@ const PersonalSetting = () => {
                                     </div>
                                     <div>
                                         <Button
-                                            disabled={
-                                                (userState.user && userState.user.wechat_id !== '') ||
-                                                !status.wechat_login
-                                            }
+                                            disabled={!status.wechat_login}
+                                            onClick={() => {
+                                                setShowWeChatBindModal(true);
+                                            }}
                                         >
-                                            {status.wechat_login ? t('绑定') : t('未启用')}
+                                            {userState.user && userState.user.wechat_id !== ''
+                                                ? t('修改绑定')
+                                                : status.wechat_login 
+                                                    ? t('绑定') 
+                                                    : t('未启用')}
                                         </Button>
                                     </div>
                                 </div>
@@ -672,18 +722,8 @@ const PersonalSetting = () => {
                                         style={{marginTop: '10px'}}
                                     />
                                 )}
-                                {status.wechat_login && (
-                                    <Button
-                                        onClick={() => {
-                                            setShowWeChatBindModal(true);
-                                        }}
-                                    >
-                                        {t('绑定微信账号')}
-                                    </Button>
-                                )}
                                 <Modal
                                     onCancel={() => setShowWeChatBindModal(false)}
-                                    // onOpen={() => setShowWeChatBindModal(true)}
                                     visible={showWeChatBindModal}
                                     size={'small'}
                                 >
@@ -707,9 +747,121 @@ const PersonalSetting = () => {
                                 </Modal>
                             </div>
                         </Card>
+                        <Card style={{marginTop: 10}}>
+                            <Typography.Title heading={6}>{t('通知设置')}</Typography.Title>
+                            <div style={{marginTop: 20}}>
+                                <Typography.Text strong>{t('通知方式')}</Typography.Text>
+                                <div style={{marginTop: 10}}>
+                                    <RadioGroup
+                                        value={notificationSettings.warningType}
+                                        onChange={value => handleNotificationSettingChange('warningType', value)}
+                                    >
+                                        <Radio value="email">{t('邮件通知')}</Radio>
+                                        <Radio value="webhook">{t('Webhook通知')}</Radio>
+                                    </RadioGroup>
+                                </div>
+                            </div>
+                            {notificationSettings.warningType === 'webhook' && (
+                                <>
+                                    <div style={{marginTop: 20}}>
+                                        <Typography.Text strong>{t('Webhook地址')}</Typography.Text>
+                                        <div style={{marginTop: 10}}>
+                                            <Input
+                                                value={notificationSettings.webhookUrl}
+                                                onChange={val => handleNotificationSettingChange('webhookUrl', val)}
+                                                placeholder={t('请输入Webhook地址，例如: https://example.com/webhook')}
+                                            />
+                                            <Typography.Text type="secondary" style={{marginTop: 8, display: 'block'}}>
+                                                {t('只支持https，系统将以 POST 方式发送通知，请确保地址可以接收 POST 请求')}
+                                            </Typography.Text>
+                                            <Typography.Text type="secondary" style={{marginTop: 8, display: 'block'}}>
+                                                <div style={{cursor: 'pointer'}} onClick={() => setShowWebhookDocs(!showWebhookDocs)}>
+                                                    {t('Webhook请求结构')} {showWebhookDocs ? '▼' : '▶'}
+                                                </div>
+                                                <Collapsible isOpen={showWebhookDocs}>
+                                                    <pre style={{marginTop: 4, background: 'var(--semi-color-fill-0)', padding: 8, borderRadius: 4}}>
+{`{
+    "type": "quota_exceed",      // 通知类型
+    "title": "标题",             // 通知标题
+    "content": "通知内容",       // 通知内容，支持 {{value}} 变量占位符
+    "values": ["值1", "值2"],    // 按顺序替换content中的 {{value}} 占位符
+    "timestamp": 1739950503      // 时间戳
+}
+
+示例：
+{
+    "type": "quota_exceed",
+    "title": "额度预警通知",
+    "content": "您的额度即将用尽，当前剩余额度为 {{value}}",
+    "values": ["$0.99"],
+    "timestamp": 1739950503
+}`}
+                                                    </pre>
+                                                </Collapsible>
+                                            </Typography.Text>
+                                        </div>
+                                    </div>
+                                    <div style={{marginTop: 20}}>
+                                        <Typography.Text strong>{t('接口凭证（可选）')}</Typography.Text>
+                                        <div style={{marginTop: 10}}>
+                                            <Input
+                                                value={notificationSettings.webhookSecret}
+                                                onChange={val => handleNotificationSettingChange('webhookSecret', val)}
+                                                placeholder={t('请输入密钥')}
+                                            />
+                                            <Typography.Text type="secondary" style={{marginTop: 8, display: 'block'}}>
+                                                {t('密钥将以 Bearer 方式添加到请求头中，用于验证webhook请求的合法性')}
+                                            </Typography.Text>
+                                            <Typography.Text type="secondary" style={{marginTop: 4, display: 'block'}}>
+                                                {t('Authorization: Bearer your-secret-key')}
+                                            </Typography.Text>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {notificationSettings.warningType === 'email' && (
+                                <div style={{marginTop: 20}}>
+                                    <Typography.Text strong>{t('通知邮箱')}</Typography.Text>
+                                    <div style={{marginTop: 10}}>
+                                        <Input
+                                            value={notificationSettings.notificationEmail}
+                                            onChange={val => handleNotificationSettingChange('notificationEmail', val)}
+                                            placeholder={t('留空则使用账号绑定的邮箱')}
+                                        />
+                                        <Typography.Text type="secondary" style={{marginTop: 8, display: 'block'}}>
+                                            {t('设置用于接收额度预警的邮箱地址，不填则使用账号绑定的邮箱')}
+                                        </Typography.Text>
+                                    </div>
+                                </div>
+                            )}
+                            <div style={{marginTop: 20}}>
+                                <Typography.Text strong>{t('额度预警阈值')} {renderQuotaWithPrompt(notificationSettings.warningThreshold)}</Typography.Text>
+                                <div style={{marginTop: 10}}>
+                                    <AutoComplete
+                                        value={notificationSettings.warningThreshold}
+                                        onChange={val => handleNotificationSettingChange('warningThreshold', val)}
+                                        style={{width: 200}}
+                                        placeholder={t('请输入预警额度')}
+                                        data={[
+                                            { value: 100000, label: '0.2$' },
+                                            { value: 500000, label: '1$' },
+                                            { value: 1000000, label: '5$' },
+                                            { value: 5000000, label: '10$' }
+                                        ]}
+                                    />
+                                </div>
+                                <Typography.Text type="secondary" style={{marginTop: 10, display: 'block'}}>
+                                    {t('当剩余额度低于此数值时，系统将通过选择的方式发送通知')}
+                                </Typography.Text>
+                            </div>
+                            <div style={{marginTop: 20}}>
+                                <Button type="primary" onClick={saveNotificationSettings}>
+                                    {t('保存设置')}
+                                </Button>
+                            </div>
+                        </Card>
                         <Modal
                             onCancel={() => setShowEmailBindModal(false)}
-                            // onOpen={() => setShowEmailBindModal(true)}
                             onOk={bindEmail}
                             visible={showEmailBindModal}
                             size={'small'}

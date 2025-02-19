@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"one-api/common"
@@ -38,6 +39,20 @@ type User struct {
 	InviterId        int            `json:"inviter_id" gorm:"type:int;column:inviter_id;index"`
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
 	LinuxDOId        string         `json:"linux_do_id" gorm:"column:linux_do_id;index"`
+	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
+}
+
+func (user *User) ToBaseUser() *UserBase {
+	cache := &UserBase{
+		Id:       user.Id,
+		Group:    user.Group,
+		Quota:    user.Quota,
+		Status:   user.Status,
+		Username: user.Username,
+		Setting:  user.Setting,
+		Email:    user.Email,
+	}
+	return cache
 }
 
 func (user *User) GetAccessToken() string {
@@ -49,6 +64,22 @@ func (user *User) GetAccessToken() string {
 
 func (user *User) SetAccessToken(token string) {
 	user.AccessToken = &token
+}
+
+func (user *User) GetSetting() map[string]interface{} {
+	if user.Setting == "" {
+		return nil
+	}
+	return common.StrToMap(user.Setting)
+}
+
+func (user *User) SetSetting(setting map[string]interface{}) {
+	settingBytes, err := json.Marshal(setting)
+	if err != nil {
+		common.SysError("failed to marshal setting: " + err.Error())
+		return
+	}
+	user.Setting = string(settingBytes)
 }
 
 // CheckUserExistOrDeleted check if user exist or deleted, if not exist, return false, nil, if deleted or exist, return true, nil
@@ -315,8 +346,8 @@ func (user *User) Update(updatePassword bool) error {
 		return err
 	}
 
-	// 更新缓存
-	return updateUserCache(user.Id, user.Username, user.Group, user.Quota, user.Status)
+	// Update cache
+	return updateUserCache(*user)
 }
 
 func (user *User) Edit(updatePassword bool) error {
@@ -344,8 +375,8 @@ func (user *User) Edit(updatePassword bool) error {
 		return err
 	}
 
-	// 更新缓存
-	return updateUserCache(user.Id, user.Username, user.Group, user.Quota, user.Status)
+	// Update cache
+	return updateUserCache(*user)
 }
 
 func (user *User) Delete() error {
@@ -371,8 +402,8 @@ func (user *User) HardDelete() error {
 // ValidateAndFill check password & user status
 func (user *User) ValidateAndFill() (err error) {
 	// When querying with struct, GORM will only query with non-zero fields,
-	// that means if your field’s value is 0, '', false or other zero values,
-	// it won’t be used to build query conditions
+	// that means if your field's value is 0, '', false or other zero values,
+	// it won't be used to build query conditions
 	password := user.Password
 	username := strings.TrimSpace(user.Username)
 	if username == "" || password == "" {
@@ -531,7 +562,6 @@ func GetUserQuota(id int, fromDB bool) (quota int, err error) {
 			return quota, nil
 		}
 		// Don't return error - fall through to DB
-		//common.SysError("failed to get user quota from cache: " + err.Error())
 	}
 	fromDB = true
 	err = DB.Model(&User{}).Where("id = ?", id).Select("quota").Find(&quota).Error
@@ -578,6 +608,35 @@ func GetUserGroup(id int, fromDB bool) (group string, err error) {
 	}
 
 	return group, nil
+}
+
+// GetUserSetting gets setting from Redis first, falls back to DB if needed
+func GetUserSetting(id int, fromDB bool) (settingMap map[string]interface{}, err error) {
+	var setting string
+	defer func() {
+		// Update Redis cache asynchronously on successful DB read
+		if shouldUpdateRedis(fromDB, err) {
+			gopool.Go(func() {
+				if err := updateUserSettingCache(id, setting); err != nil {
+					common.SysError("failed to update user setting cache: " + err.Error())
+				}
+			})
+		}
+	}()
+	if !fromDB && common.RedisEnabled {
+		setting, err := getUserSettingCache(id)
+		if err == nil {
+			return setting, nil
+		}
+		// Don't return error - fall through to DB
+	}
+	fromDB = true
+	err = DB.Model(&User{}).Where("id = ?", id).Select("setting").Find(&setting).Error
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+
+	return common.StrToMap(setting), nil
 }
 
 func IncreaseUserQuota(id int, quota int) (err error) {
@@ -641,9 +700,14 @@ func DeltaUpdateUserQuota(id int, delta int) (err error) {
 	}
 }
 
-func GetRootUserEmail() (email string) {
-	DB.Model(&User{}).Where("role = ?", common.RoleRootUser).Select("email").Find(&email)
-	return email
+//func GetRootUserEmail() (email string) {
+//	DB.Model(&User{}).Where("role = ?", common.RoleRootUser).Select("email").Find(&email)
+//	return email
+//}
+
+func GetRootUser() (user *User) {
+	DB.Where("role = ?", common.RoleRootUser).First(&user)
+	return user
 }
 
 func UpdateUserUsedQuotaAndRequestCount(id int, quota int) {
@@ -725,10 +789,10 @@ func IsLinuxDOIdAlreadyTaken(linuxDOId string) bool {
 	return !errors.Is(err, gorm.ErrRecordNotFound)
 }
 
-func (u *User) FillUserByLinuxDOId() error {
-	if u.LinuxDOId == "" {
+func (user *User) FillUserByLinuxDOId() error {
+	if user.LinuxDOId == "" {
 		return errors.New("linux do id is empty")
 	}
-	err := DB.Where("linux_do_id = ?", u.LinuxDOId).First(u).Error
+	err := DB.Where("linux_do_id = ?", user.LinuxDOId).First(user).Error
 	return err
 }

@@ -233,7 +233,11 @@ var (
 	modelRatioMapMutex                    = sync.RWMutex{}
 )
 
-var CompletionRatio map[string]float64 = nil
+var (
+	CompletionRatio      map[string]float64 = nil
+	CompletionRatioMutex                    = sync.RWMutex{}
+)
+
 var defaultCompletionRatio = map[string]float64{
 	"gpt-4-gizmo-*":  2,
 	"gpt-4o-gizmo-*": 3,
@@ -334,10 +338,17 @@ func GetDefaultModelRatioMap() map[string]float64 {
 	return defaultModelRatio
 }
 
-func CompletionRatio2JSONString() string {
+func GetCompletionRatioMap() map[string]float64 {
+	CompletionRatioMutex.Lock()
+	defer CompletionRatioMutex.Unlock()
 	if CompletionRatio == nil {
 		CompletionRatio = defaultCompletionRatio
 	}
+	return CompletionRatio
+}
+
+func CompletionRatio2JSONString() string {
+	GetCompletionRatioMap()
 	jsonBytes, err := json.Marshal(CompletionRatio)
 	if err != nil {
 		SysError("error marshalling completion ratio: " + err.Error())
@@ -346,11 +357,15 @@ func CompletionRatio2JSONString() string {
 }
 
 func UpdateCompletionRatioByJSONString(jsonStr string) error {
+	CompletionRatioMutex.Lock()
+	defer CompletionRatioMutex.Unlock()
 	CompletionRatio = make(map[string]float64)
 	return json.Unmarshal([]byte(jsonStr), &CompletionRatio)
 }
 
 func GetCompletionRatio(name string) float64 {
+	GetCompletionRatioMap()
+
 	if strings.Contains(name, "/") {
 		if ratio, ok := CompletionRatio[name]; ok {
 			return ratio
@@ -475,25 +490,4 @@ func GetAudioCompletionRatio(name string) float64 {
 		return 2
 	}
 	return 2
-}
-
-//func GetAudioPricePerMinute(name string) float64 {
-//	if strings.HasPrefix(name, "gpt-4o-realtime") {
-//		return 0.06
-//	}
-//	return 0.06
-//}
-//
-//func GetAudioCompletionPricePerMinute(name string) float64 {
-//	if strings.HasPrefix(name, "gpt-4o-realtime") {
-//		return 0.24
-//	}
-//	return 0.24
-//}
-
-func GetCompletionRatioMap() map[string]float64 {
-	if CompletionRatio == nil {
-		CompletionRatio = defaultCompletionRatio
-	}
-	return CompletionRatio
 }

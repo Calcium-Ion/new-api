@@ -194,7 +194,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 	}
 	defer func(ctx context.Context) {
 		if mjResp.StatusCode == 200 && mjResp.Response.Code == 1 {
-			err := model.PostConsumeQuota(relayInfo, userQuota, quota, 0, true)
+			err := service.PostConsumeQuota(relayInfo, quota, 0, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}
@@ -500,7 +500,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 
 	defer func(ctx context.Context) {
 		if consumeQuota && midjResponseWithStatus.StatusCode == 200 {
-			err := model.PostConsumeQuota(relayInfo, userQuota, quota, 0, true)
+			err := service.PostConsumeQuota(relayInfo, quota, 0, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}

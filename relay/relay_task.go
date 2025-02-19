@@ -113,7 +113,7 @@ func RelayTaskSubmit(c *gin.Context, relayMode int) (taskErr *dto.TaskError) {
 		// release quota
 		if relayInfo.ConsumeQuota && taskErr == nil {
 
-			err := model.PostConsumeQuota(relayInfo.ToRelayInfo(), userQuota, quota, 0, true)
+			err := service.PostConsumeQuota(relayInfo.ToRelayInfo(), quota, 0, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}

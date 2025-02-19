@@ -101,7 +101,7 @@ var PreConsumedQuota = 500
 
 var RetryTimes = 0
 
-var RootUserEmail = ""
+//var RootUserEmail = ""
 
 var IsMasterNode = os.Getenv("NODE_TYPE") != "slave"
 

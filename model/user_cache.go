@@ -1,206 +1,213 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"one-api/common"
 	"one-api/constant"
-	"strconv"
 	"time"
+
+	"github.com/bytedance/gopkg/util/gopool"
 )
 
-// Change UserCache struct to userCache
-type userCache struct {
+// UserBase struct remains the same as it represents the cached data structure
+type UserBase struct {
 	Id       int    `json:"id"`
 	Group    string `json:"group"`
+	Email    string `json:"email"`
 	Quota    int    `json:"quota"`
 	Status   int    `json:"status"`
-	Role     int    `json:"role"`
 	Username string `json:"username"`
+	Setting  string `json:"setting"`
 }
 
-// Rename all exported functions to private ones
-// invalidateUserCache clears all user related cache
+func (user *UserBase) GetSetting() map[string]interface{} {
+	if user.Setting == "" {
+		return nil
+	}
+	return common.StrToMap(user.Setting)
+}
+
+func (user *UserBase) SetSetting(setting map[string]interface{}) {
+	settingBytes, err := json.Marshal(setting)
+	if err != nil {
+		common.SysError("failed to marshal setting: " + err.Error())
+		return
+	}
+	user.Setting = string(settingBytes)
+}
+
+// getUserCacheKey returns the key for user cache
+func getUserCacheKey(userId int) string {
+	return fmt.Sprintf("user:%d", userId)
+}
+
+// invalidateUserCache clears user cache
 func invalidateUserCache(userId int) error {
 	if !common.RedisEnabled {
 		return nil
 	}
+	return common.RedisHDelObj(getUserCacheKey(userId))
+}
 
-	keys := []string{
-		fmt.Sprintf(constant.UserGroupKeyFmt, userId),
-		fmt.Sprintf(constant.UserQuotaKeyFmt, userId),
-		fmt.Sprintf(constant.UserEnabledKeyFmt, userId),
-		fmt.Sprintf(constant.UserUsernameKeyFmt, userId),
+// updateUserCache updates all user cache fields using hash
+func updateUserCache(user User) error {
+	if !common.RedisEnabled {
+		return nil
 	}
 
-	for _, key := range keys {
-		if err := common.RedisDel(key); err != nil {
-			return fmt.Errorf("failed to delete cache key %s: %w", key, err)
+	return common.RedisHSetObj(
+		getUserCacheKey(user.Id),
+		user.ToBaseUser(),
+		time.Duration(constant.UserId2QuotaCacheSeconds)*time.Second,
+	)
+}
+
+// GetUserCache gets complete user cache from hash
+func GetUserCache(userId int) (userCache *UserBase, err error) {
+	var user *User
+	var fromDB bool
+	defer func() {
+		// Update Redis cache asynchronously on successful DB read
+		if shouldUpdateRedis(fromDB, err) && user != nil {
+			gopool.Go(func() {
+				if err := updateUserCache(*user); err != nil {
+					common.SysError("failed to update user status cache: " + err.Error())
+				}
+			})
 		}
-	}
-	return nil
-}
+	}()
 
-// updateUserGroupCache updates user group cache
-func updateUserGroupCache(userId int, group string) error {
-	if !common.RedisEnabled {
-		return nil
-	}
-	return common.RedisSet(
-		fmt.Sprintf(constant.UserGroupKeyFmt, userId),
-		group,
-		time.Duration(constant.UserId2QuotaCacheSeconds)*time.Second,
-	)
-}
-
-// updateUserQuotaCache updates user quota cache
-func updateUserQuotaCache(userId int, quota int) error {
-	if !common.RedisEnabled {
-		return nil
-	}
-	return common.RedisSet(
-		fmt.Sprintf(constant.UserQuotaKeyFmt, userId),
-		fmt.Sprintf("%d", quota),
-		time.Duration(constant.UserId2QuotaCacheSeconds)*time.Second,
-	)
-}
-
-// updateUserStatusCache updates user status cache
-func updateUserStatusCache(userId int, userEnabled bool) error {
-	if !common.RedisEnabled {
-		return nil
-	}
-	enabled := "0"
-	if userEnabled {
-		enabled = "1"
-	}
-	return common.RedisSet(
-		fmt.Sprintf(constant.UserEnabledKeyFmt, userId),
-		enabled,
-		time.Duration(constant.UserId2StatusCacheSeconds)*time.Second,
-	)
-}
-
-// updateUserNameCache updates username cache
-func updateUserNameCache(userId int, username string) error {
-	if !common.RedisEnabled {
-		return nil
-	}
-	return common.RedisSet(
-		fmt.Sprintf(constant.UserUsernameKeyFmt, userId),
-		username,
-		time.Duration(constant.UserId2QuotaCacheSeconds)*time.Second,
-	)
-}
-
-// updateUserCache updates all user cache fields
-func updateUserCache(userId int, username string, userGroup string, quota int, status int) error {
-	if !common.RedisEnabled {
-		return nil
+	// Try getting from Redis first
+	userCache, err = cacheGetUserBase(userId)
+	if err == nil {
+		return userCache, nil
 	}
 
-	if err := updateUserGroupCache(userId, userGroup); err != nil {
-		return fmt.Errorf("update group cache: %w", err)
-	}
-
-	if err := updateUserQuotaCache(userId, quota); err != nil {
-		return fmt.Errorf("update quota cache: %w", err)
-	}
-
-	if err := updateUserStatusCache(userId, status == common.UserStatusEnabled); err != nil {
-		return fmt.Errorf("update status cache: %w", err)
-	}
-
-	if err := updateUserNameCache(userId, username); err != nil {
-		return fmt.Errorf("update username cache: %w", err)
-	}
-
-	return nil
-}
-
-// getUserGroupCache gets user group from cache
-func getUserGroupCache(userId int) (string, error) {
-	if !common.RedisEnabled {
-		return "", nil
-	}
-	return common.RedisGet(fmt.Sprintf(constant.UserGroupKeyFmt, userId))
-}
-
-// getUserQuotaCache gets user quota from cache
-func getUserQuotaCache(userId int) (int, error) {
-	if !common.RedisEnabled {
-		return 0, nil
-	}
-	quotaStr, err := common.RedisGet(fmt.Sprintf(constant.UserQuotaKeyFmt, userId))
+	// If Redis fails, get from DB
+	fromDB = true
+	user, err = GetUserById(userId, false)
 	if err != nil {
-		return 0, err
+		return nil, err // Return nil and error if DB lookup fails
 	}
-	return strconv.Atoi(quotaStr)
+
+	// Create cache object from user data
+	userCache = &UserBase{
+		Id:       user.Id,
+		Group:    user.Group,
+		Quota:    user.Quota,
+		Status:   user.Status,
+		Username: user.Username,
+		Setting:  user.Setting,
+		Email:    user.Email,
+	}
+
+	return userCache, nil
 }
 
-// getUserStatusCache gets user status from cache
-func getUserStatusCache(userId int) (int, error) {
+func cacheGetUserBase(userId int) (*UserBase, error) {
 	if !common.RedisEnabled {
-		return 0, nil
+		return nil, fmt.Errorf("redis is not enabled")
 	}
-	statusStr, err := common.RedisGet(fmt.Sprintf(constant.UserEnabledKeyFmt, userId))
+	var userCache UserBase
+	// Try getting from Redis first
+	err := common.RedisHGetObj(getUserCacheKey(userId), &userCache)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return strconv.Atoi(statusStr)
+	return &userCache, nil
 }
 
-// getUserNameCache gets username from cache
-func getUserNameCache(userId int) (string, error) {
-	if !common.RedisEnabled {
-		return "", nil
-	}
-	return common.RedisGet(fmt.Sprintf(constant.UserUsernameKeyFmt, userId))
-}
-
-// getUserCache gets complete user cache
-func getUserCache(userId int) (*userCache, error) {
-	if !common.RedisEnabled {
-		return nil, nil
-	}
-
-	group, err := getUserGroupCache(userId)
-	if err != nil {
-		return nil, fmt.Errorf("get group cache: %w", err)
-	}
-
-	quota, err := getUserQuotaCache(userId)
-	if err != nil {
-		return nil, fmt.Errorf("get quota cache: %w", err)
-	}
-
-	status, err := getUserStatusCache(userId)
-	if err != nil {
-		return nil, fmt.Errorf("get status cache: %w", err)
-	}
-
-	username, err := getUserNameCache(userId)
-	if err != nil {
-		return nil, fmt.Errorf("get username cache: %w", err)
-	}
-
-	return &userCache{
-		Id:       userId,
-		Group:    group,
-		Quota:    quota,
-		Status:   status,
-		Username: username,
-	}, nil
-}
-
-// Add atomic quota operations
+// Add atomic quota operations using hash fields
 func cacheIncrUserQuota(userId int, delta int64) error {
 	if !common.RedisEnabled {
 		return nil
 	}
-	key := fmt.Sprintf(constant.UserQuotaKeyFmt, userId)
-	return common.RedisIncr(key, delta)
+	return common.RedisHIncrBy(getUserCacheKey(userId), "Quota", delta)
 }
 
 func cacheDecrUserQuota(userId int, delta int64) error {
 	return cacheIncrUserQuota(userId, -delta)
+}
+
+// Helper functions to get individual fields if needed
+func getUserGroupCache(userId int) (string, error) {
+	cache, err := GetUserCache(userId)
+	if err != nil {
+		return "", err
+	}
+	return cache.Group, nil
+}
+
+func getUserQuotaCache(userId int) (int, error) {
+	cache, err := GetUserCache(userId)
+	if err != nil {
+		return 0, err
+	}
+	return cache.Quota, nil
+}
+
+func getUserStatusCache(userId int) (int, error) {
+	cache, err := GetUserCache(userId)
+	if err != nil {
+		return 0, err
+	}
+	return cache.Status, nil
+}
+
+func getUserNameCache(userId int) (string, error) {
+	cache, err := GetUserCache(userId)
+	if err != nil {
+		return "", err
+	}
+	return cache.Username, nil
+}
+
+func getUserSettingCache(userId int) (map[string]interface{}, error) {
+	setting := make(map[string]interface{})
+	cache, err := GetUserCache(userId)
+	if err != nil {
+		return setting, err
+	}
+	return cache.GetSetting(), nil
+}
+
+// New functions for individual field updates
+func updateUserStatusCache(userId int, status bool) error {
+	if !common.RedisEnabled {
+		return nil
+	}
+	statusInt := common.UserStatusEnabled
+	if !status {
+		statusInt = common.UserStatusDisabled
+	}
+	return common.RedisHSetField(getUserCacheKey(userId), "Status", fmt.Sprintf("%d", statusInt))
+}
+
+func updateUserQuotaCache(userId int, quota int) error {
+	if !common.RedisEnabled {
+		return nil
+	}
+	return common.RedisHSetField(getUserCacheKey(userId), "Quota", fmt.Sprintf("%d", quota))
+}
+
+func updateUserGroupCache(userId int, group string) error {
+	if !common.RedisEnabled {
+		return nil
+	}
+	return common.RedisHSetField(getUserCacheKey(userId), "Group", group)
+}
+
+func updateUserNameCache(userId int, username string) error {
+	if !common.RedisEnabled {
+		return nil
+	}
+	return common.RedisHSetField(getUserCacheKey(userId), "Username", username)
+}
+
+func updateUserSettingCache(userId int, setting string) error {
+	if !common.RedisEnabled {
+		return nil
+	}
+	return common.RedisHSetField(getUserCacheKey(userId), "Setting", setting)
 }
