@@ -12,6 +12,7 @@ import (
 	"one-api/dto"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/helper"
 	"one-api/service"
 	"one-api/setting"
 	"strings"
@@ -68,7 +69,7 @@ func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	return imageRequest, nil
 }
 
-func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
+func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	relayInfo := relaycommon.GenRelayInfo(c)
 
 	imageRequest, err := getAndValidImageRequest(c, relayInfo)
@@ -77,19 +78,12 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		return service.OpenAIErrorWrapper(err, "invalid_image_request", http.StatusBadRequest)
 	}
 
-	// map model name
-	modelMapping := c.GetString("model_mapping")
-	if modelMapping != "" {
-		modelMap := make(map[string]string)
-		err := json.Unmarshal([]byte(modelMapping), &modelMap)
-		if err != nil {
-			return service.OpenAIErrorWrapper(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
-		}
-		if modelMap[imageRequest.Model] != "" {
-			imageRequest.Model = modelMap[imageRequest.Model]
-		}
+	err = helper.ModelMappedHelper(c, relayInfo)
+	if err != nil {
+		return service.OpenAIErrorWrapperLocal(err, "model_mapped_error", http.StatusInternalServerError)
 	}
-	relayInfo.UpstreamModelName = imageRequest.Model
+
+	imageRequest.Model = relayInfo.UpstreamModelName
 
 	modelPrice, success := common.GetModelPrice(imageRequest.Model, true)
 	if !success {
@@ -183,8 +177,15 @@ func ImageHelper(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
 		quality = "hd"
 	}
 
-	logContent := fmt.Sprintf("大小 %s, 品质 %s", imageRequest.Size, quality)
-	postConsumeQuota(c, relayInfo, imageRequest.Model, usage, 0, 0, userQuota, 0, groupRatio, imageRatio, true, logContent)
+	priceData := helper.PriceData{
+		UsePrice:               true,
+		GroupRatio:             groupRatio,
+		ModelPrice:             modelPrice,
+		ModelRatio:             0,
+		ShouldPreConsumedQuota: 0,
+	}
 
+	logContent := fmt.Sprintf("大小 %s, 品质 %s", imageRequest.Size, quality)
+	postConsumeQuota(c, relayInfo, usage, 0, userQuota, priceData, logContent)
 	return nil
 }
