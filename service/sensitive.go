@@ -9,15 +9,23 @@ import (
 )
 
 func CheckSensitiveMessages(messages []dto.Message) ([]string, error) {
+	if len(messages) == 0 {
+		return nil, nil
+	}
+
 	for _, message := range messages {
 		arrayContent := message.ParseContent()
 		for _, m := range arrayContent {
 			if m.Type == "image_url" {
 				// TODO: check image url
-			} else {
-				if ok, words := SensitiveWordContains(m.Text); ok {
-					return words, errors.New("sensitive words detected")
-				}
+				continue
+			}
+			// 检查 text 是否为空
+			if m.Text == "" {
+				continue
+			}
+			if ok, words := SensitiveWordContains(m.Text); ok {
+				return words, errors.New("sensitive words detected")
 			}
 		}
 	}
@@ -36,11 +44,11 @@ func CheckSensitiveInput(input any) ([]string, error) {
 	case string:
 		return CheckSensitiveText(v)
 	case []string:
-		text := ""
+		var builder strings.Builder
 		for _, s := range v {
-			text += s
+			builder.WriteString(s)
 		}
-		return CheckSensitiveText(text)
+		return CheckSensitiveText(builder.String())
 	}
 	return CheckSensitiveText(fmt.Sprintf("%v", input))
 }
@@ -48,6 +56,9 @@ func CheckSensitiveInput(input any) ([]string, error) {
 // SensitiveWordContains 是否包含敏感词，返回是否包含敏感词和敏感词列表
 func SensitiveWordContains(text string) (bool, []string) {
 	if len(setting.SensitiveWords) == 0 {
+		return false, nil
+	}
+	if len(text) == 0 {
 		return false, nil
 	}
 	checkText := strings.ToLower(text)
@@ -63,14 +74,21 @@ func SensitiveWordReplace(text string, returnImmediately bool) (bool, []string, 
 	m := InitAc(setting.SensitiveWords)
 	hits := m.MultiPatternSearch([]rune(checkText), returnImmediately)
 	if len(hits) > 0 {
-		words := make([]string, 0)
+		words := make([]string, 0, len(hits))
+		var builder strings.Builder
+		builder.Grow(len(text))
+		lastPos := 0
+
 		for _, hit := range hits {
 			pos := hit.Pos
 			word := string(hit.Word)
-			text = text[:pos] + "**###**" + text[pos+len(word):]
+			builder.WriteString(text[lastPos:pos])
+			builder.WriteString("**###**")
+			lastPos = pos + len(word)
 			words = append(words, word)
 		}
-		return true, words, text
+		builder.WriteString(text[lastPos:])
+		return true, words, builder.String()
 	}
 	return false, nil, text
 }
