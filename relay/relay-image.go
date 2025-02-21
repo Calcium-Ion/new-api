@@ -61,8 +61,9 @@ func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	//	return service.OpenAIErrorWrapper(errors.New("n must be between 1 and 10"), "invalid_field_value", http.StatusBadRequest)
 	//}
 	if setting.ShouldCheckPromptSensitive() {
-		err := service.CheckSensitiveInput(imageRequest.Prompt)
+		words, err := service.CheckSensitiveInput(imageRequest.Prompt)
 		if err != nil {
+			common.LogWarn(c, fmt.Sprintf("user sensitive words detected: %s", strings.Join(words, ",")))
 			return nil, err
 		}
 	}

@@ -13,6 +13,7 @@ import (
 	"one-api/relay/helper"
 	"one-api/service"
 	"one-api/setting"
+	"strings"
 )
 
 func getAndValidAudioRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.AudioRequest, error) {
@@ -27,8 +28,9 @@ func getAndValidAudioRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 			return nil, errors.New("model is required")
 		}
 		if setting.ShouldCheckPromptSensitive() {
-			err := service.CheckSensitiveInput(audioRequest.Input)
+			words, err := service.CheckSensitiveInput(audioRequest.Input)
 			if err != nil {
+				common.LogWarn(c, fmt.Sprintf("user sensitive words detected: %s", strings.Join(words, ",")))
 				return nil, err
 			}
 		}

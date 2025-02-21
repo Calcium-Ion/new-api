@@ -8,39 +8,30 @@ import (
 	"strings"
 )
 
-func CheckSensitiveMessages(messages []dto.Message) error {
+func CheckSensitiveMessages(messages []dto.Message) ([]string, error) {
 	for _, message := range messages {
-		if len(message.Content) > 0 {
-			if message.IsStringContent() {
-				stringContent := message.StringContent()
-				if ok, words := SensitiveWordContains(stringContent); ok {
-					return errors.New("sensitive words: " + strings.Join(words, ","))
-				}
-			}
-		} else {
-			arrayContent := message.ParseContent()
-			for _, m := range arrayContent {
-				if m.Type == "image_url" {
-					// TODO: check image url
-				} else {
-					if ok, words := SensitiveWordContains(m.Text); ok {
-						return errors.New("sensitive words: " + strings.Join(words, ","))
-					}
+		arrayContent := message.ParseContent()
+		for _, m := range arrayContent {
+			if m.Type == "image_url" {
+				// TODO: check image url
+			} else {
+				if ok, words := SensitiveWordContains(m.Text); ok {
+					return words, errors.New("sensitive words detected")
 				}
 			}
 		}
 	}
-	return nil
+	return nil, nil
 }
 
-func CheckSensitiveText(text string) error {
+func CheckSensitiveText(text string) ([]string, error) {
 	if ok, words := SensitiveWordContains(text); ok {
-		return errors.New("sensitive words: " + strings.Join(words, ","))
+		return words, errors.New("sensitive words detected")
 	}
-	return nil
+	return nil, nil
 }
 
-func CheckSensitiveInput(input any) error {
+func CheckSensitiveInput(input any) ([]string, error) {
 	switch v := input.(type) {
 	case string:
 		return CheckSensitiveText(v)
@@ -60,7 +51,7 @@ func SensitiveWordContains(text string) (bool, []string) {
 		return false, nil
 	}
 	checkText := strings.ToLower(text)
-	return AcSearch(checkText, setting.SensitiveWords, false)
+	return AcSearch(checkText, setting.SensitiveWords, true)
 }
 
 // SensitiveWordReplace 敏感词替换，返回是否包含敏感词和替换后的文本
