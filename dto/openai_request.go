@@ -190,72 +190,86 @@ func (m *Message) ParseContent() []MediaContent {
 	if m.parsedContent != nil {
 		return m.parsedContent
 	}
+
 	var contentList []MediaContent
-	defer func() {
-		if len(contentList) > 0 {
-			m.parsedContent = contentList
-		}
-	}()
+
+	// 先尝试解析为字符串
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
-		contentList = append(contentList, MediaContent{
+		contentList = []MediaContent{{
 			Type: ContentTypeText,
 			Text: stringContent,
-		})
+		}}
+		m.parsedContent = contentList
 		return contentList
 	}
-	var arrayContent []json.RawMessage
+
+	// 尝试解析为数组
+	var arrayContent []map[string]interface{}
 	if err := json.Unmarshal(m.Content, &arrayContent); err == nil {
 		for _, contentItem := range arrayContent {
-			var contentMap map[string]any
-			if err := json.Unmarshal(contentItem, &contentMap); err != nil {
+			contentType, ok := contentItem["type"].(string)
+			if !ok {
 				continue
 			}
-			switch contentMap["type"] {
+
+			switch contentType {
 			case ContentTypeText:
-				if subStr, ok := contentMap["text"].(string); ok {
+				if text, ok := contentItem["text"].(string); ok {
 					contentList = append(contentList, MediaContent{
 						Type: ContentTypeText,
-						Text: subStr,
+						Text: text,
 					})
 				}
+
 			case ContentTypeImageURL:
-				if subObj, ok := contentMap["image_url"].(map[string]any); ok {
-					detail, ok := subObj["detail"]
-					if ok {
-						subObj["detail"] = detail.(string)
-					} else {
-						subObj["detail"] = "high"
-					}
+				imageUrl := contentItem["image_url"]
+				switch v := imageUrl.(type) {
+				case string:
 					contentList = append(contentList, MediaContent{
 						Type: ContentTypeImageURL,
 						ImageUrl: MessageImageUrl{
-							Url:    subObj["url"].(string),
-							Detail: subObj["detail"].(string),
-						},
-					})
-				} else if url, ok := contentMap["image_url"].(string); ok {
-					contentList = append(contentList, MediaContent{
-						Type: ContentTypeImageURL,
-						ImageUrl: MessageImageUrl{
-							Url:    url,
+							Url:    v,
 							Detail: "high",
 						},
 					})
+				case map[string]interface{}:
+					url, ok1 := v["url"].(string)
+					detail, ok2 := v["detail"].(string)
+					if !ok2 {
+						detail = "high"
+					}
+					if ok1 {
+						contentList = append(contentList, MediaContent{
+							Type: ContentTypeImageURL,
+							ImageUrl: MessageImageUrl{
+								Url:    url,
+								Detail: detail,
+							},
+						})
+					}
 				}
+
 			case ContentTypeInputAudio:
-				if subObj, ok := contentMap["input_audio"].(map[string]any); ok {
-					contentList = append(contentList, MediaContent{
-						Type: ContentTypeInputAudio,
-						InputAudio: MessageInputAudio{
-							Data:   subObj["data"].(string),
-							Format: subObj["format"].(string),
-						},
-					})
+				if audioData, ok := contentItem["input_audio"].(map[string]interface{}); ok {
+					data, ok1 := audioData["data"].(string)
+					format, ok2 := audioData["format"].(string)
+					if ok1 && ok2 {
+						contentList = append(contentList, MediaContent{
+							Type: ContentTypeInputAudio,
+							InputAudio: MessageInputAudio{
+								Data:   data,
+								Format: format,
+							},
+						})
+					}
 				}
 			}
 		}
-		return contentList
 	}
-	return nil
+
+	if len(contentList) > 0 {
+		m.parsedContent = contentList
+	}
+	return contentList
 }
