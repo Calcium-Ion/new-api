@@ -23,6 +23,7 @@ func AutomaticDisableKeywordsFromString(s string) {
 	ak := strings.Split(s, "\n")
 	for _, k := range ak {
 		k = strings.TrimSpace(k)
+		k = strings.ToLower(k)
 		if k != "" {
 			AutomaticDisableKeywords = append(AutomaticDisableKeywords, k)
 		}
