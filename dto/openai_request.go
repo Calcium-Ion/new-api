@@ -88,15 +88,15 @@ func (r GeneralOpenAIRequest) ParseInput() []string {
 }
 
 type Message struct {
-	Role    string          `json:"role"`
-	Content json.RawMessage `json:"content"`
-	// parsedContent not json field
-	parsedContent    []MediaContent
-	Name             *string         `json:"name,omitempty"`
-	Prefix           *bool           `json:"prefix,omitempty"`
-	ReasoningContent string          `json:"reasoning_content,omitempty"`
-	ToolCalls        json.RawMessage `json:"tool_calls,omitempty"`
-	ToolCallId       string          `json:"tool_call_id,omitempty"`
+	Role                string          `json:"role"`
+	Content             json.RawMessage `json:"content"`
+	Name                *string         `json:"name,omitempty"`
+	Prefix              *bool           `json:"prefix,omitempty"`
+	ReasoningContent    string          `json:"reasoning_content,omitempty"`
+	ToolCalls           json.RawMessage `json:"tool_calls,omitempty"`
+	ToolCallId          string          `json:"tool_call_id,omitempty"`
+	parsedContent       []MediaContent
+	parsedStringContent *string
 }
 
 type MediaContent struct {
@@ -150,6 +150,9 @@ func (m *Message) SetToolCalls(toolCalls any) {
 }
 
 func (m *Message) StringContent() string {
+	if m.parsedStringContent != nil {
+		return *m.parsedStringContent
+	}
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
 		return stringContent
@@ -160,16 +163,24 @@ func (m *Message) StringContent() string {
 func (m *Message) SetStringContent(content string) {
 	jsonContent, _ := json.Marshal(content)
 	m.Content = jsonContent
+	m.parsedStringContent = &content
+	m.parsedContent = nil
 }
 
 func (m *Message) SetMediaContent(content []MediaContent) {
 	jsonContent, _ := json.Marshal(content)
 	m.Content = jsonContent
+	m.parsedContent = nil
+	m.parsedStringContent = nil
 }
 
 func (m *Message) IsStringContent() bool {
+	if m.parsedStringContent != nil {
+		return true
+	}
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
+		m.parsedStringContent = &stringContent
 		return true
 	}
 	return false

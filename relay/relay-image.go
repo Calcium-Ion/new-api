@@ -86,15 +86,13 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	imageRequest.Model = relayInfo.UpstreamModelName
 
-	modelPrice, success := common.GetModelPrice(imageRequest.Model, true)
-	if !success {
-		modelRatio := common.GetModelRatio(imageRequest.Model)
+	priceData := helper.ModelPriceHelper(c, relayInfo, 0, 0)
+	if !priceData.UsePrice {
 		// modelRatio 16 = modelPrice $0.04
 		// per 1 modelRatio = $0.04 / 16
-		modelPrice = 0.0025 * modelRatio
+		priceData.ModelPrice = 0.0025 * priceData.ModelRatio
 	}
 
-	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 	userQuota, err := model.GetUserQuota(relayInfo.UserId, false)
 
 	sizeRatio := 1.0
@@ -117,11 +115,11 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		}
 	}
 
-	imageRatio := modelPrice * sizeRatio * qualityRatio * float64(imageRequest.N)
-	quota := int(imageRatio * groupRatio * common.QuotaPerUnit)
+	imageRatio := priceData.ModelPrice * sizeRatio * qualityRatio * float64(imageRequest.N)
+	quota := int(imageRatio * priceData.GroupRatio * common.QuotaPerUnit)
 
 	if userQuota-quota < 0 {
-		return service.OpenAIErrorWrapperLocal(errors.New(fmt.Sprintf("image pre-consumed quota failed, user quota: %d, need quota: %d", userQuota, quota)), "insufficient_user_quota", http.StatusBadRequest)
+		return service.OpenAIErrorWrapperLocal(fmt.Errorf("image pre-consumed quota failed, user quota: %s, need quota: %s", common.FormatQuota(userQuota), common.FormatQuota(quota)), "insufficient_user_quota", http.StatusForbidden)
 	}
 
 	adaptor := GetAdaptor(relayInfo.ApiType)
@@ -176,14 +174,6 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	quality := "standard"
 	if imageRequest.Quality == "hd" {
 		quality = "hd"
-	}
-
-	priceData := helper.PriceData{
-		UsePrice:               true,
-		GroupRatio:             groupRatio,
-		ModelPrice:             modelPrice,
-		ModelRatio:             0,
-		ShouldPreConsumedQuota: 0,
 	}
 
 	logContent := fmt.Sprintf("大小 %s, 品质 %s", imageRequest.Size, quality)
