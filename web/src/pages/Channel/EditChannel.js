@@ -540,21 +540,23 @@ const EditChannel = (props) => {
             value={inputs.name}
             autoComplete="new-password"
           />
-          {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && inputs.type !== 36 && (
+          {inputs.type !== 3 && inputs.type !== 8 && inputs.type !== 22 && inputs.type !== 36 && inputs.type !== 45 && (
             <>
               <div style={{ marginTop: 10 }}>
-                <Typography.Text strong>{t('BaseURL')}：</Typography.Text>
+                <Typography.Text strong>{t('代理站地址')}：</Typography.Text>
               </div>
-              <Input
-                label={t('BaseURL')}
-                name="base_url"
-                placeholder={t('此项可选，用于通过代理站来进行 API 调用，末尾不要带/v1和/')}
-                onChange={(value) => {
-                  handleInputChange('base_url', value);
-                }}
-                value={inputs.base_url}
-                autoComplete="new-password"
-              />
+              <Tooltip content={t('对于官方渠道，new-api已经内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写')}>
+                <Input
+                  label={t('代理站地址')}
+                  name="base_url"
+                  placeholder={t('此项可选，用于通过代理站来进行 API 调用，末尾不要带/v1和/')}
+                  onChange={(value) => {
+                    handleInputChange('base_url', value);
+                  }}
+                  value={inputs.base_url}
+                  autoComplete="new-password"
+                />
+              </Tooltip>
             </>
           )}
           <div style={{ marginTop: 10 }}>
