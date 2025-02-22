@@ -13,7 +13,7 @@ Request:
 
 ```json
 {
-  "model": "rerank-multilingual-v3.0",
+  "model": "jina-reranker-v2-base-multilingual",
   "query": "What is the capital of the United States?",
   "top_n": 3,
   "documents": [
