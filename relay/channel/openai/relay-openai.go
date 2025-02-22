@@ -87,6 +87,9 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			info.SetFirstResponseTime()
 			ticker.Reset(time.Duration(constant.StreamingTimeout) * time.Second)
 			data := scanner.Text()
+			if common.DebugEnabled {
+				println(data)
+			}
 			if len(data) < 6 { // ignore blank line or wrong format
 				continue
 			}
