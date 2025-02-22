@@ -115,8 +115,8 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		}
 	}
 
-	imageRatio := priceData.ModelPrice * sizeRatio * qualityRatio * float64(imageRequest.N)
-	quota := int(imageRatio * priceData.GroupRatio * common.QuotaPerUnit)
+	priceData.ModelPrice *= sizeRatio * qualityRatio * float64(imageRequest.N)
+	quota := int(priceData.ModelPrice * priceData.GroupRatio * common.QuotaPerUnit)
 
 	if userQuota-quota < 0 {
 		return service.OpenAIErrorWrapperLocal(fmt.Errorf("image pre-consumed quota failed, user quota: %s, need quota: %s", common.FormatQuota(userQuota), common.FormatQuota(quota)), "insufficient_user_quota", http.StatusForbidden)
