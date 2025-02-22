@@ -330,7 +330,7 @@ const PersonalSetting = () => {
         try {
             const res = await API.put('/api/user/setting', {
                 notify_type: notificationSettings.warningType,
-                quota_warning_threshold: notificationSettings.warningThreshold,
+                quota_warning_threshold: parseFloat(notificationSettings.warningThreshold),
                 webhook_url: notificationSettings.webhookUrl,
                 webhook_secret: notificationSettings.webhookSecret,
                 notification_email: notificationSettings.notificationEmail

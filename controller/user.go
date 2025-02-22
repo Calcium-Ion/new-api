@@ -913,11 +913,11 @@ func TopUp(c *gin.Context) {
 }
 
 type UpdateUserSettingRequest struct {
-	QuotaWarningType      string `json:"notify_type"`
-	QuotaWarningThreshold int    `json:"quota_warning_threshold"`
-	WebhookUrl            string `json:"webhook_url,omitempty"`
-	WebhookSecret         string `json:"webhook_secret,omitempty"`
-	NotificationEmail     string `json:"notification_email,omitempty"`
+	QuotaWarningType      string  `json:"notify_type"`
+	QuotaWarningThreshold float64 `json:"quota_warning_threshold"`
+	WebhookUrl            string  `json:"webhook_url,omitempty"`
+	WebhookSecret         string  `json:"webhook_secret,omitempty"`
+	NotificationEmail     string  `json:"notification_email,omitempty"`
 }
 
 func UpdateUserSetting(c *gin.Context) {
