@@ -192,7 +192,7 @@ const LogsTable = () => {
                 onClick={(event) => {
                   copyText(event, record.model_name).then(r => {});
                 }}
-                suffixIcon={<IconRefresh />}
+                suffixIcon={<IconRefresh style={{ fontSize: '0.8em', opacity: 0.6 }} />}
               >
                 {' '}{record.model_name}{' '}
               </Tag>
