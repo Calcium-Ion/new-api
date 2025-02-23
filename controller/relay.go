@@ -85,6 +85,7 @@ func Relay(c *gin.Context) {
 
 	if openaiErr != nil {
 		if openaiErr.StatusCode == http.StatusTooManyRequests {
+			common.LogError(c, fmt.Sprintf("origin 429 error: %s", openaiErr.Error.Message))
 			openaiErr.Error.Message = "当前分组上游负载已饱和，请稍后再试"
 		}
 		openaiErr.Error.Message = common.MessageWithRequestId(openaiErr.Error.Message, requestId)
