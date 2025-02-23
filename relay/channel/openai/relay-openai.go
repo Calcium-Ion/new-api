@@ -5,10 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"io"
 	"math"
 	"mime/multipart"
@@ -23,21 +19,66 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/bytedance/gopkg/util/gopool"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 )
 
-func sendStreamData(c *gin.Context, data string, forceFormat bool) error {
+func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, forceFormat bool, thinkToContent bool) error {
 	if data == "" {
 		return nil
 	}
 
-	if forceFormat {
-		var lastStreamResponse dto.ChatCompletionsStreamResponse
-		if err := json.Unmarshal(common.StringToByteSlice(data), &lastStreamResponse); err != nil {
-			return err
-		}
+	if !forceFormat && !thinkToContent {
+		return service.StringData(c, data)
+	}
+
+	var lastStreamResponse dto.ChatCompletionsStreamResponse
+	if err := json.Unmarshal(common.StringToByteSlice(data), &lastStreamResponse); err != nil {
+		return err
+	}
+
+	if !thinkToContent {
 		return service.ObjectData(c, lastStreamResponse)
 	}
-	return service.StringData(c, data)
+
+	// Handle think to content conversion
+	if info.IsFirstResponse {
+		response := lastStreamResponse.Copy()
+		for i := range response.Choices {
+			response.Choices[i].Delta.SetContentString("<think>\n")
+			response.Choices[i].Delta.SetReasoningContent("")
+		}
+		service.ObjectData(c, response)
+	}
+
+	if lastStreamResponse.Choices == nil || len(lastStreamResponse.Choices) == 0 {
+		return service.ObjectData(c, lastStreamResponse)
+	}
+
+	// Process each choice
+	for i, choice := range lastStreamResponse.Choices {
+		// Handle transition from thinking to content
+		if len(choice.Delta.GetContentString()) > 0 && !info.SendLastReasoningResponse {
+			response := lastStreamResponse.Copy()
+			for j := range response.Choices {
+				response.Choices[j].Delta.SetContentString("\n</think>")
+				response.Choices[j].Delta.SetReasoningContent("")
+			}
+			info.SendLastReasoningResponse = true
+			service.ObjectData(c, response)
+		}
+
+		// Convert reasoning content to regular content
+		if len(choice.Delta.GetReasoningContent()) > 0 {
+			lastStreamResponse.Choices[i].Delta.SetContentString(choice.Delta.GetReasoningContent())
+			lastStreamResponse.Choices[i].Delta.SetReasoningContent("")
+		}
+	}
+
+	return service.ObjectData(c, lastStreamResponse)
 }
 
 func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
@@ -56,11 +97,14 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	var usage = &dto.Usage{}
 	var streamItems []string // store stream items
 	var forceFormat bool
+	var thinkToContent bool
 
-	if info.ChannelType == common.ChannelTypeCustom {
-		if forceFmt, ok := info.ChannelSetting["force_format"].(bool); ok {
-			forceFormat = forceFmt
-		}
+	if forceFmt, ok := info.ChannelSetting[constant.ForceFormat].(bool); ok {
+		forceFormat = forceFmt
+	}
+
+	if think2Content, ok := info.ChannelSetting[constant.ChannelSettingThinkingToContent].(bool); ok {
+		thinkToContent = think2Content
 	}
 
 	toolCount := 0
@@ -84,7 +128,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	)
 	gopool.Go(func() {
 		for scanner.Scan() {
-			info.SetFirstResponseTime()
+			//info.SetFirstResponseTime()
 			ticker.Reset(time.Duration(constant.StreamingTimeout) * time.Second)
 			data := scanner.Text()
 			if common.DebugEnabled {
@@ -101,10 +145,11 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			data = strings.TrimSpace(data)
 			if !strings.HasPrefix(data, "[DONE]") {
 				if lastStreamData != "" {
-					err := sendStreamData(c, lastStreamData, forceFormat)
+					err := sendStreamData(c, info, lastStreamData, forceFormat, thinkToContent)
 					if err != nil {
 						common.LogError(c, "streaming error: "+err.Error())
 					}
+					info.SetFirstResponseTime()
 				}
 				lastStreamData = data
 				streamItems = append(streamItems, data)
@@ -144,7 +189,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		}
 	}
 	if shouldSendLastResp {
-		sendStreamData(c, lastStreamData, forceFormat)
+		sendStreamData(c, info, lastStreamData, forceFormat, thinkToContent)
 	}
 
 	// 计算token

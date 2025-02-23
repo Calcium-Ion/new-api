@@ -13,23 +13,24 @@ import (
 )
 
 type RelayInfo struct {
-	ChannelType       int
-	ChannelId         int
-	TokenId           int
-	TokenKey          string
-	UserId            int
-	Group             string
-	TokenUnlimited    bool
-	StartTime         time.Time
-	FirstResponseTime time.Time
-	setFirstResponse  bool
-	ApiType           int
-	IsStream          bool
-	IsPlayground      bool
-	UsePrice          bool
-	RelayMode         int
-	UpstreamModelName string
-	OriginModelName   string
+	ChannelType               int
+	ChannelId                 int
+	TokenId                   int
+	TokenKey                  string
+	UserId                    int
+	Group                     string
+	TokenUnlimited            bool
+	StartTime                 time.Time
+	FirstResponseTime         time.Time
+	IsFirstResponse           bool
+	SendLastReasoningResponse bool
+	ApiType                   int
+	IsStream                  bool
+	IsPlayground              bool
+	UsePrice                  bool
+	RelayMode                 int
+	UpstreamModelName         string
+	OriginModelName           string
 	//RecodeModelName      string
 	RequestURLPath       string
 	ApiVersion           string
@@ -88,6 +89,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	apiType, _ := relayconstant.ChannelType2APIType(channelType)
 
 	info := &RelayInfo{
+		IsFirstResponse:   true,
 		RelayMode:         relayconstant.Path2RelayMode(c.Request.URL.Path),
 		BaseUrl:           c.GetString("base_url"),
 		RequestURLPath:    c.Request.URL.String(),
@@ -139,9 +141,9 @@ func (info *RelayInfo) SetIsStream(isStream bool) {
 }
 
 func (info *RelayInfo) SetFirstResponseTime() {
-	if !info.setFirstResponse {
+	if info.IsFirstResponse {
 		info.FirstResponseTime = time.Now()
-		info.setFirstResponse = true
+		info.IsFirstResponse = false
 	}
 }
 
