@@ -63,6 +63,7 @@
     - Add suffix `-high` to set high reasoning effort (e.g., `o3-mini-high`)
     - Add suffix `-medium` to set medium reasoning effort
     - Add suffix `-low` to set low reasoning effort
+17. 🔄 Thinking to content option `thinking_to_content` in `Channel->Edit->Channel Extra Settings`, default is `false`, when `true`, the `reasoning_conetnt` of the thinking content will be converted to `<think>` tags and concatenated to the content returned.
 
 ## Model Support
 This version additionally supports:
