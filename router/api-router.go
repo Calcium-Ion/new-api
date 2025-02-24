@@ -154,5 +154,18 @@ func SetApiRouter(router *gin.Engine) {
 			taskRoute.GET("/self", middleware.UserAuth(), controller.GetUserTask)
 			taskRoute.GET("/", middleware.AdminAuth(), controller.GetAllTask)
 		}
+		conversationRoute := apiRouter.Group("/conversation")
+		conversationRoute.Use(middleware.UserAuth())
+		{
+			conversationRoute.GET("/", controller.GetConversations)
+			conversationRoute.POST("/", controller.CreateConversation)
+		}
+
+		messageRoute := apiRouter.Group("/mmessage")
+		messageRoute.Use(middleware.UserAuth())
+		{
+			messageRoute.GET("/:conversation_id", controller.GetMessages)
+			messageRoute.POST("/", controller.CreateMessage)
+		}
 	}
 }
