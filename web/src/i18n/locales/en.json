@@ -856,7 +856,7 @@
   "IP黑名单": "IP blacklist",
   "不允许的IP，一行一个": "IPs not allowed, one per line",
   "请选择该渠道所支持的模型": "Please select the model supported by this channel",
-  "次": "Second-rate",
+  "次": "times",
   "达到限速报错内容": "Error content when the speed limit is reached",
   "不填则使用默认报错": "If not filled in, the default error will be reported.",
   "Midjouney 设置 (可选)": "Midjouney settings (optional)",
@@ -1271,5 +1271,15 @@
   "留空则使用账号绑定的邮箱": "If left blank, the email address bound to the account will be used",
   "代理站地址": "Base URL",
   "对于官方渠道，new-api已经内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写": "For official channels, the new-api has a built-in address. Unless it is a third-party proxy site or a special Azure access address, there is no need to fill it in",
-  "渠道额外设置": "Channel extra settings"
+  "渠道额外设置": "Channel extra settings",
+  "模型请求速率限制": "Model request rate limit",
+  "启用用户模型请求速率限制（可能会影响高并发性能）": "Enable user model request rate limit (may affect high concurrency performance)",
+  "限制周期": "Limit period",
+  "用户每周期最多请求次数": "User max request times per period",
+  "用户每周期最多请求完成次数": "User max successful request times per period",
+  "包括失败请求的次数，0代表不限制": "Including failed request times, 0 means no limit",
+  "频率限制的周期（分钟）": "Rate limit period (minutes)",
+  "只包括请求成功的次数": "Only include successful request times",
+  "保存模型速率限制": "Save model rate limit settings",
+  "速率限制设置": "Rate limit settings"
 }
