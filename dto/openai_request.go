@@ -1,6 +1,9 @@
 package dto
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 type ResponseFormat struct {
 	Type       string            `json:"type,omitempty"`
@@ -153,11 +156,24 @@ func (m *Message) StringContent() string {
 	if m.parsedStringContent != nil {
 		return *m.parsedStringContent
 	}
+
 	var stringContent string
 	if err := json.Unmarshal(m.Content, &stringContent); err == nil {
+		m.parsedStringContent = &stringContent
 		return stringContent
 	}
-	return string(m.Content)
+
+	contentStr := new(strings.Builder)
+	arrayContent := m.ParseContent()
+	for _, content := range arrayContent {
+		if content.Type == ContentTypeText {
+			contentStr.WriteString(content.Text)
+		}
+	}
+	stringContent = contentStr.String()
+	m.parsedStringContent = &stringContent
+
+	return stringContent
 }
 
 func (m *Message) SetStringContent(content string) {
