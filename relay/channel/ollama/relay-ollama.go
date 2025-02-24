@@ -58,6 +58,7 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) (*OllamaRequest, err
 		TopK:             request.TopK,
 		Stop:             Stop,
 		Tools:            request.Tools,
+		MaxTokens:        request.MaxTokens,
 		ResponseFormat:   request.ResponseFormat,
 		FrequencyPenalty: request.FrequencyPenalty,
 		PresencePenalty:  request.PresencePenalty,
