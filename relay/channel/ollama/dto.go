@@ -11,6 +11,7 @@ type OllamaRequest struct {
 	Topp             float64            `json:"top_p,omitempty"`
 	TopK             int                `json:"top_k,omitempty"`
 	Stop             any                `json:"stop,omitempty"`
+	MaxTokens        uint               `json:"max_tokens,omitempty"`
 	Tools            []dto.ToolCall     `json:"tools,omitempty"`
 	ResponseFormat   any                `json:"response_format,omitempty"`
 	FrequencyPenalty float64            `json:"frequency_penalty,omitempty"`

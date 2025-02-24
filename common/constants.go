@@ -276,7 +276,7 @@ var ChannelBaseURLs = []string{
 	"https://api.cohere.ai",                     //34
 	"https://api.minimax.chat",                  //35
 	"",                                          //36
-	"",                                          //37
+	"https://api.dify.ai",                       //37
 	"https://api.jina.ai",                       //38
 	"https://api.cloudflare.com",                //39
 	"https://api.siliconflow.cn",                //40

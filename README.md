@@ -69,7 +69,8 @@
     - 添加后缀 `-high` 设置为 high reasoning effort (例如: `o3-mini-high`)
     - 添加后缀 `-medium` 设置为 medium reasoning effort (例如: `o3-mini-medium`)
     - 添加后缀 `-low` 设置为 low reasoning effort (例如: `o3-mini-low`)
-    18. 🔄 思考转内容，支持在 `渠道-编辑-渠道额外设置` 中设置 `thinking_to_content` 选项，默认`false`，开启后会将思考内容`reasoning_content`转换为`<think>`标签拼接到内容中返回。
+18. 🔄 思考转内容，支持在 `渠道-编辑-渠道额外设置` 中设置 `thinking_to_content` 选项，默认`false`，开启后会将思考内容`reasoning_content`转换为`<think>`标签拼接到内容中返回。
+19. 🔄 模型限流，支持在 `系统设置-速率限制设置` 中设置模型限流，支持设置总请求数限制和成功请求数限制
 
 ## 模型支持
 此版本额外支持以下模型：
