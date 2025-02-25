@@ -108,7 +108,10 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 			Type:         "enabled",
 			BudgetTokens: int(float64(claudeRequest.MaxTokens) * 0.8),
 		}
+		// TODO: 临时处理
+		// https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking
 		claudeRequest.TopP = 0
+		claudeRequest.Temperature = common.GetPointer[float64](1.0)
 		claudeRequest.Model = strings.TrimSuffix(textRequest.Model, "-thinking")
 	}
 
