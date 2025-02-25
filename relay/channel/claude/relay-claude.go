@@ -92,6 +92,25 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		Stream:        textRequest.Stream,
 		Tools:         claudeTools,
 	}
+
+	if strings.HasSuffix(textRequest.Model, "-thinking") {
+		if claudeRequest.MaxTokens == 0 {
+			claudeRequest.MaxTokens = 8192
+		}
+
+		// 因为BudgetTokens 必须大于1024
+		if claudeRequest.MaxTokens < 1280 {
+			claudeRequest.MaxTokens = 1280
+		}
+
+		// BudgetTokens 为 max_tokens 的 80%
+		claudeRequest.Thinking = &Thinking{
+			Type:         "enabled",
+			BudgetTokens: int(float64(claudeRequest.MaxTokens) * 0.8),
+		}
+		claudeRequest.Model = strings.TrimSuffix(textRequest.Model, "-thinking")
+	}
+
 	if claudeRequest.MaxTokens == 0 {
 		claudeRequest.MaxTokens = 4096
 	}
@@ -308,12 +327,20 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			if claudeResponse.Delta != nil {
 				choice.Index = claudeResponse.Index
 				choice.Delta.SetContentString(claudeResponse.Delta.Text)
-				if claudeResponse.Delta.Type == "input_json_delta" {
+				switch claudeResponse.Delta.Type {
+				case "input_json_delta":
 					tools = append(tools, dto.ToolCall{
 						Function: dto.FunctionCall{
 							Arguments: claudeResponse.Delta.PartialJson,
 						},
 					})
+				case "signature_delta":
+					// 加密的不处理
+					signatureContent := "\n"
+					choice.Delta.ReasoningContent = &signatureContent
+				case "thinking_delta":
+					thinkingContent := claudeResponse.Delta.Thinking
+					choice.Delta.ReasoningContent = &thinkingContent
 				}
 			}
 		} else if claudeResponse.Type == "message_delta" {
@@ -352,6 +379,8 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 		responseText = claudeResponse.Content[0].Text
 	}
 	tools := make([]dto.ToolCall, 0)
+	thinkingContent := ""
+
 	if reqMode == RequestModeCompletion {
 		content, _ := json.Marshal(strings.TrimPrefix(claudeResponse.Completion, " "))
 		choice := dto.OpenAITextResponseChoice{
@@ -367,7 +396,8 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	} else {
 		fullTextResponse.Id = claudeResponse.Id
 		for _, message := range claudeResponse.Content {
-			if message.Type == "tool_use" {
+			switch message.Type {
+			case "tool_use":
 				args, _ := json.Marshal(message.Input)
 				tools = append(tools, dto.ToolCall{
 					ID:   message.Id,
@@ -377,6 +407,11 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 						Arguments: string(args),
 					},
 				})
+			case "thinking":
+				// 加密的不管， 只输出明文的推理过程
+				thinkingContent = message.Thinking
+			case "text":
+				responseText = message.Text
 			}
 		}
 	}
@@ -391,6 +426,7 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	if len(tools) > 0 {
 		choice.Message.SetToolCalls(tools)
 	}
+	choice.Message.ReasoningContent = thinkingContent
 	fullTextResponse.Model = claudeResponse.Model
 	choices = append(choices, choice)
 	fullTextResponse.Choices = choices
