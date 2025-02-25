@@ -46,7 +46,7 @@ func GetConversationsByUserID(userID int) ([]*Conversation, error) {
 func CreateConversation(userID int, req dto.CreateConversationRequest) (string, error) {
 	var title string
 	if req.Title == "" {
-		title = "新话题"
+		title = "新会话"
 	} else {
 		title = req.Title
 	}
