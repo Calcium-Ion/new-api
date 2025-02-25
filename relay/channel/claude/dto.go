@@ -54,9 +54,15 @@ type ClaudeRequest struct {
 	TopP              float64         `json:"top_p,omitempty"`
 	TopK              int             `json:"top_k,omitempty"`
 	//ClaudeMetadata    `json:"metadata,omitempty"`
-	Stream     bool   `json:"stream,omitempty"`
-	Tools      []Tool `json:"tools,omitempty"`
-	ToolChoice any    `json:"tool_choice,omitempty"`
+	Stream     bool      `json:"stream,omitempty"`
+	Tools      []Tool    `json:"tools,omitempty"`
+	ToolChoice any       `json:"tool_choice,omitempty"`
+	Thinking   *Thinking `json:"thinking,omitempty"`
+}
+
+type Thinking struct {
+	Type         string `json:"type"`
+	BudgetTokens int    `json:"budget_tokens"`
 }
 
 type ClaudeError struct {

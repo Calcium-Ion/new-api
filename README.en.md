@@ -64,6 +64,7 @@
     - Add suffix `-medium` to set medium reasoning effort
     - Add suffix `-low` to set low reasoning effort
 17. 🔄 Thinking to content option `thinking_to_content` in `Channel->Edit->Channel Extra Settings`, default is `false`, when `true`, the `reasoning_content` of the thinking content will be converted to `<think>` tags and concatenated to the content returned.
+18. 🔄 Model rate limit, support setting total request limit and successful request limit in `System Settings->Rate Limit Settings`
 
 ## Model Support
 This version additionally supports:
