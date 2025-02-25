@@ -9,7 +9,8 @@ var awsModelIDMap = map[string]string{
 	"claude-3-haiku-20240307":    "anthropic.claude-3-haiku-20240307-v1:0",
 	"claude-3-5-sonnet-20240620": "anthropic.claude-3-5-sonnet-20240620-v1:0",
 	"claude-3-5-sonnet-20241022": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-	"claude-3-5-haiku-20241022": "anthropic.claude-3-5-haiku-20241022-v1:0",
+	"claude-3-5-haiku-20241022":  "anthropic.claude-3-5-haiku-20241022-v1:0",
+	"claude-3-7-sonnet-20250219": "anthropic.claude-3-7-sonnet-20250219-v1:0",
 }
 
 var ChannelName = "aws"
