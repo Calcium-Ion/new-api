@@ -64,8 +64,8 @@ type ClaudeRequest struct {
 }
 
 type Thinking struct {
-	Type         string `json:"type,omitempty"`
-	BudgetTokens int    `json:"budget_tokens,omitempty"`
+	Type         string `json:"type"`
+	BudgetTokens int    `json:"budget_tokens"`
 }
 
 type ClaudeError struct {
