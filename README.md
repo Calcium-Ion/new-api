@@ -66,9 +66,12 @@
 15. ⚡ **[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime/integration)** - 支持OpenAI的Realtime API，支持Azure渠道
 16. 支持使用路由/chat2link 进入聊天界面
 17. 🧠 支持通过模型名称后缀设置 reasoning effort：
-    - 添加后缀 `-high` 设置为 high reasoning effort (例如: `o3-mini-high`)
-    - 添加后缀 `-medium` 设置为 medium reasoning effort (例如: `o3-mini-medium`)
-    - 添加后缀 `-low` 设置为 low reasoning effort (例如: `o3-mini-low`)
+    1. OpenAI o系列模型
+        - 添加后缀 `-high` 设置为 high reasoning effort (例如: `o3-mini-high`)
+        - 添加后缀 `-medium` 设置为 medium reasoning effort (例如: `o3-mini-medium`)
+        - 添加后缀 `-low` 设置为 low reasoning effort (例如: `o3-mini-low`)
+    2. Claude 思考模型
+        - 添加后缀 `-thinking` 启用思考模式 (例如: `claude-3-7-sonnet-20250219-thinking`)
 18. 🔄 思考转内容，支持在 `渠道-编辑-渠道额外设置` 中设置 `thinking_to_content` 选项，默认`false`，开启后会将思考内容`reasoning_content`转换为`<think>`标签拼接到内容中返回。
 19. 🔄 模型限流，支持在 `系统设置-速率限制设置` 中设置模型限流，支持设置总请求数限制和成功请求数限制
 
