@@ -108,6 +108,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 			Type:         "enabled",
 			BudgetTokens: int(float64(claudeRequest.MaxTokens) * 0.8),
 		}
+		claudeRequest.TopP = 0
 		claudeRequest.Model = strings.TrimSuffix(textRequest.Model, "-thinking")
 	}
 
