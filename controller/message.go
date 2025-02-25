@@ -24,29 +24,3 @@ func GetMessages(c *gin.Context) {
 		"data":    messages,
 	})
 }
-
-// CreateMessage 创建新消息
-func CreateMessage(c *gin.Context) {
-	var message model.Message
-	err := c.ShouldBindJSON(&message)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
-	}
-	newMessage, err := model.CreateMessage(message.ConversationID, message.Role, message.Content)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "",
-		"data":    newMessage,
-	})
-}

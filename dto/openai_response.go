@@ -163,4 +163,5 @@ type Usage struct {
 	TotalTokens            int                `json:"total_tokens"`
 	PromptTokensDetails    InputTokenDetails  `json:"prompt_tokens_details"`
 	CompletionTokenDetails OutputTokenDetails `json:"completion_tokens_details"`
+	Content                string             `json:"content"`
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bytedance/gopkg/util/gopool"
 	"io"
 	"math"
 	"net/http"
@@ -20,6 +19,8 @@ import (
 	"one-api/setting"
 	"strings"
 	"time"
+
+	"github.com/bytedance/gopkg/util/gopool"
 
 	"github.com/gin-gonic/gin"
 )
@@ -156,6 +157,29 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	//} else {
 	//
 	//}
+	// 有会话ID则存储会话消息
+	// 存储用户消息
+	if textRequest.ConversationID != "" {
+		// 从textRequest中获取最新的用户消息
+		var title string
+		userMessage := textRequest.Messages[len(textRequest.Messages)-1]
+		if userMessage.Role == "user" {
+			model.CreateMessage(dto.CreateMessageRequest{
+				ConversationID: textRequest.ConversationID,
+				Role:           "user",
+				Content:        userMessage.StringContent(),
+				ContentType:    "text",
+			})
+			if len(userMessage.StringContent()) < 20 {
+				title = userMessage.StringContent()
+			} else {
+				title = userMessage.StringContent()[:20]
+			}
+		}
+		relayInfo.ConversationID = textRequest.ConversationID
+		// 更新Coversation的标题
+		model.UpdateConversationTitle(textRequest.ConversationID, title)
+	}
 
 	convertedRequest, err := adaptor.ConvertRequest(c, relayInfo, textRequest)
 	if err != nil {
@@ -372,6 +396,14 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	model.RecordConsumeLog(ctx, relayInfo.UserId, relayInfo.ChannelId, promptTokens, completionTokens, logModel,
 		tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, relayInfo.Group, other)
 
+	if relayInfo.ConversationID != "" {
+		model.CreateMessage(dto.CreateMessageRequest{
+			ConversationID: relayInfo.ConversationID,
+			Role:           "assistant",
+			Content:        usage.Content,
+			ContentType:    "text",
+		})
+	}
 	//if quota != 0 {
 	//
 	//}

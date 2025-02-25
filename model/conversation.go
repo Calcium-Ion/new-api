@@ -1,6 +1,7 @@
 package model
 
 import (
+	"one-api/dto"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ type Conversation struct {
 	ID        string    `gorm:"primaryKey;type:varchar(255);not null" json:"id"`
 	UserID    int       `gorm:"index;not null" json:"user_id"`
 	Title     string    `gorm:"type:varchar(255)" json:"title"`
+	Model     string    `gorm:"type:varchar(50)" json:"model"`
 	CreatedAt time.Time `gorm:"not null" json:"created_at"`
 	UpdatedAt time.Time `gorm:"not null" json:"updated_at"`
 }
@@ -29,7 +31,7 @@ func GetConversationsByUserID(userID int) ([]*Conversation, error) {
 
 	// 构建基础查询
 	err := tx.Where("user_id = ?", userID).
-		Order("created_time asc").
+		Order("created_at desc").
 		Find(&conversations).Error
 
 	// 提交事务
@@ -41,11 +43,18 @@ func GetConversationsByUserID(userID int) ([]*Conversation, error) {
 }
 
 // CreateConversation 创建新的会话
-func CreateConversation(userID int) (string, error) {
+func CreateConversation(userID int, req dto.CreateConversationRequest) (string, error) {
+	var title string
+	if req.Title == "" {
+		title = "新话题"
+	} else {
+		title = req.Title
+	}
 	conversation := &Conversation{
 		ID:     uuid.New().String(),
 		UserID: userID,
-		Title:  "新会话",
+		Title:  title,
+		Model:  req.Model,
 	}
 
 	// 开始事务
@@ -71,4 +80,23 @@ func CreateConversation(userID int) (string, error) {
 	}
 
 	return conversation.ID, nil
+}
+
+func UpdateConversationTitle(conversationID string, title string) {
+	if title == "" {
+		return
+	}
+	conversation := &Conversation{
+		ID: conversationID,
+	}
+	err := DB.First(conversation, "id = ?", conversation.ID).Error
+	if err != nil {
+		return
+	}
+	// 已更新过无需再更新
+	if conversation.Title != "新会话" {
+		return
+	}
+	// 更新指定会话的标题
+	DB.Model(conversation).Update("title", title)
 }

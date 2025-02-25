@@ -13,6 +13,7 @@ import (
 )
 
 type RelayInfo struct {
+	ConversationID            string
 	ChannelType               int
 	ChannelId                 int
 	TokenId                   int

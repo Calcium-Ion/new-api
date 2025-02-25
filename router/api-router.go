@@ -157,15 +157,9 @@ func SetApiRouter(router *gin.Engine) {
 		conversationRoute := apiRouter.Group("/conversation")
 		conversationRoute.Use(middleware.UserAuth())
 		{
-			conversationRoute.GET("/", controller.GetConversations)
-			conversationRoute.POST("/", controller.CreateConversation)
-		}
-
-		messageRoute := apiRouter.Group("/mmessage")
-		messageRoute.Use(middleware.UserAuth())
-		{
-			messageRoute.GET("/:conversation_id", controller.GetMessages)
-			messageRoute.POST("/", controller.CreateMessage)
+			conversationRoute.GET("/list", controller.GetConversations)
+			conversationRoute.GET("/:conversation_id/messages", controller.GetMessages)
+			conversationRoute.POST("/create", controller.CreateConversation)
 		}
 	}
 }
