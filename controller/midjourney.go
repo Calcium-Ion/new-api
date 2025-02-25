@@ -159,7 +159,7 @@ func UpdateMidjourneyTaskBulk() {
 					common.LogError(ctx, "UpdateMidjourneyTask task error: "+err.Error())
 				} else {
 					if shouldReturnQuota {
-						err = model.IncreaseUserQuota(task.UserId, task.Quota)
+						err = model.IncreaseUserQuota(task.UserId, task.Quota, false)
 						if err != nil {
 							common.LogError(ctx, "fail to increase user quota: "+err.Error())
 						}

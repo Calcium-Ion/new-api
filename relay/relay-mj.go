@@ -2,7 +2,6 @@ package relay
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -192,7 +191,7 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 	if err != nil {
 		return &mjResp.Response
 	}
-	defer func(ctx context.Context) {
+	defer func() {
 		if mjResp.StatusCode == 200 && mjResp.Response.Code == 1 {
 			err := service.PostConsumeQuota(relayInfo, quota, 0, true)
 			if err != nil {
@@ -208,14 +207,14 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 				other := make(map[string]interface{})
 				other["model_price"] = modelPrice
 				other["group_ratio"] = groupRatio
-				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, modelName, tokenName,
+				model.RecordConsumeLog(c, userId, channelId, 0, 0, modelName, tokenName,
 					quota, logContent, tokenId, userQuota, 0, false, group, other)
 				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 				channelId := c.GetInt("channel_id")
 				model.UpdateChannelUsedQuota(channelId, quota)
 			}
 		}
-	}(c.Request.Context())
+	}()
 	midjResponse := &mjResp.Response
 	midjourneyTask := &model.Midjourney{
 		UserId:      userId,
@@ -498,7 +497,7 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	}
 	midjResponse := &midjResponseWithStatus.Response
 
-	defer func(ctx context.Context) {
+	defer func() {
 		if consumeQuota && midjResponseWithStatus.StatusCode == 200 {
 			err := service.PostConsumeQuota(relayInfo, quota, 0, true)
 			if err != nil {
@@ -510,14 +509,14 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 				other := make(map[string]interface{})
 				other["model_price"] = modelPrice
 				other["group_ratio"] = groupRatio
-				model.RecordConsumeLog(ctx, userId, channelId, 0, 0, modelName, tokenName,
+				model.RecordConsumeLog(c, userId, channelId, 0, 0, modelName, tokenName,
 					quota, logContent, tokenId, userQuota, 0, false, group, other)
 				model.UpdateUserUsedQuotaAndRequestCount(userId, quota)
 				channelId := c.GetInt("channel_id")
 				model.UpdateChannelUsedQuota(channelId, quota)
 			}
 		}
-	}(c.Request.Context())
+	}()
 
 	// 文档：https://github.com/novicezk/midjourney-proxy/blob/main/docs/api.md
 	//1-提交成功

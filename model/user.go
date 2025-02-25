@@ -320,7 +320,7 @@ func (user *User) Insert(inviterId int) error {
 	}
 	if inviterId != 0 {
 		if common.QuotaForInvitee > 0 {
-			_ = IncreaseUserQuota(user.Id, common.QuotaForInvitee)
+			_ = IncreaseUserQuota(user.Id, common.QuotaForInvitee, true)
 			RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("使用邀请码赠送 %s", common.LogQuota(common.QuotaForInvitee)))
 		}
 		if common.QuotaForInviter > 0 {
@@ -502,35 +502,35 @@ func IsAdmin(userId int) bool {
 	return user.Role >= common.RoleAdminUser
 }
 
-// IsUserEnabled checks user status from Redis first, falls back to DB if needed
-func IsUserEnabled(id int, fromDB bool) (status bool, err error) {
-	defer func() {
-		// Update Redis cache asynchronously on successful DB read
-		if shouldUpdateRedis(fromDB, err) {
-			gopool.Go(func() {
-				if err := updateUserStatusCache(id, status); err != nil {
-					common.SysError("failed to update user status cache: " + err.Error())
-				}
-			})
-		}
-	}()
-	if !fromDB && common.RedisEnabled {
-		// Try Redis first
-		status, err := getUserStatusCache(id)
-		if err == nil {
-			return status == common.UserStatusEnabled, nil
-		}
-		// Don't return error - fall through to DB
-	}
-	fromDB = true
-	var user User
-	err = DB.Where("id = ?", id).Select("status").Find(&user).Error
-	if err != nil {
-		return false, err
-	}
-
-	return user.Status == common.UserStatusEnabled, nil
-}
+//// IsUserEnabled checks user status from Redis first, falls back to DB if needed
+//func IsUserEnabled(id int, fromDB bool) (status bool, err error) {
+//	defer func() {
+//		// Update Redis cache asynchronously on successful DB read
+//		if shouldUpdateRedis(fromDB, err) {
+//			gopool.Go(func() {
+//				if err := updateUserStatusCache(id, status); err != nil {
+//					common.SysError("failed to update user status cache: " + err.Error())
+//				}
+//			})
+//		}
+//	}()
+//	if !fromDB && common.RedisEnabled {
+//		// Try Redis first
+//		status, err := getUserStatusCache(id)
+//		if err == nil {
+//			return status == common.UserStatusEnabled, nil
+//		}
+//		// Don't return error - fall through to DB
+//	}
+//	fromDB = true
+//	var user User
+//	err = DB.Where("id = ?", id).Select("status").Find(&user).Error
+//	if err != nil {
+//		return false, err
+//	}
+//
+//	return user.Status == common.UserStatusEnabled, nil
+//}
 
 func ValidateAccessToken(token string) (user *User) {
 	if token == "" {
@@ -639,7 +639,7 @@ func GetUserSetting(id int, fromDB bool) (settingMap map[string]interface{}, err
 	return common.StrToMap(setting), nil
 }
 
-func IncreaseUserQuota(id int, quota int) (err error) {
+func IncreaseUserQuota(id int, quota int, db bool) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
@@ -649,7 +649,7 @@ func IncreaseUserQuota(id int, quota int) (err error) {
 			common.SysError("failed to increase user quota: " + err.Error())
 		}
 	})
-	if common.BatchUpdateEnabled {
+	if !db && common.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeUserQuota, id, quota)
 		return nil
 	}
@@ -694,7 +694,7 @@ func DeltaUpdateUserQuota(id int, delta int) (err error) {
 		return nil
 	}
 	if delta > 0 {
-		return IncreaseUserQuota(id, delta)
+		return IncreaseUserQuota(id, delta, false)
 	} else {
 		return DecreaseUserQuota(id, -delta)
 	}

@@ -50,6 +50,9 @@ type RelayInfo struct {
 	AudioUsage           bool
 	ReasoningEffort      string
 	ChannelSetting       map[string]interface{}
+	UserSetting          map[string]interface{}
+	UserEmail            string
+	UserQuota            int
 }
 
 // 定义支持流式选项的通道类型
@@ -89,6 +92,9 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	apiType, _ := relayconstant.ChannelType2APIType(channelType)
 
 	info := &RelayInfo{
+		UserQuota:         c.GetInt(constant.ContextKeyUserQuota),
+		UserSetting:       c.GetStringMap(constant.ContextKeyUserSetting),
+		UserEmail:         c.GetString(constant.ContextKeyUserEmail),
 		IsFirstResponse:   true,
 		RelayMode:         relayconstant.Path2RelayMode(c.Request.URL.Path),
 		BaseUrl:           c.GetString("base_url"),
@@ -148,19 +154,7 @@ func (info *RelayInfo) SetFirstResponseTime() {
 }
 
 type TaskRelayInfo struct {
-	ChannelType       int
-	ChannelId         int
-	TokenId           int
-	UserId            int
-	Group             string
-	StartTime         time.Time
-	ApiType           int
-	RelayMode         int
-	UpstreamModelName string
-	RequestURLPath    string
-	ApiKey            string
-	BaseUrl           string
-
+	*RelayInfo
 	Action       string
 	OriginTaskID string
 
@@ -168,48 +162,8 @@ type TaskRelayInfo struct {
 }
 
 func GenTaskRelayInfo(c *gin.Context) *TaskRelayInfo {
-	channelType := c.GetInt("channel_type")
-	channelId := c.GetInt("channel_id")
-
-	tokenId := c.GetInt("token_id")
-	userId := c.GetInt("id")
-	group := c.GetString("group")
-	startTime := time.Now()
-
-	apiType, _ := relayconstant.ChannelType2APIType(channelType)
-
 	info := &TaskRelayInfo{
-		RelayMode:      relayconstant.Path2RelayMode(c.Request.URL.Path),
-		BaseUrl:        c.GetString("base_url"),
-		RequestURLPath: c.Request.URL.String(),
-		ChannelType:    channelType,
-		ChannelId:      channelId,
-		TokenId:        tokenId,
-		UserId:         userId,
-		Group:          group,
-		StartTime:      startTime,
-		ApiType:        apiType,
-		ApiKey:         strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
-	}
-	if info.BaseUrl == "" {
-		info.BaseUrl = common.ChannelBaseURLs[channelType]
+		RelayInfo: GenRelayInfo(c),
 	}
 	return info
-}
-
-func (info *TaskRelayInfo) ToRelayInfo() *RelayInfo {
-	return &RelayInfo{
-		ChannelType:       info.ChannelType,
-		ChannelId:         info.ChannelId,
-		TokenId:           info.TokenId,
-		UserId:            info.UserId,
-		Group:             info.Group,
-		StartTime:         info.StartTime,
-		ApiType:           info.ApiType,
-		RelayMode:         info.RelayMode,
-		UpstreamModelName: info.UpstreamModelName,
-		RequestURLPath:    info.RequestURLPath,
-		ApiKey:            info.ApiKey,
-		BaseUrl:           info.BaseUrl,
-	}
 }

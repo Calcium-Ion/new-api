@@ -199,15 +199,19 @@ func TokenAuth() func(c *gin.Context) {
 			abortWithOpenAiMessage(c, http.StatusUnauthorized, err.Error())
 			return
 		}
-		userEnabled, err := model.IsUserEnabled(token.UserId, false)
+		userCache, err := model.GetUserCache(token.UserId)
 		if err != nil {
 			abortWithOpenAiMessage(c, http.StatusInternalServerError, err.Error())
 			return
 		}
+		userEnabled := userCache.Status == common.UserStatusEnabled
 		if !userEnabled {
 			abortWithOpenAiMessage(c, http.StatusForbidden, "用户已被封禁")
 			return
 		}
+
+		userCache.WriteContext(c)
+
 		c.Set("id", token.UserId)
 		c.Set("token_id", token.Id)
 		c.Set("token_key", token.Key)

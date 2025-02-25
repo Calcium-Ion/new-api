@@ -11,47 +11,45 @@ import (
 
 func NotifyRootUser(t string, subject string, content string) {
 	user := model.GetRootUser().ToBaseUser()
-	_ = NotifyUser(user, dto.NewNotify(t, subject, content, nil))
+	_ = NotifyUser(user.Id, user.Email, user.GetSetting(), dto.NewNotify(t, subject, content, nil))
 }
 
-func NotifyUser(user *model.UserBase, data dto.Notify) error {
-	userSetting := user.GetSetting()
+func NotifyUser(userId int, userEmail string, userSetting map[string]interface{}, data dto.Notify) error {
 	notifyType, ok := userSetting[constant.UserSettingNotifyType]
 	if !ok {
 		notifyType = constant.NotifyTypeEmail
 	}
 
 	// Check notification limit
-	canSend, err := CheckNotificationLimit(user.Id, data.Type)
+	canSend, err := CheckNotificationLimit(userId, data.Type)
 	if err != nil {
 		common.SysError(fmt.Sprintf("failed to check notification limit: %s", err.Error()))
 		return err
 	}
 	if !canSend {
-		return fmt.Errorf("notification limit exceeded for user %d with type %s", user.Id, notifyType)
+		return fmt.Errorf("notification limit exceeded for user %d with type %s", userId, notifyType)
 	}
 
 	switch notifyType {
 	case constant.NotifyTypeEmail:
-		userEmail := user.Email
 		// check setting email
 		if settingEmail, ok := userSetting[constant.UserSettingNotificationEmail]; ok {
 			userEmail = settingEmail.(string)
 		}
 		if userEmail == "" {
-			common.SysLog(fmt.Sprintf("user %d has no email, skip sending email", user.Id))
+			common.SysLog(fmt.Sprintf("user %d has no email, skip sending email", userId))
 			return nil
 		}
 		return sendEmailNotify(userEmail, data)
 	case constant.NotifyTypeWebhook:
 		webhookURL, ok := userSetting[constant.UserSettingWebhookUrl]
 		if !ok {
-			common.SysError(fmt.Sprintf("user %d has no webhook url, skip sending webhook", user.Id))
+			common.SysError(fmt.Sprintf("user %d has no webhook url, skip sending webhook", userId))
 			return nil
 		}
 		webhookURLStr, ok := webhookURL.(string)
 		if !ok {
-			common.SysError(fmt.Sprintf("user %d webhook url is not string type", user.Id))
+			common.SysError(fmt.Sprintf("user %d webhook url is not string type", userId))
 			return nil
 		}
 

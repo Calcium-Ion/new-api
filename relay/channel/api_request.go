@@ -130,7 +130,7 @@ func DoTaskApiRequest(a TaskAdaptor, c *gin.Context, info *common.TaskRelayInfo,
 	if err != nil {
 		return nil, fmt.Errorf("setup request header failed: %w", err)
 	}
-	resp, err := doRequest(c, req, info.ToRelayInfo())
+	resp, err := doRequest(c, req, info.RelayInfo)
 	if err != nil {
 		return nil, fmt.Errorf("do request failed: %w", err)
 	}
