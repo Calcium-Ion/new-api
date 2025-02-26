@@ -46,7 +46,7 @@ func GetConversationsByUserID(userID int) ([]*Conversation, error) {
 func CreateConversation(userID int, req dto.CreateConversationRequest) (string, error) {
 	var title string
 	if req.Title == "" {
-		title = "新会话"
+		title = "新对话"
 	} else {
 		title = req.Title
 	}
@@ -94,7 +94,7 @@ func UpdateConversationTitle(conversationID string, title string) {
 		return
 	}
 	// 已更新过无需再更新
-	if conversation.Title != "新会话" {
+	if conversation.Title != "新对话" {
 		return
 	}
 	// 更新指定会话的标题

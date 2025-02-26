@@ -68,3 +68,14 @@ func StringToByteSlice(s string) []byte {
 	tmp2 := [3]uintptr{tmp1[0], tmp1[1], tmp1[1]}
 	return *(*[]byte)(unsafe.Pointer(&tmp2))
 }
+
+func SubStr(s string, length int) string {
+	var n, i int
+	for i = range s {
+		if n == length {
+			break
+		}
+		n++
+	}
+	return s[:i]
+}

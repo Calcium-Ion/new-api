@@ -19,6 +19,7 @@ import (
 	"one-api/setting"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/bytedance/gopkg/util/gopool"
 
@@ -164,16 +165,30 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		var title string
 		userMessage := textRequest.Messages[len(textRequest.Messages)-1]
 		if userMessage.Role == "user" {
-			model.CreateMessage(dto.CreateMessageRequest{
+			createConversationReq := dto.CreateMessageRequest{
 				ConversationID: textRequest.ConversationID,
 				Role:           "user",
-				Content:        userMessage.StringContent(),
-				ContentType:    "text",
-			})
-			if len(userMessage.StringContent()) < 20 {
-				title = userMessage.StringContent()
+			}
+			var inputText string
+			if userMessage.IsStringContent() {
+				inputText = userMessage.StringContent()
+				createConversationReq.Content = userMessage.StringContent()
+				createConversationReq.ContentType = "text"
 			} else {
-				title = userMessage.StringContent()[:20]
+				for _, item := range userMessage.ParseContent() {
+					if item.Type == "text" {
+						inputText = item.Text
+					}
+				}
+				contentBytes, _ := json.Marshal(userMessage.ParseContent())
+				createConversationReq.Content = string(contentBytes)
+				createConversationReq.ContentType = "multi"
+			}
+			model.CreateMessage(createConversationReq)
+			if utf8.RuneCountInString(inputText) < 20 {
+				title = inputText
+			} else {
+				title = common.SubStr(inputText, 20)
 			}
 		}
 		relayInfo.ConversationID = textRequest.ConversationID

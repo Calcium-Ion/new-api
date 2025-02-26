@@ -32,6 +32,23 @@ func Distribute() func(c *gin.Context) {
 				return
 			}
 		}
+
+		// 使用时间限制
+		// 设置时区（如Asia/Shanghai）
+		loc, _ := time.LoadLocation("Asia/Shanghai")
+		now := time.Now().In(loc)
+
+		startTimeLimit := c.GetTime("start_time_limit")
+		startH, startM, _ := startTimeLimit.Clock()
+		endTimeLimit := c.GetTime("end_time_limit")
+		endH, endM, _ := endTimeLimit.Clock()
+		// 构造时间对象
+		startTime := time.Date(now.Year(), now.Month(), now.Day(), startH, startM, 0, 0, loc)
+		endTime := time.Date(now.Year(), now.Month(), now.Day(), endH, endM, 0, 0, loc)
+		if (!startTimeLimit.IsZero() && now.Before(startTime)) || (!endTimeLimit.IsZero() && now.After(endTime)) {
+			abortWithOpenAiMessage(c, http.StatusForbidden, "您当前不在允许使用的时间范围内")
+			return
+		}
 		userId := c.GetInt("id")
 		var channel *model.Channel
 		channelId, ok := c.Get("specific_channel_id")

@@ -22,7 +22,6 @@ func ResponseText2Usage(responseText string, modeName string, promptTokens int) 
 	ctkm, err := CountTextToken(responseText, modeName)
 	usage.CompletionTokens = ctkm
 	usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
-	usage.Content = responseText
 	return usage, err
 }
 
