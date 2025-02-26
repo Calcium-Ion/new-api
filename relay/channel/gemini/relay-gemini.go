@@ -368,7 +368,7 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 		Choices: make([]dto.OpenAITextResponseChoice, 0, len(response.Candidates)),
 	}
 	content, _ := json.Marshal("")
-	is_tool_call := false
+	isToolCall := false
 	for _, candidate := range response.Candidates {
 		choice := dto.OpenAITextResponseChoice{
 			Index: int(candidate.Index),
@@ -380,12 +380,12 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 		}
 		if len(candidate.Content.Parts) > 0 {
 			var texts []string
-			var tool_calls []dto.ToolCall
+			var toolCalls []dto.ToolCall
 			for _, part := range candidate.Content.Parts {
 				if part.FunctionCall != nil {
 					choice.FinishReason = constant.FinishReasonToolCalls
 					if call := getToolCall(&part); call != nil {
-						tool_calls = append(tool_calls, *call)
+						toolCalls = append(toolCalls, *call)
 					}
 				} else {
 					if part.ExecutableCode != nil {
@@ -400,9 +400,9 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 					}
 				}
 			}
-			if len(tool_calls) > 0 {
-				choice.Message.SetToolCalls(tool_calls)
-				is_tool_call = true
+			if len(toolCalls) > 0 {
+				choice.Message.SetToolCalls(toolCalls)
+				isToolCall = true
 			}
 
 			choice.Message.SetStringContent(strings.Join(texts, "\n"))
@@ -418,7 +418,7 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 				choice.FinishReason = constant.FinishReasonContentFilter
 			}
 		}
-		if is_tool_call {
+		if isToolCall {
 			choice.FinishReason = constant.FinishReasonToolCalls
 		}
 

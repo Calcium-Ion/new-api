@@ -107,7 +107,7 @@ type FunctionCall struct {
 	Name        string `json:"name,omitempty"`
 	// call function with arguments in JSON format
 	Parameters any    `json:"parameters,omitempty"` // request
-	Arguments  string `json:"arguments,omitempty"`
+	Arguments  string `json:"arguments"`
 }
 
 type ChatCompletionsStreamResponse struct {
