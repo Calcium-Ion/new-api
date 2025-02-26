@@ -43,7 +43,7 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 
 	// openaiContent.FuncToToolCalls()
 	if textRequest.Tools != nil {
-		functions := make([]dto.FunctionCall, 0, len(textRequest.Tools))
+		functions := make([]dto.FunctionRequest, 0, len(textRequest.Tools))
 		googleSearch := false
 		codeExecution := false
 		for _, tool := range textRequest.Tools {
@@ -338,7 +338,7 @@ func unescapeMapOrSlice(data interface{}) interface{} {
 	return data
 }
 
-func getToolCall(item *GeminiPart) *dto.ToolCall {
+func getResponseToolCall(item *GeminiPart) *dto.ToolCallResponse {
 	var argsBytes []byte
 	var err error
 	if result, ok := item.FunctionCall.Arguments.(map[string]interface{}); ok {
@@ -350,10 +350,10 @@ func getToolCall(item *GeminiPart) *dto.ToolCall {
 	if err != nil {
 		return nil
 	}
-	return &dto.ToolCall{
+	return &dto.ToolCallResponse{
 		ID:   fmt.Sprintf("call_%s", common.GetUUID()),
 		Type: "function",
-		Function: dto.FunctionCall{
+		Function: dto.FunctionResponse{
 			Arguments: string(argsBytes),
 			Name:      item.FunctionCall.FunctionName,
 		},
@@ -380,11 +380,11 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 		}
 		if len(candidate.Content.Parts) > 0 {
 			var texts []string
-			var toolCalls []dto.ToolCall
+			var toolCalls []dto.ToolCallResponse
 			for _, part := range candidate.Content.Parts {
 				if part.FunctionCall != nil {
 					choice.FinishReason = constant.FinishReasonToolCalls
-					if call := getToolCall(&part); call != nil {
+					if call := getResponseToolCall(&part); call != nil {
 						toolCalls = append(toolCalls, *call)
 					}
 				} else {
@@ -457,7 +457,7 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) (*dto.C
 		for _, part := range candidate.Content.Parts {
 			if part.FunctionCall != nil {
 				isTools = true
-				if call := getToolCall(&part); call != nil {
+				if call := getResponseToolCall(&part); call != nil {
 					call.SetIndex(len(choice.Delta.ToolCalls))
 					choice.Delta.ToolCalls = append(choice.Delta.ToolCalls, *call)
 				}
