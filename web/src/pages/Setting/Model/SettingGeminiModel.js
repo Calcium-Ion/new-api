@@ -10,7 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 const GEMINI_SETTING_EXAMPLE = {
-  'default': 'BLOCK_NONE',
+  'default': 'OFF',
   'HARM_CATEGORY_CIVIC_INTEGRITY': 'BLOCK_NONE',
 };
 
