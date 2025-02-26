@@ -20,4 +20,12 @@ var ModelList = []string{
 	"imagen-3.0-generate-002",
 }
 
+var SafetySettingList = []string{
+	"HARM_CATEGORY_HARASSMENT",
+	"HARM_CATEGORY_VIOLENCE",
+	"HARM_CATEGORY_SEXUALLY_EXPLICIT",
+	"HARM_CATEGORY_DANGEROUS_CONTENT",
+	"HARM_CATEGORY_CIVIC_INTEGRITY",
+}
+
 var ChannelName = "google gemini"

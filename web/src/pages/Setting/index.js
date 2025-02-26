@@ -9,6 +9,7 @@ import OtherSetting from '../../components/OtherSetting';
 import PersonalSetting from '../../components/PersonalSetting';
 import OperationSetting from '../../components/OperationSetting';
 import RateLimitSetting from '../../components/RateLimitSetting.js';
+import ModelSetting from '../../components/ModelSetting.js';
 
 const Setting = () => {
   const { t } = useTranslation();
@@ -33,6 +34,11 @@ const Setting = () => {
       tab: t('速率限制设置'),
       content: <RateLimitSetting />,
       itemKey: 'ratelimit',
+    });
+    panes.push({
+      tab: t('模型相关设置'),
+      content: <ModelSetting />,
+      itemKey: 'models',
     });
     panes.push({
       tab: t('系统设置'),
