@@ -14,12 +14,18 @@ const GEMINI_SETTING_EXAMPLE = {
   'HARM_CATEGORY_CIVIC_INTEGRITY': 'BLOCK_NONE',
 };
 
+const GEMINI_VERSION_EXAMPLE = {
+  'default': 'v1beta',
+};
+
+
 export default function SettingGeminiModel(props) {
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
     GeminiSafetySettings: '',
+    GeminiVersionSettings: '',
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -99,6 +105,27 @@ export default function SettingGeminiModel(props) {
                 />
               </Col>
             </Row>
+            <Row>
+              <Col span={16}>
+                <Form.TextArea
+                  label={t('Gemini版本设置')}
+                  placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(GEMINI_VERSION_EXAMPLE, null, 2)}
+                  field={'GeminiVersionSettings'}
+                  extraText={t('default为默认设置，可单独设置每个模型的版本')}
+                  autosize={{ minRows: 6, maxRows: 12 }}
+                  trigger='blur'
+                  stopValidateWithError
+                  rules={[
+                    {
+                      validator: (rule, value) => verifyJSON(value),
+                      message: t('不是合法的 JSON 字符串')
+                    }
+                  ]}
+                  onChange={(value) => setInputs({ ...inputs, GeminiVersionSettings: value })}
+                />
+              </Col>
+            </Row>
+
             <Row>
               <Button size='default' onClick={onSubmit}>
                 {t('保存')}

@@ -3,6 +3,7 @@ package model
 import (
 	"one-api/common"
 	"one-api/setting"
+	"one-api/setting/model_setting"
 	"strconv"
 	"strings"
 	"time"
@@ -115,7 +116,8 @@ func InitOptionMap() {
 	common.OptionMap["SensitiveWords"] = setting.SensitiveWordsToString()
 	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(setting.StreamCacheQueueLength)
 	common.OptionMap["AutomaticDisableKeywords"] = setting.AutomaticDisableKeywordsToString()
-	common.OptionMap["GeminiSafetySettings"] = setting.GeminiSafetySettingsJsonString()
+	common.OptionMap["GeminiSafetySettings"] = model_setting.GeminiSafetySettingsJsonString()
+	common.OptionMap["GeminiVersionSettings"] = model_setting.GeminiVersionSettingsJsonString()
 
 	common.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
@@ -353,7 +355,9 @@ func updateOptionMap(key string, value string) (err error) {
 	case "AutomaticDisableKeywords":
 		setting.AutomaticDisableKeywordsFromString(value)
 	case "GeminiSafetySettings":
-		setting.GeminiSafetySettingFromJsonString(value)
+		model_setting.GeminiSafetySettingFromJsonString(value)
+	case "GeminiVersionSettings":
+		model_setting.GeminiVersionSettingFromJsonString(value)
 	case "StreamCacheQueueLength":
 		setting.StreamCacheQueueLength, _ = strconv.Atoi(value)
 	}

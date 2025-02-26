@@ -1,10 +1,7 @@
 package constant
 
 import (
-	"fmt"
 	"one-api/common"
-	"os"
-	"strings"
 )
 
 var StreamingTimeout = common.GetEnvOrDefault("STREAMING_TIMEOUT", 60)
@@ -23,9 +20,9 @@ var UpdateTask = common.GetEnvOrDefaultBool("UPDATE_TASK", true)
 
 var AzureDefaultAPIVersion = common.GetEnvOrDefaultString("AZURE_DEFAULT_API_VERSION", "2024-12-01-preview")
 
-var GeminiModelMap = map[string]string{
-	"gemini-1.0-pro": "v1",
-}
+//var GeminiModelMap = map[string]string{
+//	"gemini-1.0-pro": "v1",
+//}
 
 var GeminiVisionMaxImageNum = common.GetEnvOrDefault("GEMINI_VISION_MAX_IMAGE_NUM", 16)
 
@@ -33,18 +30,18 @@ var NotifyLimitCount = common.GetEnvOrDefault("NOTIFY_LIMIT_COUNT", 2)
 var NotificationLimitDurationMinute = common.GetEnvOrDefault("NOTIFICATION_LIMIT_DURATION_MINUTE", 10)
 
 func InitEnv() {
-	modelVersionMapStr := strings.TrimSpace(os.Getenv("GEMINI_MODEL_MAP"))
-	if modelVersionMapStr == "" {
-		return
-	}
-	for _, pair := range strings.Split(modelVersionMapStr, ",") {
-		parts := strings.Split(pair, ":")
-		if len(parts) == 2 {
-			GeminiModelMap[parts[0]] = parts[1]
-		} else {
-			common.SysError(fmt.Sprintf("invalid model version map: %s", pair))
-		}
-	}
+	//modelVersionMapStr := strings.TrimSpace(os.Getenv("GEMINI_MODEL_MAP"))
+	//if modelVersionMapStr == "" {
+	//	return
+	//}
+	//for _, pair := range strings.Split(modelVersionMapStr, ",") {
+	//	parts := strings.Split(pair, ":")
+	//	if len(parts) == 2 {
+	//		GeminiModelMap[parts[0]] = parts[1]
+	//	} else {
+	//		common.SysError(fmt.Sprintf("invalid model version map: %s", pair))
+	//	}
+	//}
 }
 
 // GenerateDefaultToken 是否生成初始令牌，默认关闭。

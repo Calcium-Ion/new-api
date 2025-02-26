@@ -11,7 +11,7 @@ import (
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
-	"one-api/setting"
+	"one-api/setting/model_setting"
 	"strings"
 	"unicode/utf8"
 
@@ -36,7 +36,7 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 	for _, category := range SafetySettingList {
 		safetySettings = append(safetySettings, GeminiChatSafetySettings{
 			Category:  category,
-			Threshold: setting.GetGeminiSafetySetting(category),
+			Threshold: model_setting.GetGeminiSafetySetting(category),
 		})
 	}
 	geminiRequest.SafetySettings = safetySettings

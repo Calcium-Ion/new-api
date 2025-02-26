@@ -7,11 +7,11 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
-	"one-api/constant"
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+	"one-api/setting/model_setting"
 
 	"strings"
 
@@ -64,15 +64,7 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
-	// 从映射中获取模型名称对应的版本，如果找不到就使用 info.ApiVersion 或默认的版本 "v1beta"
-	version, beta := constant.GeminiModelMap[info.UpstreamModelName]
-	if !beta {
-		if info.ApiVersion != "" {
-			version = info.ApiVersion
-		} else {
-			version = "v1beta"
-		}
-	}
+	version := model_setting.GetGeminiVersionSetting(info.UpstreamModelName)
 
 	if strings.HasPrefix(info.UpstreamModelName, "imagen") {
 		return fmt.Sprintf("%s/%s/models/%s:predict", info.BaseUrl, version, info.UpstreamModelName), nil

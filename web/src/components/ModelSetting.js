@@ -22,6 +22,7 @@ const ModelSetting = () => {
   const { t } = useTranslation();
   let [inputs, setInputs] = useState({
     GeminiSafetySettings: '',
+    GeminiVersionSettings: '',
   });
 
   let [loading, setLoading] = useState(false);
@@ -33,7 +34,8 @@ const ModelSetting = () => {
       let newInputs = {};
       data.forEach((item) => {
         if (
-          item.key === 'GeminiSafetySettings'
+          item.key === 'GeminiSafetySettings' ||
+          item.key === 'GeminiVersionSettings'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
