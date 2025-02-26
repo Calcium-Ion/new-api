@@ -6,7 +6,7 @@ import (
 )
 
 var geminiSafetySettings = map[string]string{
-	"default":                       "OFF",
+	"default":                       "BLOCK_NONE",
 	"HARM_CATEGORY_CIVIC_INTEGRITY": "BLOCK_NONE",
 }
 
