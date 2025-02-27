@@ -133,7 +133,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		if err = copier.Copy(vertexClaudeReq, claudeReq); err != nil {
 			return nil, errors.New("failed to copy claude request")
 		}
-		c.Set("request_model", request.Model)
+		c.Set("request_model", claudeReq.Model)
 		return vertexClaudeReq, nil
 	} else if a.RequestMode == RequestModeGemini {
 		geminiRequest, err := gemini.CovertGemini2OpenAI(*request)
