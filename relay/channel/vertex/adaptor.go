@@ -28,6 +28,7 @@ var claudeModelMap = map[string]string{
 	"claude-3-opus-20240229":     "claude-3-opus@20240229",
 	"claude-3-haiku-20240307":    "claude-3-haiku@20240307",
 	"claude-3-5-sonnet-20240620": "claude-3-5-sonnet@20240620",
+	"claude-3-7-sonnet-20250219": "claude-3-7-sonnet@20250219",
 }
 
 const anthropicVersion = "vertex-2023-10-16"
@@ -155,7 +156,6 @@ func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.Rela
 	//TODO implement me
 	return nil, errors.New("not implemented")
 }
-
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	return channel.DoApiRequest(a, c, info, requestBody)

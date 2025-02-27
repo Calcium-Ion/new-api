@@ -8,6 +8,7 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
+	"one-api/setting/model_setting"
 )
 
 const (
@@ -38,6 +39,7 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
+	model_setting.GetClaudeSettings().WriteHeaders(req)
 	return nil
 }
 

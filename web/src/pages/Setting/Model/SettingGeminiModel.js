@@ -24,8 +24,8 @@ export default function SettingGeminiModel(props) {
 
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
-    GeminiSafetySettings: '',
-    GeminiVersionSettings: '',
+    'gemini.safety_settings': '',
+    'gemini.version_settings': '',
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -90,7 +90,7 @@ export default function SettingGeminiModel(props) {
                 <Form.TextArea
                   label={t('Gemini安全设置')}
                   placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(GEMINI_SETTING_EXAMPLE, null, 2)}
-                  field={'GeminiSafetySettings'}
+                  field={'gemini.safety_settings'}
                   extraText={t('default为默认设置，可单独设置每个分类的安全等级')}
                   autosize={{ minRows: 6, maxRows: 12 }}
                   trigger='blur'
@@ -101,7 +101,7 @@ export default function SettingGeminiModel(props) {
                       message: t('不是合法的 JSON 字符串')
                     }
                   ]}
-                  onChange={(value) => setInputs({ ...inputs, GeminiSafetySettings: value })}
+                  onChange={(value) => setInputs({ ...inputs, 'gemini.safety_settings': value })}
                 />
               </Col>
             </Row>
@@ -110,7 +110,7 @@ export default function SettingGeminiModel(props) {
                 <Form.TextArea
                   label={t('Gemini版本设置')}
                   placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(GEMINI_VERSION_EXAMPLE, null, 2)}
-                  field={'GeminiVersionSettings'}
+                  field={'gemini.version_settings'}
                   extraText={t('default为默认设置，可单独设置每个模型的版本')}
                   autosize={{ minRows: 6, maxRows: 12 }}
                   trigger='blur'
@@ -121,7 +121,7 @@ export default function SettingGeminiModel(props) {
                       message: t('不是合法的 JSON 字符串')
                     }
                   ]}
-                  onChange={(value) => setInputs({ ...inputs, GeminiVersionSettings: value })}
+                  onChange={(value) => setInputs({ ...inputs, 'gemini.version_settings': value })}
                 />
               </Col>
             </Row>

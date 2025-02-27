@@ -1,83 +1,52 @@
 package model_setting
 
 import (
-	"encoding/json"
-	"one-api/common"
+	"one-api/setting/config"
 )
 
-var geminiSafetySettings = map[string]string{
-	"default":                       "OFF",
-	"HARM_CATEGORY_CIVIC_INTEGRITY": "BLOCK_NONE",
+// GeminiSettings 定义Gemini模型的配置
+type GeminiSettings struct {
+	SafetySettings  map[string]string `json:"safety_settings"`
+	VersionSettings map[string]string `json:"version_settings"`
 }
 
+// 默认配置
+var defaultGeminiSettings = GeminiSettings{
+	SafetySettings: map[string]string{
+		"default":                       "OFF",
+		"HARM_CATEGORY_CIVIC_INTEGRITY": "BLOCK_NONE",
+	},
+	VersionSettings: map[string]string{
+		"default":        "v1beta",
+		"gemini-1.0-pro": "v1",
+	},
+}
+
+// 全局实例
+var geminiSettings = defaultGeminiSettings
+
+func init() {
+	// 注册到全局配置管理器
+	config.GlobalConfig.Register("gemini", &geminiSettings)
+}
+
+// GetGeminiSettings 获取Gemini配置
+func GetGeminiSettings() *GeminiSettings {
+	return &geminiSettings
+}
+
+// GetGeminiSafetySetting 获取安全设置
 func GetGeminiSafetySetting(key string) string {
-	if value, ok := geminiSafetySettings[key]; ok {
+	if value, ok := geminiSettings.SafetySettings[key]; ok {
 		return value
 	}
-	return geminiSafetySettings["default"]
+	return geminiSettings.SafetySettings["default"]
 }
 
-func GeminiSafetySettingFromJsonString(jsonString string) {
-	geminiSafetySettings = map[string]string{}
-	err := json.Unmarshal([]byte(jsonString), &geminiSafetySettings)
-	if err != nil {
-		geminiSafetySettings = map[string]string{
-			"default":                       "OFF",
-			"HARM_CATEGORY_CIVIC_INTEGRITY": "BLOCK_NONE",
-		}
-	}
-	// check must have default
-	if _, ok := geminiSafetySettings["default"]; !ok {
-		geminiSafetySettings["default"] = common.GeminiSafetySetting
-	}
-}
-
-func GeminiSafetySettingsJsonString() string {
-	// check must have default
-	if _, ok := geminiSafetySettings["default"]; !ok {
-		geminiSafetySettings["default"] = common.GeminiSafetySetting
-	}
-	jsonString, err := json.Marshal(geminiSafetySettings)
-	if err != nil {
-		return "{}"
-	}
-	return string(jsonString)
-}
-
-var geminiVersionSettings = map[string]string{
-	"default":        "v1beta",
-	"gemini-1.0-pro": "v1",
-}
-
+// GetGeminiVersionSetting 获取版本设置
 func GetGeminiVersionSetting(key string) string {
-	if value, ok := geminiVersionSettings[key]; ok {
+	if value, ok := geminiSettings.VersionSettings[key]; ok {
 		return value
 	}
-	return geminiVersionSettings["default"]
-}
-
-func GeminiVersionSettingFromJsonString(jsonString string) {
-	geminiVersionSettings = map[string]string{}
-	err := json.Unmarshal([]byte(jsonString), &geminiVersionSettings)
-	if err != nil {
-		geminiVersionSettings = map[string]string{
-			"default": "v1beta",
-		}
-	}
-	// check must have default
-	if _, ok := geminiVersionSettings["default"]; !ok {
-		geminiVersionSettings["default"] = "v1beta"
-	}
-}
-
-func GeminiVersionSettingsJsonString() string {
-	// check must have default
-	if _, ok := geminiVersionSettings["default"]; !ok {
-		geminiVersionSettings["default"] = "v1beta"
-	}
-	jsonString, err := json.Marshal(geminiVersionSettings)
-	if err != nil {
-		return "{}"
-	}
-	return string(jsonString)
+	return geminiSettings.VersionSettings["default"]
 }

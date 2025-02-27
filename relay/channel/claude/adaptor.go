@@ -9,6 +9,7 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel"
 	relaycommon "one-api/relay/common"
+	"one-api/setting/model_setting"
 	"strings"
 )
 
@@ -55,6 +56,7 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *rel
 		anthropicVersion = "2023-06-01"
 	}
 	req.Set("anthropic-version", anthropicVersion)
+	model_setting.GetClaudeSettings().WriteHeaders(req)
 	return nil
 }
 

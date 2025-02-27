@@ -10,6 +10,7 @@ import (
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
+	"one-api/setting/model_setting"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -93,9 +94,10 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		Tools:         claudeTools,
 	}
 
-	if strings.HasSuffix(textRequest.Model, "-thinking") {
+	if model_setting.GetClaudeSettings().ThinkingAdapterEnabled &&
+		strings.HasSuffix(textRequest.Model, "-thinking") {
 		if claudeRequest.MaxTokens == 0 {
-			claudeRequest.MaxTokens = 8192
+			claudeRequest.MaxTokens = uint(model_setting.GetClaudeSettings().ThinkingAdapterMaxTokens)
 		}
 
 		// 因为BudgetTokens 必须大于1024
@@ -106,7 +108,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		// BudgetTokens 为 max_tokens 的 80%
 		claudeRequest.Thinking = &Thinking{
 			Type:         "enabled",
-			BudgetTokens: int(float64(claudeRequest.MaxTokens) * 0.8),
+			BudgetTokens: int(float64(claudeRequest.MaxTokens) * model_setting.GetClaudeSettings().ThinkingAdapterBudgetTokensPercentage),
 		}
 		// TODO: 临时处理
 		// https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking

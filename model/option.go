@@ -3,7 +3,7 @@ package model
 import (
 	"one-api/common"
 	"one-api/setting"
-	"one-api/setting/model_setting"
+	"one-api/setting/config"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +24,8 @@ func AllOption() ([]*Option, error) {
 func InitOptionMap() {
 	common.OptionMapRWMutex.Lock()
 	common.OptionMap = make(map[string]string)
+
+	// 添加原有的系统配置
 	common.OptionMap["FileUploadPermission"] = strconv.Itoa(common.FileUploadPermission)
 	common.OptionMap["FileDownloadPermission"] = strconv.Itoa(common.FileDownloadPermission)
 	common.OptionMap["ImageUploadPermission"] = strconv.Itoa(common.ImageUploadPermission)
@@ -111,13 +113,16 @@ func InitOptionMap() {
 	common.OptionMap["DemoSiteEnabled"] = strconv.FormatBool(setting.DemoSiteEnabled)
 	common.OptionMap["ModelRequestRateLimitEnabled"] = strconv.FormatBool(setting.ModelRequestRateLimitEnabled)
 	common.OptionMap["CheckSensitiveOnPromptEnabled"] = strconv.FormatBool(setting.CheckSensitiveOnPromptEnabled)
-	//common.OptionMap["CheckSensitiveOnCompletionEnabled"] = strconv.FormatBool(constant.CheckSensitiveOnCompletionEnabled)
 	common.OptionMap["StopOnSensitiveEnabled"] = strconv.FormatBool(setting.StopOnSensitiveEnabled)
 	common.OptionMap["SensitiveWords"] = setting.SensitiveWordsToString()
 	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(setting.StreamCacheQueueLength)
 	common.OptionMap["AutomaticDisableKeywords"] = setting.AutomaticDisableKeywordsToString()
-	common.OptionMap["GeminiSafetySettings"] = model_setting.GeminiSafetySettingsJsonString()
-	common.OptionMap["GeminiVersionSettings"] = model_setting.GeminiVersionSettingsJsonString()
+
+	// 自动添加所有注册的模型配置
+	modelConfigs := config.GlobalConfig.ExportAllConfigs()
+	for k, v := range modelConfigs {
+		common.OptionMap[k] = v
+	}
 
 	common.OptionMapRWMutex.Unlock()
 	loadOptionsFromDatabase()
@@ -161,6 +166,13 @@ func updateOptionMap(key string, value string) (err error) {
 	common.OptionMapRWMutex.Lock()
 	defer common.OptionMapRWMutex.Unlock()
 	common.OptionMap[key] = value
+
+	// 检查是否是模型配置 - 使用更规范的方式处理
+	if handleConfigUpdate(key, value) {
+		return nil // 已由配置系统处理
+	}
+
+	// 处理传统配置项...
 	if strings.HasSuffix(key, "Permission") {
 		intValue, _ := strconv.Atoi(value)
 		switch key {
@@ -235,9 +247,6 @@ func updateOptionMap(key string, value string) (err error) {
 			setting.CheckSensitiveOnPromptEnabled = boolValue
 		case "ModelRequestRateLimitEnabled":
 			setting.ModelRequestRateLimitEnabled = boolValue
-
-		//case "CheckSensitiveOnCompletionEnabled":
-		//	constant.CheckSensitiveOnCompletionEnabled = boolValue
 		case "StopOnSensitiveEnabled":
 			setting.StopOnSensitiveEnabled = boolValue
 		case "SMTPSSLEnabled":
@@ -354,12 +363,33 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.SensitiveWordsFromString(value)
 	case "AutomaticDisableKeywords":
 		setting.AutomaticDisableKeywordsFromString(value)
-	case "GeminiSafetySettings":
-		model_setting.GeminiSafetySettingFromJsonString(value)
-	case "GeminiVersionSettings":
-		model_setting.GeminiVersionSettingFromJsonString(value)
 	case "StreamCacheQueueLength":
 		setting.StreamCacheQueueLength, _ = strconv.Atoi(value)
 	}
 	return err
+}
+
+// handleConfigUpdate 处理分层配置更新，返回是否已处理
+func handleConfigUpdate(key, value string) bool {
+	parts := strings.SplitN(key, ".", 2)
+	if len(parts) != 2 {
+		return false // 不是分层配置
+	}
+
+	configName := parts[0]
+	configKey := parts[1]
+
+	// 获取配置对象
+	cfg := config.GlobalConfig.Get(configName)
+	if cfg == nil {
+		return false // 未注册的配置
+	}
+
+	// 更新配置
+	configMap := map[string]string{
+		configKey: value,
+	}
+	config.UpdateConfigFromMap(cfg, configMap)
+
+	return true // 已处理
 }
