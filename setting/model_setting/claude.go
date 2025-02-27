@@ -42,6 +42,7 @@ func GetClaudeSettings() *ClaudeSettings {
 
 func (c *ClaudeSettings) WriteHeaders(headers *http.Header) {
 	for key, values := range c.HeadersSettings {
+		headers.Del(key)
 		for _, value := range values {
 			headers.Add(key, value)
 		}
