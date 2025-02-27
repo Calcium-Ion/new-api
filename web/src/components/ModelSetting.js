@@ -6,12 +6,17 @@ import { API, showError, showSuccess } from '../helpers';
 import SettingsChats from '../pages/Setting/Operation/SettingsChats.js';
 import { useTranslation } from 'react-i18next';
 import SettingGeminiModel from '../pages/Setting/Model/SettingGeminiModel.js';
+import SettingClaudeModel from '../pages/Setting/Model/SettingClaudeModel.js';
 
 const ModelSetting = () => {
   const { t } = useTranslation();
   let [inputs, setInputs] = useState({
-    GeminiSafetySettings: '',
-    GeminiVersionSettings: '',
+    'gemini.safety_settings': '',
+    'gemini.version_settings': '',
+    'claude.headers_settings': '',
+    'claude.thinking_adapter_enabled': true,
+    'claude.thinking_adapter_max_tokens': 8192,
+    'claude.thinking_adapter_budget_tokens_percentage': 0.8,
   });
 
   let [loading, setLoading] = useState(false);
@@ -23,8 +28,9 @@ const ModelSetting = () => {
       let newInputs = {};
       data.forEach((item) => {
         if (
-          item.key === 'GeminiSafetySettings' ||
-          item.key === 'GeminiVersionSettings'
+          item.key === 'gemini.safety_settings' ||
+          item.key === 'gemini.version_settings' ||
+          item.key === 'claude.headers_settings'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
@@ -64,6 +70,10 @@ const ModelSetting = () => {
         {/* Gemini */}
         <Card style={{ marginTop: '10px' }}>
           <SettingGeminiModel options={inputs} refresh={onRefresh} />
+        </Card>
+        {/* Claude */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingClaudeModel options={inputs} refresh={onRefresh} />
         </Card>
       </Spin>
     </>
