@@ -31,12 +31,8 @@ export default function SettingClaudeModel(props) {
     const updateArray = compareObjects(inputs, inputsRow);
     if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
     const requestQueue = updateArray.map((item) => {
-      let value = '';
-      if (typeof inputs[item.key] === 'boolean') {
-        value = String(inputs[item.key]);
-      } else {
-        value = inputs[item.key];
-      }
+      let value = String(inputs[item.key]);
+      
       return API.put('/api/option/', {
         key: item.key,
         value,
