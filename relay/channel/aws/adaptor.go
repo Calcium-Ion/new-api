@@ -49,8 +49,10 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 	var claudeReq *claude.ClaudeRequest
 	var err error
 	claudeReq, err = claude.RequestOpenAI2ClaudeMessage(*request)
-
-	c.Set("request_model", request.Model)
+	if err != nil {
+		return nil, err
+	}
+	c.Set("request_model", claudeReq.Model)
 	c.Set("converted_request", claudeReq)
 	return claudeReq, err
 }
@@ -63,7 +65,6 @@ func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.Rela
 	//TODO implement me
 	return nil, errors.New("not implemented")
 }
-
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	return nil, nil
