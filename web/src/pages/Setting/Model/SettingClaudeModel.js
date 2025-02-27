@@ -103,6 +103,17 @@ export default function SettingClaudeModel(props) {
               </Col>
             </Row>
             <Row>
+              <Col span={8}>
+                <Form.InputNumber
+                  label={t('缺省 MaxTokens')}
+                  field={'claude.thinking_adapter_max_tokens'}
+                  initValue={''}
+                  extraText={t('客户端没有指定MaxTokens时的缺省值')}
+                  onChange={(value) => setInputs({ ...inputs, 'claude.thinking_adapter_max_tokens': value })}
+                />
+              </Col>
+            </Row>
+            <Row>
               <Col span={16}>
                 <Form.Switch
                   label={t('启用Claude思考适配（-thinking后缀）')}
@@ -120,15 +131,6 @@ export default function SettingClaudeModel(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={8}>
-                <Form.InputNumber
-                  label={t('缺省 MaxTokens')}
-                  field={'claude.thinking_adapter_max_tokens'}
-                  initValue={''}
-                  extraText={t('客户端没有指定MaxTokens时的缺省值')}
-                  onChange={(value) => setInputs({ ...inputs, 'claude.thinking_adapter_max_tokens': value })}
-                />
-              </Col>
               <Col span={8}>
                 <Form.InputNumber
                   label={t('思考适配 BudgetTokens 百分比')}
