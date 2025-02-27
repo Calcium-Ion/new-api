@@ -94,11 +94,12 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		Tools:         claudeTools,
 	}
 
+	if claudeRequest.MaxTokens == 0 {
+		claudeRequest.MaxTokens = uint(model_setting.GetClaudeSettings().ThinkingAdapterMaxTokens)
+	}
+
 	if model_setting.GetClaudeSettings().ThinkingAdapterEnabled &&
 		strings.HasSuffix(textRequest.Model, "-thinking") {
-		if claudeRequest.MaxTokens == 0 {
-			claudeRequest.MaxTokens = uint(model_setting.GetClaudeSettings().ThinkingAdapterMaxTokens)
-		}
 
 		// 因为BudgetTokens 必须大于1024
 		if claudeRequest.MaxTokens < 1280 {
@@ -117,9 +118,6 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		claudeRequest.Model = strings.TrimSuffix(textRequest.Model, "-thinking")
 	}
 
-	if claudeRequest.MaxTokens == 0 {
-		claudeRequest.MaxTokens = 4096
-	}
 	if textRequest.Stop != nil {
 		// stop maybe string/array string, convert to array string
 		switch textRequest.Stop.(type) {

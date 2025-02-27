@@ -122,9 +122,10 @@ export default function SettingClaudeModel(props) {
             <Row>
               <Col span={8}>
                 <Form.InputNumber
-                  label={t('思考适配 MaxTokens')}
+                  label={t('缺省 MaxTokens')}
                   field={'claude.thinking_adapter_max_tokens'}
                   initValue={''}
+                  extraText={t('客户端没有指定MaxTokens时的缺省值')}
                   onChange={(value) => setInputs({ ...inputs, 'claude.thinking_adapter_max_tokens': value })}
                 />
               </Col>
