@@ -11,6 +11,9 @@ type ClaudeMediaMessage struct {
 	Usage       *ClaudeUsage         `json:"usage,omitempty"`
 	StopReason  *string              `json:"stop_reason,omitempty"`
 	PartialJson string               `json:"partial_json,omitempty"`
+	Thinking    string               `json:"thinking,omitempty"`
+	Signature   string               `json:"signature,omitempty"`
+	Delta       string               `json:"delta,omitempty"`
 	// tool_calls
 	Id        string `json:"id,omitempty"`
 	Name      string `json:"name,omitempty"`

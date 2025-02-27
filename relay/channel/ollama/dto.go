@@ -3,22 +3,22 @@ package ollama
 import "one-api/dto"
 
 type OllamaRequest struct {
-	Model            string             `json:"model,omitempty"`
-	Messages         []dto.Message      `json:"messages,omitempty"`
-	Stream           bool               `json:"stream,omitempty"`
-	Temperature      *float64           `json:"temperature,omitempty"`
-	Seed             float64            `json:"seed,omitempty"`
-	Topp             float64            `json:"top_p,omitempty"`
-	TopK             int                `json:"top_k,omitempty"`
-	Stop             any                `json:"stop,omitempty"`
-	MaxTokens        uint               `json:"max_tokens,omitempty"`
-	Tools            []dto.ToolCall     `json:"tools,omitempty"`
-	ResponseFormat   any                `json:"response_format,omitempty"`
-	FrequencyPenalty float64            `json:"frequency_penalty,omitempty"`
-	PresencePenalty  float64            `json:"presence_penalty,omitempty"`
-	Suffix           any                `json:"suffix,omitempty"`
-	StreamOptions    *dto.StreamOptions `json:"stream_options,omitempty"`
-	Prompt           any                `json:"prompt,omitempty"`
+	Model            string                `json:"model,omitempty"`
+	Messages         []dto.Message         `json:"messages,omitempty"`
+	Stream           bool                  `json:"stream,omitempty"`
+	Temperature      *float64              `json:"temperature,omitempty"`
+	Seed             float64               `json:"seed,omitempty"`
+	Topp             float64               `json:"top_p,omitempty"`
+	TopK             int                   `json:"top_k,omitempty"`
+	Stop             any                   `json:"stop,omitempty"`
+	MaxTokens        uint                  `json:"max_tokens,omitempty"`
+	Tools            []dto.ToolCallRequest `json:"tools,omitempty"`
+	ResponseFormat   any                   `json:"response_format,omitempty"`
+	FrequencyPenalty float64               `json:"frequency_penalty,omitempty"`
+	PresencePenalty  float64               `json:"presence_penalty,omitempty"`
+	Suffix           any                   `json:"suffix,omitempty"`
+	StreamOptions    *dto.StreamOptions    `json:"stream_options,omitempty"`
+	Prompt           any                   `json:"prompt,omitempty"`
 }
 
 type Options struct {

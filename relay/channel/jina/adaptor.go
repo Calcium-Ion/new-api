@@ -61,7 +61,7 @@ func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.Rela
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
 	if info.RelayMode == constant.RelayModeRerank {
-		err, usage = jinaRerankHandler(c, resp)
+		err, usage = JinaRerankHandler(c, resp)
 	} else if info.RelayMode == constant.RelayModeEmbeddings {
 		err, usage = jinaEmbeddingHandler(c, resp)
 	}

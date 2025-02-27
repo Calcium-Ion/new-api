@@ -32,6 +32,7 @@ func InitRedisClient() (err error) {
 	if err != nil {
 		FatalLog("failed to parse Redis connection string: " + err.Error())
 	}
+	opt.PoolSize = GetEnvOrDefault("REDIS_POOL_SIZE", 10)
 	RDB = redis.NewClient(opt)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -40,6 +41,10 @@ func InitRedisClient() (err error) {
 	_, err = RDB.Ping(ctx).Result()
 	if err != nil {
 		FatalLog("Redis ping test failed: " + err.Error())
+	}
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis connected to %s", opt.Addr))
+		SysLog(fmt.Sprintf("Redis database: %d", opt.DB))
 	}
 	return err
 }
@@ -53,13 +58,20 @@ func ParseRedisOption() *redis.Options {
 }
 
 func RedisSet(key string, value string, expiration time.Duration) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis SET: key=%s, value=%s, expiration=%v", key, value, expiration))
+	}
 	ctx := context.Background()
 	return RDB.Set(ctx, key, value, expiration).Err()
 }
 
 func RedisGet(key string) (string, error) {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis GET: key=%s", key))
+	}
 	ctx := context.Background()
-	return RDB.Get(ctx, key).Result()
+	val, err := RDB.Get(ctx, key).Result()
+	return val, err
 }
 
 //func RedisExpire(key string, expiration time.Duration) error {
@@ -73,16 +85,25 @@ func RedisGet(key string) (string, error) {
 //}
 
 func RedisDel(key string) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis DEL: key=%s", key))
+	}
 	ctx := context.Background()
 	return RDB.Del(ctx, key).Err()
 }
 
 func RedisHDelObj(key string) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis HDEL: key=%s", key))
+	}
 	ctx := context.Background()
 	return RDB.HDel(ctx, key).Err()
 }
 
 func RedisHSetObj(key string, obj interface{}, expiration time.Duration) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis HSET: key=%s, obj=%+v, expiration=%v", key, obj, expiration))
+	}
 	ctx := context.Background()
 
 	data := make(map[string]interface{})
@@ -130,6 +151,9 @@ func RedisHSetObj(key string, obj interface{}, expiration time.Duration) error {
 }
 
 func RedisHGetObj(key string, obj interface{}) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis HGETALL: key=%s", key))
+	}
 	ctx := context.Background()
 
 	result, err := RDB.HGetAll(ctx, key).Result()
@@ -208,6 +232,9 @@ func RedisHGetObj(key string, obj interface{}) error {
 
 // RedisIncr Add this function to handle atomic increments
 func RedisIncr(key string, delta int64) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis INCR: key=%s, delta=%d", key, delta))
+	}
 	// 检查键的剩余生存时间
 	ttlCmd := RDB.TTL(context.Background(), key)
 	ttl, err := ttlCmd.Result()
@@ -238,6 +265,9 @@ func RedisIncr(key string, delta int64) error {
 }
 
 func RedisHIncrBy(key, field string, delta int64) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis HINCRBY: key=%s, field=%s, delta=%d", key, field, delta))
+	}
 	ttlCmd := RDB.TTL(context.Background(), key)
 	ttl, err := ttlCmd.Result()
 	if err != nil && !errors.Is(err, redis.Nil) {
@@ -262,6 +292,9 @@ func RedisHIncrBy(key, field string, delta int64) error {
 }
 
 func RedisHSetField(key, field string, value interface{}) error {
+	if DebugEnabled {
+		SysLog(fmt.Sprintf("Redis HSET field: key=%s, field=%s, value=%v", key, field, value))
+	}
 	ttlCmd := RDB.TTL(context.Background(), key)
 	ttl, err := ttlCmd.Result()
 	if err != nil && !errors.Is(err, redis.Nil) {

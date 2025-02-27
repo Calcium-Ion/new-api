@@ -18,6 +18,7 @@ import (
 	"one-api/relay/channel/mokaai"
 	"one-api/relay/channel/ollama"
 	"one-api/relay/channel/openai"
+	"one-api/relay/channel/openrouter"
 	"one-api/relay/channel/palm"
 	"one-api/relay/channel/perplexity"
 	"one-api/relay/channel/siliconflow"
@@ -83,6 +84,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &volcengine.Adaptor{}
 	case constant.APITypeBaiduV2:
 		return &baidu_v2.Adaptor{}
+	case constant.APITypeOpenRouter:
+		return &openrouter.Adaptor{}
 	}
 	return nil
 }

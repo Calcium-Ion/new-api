@@ -83,93 +83,94 @@ var defaultModelRatio = map[string]float64{
 	"text-curie-001":         1,
 	//"text-davinci-002":               10,
 	//"text-davinci-003":               10,
-	"text-davinci-edit-001":          10,
-	"code-davinci-edit-001":          10,
-	"whisper-1":                      15,  // $0.006 / minute -> $0.006 / 150 words -> $0.006 / 200 tokens -> $0.03 / 1k tokens
-	"tts-1":                          7.5, // 1k characters -> $0.015
-	"tts-1-1106":                     7.5, // 1k characters -> $0.015
-	"tts-1-hd":                       15,  // 1k characters -> $0.03
-	"tts-1-hd-1106":                  15,  // 1k characters -> $0.03
-	"davinci":                        10,
-	"curie":                          10,
-	"babbage":                        10,
-	"ada":                            10,
-	"text-embedding-3-small":         0.01,
-	"text-embedding-3-large":         0.065,
-	"text-embedding-ada-002":         0.05,
-	"text-search-ada-doc-001":        10,
-	"text-moderation-stable":         0.1,
-	"text-moderation-latest":         0.1,
-	"claude-instant-1":               0.4,   // $0.8 / 1M tokens
-	"claude-2.0":                     4,     // $8 / 1M tokens
-	"claude-2.1":                     4,     // $8 / 1M tokens
-	"claude-3-haiku-20240307":        0.125, // $0.25 / 1M tokens
-	"claude-3-5-haiku-20241022":      0.5,   // $1 / 1M tokens
-	"claude-3-sonnet-20240229":       1.5,   // $3 / 1M tokens
-	"claude-3-5-sonnet-20240620":     1.5,
-	"claude-3-5-sonnet-20241022":     1.5,
-	"claude-3-7-sonnet-20250219":     1.5,
-	"claude-3-opus-20240229":         7.5, // $15 / 1M tokens
-	"ERNIE-4.0-8K":                   0.120 * RMB,
-	"ERNIE-3.5-8K":                   0.012 * RMB,
-	"ERNIE-3.5-8K-0205":              0.024 * RMB,
-	"ERNIE-3.5-8K-1222":              0.012 * RMB,
-	"ERNIE-Bot-8K":                   0.024 * RMB,
-	"ERNIE-3.5-4K-0205":              0.012 * RMB,
-	"ERNIE-Speed-8K":                 0.004 * RMB,
-	"ERNIE-Speed-128K":               0.004 * RMB,
-	"ERNIE-Lite-8K-0922":             0.008 * RMB,
-	"ERNIE-Lite-8K-0308":             0.003 * RMB,
-	"ERNIE-Tiny-8K":                  0.001 * RMB,
-	"BLOOMZ-7B":                      0.004 * RMB,
-	"Embedding-V1":                   0.002 * RMB,
-	"bge-large-zh":                   0.002 * RMB,
-	"bge-large-en":                   0.002 * RMB,
-	"tao-8k":                         0.002 * RMB,
-	"PaLM-2":                         1,
-	"gemini-pro":                     1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
-	"gemini-pro-vision":              1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
-	"gemini-1.0-pro-vision-001":      1,
-	"gemini-1.0-pro-001":             1,
-	"gemini-1.5-pro-latest":          1.75, // $3.5 / 1M tokens
-	"gemini-1.5-pro-exp-0827":        1.75, // $3.5 / 1M tokens
-	"gemini-1.5-flash-latest":        1,
-	"gemini-1.5-flash-exp-0827":      1,
-	"gemini-1.0-pro-latest":          1,
-	"gemini-1.0-pro-vision-latest":   1,
-	"gemini-ultra":                   1,
-	"chatglm_turbo":                  0.3572,     // ￥0.005 / 1k tokens
-	"chatglm_pro":                    0.7143,     // ￥0.01 / 1k tokens
-	"chatglm_std":                    0.3572,     // ￥0.005 / 1k tokens
-	"chatglm_lite":                   0.1429,     // ￥0.002 / 1k tokens
-	"glm-4":                          7.143,      // ￥0.1 / 1k tokens
-	"glm-4v":                         0.05 * RMB, // ￥0.05 / 1k tokens
-	"glm-4-alltools":                 0.1 * RMB,  // ￥0.1 / 1k tokens
-	"glm-3-turbo":                    0.3572,
-	"glm-4-plus":                     0.05 * RMB,
-	"glm-4-0520":                     0.1 * RMB,
-	"glm-4-air":                      0.001 * RMB,
-	"glm-4-airx":                     0.01 * RMB,
-	"glm-4-long":                     0.001 * RMB,
-	"glm-4-flash":                    0,
-	"glm-4v-plus":                    0.01 * RMB,
-	"qwen-turbo":                     0.8572, // ￥0.012 / 1k tokens
-	"qwen-plus":                      10,     // ￥0.14 / 1k tokens
-	"text-embedding-v1":              0.05,   // ￥0.0007 / 1k tokens
-	"SparkDesk-v1.1":                 1.2858, // ￥0.018 / 1k tokens
-	"SparkDesk-v2.1":                 1.2858, // ￥0.018 / 1k tokens
-	"SparkDesk-v3.1":                 1.2858, // ￥0.018 / 1k tokens
-	"SparkDesk-v3.5":                 1.2858, // ￥0.018 / 1k tokens
-	"SparkDesk-v4.0":                 1.2858,
-	"360GPT_S2_V9":                   0.8572, // ¥0.012 / 1k tokens
-	"360gpt-turbo":                   0.0858, // ¥0.0012 / 1k tokens
-	"360gpt-turbo-responsibility-8k": 0.8572, // ¥0.012 / 1k tokens
-	"360gpt-pro":                     0.8572, // ¥0.012 / 1k tokens
-	"360gpt2-pro":                    0.8572, // ¥0.012 / 1k tokens
-	"embedding-bert-512-v1":          0.0715, // ¥0.001 / 1k tokens
-	"embedding_s1_v1":                0.0715, // ¥0.001 / 1k tokens
-	"semantic_similarity_s1_v1":      0.0715, // ¥0.001 / 1k tokens
-	"hunyuan":                        7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
+	"text-davinci-edit-001":               10,
+	"code-davinci-edit-001":               10,
+	"whisper-1":                           15,  // $0.006 / minute -> $0.006 / 150 words -> $0.006 / 200 tokens -> $0.03 / 1k tokens
+	"tts-1":                               7.5, // 1k characters -> $0.015
+	"tts-1-1106":                          7.5, // 1k characters -> $0.015
+	"tts-1-hd":                            15,  // 1k characters -> $0.03
+	"tts-1-hd-1106":                       15,  // 1k characters -> $0.03
+	"davinci":                             10,
+	"curie":                               10,
+	"babbage":                             10,
+	"ada":                                 10,
+	"text-embedding-3-small":              0.01,
+	"text-embedding-3-large":              0.065,
+	"text-embedding-ada-002":              0.05,
+	"text-search-ada-doc-001":             10,
+	"text-moderation-stable":              0.1,
+	"text-moderation-latest":              0.1,
+	"claude-instant-1":                    0.4,   // $0.8 / 1M tokens
+	"claude-2.0":                          4,     // $8 / 1M tokens
+	"claude-2.1":                          4,     // $8 / 1M tokens
+	"claude-3-haiku-20240307":             0.125, // $0.25 / 1M tokens
+	"claude-3-5-haiku-20241022":           0.5,   // $1 / 1M tokens
+	"claude-3-sonnet-20240229":            1.5,   // $3 / 1M tokens
+	"claude-3-5-sonnet-20240620":          1.5,
+	"claude-3-5-sonnet-20241022":          1.5,
+	"claude-3-7-sonnet-20250219":          1.5,
+	"claude-3-7-sonnet-20250219-thinking": 1.5,
+	"claude-3-opus-20240229":              7.5, // $15 / 1M tokens
+	"ERNIE-4.0-8K":                        0.120 * RMB,
+	"ERNIE-3.5-8K":                        0.012 * RMB,
+	"ERNIE-3.5-8K-0205":                   0.024 * RMB,
+	"ERNIE-3.5-8K-1222":                   0.012 * RMB,
+	"ERNIE-Bot-8K":                        0.024 * RMB,
+	"ERNIE-3.5-4K-0205":                   0.012 * RMB,
+	"ERNIE-Speed-8K":                      0.004 * RMB,
+	"ERNIE-Speed-128K":                    0.004 * RMB,
+	"ERNIE-Lite-8K-0922":                  0.008 * RMB,
+	"ERNIE-Lite-8K-0308":                  0.003 * RMB,
+	"ERNIE-Tiny-8K":                       0.001 * RMB,
+	"BLOOMZ-7B":                           0.004 * RMB,
+	"Embedding-V1":                        0.002 * RMB,
+	"bge-large-zh":                        0.002 * RMB,
+	"bge-large-en":                        0.002 * RMB,
+	"tao-8k":                              0.002 * RMB,
+	"PaLM-2":                              1,
+	"gemini-pro":                          1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
+	"gemini-pro-vision":                   1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
+	"gemini-1.0-pro-vision-001":           1,
+	"gemini-1.0-pro-001":                  1,
+	"gemini-1.5-pro-latest":               1.75, // $3.5 / 1M tokens
+	"gemini-1.5-pro-exp-0827":             1.75, // $3.5 / 1M tokens
+	"gemini-1.5-flash-latest":             1,
+	"gemini-1.5-flash-exp-0827":           1,
+	"gemini-1.0-pro-latest":               1,
+	"gemini-1.0-pro-vision-latest":        1,
+	"gemini-ultra":                        1,
+	"chatglm_turbo":                       0.3572,     // ￥0.005 / 1k tokens
+	"chatglm_pro":                         0.7143,     // ￥0.01 / 1k tokens
+	"chatglm_std":                         0.3572,     // ￥0.005 / 1k tokens
+	"chatglm_lite":                        0.1429,     // ￥0.002 / 1k tokens
+	"glm-4":                               7.143,      // ￥0.1 / 1k tokens
+	"glm-4v":                              0.05 * RMB, // ￥0.05 / 1k tokens
+	"glm-4-alltools":                      0.1 * RMB,  // ￥0.1 / 1k tokens
+	"glm-3-turbo":                         0.3572,
+	"glm-4-plus":                          0.05 * RMB,
+	"glm-4-0520":                          0.1 * RMB,
+	"glm-4-air":                           0.001 * RMB,
+	"glm-4-airx":                          0.01 * RMB,
+	"glm-4-long":                          0.001 * RMB,
+	"glm-4-flash":                         0,
+	"glm-4v-plus":                         0.01 * RMB,
+	"qwen-turbo":                          0.8572, // ￥0.012 / 1k tokens
+	"qwen-plus":                           10,     // ￥0.14 / 1k tokens
+	"text-embedding-v1":                   0.05,   // ￥0.0007 / 1k tokens
+	"SparkDesk-v1.1":                      1.2858, // ￥0.018 / 1k tokens
+	"SparkDesk-v2.1":                      1.2858, // ￥0.018 / 1k tokens
+	"SparkDesk-v3.1":                      1.2858, // ￥0.018 / 1k tokens
+	"SparkDesk-v3.5":                      1.2858, // ￥0.018 / 1k tokens
+	"SparkDesk-v4.0":                      1.2858,
+	"360GPT_S2_V9":                        0.8572, // ¥0.012 / 1k tokens
+	"360gpt-turbo":                        0.0858, // ¥0.0012 / 1k tokens
+	"360gpt-turbo-responsibility-8k":      0.8572, // ¥0.012 / 1k tokens
+	"360gpt-pro":                          0.8572, // ¥0.012 / 1k tokens
+	"360gpt2-pro":                         0.8572, // ¥0.012 / 1k tokens
+	"embedding-bert-512-v1":               0.0715, // ¥0.001 / 1k tokens
+	"embedding_s1_v1":                     0.0715, // ¥0.001 / 1k tokens
+	"semantic_similarity_s1_v1":           0.0715, // ¥0.001 / 1k tokens
+	"hunyuan":                             7.143,  // ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
 	// https://platform.lingyiwanwu.com/docs#-计费单元
 	// 已经按照 7.2 来换算美元价格
 	"yi-34b-chat-0205":       0.18,

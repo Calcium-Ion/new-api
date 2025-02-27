@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"one-api/common"
 	"one-api/constant"
 	"time"
@@ -19,6 +20,15 @@ type UserBase struct {
 	Status   int    `json:"status"`
 	Username string `json:"username"`
 	Setting  string `json:"setting"`
+}
+
+func (user *UserBase) WriteContext(c *gin.Context) {
+	c.Set(constant.ContextKeyUserGroup, user.Group)
+	c.Set(constant.ContextKeyUserQuota, user.Quota)
+	c.Set(constant.ContextKeyUserStatus, user.Status)
+	c.Set(constant.ContextKeyUserEmail, user.Email)
+	c.Set("username", user.Username)
+	c.Set(constant.ContextKeyUserSetting, user.GetSetting())
 }
 
 func (user *UserBase) GetSetting() map[string]interface{} {

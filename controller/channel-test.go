@@ -48,7 +48,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	if strings.Contains(strings.ToLower(testModel), "embedding") ||
 		strings.HasPrefix(testModel, "m3e") || // m3e 系列模型
 		strings.Contains(testModel, "bge-") || // bge 系列模型
-		testModel == "text-embedding-v1" ||
+		strings.Contains(testModel, "embed") ||
 		channel.Type == common.ChannelTypeMokaAI { // 其他 embedding 模型
 		requestPath = "/v1/embeddings" // 修改请求路径
 	}
@@ -83,6 +83,12 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 			testModel = modelMap[testModel]
 		}
 	}
+
+	cache, err := model.GetUserCache(1)
+	if err != nil {
+		return err, nil
+	}
+	cache.WriteContext(c)
 
 	c.Request.Header.Set("Authorization", "Bearer "+channel.Key)
 	c.Request.Header.Set("Content-Type", "application/json")

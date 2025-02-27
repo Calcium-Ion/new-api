@@ -327,9 +327,6 @@ const EditChannel = (props) => {
         localInputs.base_url.length - 1
       );
     }
-    if (localInputs.type === 3 && localInputs.other === '') {
-      localInputs.other = '2023-06-01-preview';
-    }
     if (localInputs.type === 18 && localInputs.other === '') {
       localInputs.other = 'v2.1';
     }
@@ -494,7 +491,7 @@ const EditChannel = (props) => {
               <Input
                 label={t('默认 API 版本')}
                 name="azure_other"
-                placeholder={t('请输入默认 API 版本，例如：2023-06-01-preview，该配置可以被实际的请求查询参数所覆盖')}
+                placeholder={t('请输入默认 API 版本，例如：2024-12-01-preview')}
                 onChange={(value) => {
                   handleInputChange('other', value);
                 }}

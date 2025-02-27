@@ -5,6 +5,7 @@ import (
 	"context"
 	crand "crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"html/template"
@@ -211,6 +212,24 @@ func MessageWithRequestId(message string, id string) string {
 func RandomSleep() {
 	// Sleep for 0-3000 ms
 	time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
+}
+
+func GetPointer[T any](v T) *T {
+	return &v
+}
+
+func Any2Type[T any](data any) (T, error) {
+	var zero T
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return zero, err
+	}
+	var res T
+	err = json.Unmarshal(bytes, &res)
+	if err != nil {
+		return zero, err
+	}
+	return res, nil
 }
 
 // SaveTmpFile saves data to a temporary file. The filename would be apppended with a random string.

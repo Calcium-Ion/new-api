@@ -92,6 +92,29 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 		Stream:        textRequest.Stream,
 		Tools:         claudeTools,
 	}
+
+	if strings.HasSuffix(textRequest.Model, "-thinking") {
+		if claudeRequest.MaxTokens == 0 {
+			claudeRequest.MaxTokens = 8192
+		}
+
+		// 因为BudgetTokens 必须大于1024
+		if claudeRequest.MaxTokens < 1280 {
+			claudeRequest.MaxTokens = 1280
+		}
+
+		// BudgetTokens 为 max_tokens 的 80%
+		claudeRequest.Thinking = &Thinking{
+			Type:         "enabled",
+			BudgetTokens: int(float64(claudeRequest.MaxTokens) * 0.8),
+		}
+		// TODO: 临时处理
+		// https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking
+		claudeRequest.TopP = 0
+		claudeRequest.Temperature = common.GetPointer[float64](1.0)
+		claudeRequest.Model = strings.TrimSuffix(textRequest.Model, "-thinking")
+	}
+
 	if claudeRequest.MaxTokens == 0 {
 		claudeRequest.MaxTokens = 4096
 	}
@@ -273,7 +296,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 	response.Object = "chat.completion.chunk"
 	response.Model = claudeResponse.Model
 	response.Choices = make([]dto.ChatCompletionsStreamResponseChoice, 0)
-	tools := make([]dto.ToolCall, 0)
+	tools := make([]dto.ToolCallResponse, 0)
 	var choice dto.ChatCompletionsStreamResponseChoice
 	if reqMode == RequestModeCompletion {
 		choice.Delta.SetContentString(claudeResponse.Completion)
@@ -292,10 +315,10 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			if claudeResponse.ContentBlock != nil {
 				//choice.Delta.SetContentString(claudeResponse.ContentBlock.Text)
 				if claudeResponse.ContentBlock.Type == "tool_use" {
-					tools = append(tools, dto.ToolCall{
+					tools = append(tools, dto.ToolCallResponse{
 						ID:   claudeResponse.ContentBlock.Id,
 						Type: "function",
-						Function: dto.FunctionCall{
+						Function: dto.FunctionResponse{
 							Name:      claudeResponse.ContentBlock.Name,
 							Arguments: "",
 						},
@@ -308,12 +331,20 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) (*
 			if claudeResponse.Delta != nil {
 				choice.Index = claudeResponse.Index
 				choice.Delta.SetContentString(claudeResponse.Delta.Text)
-				if claudeResponse.Delta.Type == "input_json_delta" {
-					tools = append(tools, dto.ToolCall{
-						Function: dto.FunctionCall{
+				switch claudeResponse.Delta.Type {
+				case "input_json_delta":
+					tools = append(tools, dto.ToolCallResponse{
+						Function: dto.FunctionResponse{
 							Arguments: claudeResponse.Delta.PartialJson,
 						},
 					})
+				case "signature_delta":
+					// 加密的不处理
+					signatureContent := "\n"
+					choice.Delta.ReasoningContent = &signatureContent
+				case "thinking_delta":
+					thinkingContent := claudeResponse.Delta.Thinking
+					choice.Delta.ReasoningContent = &thinkingContent
 				}
 			}
 		} else if claudeResponse.Type == "message_delta" {
@@ -351,7 +382,9 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	if len(claudeResponse.Content) > 0 {
 		responseText = claudeResponse.Content[0].Text
 	}
-	tools := make([]dto.ToolCall, 0)
+	tools := make([]dto.ToolCallResponse, 0)
+	thinkingContent := ""
+
 	if reqMode == RequestModeCompletion {
 		content, _ := json.Marshal(strings.TrimPrefix(claudeResponse.Completion, " "))
 		choice := dto.OpenAITextResponseChoice{
@@ -367,16 +400,22 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	} else {
 		fullTextResponse.Id = claudeResponse.Id
 		for _, message := range claudeResponse.Content {
-			if message.Type == "tool_use" {
+			switch message.Type {
+			case "tool_use":
 				args, _ := json.Marshal(message.Input)
-				tools = append(tools, dto.ToolCall{
+				tools = append(tools, dto.ToolCallResponse{
 					ID:   message.Id,
 					Type: "function", // compatible with other OpenAI derivative applications
-					Function: dto.FunctionCall{
+					Function: dto.FunctionResponse{
 						Name:      message.Name,
 						Arguments: string(args),
 					},
 				})
+			case "thinking":
+				// 加密的不管， 只输出明文的推理过程
+				thinkingContent = message.Thinking
+			case "text":
+				responseText = message.Text
 			}
 		}
 	}
@@ -391,6 +430,7 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *ClaudeResponse) *dto.Ope
 	if len(tools) > 0 {
 		choice.Message.SetToolCalls(tools)
 	}
+	choice.Message.ReasoningContent = thinkingContent
 	fullTextResponse.Model = claudeResponse.Model
 	choices = append(choices, choice)
 	fullTextResponse.Choices = choices

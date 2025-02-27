@@ -66,9 +66,12 @@
 15. ⚡ **[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime/integration)** - 支持OpenAI的Realtime API，支持Azure渠道
 16. 支持使用路由/chat2link 进入聊天界面
 17. 🧠 支持通过模型名称后缀设置 reasoning effort：
-    - 添加后缀 `-high` 设置为 high reasoning effort (例如: `o3-mini-high`)
-    - 添加后缀 `-medium` 设置为 medium reasoning effort (例如: `o3-mini-medium`)
-    - 添加后缀 `-low` 设置为 low reasoning effort (例如: `o3-mini-low`)
+    1. OpenAI o系列模型
+        - 添加后缀 `-high` 设置为 high reasoning effort (例如: `o3-mini-high`)
+        - 添加后缀 `-medium` 设置为 medium reasoning effort (例如: `o3-mini-medium`)
+        - 添加后缀 `-low` 设置为 low reasoning effort (例如: `o3-mini-low`)
+    2. Claude 思考模型
+        - 添加后缀 `-thinking` 启用思考模式 (例如: `claude-3-7-sonnet-20250219-thinking`)
 18. 🔄 思考转内容，支持在 `渠道-编辑-渠道额外设置` 中设置 `thinking_to_content` 选项，默认`false`，开启后会将思考内容`reasoning_content`转换为`<think>`标签拼接到内容中返回。
 19. 🔄 模型限流，支持在 `系统设置-速率限制设置` 中设置模型限流，支持设置总请求数限制和成功请求数限制
 
@@ -91,7 +94,6 @@
 - `GET_MEDIA_TOKEN`：是否统计图片token，默认为 `true`，关闭后将不再在本地计算图片token，可能会导致和上游计费不同，此项覆盖 `GET_MEDIA_TOKEN_NOT_STREAM` 选项作用。
 - `GET_MEDIA_TOKEN_NOT_STREAM`：是否在非流（`stream=false`）情况下统计图片token，默认为 `true`。
 - `UPDATE_TASK`：是否更新异步任务（Midjourney、Suno），默认为 `true`，关闭后将不会更新任务进度。
-- `GEMINI_MODEL_MAP`：Gemini模型指定版本(v1/v1beta)，使用"模型:版本"指定，","分隔，例如：-e GEMINI_MODEL_MAP="gemini-1.5-pro-latest:v1beta,gemini-1.5-pro-001:v1beta"，为空则使用默认配置(v1beta)
 - `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`, `STRICT`，默认为 `NONE`。
 - `GEMINI_VISION_MAX_IMAGE_NUM`：Gemini模型最大图片数量，默认为 `16`，设置为 `-1` 则不限制。
 - `MAX_FILE_DOWNLOAD_MB`: 最大文件下载大小，单位 MB，默认为 `20`。
@@ -99,6 +101,10 @@
 - `AZURE_DEFAULT_API_VERSION`：Azure渠道默认API版本，如果渠道设置中未指定API版本，则使用此版本，默认为 `2024-12-01-preview`
 - `NOTIFICATION_LIMIT_DURATION_MINUTE`：通知限制的持续时间（分钟），默认为 `10`。
 - `NOTIFY_LIMIT_COUNT`：用户通知在指定持续时间内的最大数量，默认为 `2`。
+
+## 已废弃的环境变量
+- ~~`GEMINI_MODEL_MAP`（已废弃）~~：改为到`设置-模型相关设置`中设置
+- ~~`GEMINI_SAFETY_SETTING`（已废弃）~~：改为到`设置-模型相关设置`中设置
 
 ## 部署
 

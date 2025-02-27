@@ -50,6 +50,7 @@ func Distribute() func(c *gin.Context) {
 			return
 		}
 		userId := c.GetInt("id")
+    
 		var channel *model.Channel
 		channelId, ok := c.Get("specific_channel_id")
 		modelRequest, shouldSelectChannel, err := getModelRequest(c)
@@ -57,7 +58,7 @@ func Distribute() func(c *gin.Context) {
 			abortWithOpenAiMessage(c, http.StatusBadRequest, "Invalid request, "+err.Error())
 			return
 		}
-		userGroup, _ := model.GetUserGroup(userId, false)
+		userGroup := c.GetString(constant.ContextKeyUserGroup)
 		tokenGroup := c.GetString("token_group")
 		if tokenGroup != "" {
 			// check common.UserUsableGroups[userGroup]

@@ -276,7 +276,7 @@ func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQu
 	if quota > 0 {
 		err = model.DecreaseUserQuota(relayInfo.UserId, quota)
 	} else {
-		err = model.IncreaseUserQuota(relayInfo.UserId, -quota)
+		err = model.IncreaseUserQuota(relayInfo.UserId, -quota, false)
 	}
 	if err != nil {
 		return err
@@ -295,20 +295,16 @@ func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQu
 
 	if sendEmail {
 		if (quota + preConsumedQuota) != 0 {
-			checkAndSendQuotaNotify(relayInfo.UserId, quota, preConsumedQuota)
+			checkAndSendQuotaNotify(relayInfo, quota, preConsumedQuota)
 		}
 	}
 
 	return nil
 }
 
-func checkAndSendQuotaNotify(userId int, quota int, preConsumedQuota int) {
+func checkAndSendQuotaNotify(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQuota int) {
 	gopool.Go(func() {
-		userCache, err := model.GetUserCache(userId)
-		if err != nil {
-			common.SysError("failed to get user cache: " + err.Error())
-		}
-		userSetting := userCache.GetSetting()
+		userSetting := relayInfo.UserSetting
 		threshold := common.QuotaRemindThreshold
 		if userCustomThreshold, ok := userSetting[constant2.UserSettingQuotaWarningThreshold]; ok {
 			threshold = int(userCustomThreshold.(float64))
@@ -317,16 +313,16 @@ func checkAndSendQuotaNotify(userId int, quota int, preConsumedQuota int) {
 		//noMoreQuota := userCache.Quota-(quota+preConsumedQuota) <= 0
 		quotaTooLow := false
 		consumeQuota := quota + preConsumedQuota
-		if userCache.Quota-consumeQuota < threshold {
+		if relayInfo.UserQuota-consumeQuota < threshold {
 			quotaTooLow = true
 		}
 		if quotaTooLow {
 			prompt := "您的额度即将用尽"
 			topUpLink := fmt.Sprintf("%s/topup", setting.ServerAddress)
 			content := "{{value}}，当前剩余额度为 {{value}}，为了不影响您的使用，请及时充值。<br/>充值链接：<a href='{{value}}'>{{value}}</a>"
-			err = NotifyUser(userCache, dto.NewNotify(dto.NotifyTypeQuotaExceed, prompt, content, []interface{}{prompt, common.FormatQuota(userCache.Quota), topUpLink, topUpLink}))
+			err := NotifyUser(relayInfo.UserId, relayInfo.UserEmail, relayInfo.UserSetting, dto.NewNotify(dto.NotifyTypeQuotaExceed, prompt, content, []interface{}{prompt, common.FormatQuota(relayInfo.UserQuota), topUpLink, topUpLink}))
 			if err != nil {
-				common.SysError(fmt.Sprintf("failed to send quota notify to user %d: %s", userId, err.Error()))
+				common.SysError(fmt.Sprintf("failed to send quota notify to user %d: %s", relayInfo.UserId, err.Error()))
 			}
 		}
 	})

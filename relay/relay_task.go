@@ -2,7 +2,6 @@ package relay
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -109,11 +108,11 @@ func RelayTaskSubmit(c *gin.Context, relayMode int) (taskErr *dto.TaskError) {
 		return
 	}
 
-	defer func(ctx context.Context) {
+	defer func() {
 		// release quota
 		if relayInfo.ConsumeQuota && taskErr == nil {
 
-			err := service.PostConsumeQuota(relayInfo.ToRelayInfo(), quota, 0, true)
+			err := service.PostConsumeQuota(relayInfo.RelayInfo, quota, 0, true)
 			if err != nil {
 				common.SysError("error consuming token remain quota: " + err.Error())
 			}
@@ -123,13 +122,13 @@ func RelayTaskSubmit(c *gin.Context, relayMode int) (taskErr *dto.TaskError) {
 				other := make(map[string]interface{})
 				other["model_price"] = modelPrice
 				other["group_ratio"] = groupRatio
-				model.RecordConsumeLog(ctx, relayInfo.UserId, relayInfo.ChannelId, 0, 0,
+				model.RecordConsumeLog(c, relayInfo.UserId, relayInfo.ChannelId, 0, 0,
 					modelName, tokenName, quota, logContent, relayInfo.TokenId, userQuota, 0, false, relayInfo.Group, other)
 				model.UpdateUserUsedQuotaAndRequestCount(relayInfo.UserId, quota)
 				model.UpdateChannelUsedQuota(relayInfo.ChannelId, quota)
 			}
 		}
-	}(c.Request.Context())
+	}()
 
 	taskID, taskData, taskErr := adaptor.DoResponse(c, resp, relayInfo)
 	if taskErr != nil {

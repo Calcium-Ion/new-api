@@ -54,15 +54,17 @@ type GeneralOpenAIRequest struct {
 	ExtraBody           any             `json:"extra_body,omitempty"`
 }
 
-type OpenAITools struct {
-	Type     string         `json:"type"`
-	Function OpenAIFunction `json:"function"`
+type ToolCallRequest struct {
+	ID       string          `json:"id,omitempty"`
+	Type     string          `json:"type"`
+	Function FunctionRequest `json:"function"`
 }
 
-type OpenAIFunction struct {
+type FunctionRequest struct {
 	Description string `json:"description,omitempty"`
 	Name        string `json:"name"`
 	Parameters  any    `json:"parameters,omitempty"`
+	Arguments   string `json:"arguments,omitempty"`
 }
 
 type StreamOptions struct {
@@ -138,11 +140,11 @@ func (m *Message) SetPrefix(prefix bool) {
 	m.Prefix = &prefix
 }
 
-func (m *Message) ParseToolCalls() []ToolCall {
+func (m *Message) ParseToolCalls() []ToolCallRequest {
 	if m.ToolCalls == nil {
 		return nil
 	}
-	var toolCalls []ToolCall
+	var toolCalls []ToolCallRequest
 	if err := json.Unmarshal(m.ToolCalls, &toolCalls); err == nil {
 		return toolCalls
 	}
