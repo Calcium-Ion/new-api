@@ -16,6 +16,11 @@ const CLAUDE_HEADER = {
   }
 };
 
+const CLAUDE_DEFAULT_MAX_TOKENS = {
+  'default': 8192,
+  'claude-3-7-sonnet-20250219-thinking': 8192,
+}
+
 export default function SettingClaudeModel(props) {
   const { t } = useTranslation();
 
@@ -23,7 +28,7 @@ export default function SettingClaudeModel(props) {
   const [inputs, setInputs] = useState({
     'claude.model_headers_settings': '',
     'claude.thinking_adapter_enabled': true,
-    'claude.thinking_adapter_max_tokens': 8192,
+    'claude.default_max_tokens': '',
     'claude.thinking_adapter_budget_tokens_percentage': 0.8,
   });
   const refForm = useRef();
@@ -102,12 +107,21 @@ export default function SettingClaudeModel(props) {
             </Row>
             <Row>
               <Col span={8}>
-                <Form.InputNumber
+                <Form.TextArea
                   label={t('缺省 MaxTokens')}
-                  field={'claude.thinking_adapter_max_tokens'}
-                  initValue={''}
-                  extraText={t('客户端没有指定MaxTokens时的缺省值')}
-                  onChange={(value) => setInputs({ ...inputs, 'claude.thinking_adapter_max_tokens': value })}
+                  field={'claude.default_max_tokens'}
+                  placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(CLAUDE_DEFAULT_MAX_TOKENS, null, 2)}
+                  extraText={t('示例') + '\n' + JSON.stringify(CLAUDE_DEFAULT_MAX_TOKENS, null, 2)}
+                  autosize={{ minRows: 6, maxRows: 12 }}
+                  trigger='blur'
+                  stopValidateWithError
+                  rules={[
+                    {
+                      validator: (rule, value) => verifyJSON(value),
+                      message: t('不是合法的 JSON 字符串')
+                    }
+                  ]}
+                  onChange={(value) => setInputs({ ...inputs, 'claude.default_max_tokens': value })}
                 />
               </Col>
             </Row>

@@ -3,7 +3,6 @@ import { Card, Spin, Tabs } from '@douyinfe/semi-ui';
 
 
 import { API, showError, showSuccess } from '../helpers';
-import SettingsChats from '../pages/Setting/Operation/SettingsChats.js';
 import { useTranslation } from 'react-i18next';
 import SettingGeminiModel from '../pages/Setting/Model/SettingGeminiModel.js';
 import SettingClaudeModel from '../pages/Setting/Model/SettingClaudeModel.js';
@@ -15,7 +14,7 @@ const ModelSetting = () => {
     'gemini.version_settings': '',
     'claude.model_headers_settings': '',
     'claude.thinking_adapter_enabled': true,
-    'claude.thinking_adapter_max_tokens': 8192,
+    'claude.default_max_tokens': '',
     'claude.thinking_adapter_budget_tokens_percentage': 0.8,
   });
 
@@ -30,7 +29,8 @@ const ModelSetting = () => {
         if (
           item.key === 'gemini.safety_settings' ||
           item.key === 'gemini.version_settings' ||
-          item.key === 'claude.model_headers_settings'
+          item.key === 'claude.model_headers_settings'||
+          item.key === 'claude.default_max_tokens'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }

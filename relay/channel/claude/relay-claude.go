@@ -95,7 +95,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*ClaudeR
 	}
 
 	if claudeRequest.MaxTokens == 0 {
-		claudeRequest.MaxTokens = uint(model_setting.GetClaudeSettings().ThinkingAdapterMaxTokens)
+		claudeRequest.MaxTokens = uint(model_setting.GetClaudeSettings().GetDefaultMaxTokens(textRequest.Model))
 	}
 
 	if model_setting.GetClaudeSettings().ThinkingAdapterEnabled &&
