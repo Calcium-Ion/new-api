@@ -26,7 +26,8 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		if maxTokens != 0 {
 			preConsumedTokens = promptTokens + maxTokens
 		}
-		modelRatio, success := common.GetModelRatio(info.OriginModelName)
+		var success bool
+		modelRatio, success = common.GetModelRatio(info.OriginModelName)
 		if !success {
 			return PriceData{}, fmt.Errorf("model %s ratio not found", info.OriginModelName)
 		}
