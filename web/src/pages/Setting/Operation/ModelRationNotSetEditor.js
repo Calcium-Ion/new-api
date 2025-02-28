@@ -55,18 +55,17 @@ export default function ModelRatioNotSetEditor(props) {
       const unsetModels = enabledModels.filter(modelName => {
         const hasPrice = modelPrice[modelName] !== undefined;
         const hasRatio = modelRatio[modelName] !== undefined;
-        const hasCompletionRatio = completionRatio[modelName] !== undefined;
         
-        // 如果模型既没有价格也没有倍率设置，则显示
-        return !(hasPrice || (hasRatio && hasCompletionRatio));
+        // 如果模型没有价格或者没有倍率设置，则显示
+        return !hasPrice && !hasRatio;
       });
 
       // 创建模型数据
       const modelData = unsetModels.map(name => ({
         name,
-        price: '',
-        ratio: '',
-        completionRatio: ''
+        price: modelPrice[name] || '',
+        ratio: modelRatio[name] || '',
+        completionRatio: completionRatio[name] || ''
       }));
 
       setModels(modelData);
