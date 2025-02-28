@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"one-api/common"
 	relaycommon "one-api/relay/common"
@@ -15,7 +16,7 @@ type PriceData struct {
 	ShouldPreConsumedQuota int
 }
 
-func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens int, maxTokens int) PriceData {
+func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens int, maxTokens int) (PriceData, error) {
 	modelPrice, usePrice := common.GetModelPrice(info.OriginModelName, false)
 	groupRatio := setting.GetGroupRatio(info.Group)
 	var preConsumedQuota int
@@ -25,7 +26,10 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		if maxTokens != 0 {
 			preConsumedTokens = promptTokens + maxTokens
 		}
-		modelRatio = common.GetModelRatio(info.OriginModelName)
+		modelRatio, success := common.GetModelRatio(info.OriginModelName)
+		if !success {
+			return PriceData{}, fmt.Errorf("model %s ratio not found", info.OriginModelName)
+		}
 		ratio := modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
 	} else {
@@ -37,5 +41,5 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		GroupRatio:             groupRatio,
 		UsePrice:               usePrice,
 		ShouldPreConsumedQuota: preConsumedQuota,
-	}
+	}, nil
 }

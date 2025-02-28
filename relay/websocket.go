@@ -65,7 +65,7 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 		//if realtimeEvent.Session.MaxResponseOutputTokens != 0 {
 		//	preConsumedTokens = promptTokens + int(realtimeEvent.Session.MaxResponseOutputTokens)
 		//}
-		modelRatio = common.GetModelRatio(relayInfo.UpstreamModelName)
+		modelRatio, _ = common.GetModelRatio(relayInfo.UpstreamModelName)
 		ratio = modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
 	} else {

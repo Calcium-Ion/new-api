@@ -69,7 +69,8 @@ func updatePricing() {
 			pricing.ModelPrice = modelPrice
 			pricing.QuotaType = 1
 		} else {
-			pricing.ModelRatio = common.GetModelRatio(model)
+			modelRatio, _ := common.GetModelRatio(model)
+			pricing.ModelRatio = modelRatio
 			pricing.CompletionRatio = common.GetCompletionRatio(model)
 			pricing.QuotaType = 0
 		}

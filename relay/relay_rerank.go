@@ -50,8 +50,10 @@ func RerankHelper(c *gin.Context, relayMode int) (openaiErr *dto.OpenAIErrorWith
 	promptToken := getRerankPromptToken(*rerankRequest)
 	relayInfo.PromptTokens = promptToken
 
-	priceData := helper.ModelPriceHelper(c, relayInfo, promptToken, 0)
-
+	priceData, err := helper.ModelPriceHelper(c, relayInfo, promptToken, 0)
+	if err != nil {
+		return service.OpenAIErrorWrapperLocal(err, "model_price_error", http.StatusInternalServerError)
+	}
 	// pre-consume quota 预消耗配额
 	preConsumedQuota, userQuota, openaiErr := preConsumeQuota(c, priceData.ShouldPreConsumedQuota, relayInfo)
 	if openaiErr != nil {
