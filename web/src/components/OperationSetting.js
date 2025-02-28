@@ -16,6 +16,7 @@ import ModelRatioSettings from '../pages/Setting/Operation/ModelRatioSettings.js
 import { API, showError, showSuccess } from '../helpers';
 import SettingsChats from '../pages/Setting/Operation/SettingsChats.js';
 import { useTranslation } from 'react-i18next';
+import ModelRatioNotSetEditor from '../pages/Setting/Operation/ModelRationNotSetEditor.js';
 
 const OperationSetting = () => {
   const { t } = useTranslation();
@@ -157,6 +158,9 @@ const OperationSetting = () => {
             </Tabs.TabPane>
             <Tabs.TabPane tab={t('可视化倍率设置')} itemKey="visual">
               <ModelSettingsVisualEditor options={inputs} refresh={onRefresh} />
+            </Tabs.TabPane>
+            <Tabs.TabPane tab={t('未设置倍率模型')} itemKey="unset_models">
+              <ModelRatioNotSetEditor options={inputs} refresh={onRefresh} />
             </Tabs.TabPane>
           </Tabs>
         </Card>
