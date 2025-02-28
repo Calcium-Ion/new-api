@@ -13,15 +13,15 @@ import (
 
 // ClaudeSettings 定义Claude模型的配置
 type ClaudeSettings struct {
-	HeadersSettings                       map[string][]string `json:"headers_settings"`
-	ThinkingAdapterEnabled                bool                `json:"thinking_adapter_enabled"`
-	ThinkingAdapterMaxTokens              int                 `json:"thinking_adapter_max_tokens"`
-	ThinkingAdapterBudgetTokensPercentage float64             `json:"thinking_adapter_budget_tokens_percentage"`
+	HeadersSettings                       map[string]map[string][]string `json:"model_headers_settings"`
+	ThinkingAdapterEnabled                bool                           `json:"thinking_adapter_enabled"`
+	ThinkingAdapterMaxTokens              int                            `json:"thinking_adapter_max_tokens"`
+	ThinkingAdapterBudgetTokensPercentage float64                        `json:"thinking_adapter_budget_tokens_percentage"`
 }
 
 // 默认配置
 var defaultClaudeSettings = ClaudeSettings{
-	HeadersSettings:                       map[string][]string{},
+	HeadersSettings:                       map[string]map[string][]string{},
 	ThinkingAdapterEnabled:                true,
 	ThinkingAdapterMaxTokens:              8192,
 	ThinkingAdapterBudgetTokensPercentage: 0.8,
@@ -40,11 +40,13 @@ func GetClaudeSettings() *ClaudeSettings {
 	return &claudeSettings
 }
 
-func (c *ClaudeSettings) WriteHeaders(headers *http.Header) {
-	for key, values := range c.HeadersSettings {
-		headers.Del(key)
-		for _, value := range values {
-			headers.Add(key, value)
+func (c *ClaudeSettings) WriteHeaders(originModel string, httpHeader *http.Header) {
+	if headers, ok := c.HeadersSettings[originModel]; ok {
+		for headerKey, headerValues := range headers {
+			httpHeader.Del(headerKey)
+			for _, headerValue := range headerValues {
+				httpHeader.Add(headerKey, headerValue)
+			}
 		}
 	}
 }

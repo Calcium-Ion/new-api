@@ -11,7 +11,9 @@ import { useTranslation } from 'react-i18next';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 
 const CLAUDE_HEADER = {
-  'anthropic-beta': ['output-128k-2025-02-19', 'token-efficient-tools-2025-02-19'],
+  'claude-3-7-sonnet-20250219-thinking': {
+    'anthropic-beta': ['output-128k-2025-02-19', 'token-efficient-tools-2025-02-19'],
+  }
 };
 
 export default function SettingClaudeModel(props) {
@@ -19,7 +21,7 @@ export default function SettingClaudeModel(props) {
 
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
-    'claude.headers_settings': '',
+    'claude.model_headers_settings': '',
     'claude.thinking_adapter_enabled': true,
     'claude.thinking_adapter_max_tokens': 8192,
     'claude.thinking_adapter_budget_tokens_percentage': 0.8,
@@ -82,9 +84,9 @@ export default function SettingClaudeModel(props) {
               <Col span={16}>
                 <Form.TextArea
                   label={t('Claude请求头覆盖')}
-                  field={'claude.headers_settings'}
+                  field={'claude.model_headers_settings'}
                   placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(CLAUDE_HEADER, null, 2)}
-                  extraText={t('示例') + JSON.stringify(CLAUDE_HEADER, null, 2)}
+                  extraText={t('示例') + '\n' + JSON.stringify(CLAUDE_HEADER, null, 2)}
                   autosize={{ minRows: 6, maxRows: 12 }}
                   trigger='blur'
                   stopValidateWithError
@@ -94,7 +96,7 @@ export default function SettingClaudeModel(props) {
                       message: t('不是合法的 JSON 字符串')
                     }
                   ]}
-                  onChange={(value) => setInputs({ ...inputs, 'claude.headers_settings': value })}
+                  onChange={(value) => setInputs({ ...inputs, 'claude.model_headers_settings': value })}
                 />
               </Col>
             </Row>

@@ -13,7 +13,7 @@ const ModelSetting = () => {
   let [inputs, setInputs] = useState({
     'gemini.safety_settings': '',
     'gemini.version_settings': '',
-    'claude.headers_settings': '',
+    'claude.model_headers_settings': '',
     'claude.thinking_adapter_enabled': true,
     'claude.thinking_adapter_max_tokens': 8192,
     'claude.thinking_adapter_budget_tokens_percentage': 0.8,
@@ -30,7 +30,7 @@ const ModelSetting = () => {
         if (
           item.key === 'gemini.safety_settings' ||
           item.key === 'gemini.version_settings' ||
-          item.key === 'claude.headers_settings'
+          item.key === 'claude.model_headers_settings'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }

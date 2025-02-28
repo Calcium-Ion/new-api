@@ -56,7 +56,7 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *rel
 		anthropicVersion = "2023-06-01"
 	}
 	req.Set("anthropic-version", anthropicVersion)
-	model_setting.GetClaudeSettings().WriteHeaders(req)
+	model_setting.GetClaudeSettings().WriteHeaders(info.OriginModelName, req)
 	return nil
 }
 
