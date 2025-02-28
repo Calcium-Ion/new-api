@@ -51,6 +51,13 @@ func UpdateOption(c *gin.Context) {
 			})
 			return
 		}
+	case "OIDCEnabled":
+		if option.Value == "true" && common.OIDCClientId == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无法启用 OIDC 登录，请先填入 OIDC Client Id 以及 OIDC Client Secret！",
+			})
+		}
 	case "LinuxDOOAuthEnabled":
 		if option.Value == "true" && common.LinuxDOClientId == "" {
 			c.JSON(http.StatusOK, gin.H{

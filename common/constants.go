@@ -43,6 +43,7 @@ var PasswordLoginEnabled = true
 var PasswordRegisterEnabled = true
 var EmailVerificationEnabled = false
 var GitHubOAuthEnabled = false
+var OIDCEnabled = false
 var LinuxDOOAuthEnabled = false
 var WeChatAuthEnabled = false
 var TelegramOAuthEnabled = false
@@ -77,6 +78,13 @@ var SMTPToken = ""
 
 var GitHubClientId = ""
 var GitHubClientSecret = ""
+
+var OIDCClientId = ""
+var OIDCClientSecret = ""
+var OIDCWellKnown = ""
+var OIDCAuthorizationEndpoint = ""
+var OIDCTokenEndpoint = ""
+var OIDCUserInfoEndpoint = ""
 
 var LinuxDOClientId = ""
 var LinuxDOClientSecret = ""

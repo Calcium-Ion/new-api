@@ -20,6 +20,13 @@ const SystemSetting = () => {
     GitHubOAuthEnabled: '',
     GitHubClientId: '',
     GitHubClientSecret: '',
+    OIDCEnabled: '',
+    OIDCClientId: '',
+    OIDCClientSecret: '',
+    OIDCWellKnown: '',
+    OIDCAuthorizationEndpoint: '',
+    OIDCTokenEndpoint: '',
+    OIDCUserInfoEndpoint: '',
     Notice: '',
     SMTPServer: '',
     SMTPPort: '',
@@ -106,6 +113,7 @@ const SystemSetting = () => {
       case 'PasswordRegisterEnabled':
       case 'EmailVerificationEnabled':
       case 'GitHubOAuthEnabled':
+      case 'OIDCEnabled':
       case 'LinuxDOOAuthEnabled':
       case 'WeChatAuthEnabled':
       case 'TelegramOAuthEnabled':
@@ -159,6 +167,12 @@ const SystemSetting = () => {
       name === 'PayAddress' ||
       name === 'GitHubClientId' ||
       name === 'GitHubClientSecret' ||
+      name === 'OIDCWellKnown' ||
+      name === 'OIDCClientId' ||
+      name === 'OIDCClientSecret' ||
+      name === 'OIDCAuthorizationEndpoint' ||
+      name === 'OIDCTokenEndpoint' ||
+      name === 'OIDCUserInfoEndpoint' ||
       name === 'WeChatServerAddress' ||
       name === 'WeChatServerToken' ||
       name === 'WeChatAccountQRCodeImageURL' ||
@@ -286,6 +300,43 @@ const SystemSetting = () => {
     }
   };
 
+  const submitOIDCSettings = async () => {
+    if (inputs.OIDCWellKnown !== '') {
+      if (!inputs.OIDCWellKnown.startsWith('http://') && !inputs.OIDCWellKnown.startsWith('https://')) {
+        showError('Well-Known URL 必须以 http:// 或 https:// 开头');
+        return;
+      }
+      try {
+        const res = await API.get(inputs.OIDCWellKnown);
+        inputs.OIDCAuthorizationEndpoint = res.data['authorization_endpoint'];
+        inputs.OIDCTokenEndpoint = res.data['token_endpoint'];
+        inputs.OIDCUserInfoEndpoint = res.data['userinfo_endpoint'];
+        showSuccess('获取 OIDC 配置成功！');
+      } catch (err) {
+        showError("获取 OIDC 配置失败，请检查网络状况和 Well-Known URL 是否正确");
+      }
+    }
+
+    if (originInputs['OIDCWellKnown'] !== inputs.OIDCWellKnown) {
+      await updateOption('OIDCWellKnown', inputs.OIDCWellKnown);
+    }
+    if (originInputs['OIDCClientId'] !== inputs.OIDCClientId) {
+      await updateOption('OIDCClientId', inputs.OIDCClientId);
+    }
+    if (originInputs['OIDCClientSecret'] !== inputs.OIDCClientSecret && inputs.OIDCClientSecret !== '') {
+      await updateOption('OIDCClientSecret', inputs.OIDCClientSecret);
+    }
+    if (originInputs['OIDCAuthorizationEndpoint'] !== inputs.OIDCAuthorizationEndpoint) {
+      await updateOption('OIDCAuthorizationEndpoint', inputs.OIDCAuthorizationEndpoint);
+    }
+    if (originInputs['OIDCTokenEndpoint'] !== inputs.OIDCTokenEndpoint) {
+      await updateOption('OIDCTokenEndpoint', inputs.OIDCTokenEndpoint);
+    }
+    if (originInputs['OIDCUserInfoEndpoint'] !== inputs.OIDCUserInfoEndpoint) {
+      await updateOption('OIDCUserInfoEndpoint', inputs.OIDCUserInfoEndpoint);
+    }
+  }
+
   const submitTelegramSettings = async () => {
     // await updateOption('TelegramOAuthEnabled', inputs.TelegramOAuthEnabled);
     await updateOption('TelegramBotToken', inputs.TelegramBotToken);
@@ -370,7 +421,7 @@ const SystemSetting = () => {
           </Header>
           <Message info>
             注意：代理功能仅对图片请求和 Webhook 请求生效，不会影响其他 API 请求。如需配置 API 请求代理，请参考
-            <a 
+            <a
               href='https://github.com/Calcium-Ion/new-api/blob/main/docs/channel/other_setting.md'
               target='_blank'
               rel='noreferrer'
@@ -517,6 +568,12 @@ const SystemSetting = () => {
               label='允许通过 GitHub 账户登录 & 注册'
               name='GitHubOAuthEnabled'
               onChange={handleInputChange}
+            />
+            <Form.Checkbox
+                checked={inputs.OIDCEnabled === 'true'}
+                label='允许通过 OIDC 登录 & 注册'
+                name='OIDCEnabled'
+                onChange={handleInputChange}
             />
             <Form.Checkbox
               checked={inputs.LinuxDOOAuthEnabled === 'true'}
@@ -863,6 +920,68 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitLinuxDOOAuth}>
             保存 LinuxDO OAuth 设置
+          </Form.Button>
+          <Divider />
+          <Header as='h3' inverted={isDark}>
+            配置 OIDC
+            <Header.Subheader>
+              用以支持通过 OIDC 登录，例如 Okta、Auth0 等兼容 OIDC 协议的 IdP
+            </Header.Subheader>
+          </Header>
+          <Message>
+            主页链接填 <code>{ inputs.ServerAddress }</code>，
+            重定向 URL 填 <code>{ `${ inputs.ServerAddress }/oauth/oidc` }</code>
+          </Message>
+          <Message>
+            若你的 OIDC Provider 支持 Discovery Endpoint，你可以仅填写 OIDC Well-Known URL，系统会自动获取 OIDC 配置
+          </Message>
+          <Form.Group widths={3}>
+            <Form.Input
+                label='Client ID'
+                name='OIDCClientId'
+                onChange={handleInputChange}
+                value={inputs.OIDCClientId}
+                placeholder='输入 OIDC 的 Client ID'
+            />
+            <Form.Input
+                label='Client Secret'
+                name='OIDCClientSecret'
+                onChange={handleInputChange}
+                type='password'
+                value={inputs.OIDCClientSecret}
+                placeholder='敏感信息不会发送到前端显示'
+            />
+            <Form.Input
+                label='Well-Known URL'
+                name='OIDCWellKnown'
+                onChange={handleInputChange}
+                value={inputs.OIDCWellKnown}
+                placeholder='请输入 OIDC 的 Well-Known URL'
+            />
+            <Form.Input
+                label='Authorization Endpoint'
+                name='OIDCAuthorizationEndpoint'
+                onChange={handleInputChange}
+                value={inputs.OIDCAuthorizationEndpoint}
+                placeholder='输入 OIDC 的 Authorization Endpoint'
+            />
+            <Form.Input
+                label='Token Endpoint'
+                name='OIDCTokenEndpoint'
+                onChange={handleInputChange}
+                value={inputs.OIDCTokenEndpoint}
+                placeholder='输入 OIDC 的 Token Endpoint'
+            />
+            <Form.Input
+                label='Userinfo Endpoint'
+                name='OIDCUserInfoEndpoint'
+                onChange={handleInputChange}
+                value={inputs.OIDCUserInfoEndpoint}
+                placeholder='输入 OIDC 的 Userinfo Endpoint'
+            />
+          </Form.Group>
+          <Form.Button onClick={submitOIDCSettings}>
+            保存 OIDC 设置
           </Form.Button>
         </Form>
       </Grid.Column>
