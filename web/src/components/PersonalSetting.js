@@ -69,7 +69,11 @@ const PersonalSetting = () => {
     const [models, setModels] = useState([]);
     const [openTransfer, setOpenTransfer] = useState(false);
     const [transferAmount, setTransferAmount] = useState(0);
-    const [isModelsExpanded, setIsModelsExpanded] = useState(false);
+    const [isModelsExpanded, setIsModelsExpanded] = useState(() => {
+        // Initialize from localStorage if available
+        const savedState = localStorage.getItem('modelsExpanded');
+        return savedState ? JSON.parse(savedState) : false;
+    });
     const MODELS_DISPLAY_COUNT = 10;  // 默认显示的模型数量
     const [notificationSettings, setNotificationSettings] = useState({
         warningType: 'email',
@@ -123,6 +127,11 @@ const PersonalSetting = () => {
             });
         }
     }, [userState?.user?.setting]);
+
+    // Save models expanded state to localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('modelsExpanded', JSON.stringify(isModelsExpanded));
+    }, [isModelsExpanded]);
 
     const handleInputChange = (name, value) => {
         setInputs((inputs) => ({...inputs, [name]: value}));
