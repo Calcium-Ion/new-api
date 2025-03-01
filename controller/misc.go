@@ -67,6 +67,7 @@ func GetStatus(c *gin.Context) {
 			"mj_notify_enabled":        setting.MjNotifyEnabled,
 			"chats":                    setting.Chats,
 			"demo_site_enabled":        setting.DemoSiteEnabled,
+			"self_use_mode_enabled":    setting.SelfUseModeEnabled,
 		},
 	})
 	return

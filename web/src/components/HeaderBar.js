@@ -21,15 +21,17 @@ import {
   IconUser,
   IconLanguage
 } from '@douyinfe/semi-icons';
-import { Avatar, Button, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
+import { Avatar, Button, Dropdown, Layout, Nav, Switch, Tag } from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import { StyleContext } from '../context/Style/index.js';
+import { StatusContext } from '../context/Status/index.js';
 
 const HeaderBar = () => {
   const { t, i18n } = useTranslation();
   const [userState, userDispatch] = useContext(UserContext);
   const [styleState, styleDispatch] = useContext(StyleContext);
+  const [statusState, statusDispatch] = useContext(StatusContext);
   let navigate = useNavigate();
   const [currentLang, setCurrentLang] = useState(i18n.language);
 
@@ -39,6 +41,10 @@ const HeaderBar = () => {
   // enable fireworks on new year(1.1 and 2.9-2.24)
   const isNewYear =
     (currentDate.getMonth() === 0 && currentDate.getDate() === 1);
+
+  // Check if self-use mode is enabled
+  const isSelfUseMode = statusState?.status?.self_use_mode_enabled || false;
+  const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
 
   let buttons = [
     {
@@ -166,7 +172,7 @@ const HeaderBar = () => {
             onSelect={(key) => {}}
             header={styleState.isMobile?{
               logo: (
-                <>
+                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
                   {
                     !styleState.showSider ?
                       <Button icon={<IconMenu />} theme="light" aria-label={t('展开侧边栏')} onClick={
@@ -176,13 +182,52 @@ const HeaderBar = () => {
                         () => styleDispatch({ type: 'SET_SIDER', payload: false })
                       } />
                   }
-                </>
+                  {(isSelfUseMode || isDemoSiteMode) && (
+                    <Tag 
+                      color={isSelfUseMode ? 'purple' : 'blue'}
+                      style={{ 
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-15px',
+                        fontSize: '0.7rem',
+                        padding: '0 4px',
+                        height: 'auto',
+                        lineHeight: '1.2',
+                        zIndex: 1,
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      {isSelfUseMode ? t('自用模式') : t('演示站点')}
+                    </Tag>
+                  )}
+                </div>
               ),
             }:{
               logo: (
                 <img src={logo} alt='logo' />
               ),
-              text: systemName,
+              text: (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  {systemName}
+                  {(isSelfUseMode || isDemoSiteMode) && (
+                    <Tag 
+                      color={isSelfUseMode ? 'purple' : 'blue'}
+                      style={{ 
+                        position: 'absolute', 
+                        top: '-10px', 
+                        right: '-25px', 
+                        fontSize: '0.7rem',
+                        padding: '0 4px',
+                        whiteSpace: 'nowrap',
+                        zIndex: 1,
+                        boxShadow: '0 0 3px rgba(255, 255, 255, 0.7)'
+                      }}
+                    >
+                      {isSelfUseMode ? t('自用模式') : t('演示站点')}
+                    </Tag>
+                  )}
+                </div>
+              ),
             }}
             items={buttons}
             footer={
@@ -266,7 +311,8 @@ const HeaderBar = () => {
                       icon={<IconUser />}
                     />
                     {
-                      !styleState.isMobile && (
+                      // Hide register option in self-use mode
+                      !styleState.isMobile && !isSelfUseMode && (
                         <Nav.Item
                           itemKey={'register'}
                           text={t('注册')}
