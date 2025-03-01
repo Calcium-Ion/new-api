@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Banner, Button, Col, Form, Row } from '@douyinfe/semi-ui';
-import { API, showError, showSuccess } from '../helpers';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Banner, Button, Col, Form, Row, Modal, Space } from '@douyinfe/semi-ui';
+import { API, showError, showSuccess, timestamp2string } from '../helpers';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
+import { StatusContext } from '../context/Status/index.js';
+import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 
 const OtherSetting = () => {
   const { t } = useTranslation();
@@ -16,6 +18,7 @@ const OtherSetting = () => {
   });
   let [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [statusState, statusDispatch] = useContext(StatusContext);
   const [updateData, setUpdateData] = useState({
     tag_name: '',
     content: '',
@@ -43,6 +46,7 @@ const OtherSetting = () => {
     HomePageContent: false,
     About: false,
     Footer: false,
+    CheckUpdate: false
   });
   const handleInputChange = async (value, e) => {
     const name = e.target.id;
@@ -145,23 +149,48 @@ const OtherSetting = () => {
     }
   };
 
-  const openGitHubRelease = () => {
-    window.location = 'https://github.com/songquanpeng/one-api/releases/latest';
-  };
-
   const checkUpdate = async () => {
-    const res = await API.get(
-      'https://api.github.com/repos/songquanpeng/one-api/releases/latest',
-    );
-    const { tag_name, body } = res.data;
-    if (tag_name === process.env.REACT_APP_VERSION) {
-      showSuccess(`已是最新版本：${tag_name}`);
-    } else {
-      setUpdateData({
-        tag_name: tag_name,
-        content: marked.parse(body),
-      });
-      setShowUpdateModal(true);
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, CheckUpdate: true }));
+      // Use a CORS proxy to avoid direct cross-origin requests to GitHub API
+      // Option 1: Use a public CORS proxy service
+      // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      // const res = await API.get(
+      //   `${proxyUrl}https://api.github.com/repos/Calcium-Ion/new-api/releases/latest`,
+      // );
+      
+      // Option 2: Use the JSON proxy approach which often works better with GitHub API
+      const res = await fetch(
+        'https://api.github.com/repos/Calcium-Ion/new-api/releases/latest',
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            // Adding User-Agent which is often required by GitHub API
+            'User-Agent': 'new-api-update-checker'
+          }
+        }
+      ).then(response => response.json());
+      
+      // Option 3: Use a local proxy endpoint
+      // Create a cached version of the response to avoid frequent GitHub API calls
+      // const res = await API.get('/api/status/github-latest-release');
+
+      const { tag_name, body } = res;
+      if (tag_name === statusState?.status?.version) {
+        showSuccess(`已是最新版本：${tag_name}`);
+      } else {
+        setUpdateData({
+          tag_name: tag_name,
+          content: marked.parse(body),
+        });
+        setShowUpdateModal(true);
+      }
+    } catch (error) {
+      console.error('Failed to check for updates:', error);
+      showError('检查更新失败，请稍后再试');
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, CheckUpdate: false }));
     }
   };
   const getOptions = async () => {
@@ -186,9 +215,41 @@ const OtherSetting = () => {
     getOptions();
   }, []);
 
+  // Function to open GitHub release page
+  const openGitHubRelease = () => {
+    window.open(`https://github.com/Calcium-Ion/new-api/releases/tag/${updateData.tag_name}`, '_blank');
+  };
+
+  const getStartTimeString = () => {
+    const timestamp = statusState?.status?.start_time;
+    return statusState.status ? timestamp2string(timestamp) : '';
+  };
+
   return (
     <Row>
       <Col span={24}>
+        {/* 版本信息 */}
+        <Form style={{ marginBottom: 15 }}>
+          <Form.Section text={t('系统信息')}>
+            <Row>
+              <Col span={16}>
+                <Space>
+                  <Text>
+                    {t('当前版本')}：{statusState?.status?.version || t('未知')}
+                  </Text>
+                  <Button type="primary" onClick={checkUpdate} loading={loadingInput['CheckUpdate']}>
+                    {t('检查更新')}
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={16}>
+                <Text>{t('启动时间')}：{getStartTimeString()}</Text>
+              </Col>
+            </Row>
+          </Form.Section>
+        </Form>
         {/* 通用设置 */}
         <Form
           values={inputs}
@@ -282,28 +343,25 @@ const OtherSetting = () => {
           </Form.Section>
         </Form>
       </Col>
-      {/*<Modal*/}
-      {/*  onClose={() => setShowUpdateModal(false)}*/}
-      {/*  onOpen={() => setShowUpdateModal(true)}*/}
-      {/*  open={showUpdateModal}*/}
-      {/*>*/}
-      {/*  <Modal.Header>新版本：{updateData.tag_name}</Modal.Header>*/}
-      {/*  <Modal.Content>*/}
-      {/*    <Modal.Description>*/}
-      {/*      <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>*/}
-      {/*    </Modal.Description>*/}
-      {/*  </Modal.Content>*/}
-      {/*  <Modal.Actions>*/}
-      {/*    <Button onClick={() => setShowUpdateModal(false)}>关闭</Button>*/}
-      {/*    <Button*/}
-      {/*      content='详情'*/}
-      {/*      onClick={() => {*/}
-      {/*        setShowUpdateModal(false);*/}
-      {/*        openGitHubRelease();*/}
-      {/*      }}*/}
-      {/*    />*/}
-      {/*  </Modal.Actions>*/}
-      {/*</Modal>*/}
+      <Modal
+        title={t('新版本') + '：' + updateData.tag_name}
+        visible={showUpdateModal}
+        onCancel={() => setShowUpdateModal(false)}
+        footer={[
+          <Button 
+            key="details" 
+            type="primary" 
+            onClick={() => {
+              setShowUpdateModal(false);
+              openGitHubRelease();
+            }}
+          >
+            {t('详情')}
+          </Button>
+        ]}
+      >
+        <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>
+      </Modal>
     </Row>
   );
 };
