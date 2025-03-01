@@ -1317,5 +1317,8 @@
   "当前设置类型: ": "Current setting type: ",
   "固定价格值": "Fixed Price Value",
   "未设置倍率模型": "Models without ratio settings",
-  "模型倍率和补全倍率同时设置": "Both model ratio and completion ratio are set"
+  "模型倍率和补全倍率同时设置": "Both model ratio and completion ratio are set",
+  "自用模式": "Self-use mode",
+  "开启后不限制：必须设置模型倍率": "After enabling, no limit: must set model ratio",
+  "演示站点模式": "Demo site mode"
 }
