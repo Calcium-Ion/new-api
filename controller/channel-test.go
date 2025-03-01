@@ -18,6 +18,7 @@ import (
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
 	"one-api/service"
+	"one-api/setting"
 	"strconv"
 	"strings"
 	"sync"
@@ -145,12 +146,12 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	if err != nil {
 		return err, nil
 	}
-	modelPrice, usePrice := common.GetModelPrice(testModel, false)
-	modelRatio, success := common.GetModelRatio(testModel)
+	modelPrice, usePrice := setting.GetModelPrice(testModel, false)
+	modelRatio, success := setting.GetModelRatio(testModel)
 	if !usePrice && !success {
-		return fmt.Errorf("模型 %s 倍率和价格均未设置", testModel), nil
+		return fmt.Errorf("模型 %s 倍率和价格均未设置，请设置或者开启自用模式", testModel), nil
 	}
-	completionRatio := common.GetCompletionRatio(testModel)
+	completionRatio := setting.GetCompletionRatio(testModel)
 	ratio := modelRatio
 	quota := 0
 	if !usePrice {

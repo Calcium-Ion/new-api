@@ -38,9 +38,9 @@ func calculateAudioQuota(info QuotaInfo) int {
 		return int(info.ModelPrice * common.QuotaPerUnit * info.GroupRatio)
 	}
 
-	completionRatio := common.GetCompletionRatio(info.ModelName)
-	audioRatio := common.GetAudioRatio(info.ModelName)
-	audioCompletionRatio := common.GetAudioCompletionRatio(info.ModelName)
+	completionRatio := setting.GetCompletionRatio(info.ModelName)
+	audioRatio := setting.GetAudioRatio(info.ModelName)
+	audioCompletionRatio := setting.GetAudioCompletionRatio(info.ModelName)
 	ratio := info.GroupRatio * info.ModelRatio
 
 	quota := info.InputDetails.TextTokens + int(math.Round(float64(info.OutputDetails.TextTokens)*completionRatio))
@@ -75,7 +75,7 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 	audioInputTokens := usage.InputTokenDetails.AudioTokens
 	audioOutTokens := usage.OutputTokenDetails.AudioTokens
 	groupRatio := setting.GetGroupRatio(relayInfo.Group)
-	modelRatio, _ := common.GetModelRatio(modelName)
+	modelRatio, _ := setting.GetModelRatio(modelName)
 
 	quotaInfo := QuotaInfo{
 		InputDetails: TokenDetails{
@@ -122,9 +122,9 @@ func PostWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, mod
 	audioOutTokens := usage.OutputTokenDetails.AudioTokens
 
 	tokenName := ctx.GetString("token_name")
-	completionRatio := common.GetCompletionRatio(modelName)
-	audioRatio := common.GetAudioRatio(relayInfo.OriginModelName)
-	audioCompletionRatio := common.GetAudioCompletionRatio(modelName)
+	completionRatio := setting.GetCompletionRatio(modelName)
+	audioRatio := setting.GetAudioRatio(relayInfo.OriginModelName)
+	audioCompletionRatio := setting.GetAudioCompletionRatio(modelName)
 
 	quotaInfo := QuotaInfo{
 		InputDetails: TokenDetails{
@@ -184,9 +184,9 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	audioOutTokens := usage.CompletionTokenDetails.AudioTokens
 
 	tokenName := ctx.GetString("token_name")
-	completionRatio := common.GetCompletionRatio(relayInfo.OriginModelName)
-	audioRatio := common.GetAudioRatio(relayInfo.OriginModelName)
-	audioCompletionRatio := common.GetAudioCompletionRatio(relayInfo.OriginModelName)
+	completionRatio := setting.GetCompletionRatio(relayInfo.OriginModelName)
+	audioRatio := setting.GetAudioRatio(relayInfo.OriginModelName)
+	audioCompletionRatio := setting.GetAudioCompletionRatio(relayInfo.OriginModelName)
 
 	modelRatio := priceData.ModelRatio
 	groupRatio := priceData.GroupRatio

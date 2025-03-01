@@ -157,10 +157,10 @@ func RelaySwapFace(c *gin.Context) *dto.MidjourneyResponse {
 		return service.MidjourneyErrorWrapper(constant.MjRequestError, "sour_base64_and_target_base64_is_required")
 	}
 	modelName := service.CoverActionToModelName(constant.MjActionSwapFace)
-	modelPrice, success := common.GetModelPrice(modelName, true)
+	modelPrice, success := setting.GetModelPrice(modelName, true)
 	// 如果没有配置价格，则使用默认价格
 	if !success {
-		defaultPrice, ok := common.GetDefaultModelRatioMap()[modelName]
+		defaultPrice, ok := setting.GetDefaultModelRatioMap()[modelName]
 		if !ok {
 			modelPrice = 0.1
 		} else {
@@ -463,10 +463,10 @@ func RelayMidjourneySubmit(c *gin.Context, relayMode int) *dto.MidjourneyRespons
 	fullRequestURL := fmt.Sprintf("%s%s", baseURL, requestURL)
 
 	modelName := service.CoverActionToModelName(midjRequest.Action)
-	modelPrice, success := common.GetModelPrice(modelName, true)
+	modelPrice, success := setting.GetModelPrice(modelName, true)
 	// 如果没有配置价格，则使用默认价格
 	if !success {
-		defaultPrice, ok := common.GetDefaultModelRatioMap()[modelName]
+		defaultPrice, ok := setting.GetDefaultModelRatioMap()[modelName]
 		if !ok {
 			modelPrice = 0.1
 		} else {

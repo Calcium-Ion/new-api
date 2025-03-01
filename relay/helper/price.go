@@ -17,7 +17,7 @@ type PriceData struct {
 }
 
 func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens int, maxTokens int) (PriceData, error) {
-	modelPrice, usePrice := common.GetModelPrice(info.OriginModelName, false)
+	modelPrice, usePrice := setting.GetModelPrice(info.OriginModelName, false)
 	groupRatio := setting.GetGroupRatio(info.Group)
 	var preConsumedQuota int
 	var modelRatio float64
@@ -27,9 +27,13 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 			preConsumedTokens = promptTokens + maxTokens
 		}
 		var success bool
-		modelRatio, success = common.GetModelRatio(info.OriginModelName)
+		modelRatio, success = setting.GetModelRatio(info.OriginModelName)
 		if !success {
-			return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置, 请联系管理员设置；Model %s ratio or price not set, please contact administrator to set", info.OriginModelName, info.OriginModelName)
+			if info.UserId == 1 {
+				return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置，请设置或开始自用模式；Model %s ratio or price not set, please set or start self-use mode", info.OriginModelName, info.OriginModelName)
+			} else {
+				return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置, 请联系管理员设置；Model %s ratio or price not set, please contact administrator to set", info.OriginModelName, info.OriginModelName)
+			}
 		}
 		ratio := modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)

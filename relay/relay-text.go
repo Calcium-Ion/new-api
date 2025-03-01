@@ -311,7 +311,7 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	modelName := relayInfo.OriginModelName
 
 	tokenName := ctx.GetString("token_name")
-	completionRatio := common.GetCompletionRatio(modelName)
+	completionRatio := setting.GetCompletionRatio(modelName)
 	ratio := priceData.ModelRatio * priceData.GroupRatio
 	modelRatio := priceData.ModelRatio
 	groupRatio := priceData.GroupRatio

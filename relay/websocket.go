@@ -39,7 +39,7 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 		}
 	}
 	//relayInfo.UpstreamModelName = textRequest.Model
-	modelPrice, getModelPriceSuccess := common.GetModelPrice(relayInfo.UpstreamModelName, false)
+	modelPrice, getModelPriceSuccess := setting.GetModelPrice(relayInfo.UpstreamModelName, false)
 	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 
 	var preConsumedQuota int
@@ -65,7 +65,7 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 		//if realtimeEvent.Session.MaxResponseOutputTokens != 0 {
 		//	preConsumedTokens = promptTokens + int(realtimeEvent.Session.MaxResponseOutputTokens)
 		//}
-		modelRatio, _ = common.GetModelRatio(relayInfo.UpstreamModelName)
+		modelRatio, _ = setting.GetModelRatio(relayInfo.UpstreamModelName)
 		ratio = modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
 	} else {
