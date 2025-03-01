@@ -147,8 +147,8 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	}
 	modelPrice, usePrice := common.GetModelPrice(testModel, false)
 	modelRatio, success := common.GetModelRatio(testModel)
-	if !success {
-		return fmt.Errorf("模型 %s 倍率未设置", testModel), nil
+	if !usePrice && !success {
+		return fmt.Errorf("模型 %s 倍率和价格均未设置", testModel), nil
 	}
 	completionRatio := common.GetCompletionRatio(testModel)
 	ratio := modelRatio
