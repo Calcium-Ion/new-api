@@ -77,7 +77,7 @@
 
 ## 模型支持
 此版本额外支持以下模型：
-1. 第三方模型 **gps** （gpt-4-gizmo-*）
+1. 第三方模型 **gpts** （gpt-4-gizmo-*）
 2. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
 3. 自定义渠道，支持填入完整调用地址
 4. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
