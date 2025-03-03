@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"io"
 	"net/http"
 	"one-api/dto"
@@ -127,12 +126,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		if err != nil {
 			return nil, err
 		}
-		vertexClaudeReq := &VertexAIClaudeRequest{
-			AnthropicVersion: anthropicVersion,
-		}
-		if err = copier.Copy(vertexClaudeReq, claudeReq); err != nil {
-			return nil, errors.New("failed to copy claude request")
-		}
+		vertexClaudeReq := copyRequest(claudeReq, anthropicVersion)
 		c.Set("request_model", claudeReq.Model)
 		return vertexClaudeReq, nil
 	} else if a.RequestMode == RequestModeGemini {

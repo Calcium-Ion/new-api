@@ -14,7 +14,7 @@ type AwsClaudeRequest struct {
 	TopP             float64                `json:"top_p,omitempty"`
 	TopK             int                    `json:"top_k,omitempty"`
 	StopSequences    []string               `json:"stop_sequences,omitempty"`
-	Tools            []claude.Tool          `json:"tools,omitempty"`
+	Tools            any                    `json:"tools,omitempty"`
 	ToolChoice       any                    `json:"tool_choice,omitempty"`
 	Thinking         *claude.Thinking       `json:"thinking,omitempty"`
 }

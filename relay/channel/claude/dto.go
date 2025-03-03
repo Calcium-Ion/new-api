@@ -58,7 +58,7 @@ type ClaudeRequest struct {
 	TopK              int             `json:"top_k,omitempty"`
 	//ClaudeMetadata    `json:"metadata,omitempty"`
 	Stream     bool      `json:"stream,omitempty"`
-	Tools      []Tool    `json:"tools,omitempty"`
+	Tools      any       `json:"tools,omitempty"`
 	ToolChoice any       `json:"tool_choice,omitempty"`
 	Thinking   *Thinking `json:"thinking,omitempty"`
 }

@@ -1,17 +1,37 @@
 package vertex
 
-import "one-api/relay/channel/claude"
+import (
+	"one-api/relay/channel/claude"
+)
 
 type VertexAIClaudeRequest struct {
 	AnthropicVersion string                 `json:"anthropic_version"`
 	Messages         []claude.ClaudeMessage `json:"messages"`
-	System           string                 `json:"system,omitempty"`
-	MaxTokens        int                    `json:"max_tokens,omitempty"`
+	System           any                    `json:"system,omitempty"`
+	MaxTokens        uint                   `json:"max_tokens,omitempty"`
 	StopSequences    []string               `json:"stop_sequences,omitempty"`
 	Stream           bool                   `json:"stream,omitempty"`
 	Temperature      *float64               `json:"temperature,omitempty"`
 	TopP             float64                `json:"top_p,omitempty"`
 	TopK             int                    `json:"top_k,omitempty"`
-	Tools            []claude.Tool          `json:"tools,omitempty"`
+	Tools            any                    `json:"tools,omitempty"`
 	ToolChoice       any                    `json:"tool_choice,omitempty"`
+	Thinking         *claude.Thinking       `json:"thinking,omitempty"`
+}
+
+func copyRequest(req *claude.ClaudeRequest, version string) *VertexAIClaudeRequest {
+	return &VertexAIClaudeRequest{
+		AnthropicVersion: version,
+		System:           req.System,
+		Messages:         req.Messages,
+		MaxTokens:        req.MaxTokens,
+		Stream:           req.Stream,
+		Temperature:      req.Temperature,
+		TopP:             req.TopP,
+		TopK:             req.TopK,
+		StopSequences:    req.StopSequences,
+		Tools:            req.Tools,
+		ToolChoice:       req.ToolChoice,
+		Thinking:         req.Thinking,
+	}
 }
