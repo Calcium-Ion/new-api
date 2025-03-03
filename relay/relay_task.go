@@ -37,9 +37,9 @@ func RelayTaskSubmit(c *gin.Context, relayMode int) (taskErr *dto.TaskError) {
 	}
 
 	modelName := service.CoverTaskActionToModelName(platform, relayInfo.Action)
-	modelPrice, success := common.GetModelPrice(modelName, true)
+	modelPrice, success := setting.GetModelPrice(modelName, true)
 	if !success {
-		defaultPrice, ok := common.GetDefaultModelRatioMap()[modelName]
+		defaultPrice, ok := setting.GetDefaultModelRatioMap()[modelName]
 		if !ok {
 			modelPrice = 0.1
 		} else {

@@ -51,7 +51,7 @@ func checkRedisRateLimit(ctx context.Context, rdb *redis.Client, key string, max
 	// 如果在时间窗口内已达到限制，拒绝请求
 	subTime := nowTime.Sub(oldTime).Seconds()
 	if int64(subTime) < duration {
-		rdb.Expire(ctx, key, common.RateLimitKeyExpirationDuration)
+		rdb.Expire(ctx, key, time.Duration(setting.ModelRequestRateLimitDurationMinutes)*time.Minute)
 		return false, nil
 	}
 
@@ -68,7 +68,7 @@ func recordRedisRequest(ctx context.Context, rdb *redis.Client, key string, maxC
 	now := time.Now().Format(timeFormat)
 	rdb.LPush(ctx, key, now)
 	rdb.LTrim(ctx, key, 0, int64(maxCount-1))
-	rdb.Expire(ctx, key, common.RateLimitKeyExpirationDuration)
+	rdb.Expire(ctx, key, time.Duration(setting.ModelRequestRateLimitDurationMinutes)*time.Minute)
 }
 
 // Redis限流处理器
@@ -118,7 +118,7 @@ func redisRateLimitHandler(duration int64, totalMaxCount, successMaxCount int) g
 
 // 内存限流处理器
 func memoryRateLimitHandler(duration int64, totalMaxCount, successMaxCount int) gin.HandlerFunc {
-	inMemoryRateLimiter.Init(common.RateLimitKeyExpirationDuration)
+	inMemoryRateLimiter.Init(time.Duration(setting.ModelRequestRateLimitDurationMinutes) * time.Minute)
 
 	return func(c *gin.Context) {
 		userId := strconv.Itoa(c.GetInt("id"))
@@ -161,6 +161,7 @@ func ModelRequestRateLimit() func(c *gin.Context) {
 	// 计算限流参数
 	duration := int64(setting.ModelRequestRateLimitDurationMinutes * 60)
 	totalMaxCount := setting.ModelRequestRateLimitCount
+
 	successMaxCount := setting.ModelRequestRateLimitSuccessCount
 
 	// 根据存储类型选择限流处理器

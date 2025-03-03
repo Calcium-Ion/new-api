@@ -17,6 +17,7 @@ import (
 	"one-api/relay"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
+	"one-api/relay/helper"
 	"one-api/service"
 	"strconv"
 	"strings"
@@ -72,18 +73,6 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 		}
 	}
 
-	modelMapping := *channel.ModelMapping
-	if modelMapping != "" && modelMapping != "{}" {
-		modelMap := make(map[string]string)
-		err := json.Unmarshal([]byte(modelMapping), &modelMap)
-		if err != nil {
-			return err, service.OpenAIErrorWrapperLocal(err, "unmarshal_model_mapping_failed", http.StatusInternalServerError)
-		}
-		if modelMap[testModel] != "" {
-			testModel = modelMap[testModel]
-		}
-	}
-
 	cache, err := model.GetUserCache(1)
 	if err != nil {
 		return err, nil
@@ -97,7 +86,14 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 
 	middleware.SetupContextForSelectedChannel(c, channel, testModel)
 
-	meta := relaycommon.GenRelayInfo(c)
+	info := relaycommon.GenRelayInfo(c)
+
+	err = helper.ModelMappedHelper(c, info)
+	if err != nil {
+		return err, nil
+	}
+	testModel = info.UpstreamModelName
+
 	apiType, _ := constant.ChannelType2APIType(channel.Type)
 	adaptor := relay.GetAdaptor(apiType)
 	if adaptor == nil {
@@ -105,12 +101,12 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	}
 
 	request := buildTestRequest(testModel)
-	meta.UpstreamModelName = testModel
-	common.SysLog(fmt.Sprintf("testing channel %d with model %s , meta %v ", channel.Id, testModel, meta))
+	info.OriginModelName = testModel
+	common.SysLog(fmt.Sprintf("testing channel %d with model %s , info %v ", channel.Id, testModel, info))
 
-	adaptor.Init(meta)
+	adaptor.Init(info)
 
-	convertedRequest, err := adaptor.ConvertRequest(c, meta, request)
+	convertedRequest, err := adaptor.ConvertRequest(c, info, request)
 	if err != nil {
 		return err, nil
 	}
@@ -120,7 +116,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	}
 	requestBody := bytes.NewBuffer(jsonData)
 	c.Request.Body = io.NopCloser(requestBody)
-	resp, err := adaptor.DoRequest(c, meta, requestBody)
+	resp, err := adaptor.DoRequest(c, info, requestBody)
 	if err != nil {
 		return err, nil
 	}
@@ -132,7 +128,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 			return fmt.Errorf("status code %d: %s", httpResp.StatusCode, err.Error.Message), err
 		}
 	}
-	usageA, respErr := adaptor.DoResponse(c, httpResp, meta)
+	usageA, respErr := adaptor.DoResponse(c, httpResp, info)
 	if respErr != nil {
 		return fmt.Errorf("%s", respErr.Error.Message), respErr
 	}
@@ -145,29 +141,27 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	if err != nil {
 		return err, nil
 	}
-	modelPrice, usePrice := common.GetModelPrice(testModel, false)
-	modelRatio, success := common.GetModelRatio(testModel)
-	if !success {
-		return fmt.Errorf("模型 %s 倍率未设置", testModel), nil
+	info.PromptTokens = usage.PromptTokens
+	priceData, err := helper.ModelPriceHelper(c, info, usage.PromptTokens, int(request.MaxTokens))
+	if err != nil {
+		return err, nil
 	}
-	completionRatio := common.GetCompletionRatio(testModel)
-	ratio := modelRatio
 	quota := 0
-	if !usePrice {
-		quota = usage.PromptTokens + int(math.Round(float64(usage.CompletionTokens)*completionRatio))
-		quota = int(math.Round(float64(quota) * ratio))
-		if ratio != 0 && quota <= 0 {
+	if !priceData.UsePrice {
+		quota = usage.PromptTokens + int(math.Round(float64(usage.CompletionTokens)*priceData.CompletionRatio))
+		quota = int(math.Round(float64(quota) * priceData.ModelRatio))
+		if priceData.ModelRatio != 0 && quota <= 0 {
 			quota = 1
 		}
 	} else {
-		quota = int(modelPrice * common.QuotaPerUnit)
+		quota = int(priceData.ModelPrice * common.QuotaPerUnit)
 	}
 	tok := time.Now()
 	milliseconds := tok.Sub(tik).Milliseconds()
 	consumedTime := float64(milliseconds) / 1000.0
-	other := service.GenerateTextOtherInfo(c, meta, modelRatio, 1, completionRatio, modelPrice)
+	other := service.GenerateTextOtherInfo(c, info, priceData.ModelRatio, priceData.GroupRatio, priceData.CompletionRatio, priceData.ModelPrice)
 	model.RecordConsumeLog(c, 1, channel.Id, usage.PromptTokens, usage.CompletionTokens, testModel, "模型测试",
-		quota, "模型测试", 0, quota, int(consumedTime), false, "default", other)
+		quota, "模型测试", 0, quota, int(consumedTime), false, info.Group, other)
 	common.SysLog(fmt.Sprintf("testing channel #%d, response: \n%s", channel.Id, string(respBody)))
 	return nil, nil
 }

@@ -1,7 +1,8 @@
-package common
+package setting
 
 import (
 	"encoding/json"
+	"one-api/common"
 	"strings"
 	"sync"
 )
@@ -261,7 +262,7 @@ func ModelPrice2JSONString() string {
 	GetModelPriceMap()
 	jsonBytes, err := json.Marshal(modelPriceMap)
 	if err != nil {
-		SysError("error marshalling model price: " + err.Error())
+		common.SysError("error marshalling model price: " + err.Error())
 	}
 	return string(jsonBytes)
 }
@@ -285,7 +286,7 @@ func GetModelPrice(name string, printErr bool) (float64, bool) {
 	price, ok := modelPriceMap[name]
 	if !ok {
 		if printErr {
-			SysError("model price not found: " + name)
+			common.SysError("model price not found: " + name)
 		}
 		return -1, false
 	}
@@ -305,7 +306,7 @@ func ModelRatio2JSONString() string {
 	GetModelRatioMap()
 	jsonBytes, err := json.Marshal(modelRatioMap)
 	if err != nil {
-		SysError("error marshalling model ratio: " + err.Error())
+		common.SysError("error marshalling model ratio: " + err.Error())
 	}
 	return string(jsonBytes)
 }
@@ -324,8 +325,8 @@ func GetModelRatio(name string) (float64, bool) {
 	}
 	ratio, ok := modelRatioMap[name]
 	if !ok {
-		SysError("model ratio not found: " + name)
-		return 37.5, false
+		common.SysError("model ratio not found: " + name)
+		return 37.5, SelfUseModeEnabled
 	}
 	return ratio, true
 }
@@ -333,7 +334,7 @@ func GetModelRatio(name string) (float64, bool) {
 func DefaultModelRatio2JSONString() string {
 	jsonBytes, err := json.Marshal(defaultModelRatio)
 	if err != nil {
-		SysError("error marshalling model ratio: " + err.Error())
+		common.SysError("error marshalling model ratio: " + err.Error())
 	}
 	return string(jsonBytes)
 }
@@ -355,7 +356,7 @@ func CompletionRatio2JSONString() string {
 	GetCompletionRatioMap()
 	jsonBytes, err := json.Marshal(CompletionRatio)
 	if err != nil {
-		SysError("error marshalling completion ratio: " + err.Error())
+		common.SysError("error marshalling completion ratio: " + err.Error())
 	}
 	return string(jsonBytes)
 }

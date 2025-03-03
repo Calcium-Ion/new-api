@@ -2,6 +2,7 @@ package model
 
 import (
 	"one-api/common"
+	"one-api/setting"
 	"sync"
 	"time"
 )
@@ -64,14 +65,14 @@ func updatePricing() {
 			ModelName:   model,
 			EnableGroup: groups,
 		}
-		modelPrice, findPrice := common.GetModelPrice(model, false)
+		modelPrice, findPrice := setting.GetModelPrice(model, false)
 		if findPrice {
 			pricing.ModelPrice = modelPrice
 			pricing.QuotaType = 1
 		} else {
-			modelRatio, _ := common.GetModelRatio(model)
+			modelRatio, _ := setting.GetModelRatio(model)
 			pricing.ModelRatio = modelRatio
-			pricing.CompletionRatio = common.GetCompletionRatio(model)
+			pricing.CompletionRatio = setting.GetCompletionRatio(model)
 			pricing.QuotaType = 0
 		}
 		pricingMap = append(pricingMap, pricing)

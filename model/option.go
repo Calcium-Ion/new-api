@@ -87,15 +87,15 @@ func InitOptionMap() {
 	common.OptionMap["QuotaForInviter"] = strconv.Itoa(common.QuotaForInviter)
 	common.OptionMap["QuotaForInvitee"] = strconv.Itoa(common.QuotaForInvitee)
 	common.OptionMap["QuotaRemindThreshold"] = strconv.Itoa(common.QuotaRemindThreshold)
-	common.OptionMap["ShouldPreConsumedQuota"] = strconv.Itoa(common.PreConsumedQuota)
+	common.OptionMap["PreConsumedQuota"] = strconv.Itoa(common.PreConsumedQuota)
 	common.OptionMap["ModelRequestRateLimitCount"] = strconv.Itoa(setting.ModelRequestRateLimitCount)
 	common.OptionMap["ModelRequestRateLimitDurationMinutes"] = strconv.Itoa(setting.ModelRequestRateLimitDurationMinutes)
 	common.OptionMap["ModelRequestRateLimitSuccessCount"] = strconv.Itoa(setting.ModelRequestRateLimitSuccessCount)
-	common.OptionMap["ModelRatio"] = common.ModelRatio2JSONString()
-	common.OptionMap["ModelPrice"] = common.ModelPrice2JSONString()
+	common.OptionMap["ModelRatio"] = setting.ModelRatio2JSONString()
+	common.OptionMap["ModelPrice"] = setting.ModelPrice2JSONString()
 	common.OptionMap["GroupRatio"] = setting.GroupRatio2JSONString()
 	common.OptionMap["UserUsableGroups"] = setting.UserUsableGroups2JSONString()
-	common.OptionMap["CompletionRatio"] = common.CompletionRatio2JSONString()
+	common.OptionMap["CompletionRatio"] = setting.CompletionRatio2JSONString()
 	common.OptionMap["TopUpLink"] = common.TopUpLink
 	common.OptionMap["ChatLink"] = common.ChatLink
 	common.OptionMap["ChatLink2"] = common.ChatLink2
@@ -111,6 +111,7 @@ func InitOptionMap() {
 	common.OptionMap["MjActionCheckSuccessEnabled"] = strconv.FormatBool(setting.MjActionCheckSuccessEnabled)
 	common.OptionMap["CheckSensitiveEnabled"] = strconv.FormatBool(setting.CheckSensitiveEnabled)
 	common.OptionMap["DemoSiteEnabled"] = strconv.FormatBool(setting.DemoSiteEnabled)
+	common.OptionMap["SelfUseModeEnabled"] = strconv.FormatBool(setting.SelfUseModeEnabled)
 	common.OptionMap["ModelRequestRateLimitEnabled"] = strconv.FormatBool(setting.ModelRequestRateLimitEnabled)
 	common.OptionMap["CheckSensitiveOnPromptEnabled"] = strconv.FormatBool(setting.CheckSensitiveOnPromptEnabled)
 	common.OptionMap["StopOnSensitiveEnabled"] = strconv.FormatBool(setting.StopOnSensitiveEnabled)
@@ -243,6 +244,8 @@ func updateOptionMap(key string, value string) (err error) {
 			setting.CheckSensitiveEnabled = boolValue
 		case "DemoSiteEnabled":
 			setting.DemoSiteEnabled = boolValue
+		case "SelfUseModeEnabled":
+			setting.SelfUseModeEnabled = boolValue
 		case "CheckSensitiveOnPromptEnabled":
 			setting.CheckSensitiveOnPromptEnabled = boolValue
 		case "ModelRequestRateLimitEnabled":
@@ -325,7 +328,7 @@ func updateOptionMap(key string, value string) (err error) {
 		common.QuotaForInvitee, _ = strconv.Atoi(value)
 	case "QuotaRemindThreshold":
 		common.QuotaRemindThreshold, _ = strconv.Atoi(value)
-	case "ShouldPreConsumedQuota":
+	case "PreConsumedQuota":
 		common.PreConsumedQuota, _ = strconv.Atoi(value)
 	case "ModelRequestRateLimitCount":
 		setting.ModelRequestRateLimitCount, _ = strconv.Atoi(value)
@@ -340,15 +343,15 @@ func updateOptionMap(key string, value string) (err error) {
 	case "DataExportDefaultTime":
 		common.DataExportDefaultTime = value
 	case "ModelRatio":
-		err = common.UpdateModelRatioByJSONString(value)
+		err = setting.UpdateModelRatioByJSONString(value)
 	case "GroupRatio":
 		err = setting.UpdateGroupRatioByJSONString(value)
 	case "UserUsableGroups":
 		err = setting.UpdateUserUsableGroupsByJSONString(value)
 	case "CompletionRatio":
-		err = common.UpdateCompletionRatioByJSONString(value)
+		err = setting.UpdateCompletionRatioByJSONString(value)
 	case "ModelPrice":
-		err = common.UpdateModelPriceByJSONString(value)
+		err = setting.UpdateModelPriceByJSONString(value)
 	case "TopUpLink":
 		common.TopUpLink = value
 	case "ChatLink":

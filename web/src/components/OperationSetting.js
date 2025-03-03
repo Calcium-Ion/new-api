@@ -60,6 +60,7 @@ const OperationSetting = () => {
     RetryTimes: 0,
     Chats: "[]",
     DemoSiteEnabled: false,
+    SelfUseModeEnabled: false,
     AutomaticDisableKeywords: '',
   });
 

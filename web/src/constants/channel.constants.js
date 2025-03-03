@@ -82,7 +82,7 @@ export const CHANNEL_OPTIONS = [
   {
     value: 45,
     color: 'blue',
-    label: '火山方舟（豆包）'
+    label: '字节火山方舟、豆包、DeepSeek通用'
   },
   { value: 25, color: 'green', label: 'Moonshot' },
   { value: 19, color: 'blue', label: '360 智脑' },

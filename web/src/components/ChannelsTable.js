@@ -15,7 +15,7 @@ import {
   getQuotaPerUnit,
   renderGroup,
   renderNumberWithPoint,
-  renderQuota, renderQuotaWithPrompt
+  renderQuota, renderQuotaWithPrompt, stringToColor
 } from '../helpers/render';
 import {
   Button, Divider,
@@ -378,17 +378,15 @@ const ChannelsTable = () => {
                 >
                   {t('测试')}
                 </Button>
-                <Dropdown
-                  trigger="click"
-                  position="bottomRight"
-                  menu={modelMenuItems}  // 使用即时生成的菜单项
-                >
-                  <Button
-                    style={{ padding: '8px 4px' }}
-                    type="primary"
-                    icon={<IconTreeTriangleDown />}
-                  ></Button>
-                </Dropdown>
+                <Button
+                  style={{ padding: '8px 4px' }}
+                  type="primary"
+                  icon={<IconTreeTriangleDown />}
+                  onClick={() => {
+                    setCurrentTestChannel(record);
+                    setShowModelTestModal(true);
+                  }}
+                ></Button>
               </SplitButtonGroup>
               <Popconfirm
                 title={t('确定是否要删除此渠道？')}
@@ -522,6 +520,9 @@ const ChannelsTable = () => {
   const [enableTagMode, setEnableTagMode] = useState(false);
   const [showBatchSetTag, setShowBatchSetTag] = useState(false);
   const [batchSetTagValue, setBatchSetTagValue] = useState('');
+  const [showModelTestModal, setShowModelTestModal] = useState(false);
+  const [currentTestChannel, setCurrentTestChannel] = useState(null);
+  const [modelSearchKeyword, setModelSearchKeyword] = useState('');
 
 
   const removeRecord = (record) => {
@@ -1288,6 +1289,77 @@ const ChannelsTable = () => {
           value={batchSetTagValue}
           onChange={(v) => setBatchSetTagValue(v)}
         />
+      </Modal>
+      
+      {/* 模型测试弹窗 */}
+      <Modal
+        title={t('选择模型进行测试')}
+        visible={showModelTestModal && currentTestChannel !== null}
+        onCancel={() => {
+          setShowModelTestModal(false);
+          setModelSearchKeyword('');
+        }}
+        footer={null}
+        maskClosable={true}
+        centered={true}
+        width={600}
+      >
+        <div style={{ maxHeight: '500px', overflowY: 'auto', padding: '10px' }}>
+          {currentTestChannel && (
+            <div>
+              <Typography.Title heading={6} style={{ marginBottom: '16px' }}>
+                {t('渠道')}: {currentTestChannel.name}
+              </Typography.Title>
+              
+              {/* 搜索框 */}
+              <Input
+                placeholder={t('搜索模型...')}
+                value={modelSearchKeyword}
+                onChange={(value) => setModelSearchKeyword(value)}
+                style={{ marginBottom: '16px' }}
+                showClear
+              />
+              
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+                gap: '10px' 
+              }}>
+                {currentTestChannel.models.split(',')
+                  .filter(model => model.toLowerCase().includes(modelSearchKeyword.toLowerCase()))
+                  .map((model, index) => {
+
+                    return (
+                      <Button
+                        key={index}
+                        theme="light"
+                        type="tertiary"
+                        style={{ 
+                          height: 'auto',
+                          padding: '8px 12px',
+                          textAlign: 'center',
+                        }}
+                        onClick={() => {
+                          testChannel(currentTestChannel, model);
+                        }}
+                      >
+                        {model}
+                      </Button>
+                    );
+                  })}
+              </div>
+              
+              {/* 显示搜索结果数量 */}
+              {modelSearchKeyword && (
+                <Typography.Text type="secondary" style={{ marginTop: '16px', display: 'block' }}>
+                  {t('找到')} {currentTestChannel.models.split(',').filter(model => 
+                    model.toLowerCase().includes(modelSearchKeyword.toLowerCase())
+                  ).length} {t('个模型')}
+                </Typography.Text>
+              )}
+            </div>
+          )}
+        </div>
       </Modal>
     </>
   );
