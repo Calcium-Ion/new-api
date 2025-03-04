@@ -3,6 +3,7 @@ package setting
 import (
 	"encoding/json"
 	"one-api/common"
+	"one-api/setting/operation_setting"
 	"strings"
 	"sync"
 )
@@ -326,7 +327,7 @@ func GetModelRatio(name string) (float64, bool) {
 	ratio, ok := modelRatioMap[name]
 	if !ok {
 		common.SysError("model ratio not found: " + name)
-		return 37.5, SelfUseModeEnabled
+		return 37.5, operation_setting.SelfUseModeEnabled
 	}
 	return ratio, true
 }

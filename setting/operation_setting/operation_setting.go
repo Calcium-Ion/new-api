@@ -1,4 +1,4 @@
-package setting
+package operation_setting
 
 import "strings"
 

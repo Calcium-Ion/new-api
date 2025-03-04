@@ -7,6 +7,7 @@ import (
 	"one-api/common"
 	"one-api/model"
 	"one-api/setting"
+	"one-api/setting/operation_setting"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -66,8 +67,8 @@ func GetStatus(c *gin.Context) {
 			"enable_online_topup":      setting.PayAddress != "" && setting.EpayId != "" && setting.EpayKey != "",
 			"mj_notify_enabled":        setting.MjNotifyEnabled,
 			"chats":                    setting.Chats,
-			"demo_site_enabled":        setting.DemoSiteEnabled,
-			"self_use_mode_enabled":    setting.SelfUseModeEnabled,
+			"demo_site_enabled":        operation_setting.DemoSiteEnabled,
+			"self_use_mode_enabled":    operation_setting.SelfUseModeEnabled,
 		},
 	})
 	return

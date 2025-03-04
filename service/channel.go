@@ -6,7 +6,7 @@ import (
 	"one-api/common"
 	"one-api/dto"
 	"one-api/model"
-	"one-api/setting"
+	"one-api/setting/operation_setting"
 	"strings"
 )
 
@@ -67,7 +67,7 @@ func ShouldDisableChannel(channelType int, err *dto.OpenAIErrorWithStatusCode) b
 	}
 
 	lowerMessage := strings.ToLower(err.Error.Message)
-	search, _ := AcSearch(lowerMessage, setting.AutomaticDisableKeywords, true)
+	search, _ := AcSearch(lowerMessage, operation_setting.AutomaticDisableKeywords, true)
 	if search {
 		return true
 	}
