@@ -3,6 +3,7 @@ package openai
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -120,13 +121,16 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	ticker := time.NewTicker(streamingTimeout)
 	defer ticker.Stop()
 
-	stopChan := make(chan bool)
+	stopChan := make(chan bool, 2)
 	defer close(stopChan)
 	var (
 		lastStreamData string
 		mu             sync.Mutex
 	)
-	gopool.Go(func() {
+
+	ctx := context.WithValue(context.Background(), "stop_chan", stopChan)
+
+	common.CtxGo(ctx, func() {
 		for scanner.Scan() {
 			//info.SetFirstResponseTime()
 			ticker.Reset(time.Duration(constant.StreamingTimeout) * time.Second)
