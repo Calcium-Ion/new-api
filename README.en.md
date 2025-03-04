@@ -68,7 +68,7 @@
 
 ## Model Support
 This version additionally supports:
-1. Third-party model **gps** (gpt-4-gizmo-*)
+1. Third-party model **gpts** (gpt-4-gizmo-*)
 2. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy) interface, [Integration Guide](Midjourney.md)
 3. Custom channels with full API URL support
 4. [Suno API](https://github.com/Suno-API/Suno-API) interface, [Integration Guide](Suno.md)
