@@ -177,7 +177,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtow
 
 ## 渠道重试
 渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。  
-如果开启了重试功能，第一次重试使用同优先级，第二次重试使用下一个优先级，以此类推。
+如果开启了重试功能，重试使用下一个优先级，以此类推。
 ### 缓存设置方法
 1. `REDIS_CONN_STRING`：设置之后将使用 Redis 作为缓存使用。
     + 例子：`REDIS_CONN_STRING=redis://default:redispw@localhost:49153`

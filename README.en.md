@@ -162,7 +162,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtow
 
 ## Channel Retry
 Channel retry is implemented, configurable in `Settings->Operation Settings->General Settings`. **Cache recommended**.  
-First retry uses same priority, second retry uses next priority, and so on.
+If retry is enabled, the system will automatically use the next priority channel for the same request after a failed request.
 
 ### Cache Configuration
 1. `REDIS_CONN_STRING`: Use Redis as cache
