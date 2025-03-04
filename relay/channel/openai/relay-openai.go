@@ -158,7 +158,9 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		}
 
 		if err := scanner.Err(); err != nil {
-			common.LogError(c, "scanner error: "+err.Error())
+			if err != io.EOF {
+				common.LogError(c, "scanner error: "+err.Error())
+			}
 		}
 
 		common.SafeSendBool(stopChan, true)
