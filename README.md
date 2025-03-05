@@ -220,8 +220,8 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtow
 - [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)：用key查询使用额度
 
 其他基于New API的项目：
-- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon)：New API高性能优化版，并支持Claude格式
-- [VoAPI](https://github.com/VoAPI/VoAPI)：基于New API的闭源项目
+- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon)：New API高性能优化版，专注于高并发优化，并支持Claude格式
+- [VoAPI](https://github.com/VoAPI/VoAPI)：基于New API的前端美化版本，闭源免费
 
 ## 🌟 Star History
 
