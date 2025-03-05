@@ -101,7 +101,6 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	}
 
 	request := buildTestRequest(testModel)
-	info.OriginModelName = testModel
 	common.SysLog(fmt.Sprintf("testing channel %d with model %s , info %v ", channel.Id, testModel, info))
 
 	adaptor.Init(info)
