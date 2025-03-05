@@ -326,7 +326,6 @@ func GetModelRatio(name string) (float64, bool) {
 	}
 	ratio, ok := modelRatioMap[name]
 	if !ok {
-		common.SysError("model ratio not found: " + name)
 		return 37.5, operation_setting.SelfUseModeEnabled
 	}
 	return ratio, true

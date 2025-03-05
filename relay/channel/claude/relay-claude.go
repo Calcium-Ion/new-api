@@ -1,7 +1,6 @@
 package claude
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +8,7 @@ import (
 	"one-api/common"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/helper"
 	"one-api/service"
 	"one-api/setting/model_setting"
 	"strings"
@@ -443,28 +443,18 @@ func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 	usage = &dto.Usage{}
 	responseText := ""
 	createdTime := common.GetTimestamp()
-	scanner := bufio.NewScanner(resp.Body)
-	scanner.Split(bufio.ScanLines)
-	service.SetEventStreamHeaders(c)
 
-	for scanner.Scan() {
-		data := scanner.Text()
-		info.SetFirstResponseTime()
-		if len(data) < 6 || !strings.HasPrefix(data, "data:") {
-			continue
-		}
-		data = strings.TrimPrefix(data, "data:")
-		data = strings.TrimSpace(data)
+	helper.StreamScannerHandler(c, resp, info, func(data string) bool {
 		var claudeResponse ClaudeResponse
 		err := json.Unmarshal([]byte(data), &claudeResponse)
 		if err != nil {
 			common.SysError("error unmarshalling stream response: " + err.Error())
-			continue
+			return true
 		}
 
 		response, claudeUsage := StreamResponseClaude2OpenAI(requestMode, &claudeResponse)
 		if response == nil {
-			continue
+			return true
 		}
 		if requestMode == RequestModeCompletion {
 			responseText += claudeResponse.Completion
@@ -481,9 +471,9 @@ func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 				usage.CompletionTokens = claudeUsage.OutputTokens
 				usage.TotalTokens = claudeUsage.InputTokens + claudeUsage.OutputTokens
 			} else if claudeResponse.Type == "content_block_start" {
-
+				return true
 			} else {
-				continue
+				return true
 			}
 		}
 		//response.Id = responseId
@@ -491,11 +481,12 @@ func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 		response.Created = createdTime
 		response.Model = info.UpstreamModelName
 
-		err = service.ObjectData(c, response)
+		err = helper.ObjectData(c, response)
 		if err != nil {
 			common.LogError(c, "send_stream_response_failed: "+err.Error())
 		}
-	}
+		return true
+	})
 
 	if requestMode == RequestModeCompletion {
 		usage, _ = service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
@@ -508,13 +499,13 @@ func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 		}
 	}
 	if info.ShouldIncludeUsage {
-		response := service.GenerateFinalUsageResponse(responseId, createdTime, info.UpstreamModelName, *usage)
-		err := service.ObjectData(c, response)
+		response := helper.GenerateFinalUsageResponse(responseId, createdTime, info.UpstreamModelName, *usage)
+		err := helper.ObjectData(c, response)
 		if err != nil {
 			common.SysError("send final response failed: " + err.Error())
 		}
 	}
-	service.Done(c)
+	helper.Done(c)
 	resp.Body.Close()
 	return nil, usage
 }

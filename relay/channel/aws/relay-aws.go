@@ -12,6 +12,7 @@ import (
 	relaymodel "one-api/dto"
 	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/helper"
 	"one-api/service"
 	"strings"
 	"time"
@@ -203,13 +204,13 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		}
 	})
 	if info.ShouldIncludeUsage {
-		response := service.GenerateFinalUsageResponse(id, createdTime, info.UpstreamModelName, usage)
-		err := service.ObjectData(c, response)
+		response := helper.GenerateFinalUsageResponse(id, createdTime, info.UpstreamModelName, usage)
+		err := helper.ObjectData(c, response)
 		if err != nil {
 			common.SysError("send final response failed: " + err.Error())
 		}
 	}
-	service.Done(c)
+	helper.Done(c)
 	if resp != nil {
 		err = resp.Body.Close()
 		if err != nil {

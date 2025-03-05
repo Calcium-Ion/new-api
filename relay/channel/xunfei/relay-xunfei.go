@@ -14,6 +14,7 @@ import (
 	"one-api/common"
 	"one-api/constant"
 	"one-api/dto"
+	"one-api/relay/helper"
 	"one-api/service"
 	"strings"
 	"time"
@@ -132,7 +133,7 @@ func xunfeiStreamHandler(c *gin.Context, textRequest dto.GeneralOpenAIRequest, a
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "make xunfei request err", http.StatusInternalServerError), nil
 	}
-	service.SetEventStreamHeaders(c)
+	helper.SetEventStreamHeaders(c)
 	var usage dto.Usage
 	c.Stream(func(w io.Writer) bool {
 		select {

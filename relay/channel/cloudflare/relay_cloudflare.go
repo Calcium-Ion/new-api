@@ -9,6 +9,7 @@ import (
 	"one-api/common"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/helper"
 	"one-api/service"
 	"strings"
 	"time"
@@ -28,8 +29,8 @@ func cfStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(bufio.ScanLines)
 
-	service.SetEventStreamHeaders(c)
-	id := service.GetResponseID(c)
+	helper.SetEventStreamHeaders(c)
+	id := helper.GetResponseID(c)
 	var responseText string
 	isFirst := true
 
@@ -57,7 +58,7 @@ func cfStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 		}
 		response.Id = id
 		response.Model = info.UpstreamModelName
-		err = service.ObjectData(c, response)
+		err = helper.ObjectData(c, response)
 		if isFirst {
 			isFirst = false
 			info.FirstResponseTime = time.Now()
@@ -72,13 +73,13 @@ func cfStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 	}
 	usage, _ := service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 	if info.ShouldIncludeUsage {
-		response := service.GenerateFinalUsageResponse(id, info.StartTime.Unix(), info.UpstreamModelName, *usage)
-		err := service.ObjectData(c, response)
+		response := helper.GenerateFinalUsageResponse(id, info.StartTime.Unix(), info.UpstreamModelName, *usage)
+		err := helper.ObjectData(c, response)
 		if err != nil {
 			common.LogError(c, "error_rendering_final_usage_response: "+err.Error())
 		}
 	}
-	service.Done(c)
+	helper.Done(c)
 
 	err := resp.Body.Close()
 	if err != nil {
@@ -109,7 +110,7 @@ func cfHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo)
 	}
 	usage, _ := service.ResponseText2Usage(responseText, info.UpstreamModelName, info.PromptTokens)
 	response.Usage = *usage
-	response.Id = service.GetResponseID(c)
+	response.Id = helper.GetResponseID(c)
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil

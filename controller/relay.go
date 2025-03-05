@@ -16,6 +16,7 @@ import (
 	"one-api/relay"
 	"one-api/relay/constant"
 	relayconstant "one-api/relay/constant"
+	"one-api/relay/helper"
 	"one-api/service"
 	"strings"
 )
@@ -35,15 +36,6 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 		err = relay.RerankHelper(c, relayMode)
 	case relayconstant.RelayModeEmbeddings:
 		err = relay.EmbeddingHelper(c)
-	default:
-		err = relay.TextHelper(c)
-	}
-	return err
-}
-
-func wsHandler(c *gin.Context, ws *websocket.Conn, relayMode int) *dto.OpenAIErrorWithStatusCode {
-	var err *dto.OpenAIErrorWithStatusCode
-	switch relayMode {
 	default:
 		err = relay.TextHelper(c)
 	}
@@ -110,7 +102,7 @@ func WssRelay(c *gin.Context) {
 
 	if err != nil {
 		openaiErr := service.OpenAIErrorWrapper(err, "get_channel_failed", http.StatusInternalServerError)
-		service.WssError(c, ws, openaiErr.Error)
+		helper.WssError(c, ws, openaiErr.Error)
 		return
 	}
 
@@ -152,7 +144,7 @@ func WssRelay(c *gin.Context) {
 			openaiErr.Error.Message = "当前分组上游负载已饱和，请稍后再试"
 		}
 		openaiErr.Error.Message = common.MessageWithRequestId(openaiErr.Error.Message, requestId)
-		service.WssError(c, ws, openaiErr.Error)
+		helper.WssError(c, ws, openaiErr.Error)
 	}
 }
 

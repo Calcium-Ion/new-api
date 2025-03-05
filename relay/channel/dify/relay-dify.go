@@ -10,6 +10,7 @@ import (
 	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/helper"
 	"one-api/service"
 	"strings"
 )
@@ -66,7 +67,7 @@ func difyStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Re
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Split(bufio.ScanLines)
 
-	service.SetEventStreamHeaders(c)
+	helper.SetEventStreamHeaders(c)
 
 	for scanner.Scan() {
 		data := scanner.Text()
@@ -92,7 +93,7 @@ func difyStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Re
 				responseText += openaiResponse.Choices[0].Delta.GetContentString()
 			}
 		}
-		err = service.ObjectData(c, openaiResponse)
+		err = helper.ObjectData(c, openaiResponse)
 		if err != nil {
 			common.SysError(err.Error())
 		}
@@ -100,7 +101,7 @@ func difyStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Re
 	if err := scanner.Err(); err != nil {
 		common.SysError("error reading stream: " + err.Error())
 	}
-	service.Done(c)
+	helper.Done(c)
 	err := resp.Body.Close()
 	if err != nil {
 		//return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
