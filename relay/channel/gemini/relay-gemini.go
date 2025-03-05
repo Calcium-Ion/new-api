@@ -534,7 +534,7 @@ func GeminiChatStreamHandler(c *gin.Context, resp *http.Response, info *relaycom
 		}
 	}
 	helper.Done(c)
-	resp.Body.Close()
+	//resp.Body.Close()
 	return nil, usage
 }
 

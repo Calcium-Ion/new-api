@@ -506,7 +506,7 @@ func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 		}
 	}
 	helper.Done(c)
-	resp.Body.Close()
+	//resp.Body.Close()
 	return nil, usage
 }
 
