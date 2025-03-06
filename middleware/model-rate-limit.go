@@ -153,21 +153,23 @@ func memoryRateLimitHandler(duration int64, totalMaxCount, successMaxCount int) 
 
 // ModelRequestRateLimit 模型请求限流中间件
 func ModelRequestRateLimit() func(c *gin.Context) {
-	// 如果未启用限流，直接放行
-	if !setting.ModelRequestRateLimitEnabled {
-		return defNext
-	}
+	return func(c *gin.Context) {
+		// 在每个请求时检查是否启用限流
+		if !setting.ModelRequestRateLimitEnabled {
+			c.Next()
+			return
+		}
 
-	// 计算限流参数
-	duration := int64(setting.ModelRequestRateLimitDurationMinutes * 60)
-	totalMaxCount := setting.ModelRequestRateLimitCount
+		// 计算限流参数
+		duration := int64(setting.ModelRequestRateLimitDurationMinutes * 60)
+		totalMaxCount := setting.ModelRequestRateLimitCount
+		successMaxCount := setting.ModelRequestRateLimitSuccessCount
 
-	successMaxCount := setting.ModelRequestRateLimitSuccessCount
-
-	// 根据存储类型选择限流处理器
-	if common.RedisEnabled {
-		return redisRateLimitHandler(duration, totalMaxCount, successMaxCount)
-	} else {
-		return memoryRateLimitHandler(duration, totalMaxCount, successMaxCount)
+		// 根据存储类型选择并执行限流处理器
+		if common.RedisEnabled {
+			redisRateLimitHandler(duration, totalMaxCount, successMaxCount)(c)
+		} else {
+			memoryRateLimitHandler(duration, totalMaxCount, successMaxCount)(c)
+		}
 	}
 }
