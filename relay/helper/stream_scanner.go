@@ -15,10 +15,13 @@ import (
 )
 
 func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, dataHandler func(data string) bool) {
+
 	if resp == nil {
 		return
 	}
+
 	defer resp.Body.Close()
+
 	streamingTimeout := time.Duration(constant.StreamingTimeout) * time.Second
 	if strings.HasPrefix(info.UpstreamModelName, "o1") || strings.HasPrefix(info.UpstreamModelName, "o3") {
 		// twice timeout for thinking model
