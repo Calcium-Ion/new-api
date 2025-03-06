@@ -11,7 +11,10 @@ import (
 
 func NotifyRootUser(t string, subject string, content string) {
 	user := model.GetRootUser().ToBaseUser()
-	_ = NotifyUser(user.Id, user.Email, user.GetSetting(), dto.NewNotify(t, subject, content, nil))
+	err := NotifyUser(user.Id, user.Email, user.GetSetting(), dto.NewNotify(t, subject, content, nil))
+	if err != nil {
+		common.SysError(fmt.Sprintf("failed to notify root user: %s", err.Error()))
+	}
 }
 
 func NotifyUser(userId int, userEmail string, userSetting map[string]interface{}, data dto.Notify) error {
