@@ -64,6 +64,7 @@ type ChatCompletionsStreamResponseChoice struct {
 type ChatCompletionsStreamResponseChoiceDelta struct {
 	Content          *string            `json:"content,omitempty"`
 	ReasoningContent *string            `json:"reasoning_content,omitempty"`
+	Reasoning        *string            `json:"reasoning,omitempty"`
 	Role             string             `json:"role,omitempty"`
 	ToolCalls        []ToolCallResponse `json:"tool_calls,omitempty"`
 }
@@ -80,14 +81,18 @@ func (c *ChatCompletionsStreamResponseChoiceDelta) GetContentString() string {
 }
 
 func (c *ChatCompletionsStreamResponseChoiceDelta) GetReasoningContent() string {
-	if c.ReasoningContent == nil {
+	if c.ReasoningContent == nil && c.Reasoning == nil {
 		return ""
 	}
-	return *c.ReasoningContent
+	if c.ReasoningContent != nil {
+		return *c.ReasoningContent
+	}
+	return *c.Reasoning
 }
 
 func (c *ChatCompletionsStreamResponseChoiceDelta) SetReasoningContent(s string) {
 	c.ReasoningContent = &s
+	c.Reasoning = &s
 }
 
 type ToolCallResponse struct {
