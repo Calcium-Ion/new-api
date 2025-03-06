@@ -43,10 +43,15 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 	}
 
 	hasThinkingContent := false
+	hasContent := false
+	var thinkingContent strings.Builder
 	for _, choice := range lastStreamResponse.Choices {
 		if len(choice.Delta.GetReasoningContent()) > 0 {
 			hasThinkingContent = true
-			break
+			thinkingContent.WriteString(choice.Delta.GetReasoningContent())
+		}
+		if len(choice.Delta.GetContentString()) > 0 {
+			hasContent = true
 		}
 	}
 
@@ -55,14 +60,13 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 		if hasThinkingContent {
 			response := lastStreamResponse.Copy()
 			for i := range response.Choices {
-				response.Choices[i].Delta.SetContentString("<think>\n")
+				// send `think` tag with thinking content
+				response.Choices[i].Delta.SetContentString("<think>\n" + thinkingContent.String())
 				response.Choices[i].Delta.ReasoningContent = nil
 				response.Choices[i].Delta.Reasoning = nil
 			}
 			info.ThinkingContentInfo.IsFirstThinkingContent = false
 			return helper.ObjectData(c, response)
-		} else {
-			return helper.ObjectData(c, lastStreamResponse)
 		}
 	}
 
@@ -73,10 +77,10 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 	// Process each choice
 	for i, choice := range lastStreamResponse.Choices {
 		// Handle transition from thinking to content
-		if len(choice.Delta.GetContentString()) > 0 && !info.ThinkingContentInfo.SendLastThinkingContent {
+		if hasContent && !info.ThinkingContentInfo.SendLastThinkingContent {
 			response := lastStreamResponse.Copy()
 			for j := range response.Choices {
-				response.Choices[j].Delta.SetContentString("\n</think>")
+				response.Choices[j].Delta.SetContentString("\n</think>\n")
 				response.Choices[j].Delta.ReasoningContent = nil
 				response.Choices[j].Delta.Reasoning = nil
 			}
@@ -87,6 +91,10 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 		// Convert reasoning content to regular content
 		if len(choice.Delta.GetReasoningContent()) > 0 {
 			lastStreamResponse.Choices[i].Delta.SetContentString(choice.Delta.GetReasoningContent())
+			lastStreamResponse.Choices[i].Delta.ReasoningContent = nil
+			lastStreamResponse.Choices[i].Delta.Reasoning = nil
+		} else if !hasThinkingContent && !hasContent {
+			// flush thinking content
 			lastStreamResponse.Choices[i].Delta.ReasoningContent = nil
 			lastStreamResponse.Choices[i].Delta.Reasoning = nil
 		}
