@@ -59,7 +59,7 @@ func GetCacheRatio(name string) (float64, bool) {
 	GetCacheRatioMap()
 	ratio, ok := cacheRatioMap[name]
 	if !ok {
-		return 0.5, false // Default to 0.5 if not found
+		return 1, false // Default to 0.5 if not found
 	}
 	return ratio, true
 }
