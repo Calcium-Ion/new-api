@@ -4,10 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/bytedance/gopkg/util/gopool"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"io"
 	"math"
 	"mime/multipart"
@@ -21,6 +17,11 @@ import (
 	"one-api/service"
 	"os"
 	"strings"
+
+	"github.com/bytedance/gopkg/util/gopool"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 )
 
 func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, forceFormat bool, thinkToContent bool) error {
@@ -42,10 +43,15 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 	}
 
 	hasThinkingContent := false
+	hasContent := false
+	var thinkingContent strings.Builder
 	for _, choice := range lastStreamResponse.Choices {
 		if len(choice.Delta.GetReasoningContent()) > 0 {
 			hasThinkingContent = true
-			break
+			thinkingContent.WriteString(choice.Delta.GetReasoningContent())
+		}
+		if len(choice.Delta.GetContentString()) > 0 {
+			hasContent = true
 		}
 	}
 
@@ -54,13 +60,13 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 		if hasThinkingContent {
 			response := lastStreamResponse.Copy()
 			for i := range response.Choices {
-				response.Choices[i].Delta.SetContentString("<think>\n")
-				response.Choices[i].Delta.SetReasoningContent("")
+				// send `think` tag with thinking content
+				response.Choices[i].Delta.SetContentString("<think>\n" + thinkingContent.String())
+				response.Choices[i].Delta.ReasoningContent = nil
+				response.Choices[i].Delta.Reasoning = nil
 			}
 			info.ThinkingContentInfo.IsFirstThinkingContent = false
 			return helper.ObjectData(c, response)
-		} else {
-			return helper.ObjectData(c, lastStreamResponse)
 		}
 	}
 
@@ -71,11 +77,12 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 	// Process each choice
 	for i, choice := range lastStreamResponse.Choices {
 		// Handle transition from thinking to content
-		if len(choice.Delta.GetContentString()) > 0 && !info.ThinkingContentInfo.SendLastThinkingContent {
+		if hasContent && !info.ThinkingContentInfo.SendLastThinkingContent {
 			response := lastStreamResponse.Copy()
 			for j := range response.Choices {
-				response.Choices[j].Delta.SetContentString("\n</think>\n\n")
-				response.Choices[j].Delta.SetReasoningContent("")
+				response.Choices[j].Delta.SetContentString("\n</think>\n")
+				response.Choices[j].Delta.ReasoningContent = nil
+				response.Choices[j].Delta.Reasoning = nil
 			}
 			info.ThinkingContentInfo.SendLastThinkingContent = true
 			helper.ObjectData(c, response)
@@ -84,7 +91,12 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 		// Convert reasoning content to regular content
 		if len(choice.Delta.GetReasoningContent()) > 0 {
 			lastStreamResponse.Choices[i].Delta.SetContentString(choice.Delta.GetReasoningContent())
-			lastStreamResponse.Choices[i].Delta.SetReasoningContent("")
+			lastStreamResponse.Choices[i].Delta.ReasoningContent = nil
+			lastStreamResponse.Choices[i].Delta.Reasoning = nil
+		} else if !hasThinkingContent && !hasContent {
+			// flush thinking content
+			lastStreamResponse.Choices[i].Delta.ReasoningContent = nil
+			lastStreamResponse.Choices[i].Delta.Reasoning = nil
 		}
 	}
 
@@ -178,7 +190,10 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 					//}
 					for _, choice := range streamResponse.Choices {
 						responseTextBuilder.WriteString(choice.Delta.GetContentString())
+
+						// handle both reasoning_content and reasoning
 						responseTextBuilder.WriteString(choice.Delta.GetReasoningContent())
+
 						if choice.Delta.ToolCalls != nil {
 							if len(choice.Delta.ToolCalls) > toolCount {
 								toolCount = len(choice.Delta.ToolCalls)
@@ -199,7 +214,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 				//}
 				for _, choice := range streamResponse.Choices {
 					responseTextBuilder.WriteString(choice.Delta.GetContentString())
-					responseTextBuilder.WriteString(choice.Delta.GetReasoningContent())
+					responseTextBuilder.WriteString(choice.Delta.GetReasoningContent()) // This will handle both reasoning_content and reasoning
 					if choice.Delta.ToolCalls != nil {
 						if len(choice.Delta.ToolCalls) > toolCount {
 							toolCount = len(choice.Delta.ToolCalls)
@@ -291,7 +306,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if simpleResponse.Usage.TotalTokens == 0 || (simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.CompletionTokens == 0) {
 		completionTokens := 0
 		for _, choice := range simpleResponse.Choices {
-			ctkm, _ := service.CountTextToken(choice.Message.StringContent()+choice.Message.ReasoningContent, model)
+			ctkm, _ := service.CountTextToken(choice.Message.StringContent()+choice.Message.ReasoningContent+choice.Message.Reasoning, model)
 			completionTokens += ctkm
 		}
 		simpleResponse.Usage = dto.Usage{
