@@ -1,5 +1,6 @@
 export const CHANNEL_OPTIONS = [
   { value: 1, color: 'green', label: 'OpenAI' },
+  { value: 20, color: 'purple', label: 'OpenRouter' },
   {
     value: 2,
     color: 'light-blue',
@@ -82,7 +83,7 @@ export const CHANNEL_OPTIONS = [
   {
     value: 45,
     color: 'blue',
-    label: '字节火山方舟、豆包、DeepSeek通用'
+    label: '火山方舟（豆包）'
   },
   { value: 25, color: 'green', label: 'Moonshot' },
   { value: 19, color: 'blue', label: '360 智脑' },
