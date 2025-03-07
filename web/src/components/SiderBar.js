@@ -28,7 +28,7 @@ import {
   IconSetting,
   IconUser
 } from '@douyinfe/semi-icons';
-import { Avatar, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
+import { Avatar, Dropdown, Layout, Nav, Switch, Divider } from '@douyinfe/semi-ui';
 import { setStatusData } from '../helpers/data.js';
 import { stringToColor } from '../helpers/render.js';
 import { useSetTheme, useTheme } from '../context/Theme/index.js';
@@ -65,35 +65,11 @@ const SiderBar = () => {
     pricing: '/pricing',
     task: '/task',
     playground: '/playground',
+    personal: '/personal',
   };
 
-  const headerButtons = useMemo(
+  const workspaceItems = useMemo(
     () => [
-      {
-        text: 'Playground',
-        itemKey: 'playground',
-        to: '/playground',
-        icon: <IconCommentStroked />,
-      },
-      {
-        text: t('渠道'),
-        itemKey: 'channel',
-        to: '/channel',
-        icon: <IconLayers />,
-        className: isAdmin() ? '' : 'tableHiddle',
-      },
-      {
-        text: t('聊天'),
-        itemKey: 'chat',
-        items: chatItems,
-        icon: <IconComment />,
-      },
-      {
-        text: t('令牌'),
-        itemKey: 'token',
-        to: '/token',
-        icon: <IconKey />,
-      },
       {
         text: t('数据看板'),
         itemKey: 'detail',
@@ -105,33 +81,19 @@ const SiderBar = () => {
             : 'tableHiddle',
       },
       {
-        text: t('兑换码'),
-        itemKey: 'redemption',
-        to: '/redemption',
-        icon: <IconGift />,
-        className: isAdmin() ? '' : 'tableHiddle',
+        text: t('API令牌'),
+        itemKey: 'token',
+        to: '/token',
+        icon: <IconKey />,
       },
       {
-        text: t('钱包'),
-        itemKey: 'topup',
-        to: '/topup',
-        icon: <IconCreditCard />,
-      },
-      {
-        text: t('用户管理'),
-        itemKey: 'user',
-        to: '/user',
-        icon: <IconUser />,
-        className: isAdmin() ? '' : 'tableHiddle',
-      },
-      {
-        text: t('日志'),
+        text: t('使用日志'),
         itemKey: 'log',
         to: '/log',
         icon: <IconHistogram />,
       },
       {
-        text: t('绘图'),
+        text: t('绘图日志'),
         itemKey: 'midjourney',
         to: '/midjourney',
         icon: <IconImage />,
@@ -141,31 +103,90 @@ const SiderBar = () => {
             : 'tableHiddle',
       },
       {
-        text: t('异步任务'),
+        text: t('任务日志'),
         itemKey: 'task',
         to: '/task',
         icon: <IconChecklistStroked />,
         className:
-            localStorage.getItem('enable_task') === 'true'
-                ? ''
-                : 'tableHiddle',
-      },
-      {
-        text: t('设置'),
-        itemKey: 'setting',
-        to: '/setting',
-        icon: <IconSetting />,
-      },
+          localStorage.getItem('enable_task') === 'true'
+            ? ''
+            : 'tableHiddle',
+      }
     ],
     [
       localStorage.getItem('enable_data_export'),
       localStorage.getItem('enable_drawing'),
       localStorage.getItem('enable_task'),
-      localStorage.getItem('chat_link'),
-      chatItems,
-      isAdmin(),
       t,
     ],
+  );
+
+  const financeItems = useMemo(
+    () => [
+      {
+        text: t('钱包'),
+        itemKey: 'topup',
+        to: '/topup',
+        icon: <IconCreditCard />,
+      },
+      {
+        text: t('个人设置'),
+        itemKey: 'personal',
+        to: '/personal',
+        icon: <IconUser />,
+      },
+    ],
+    [t],
+  );
+
+  const adminItems = useMemo(
+    () => [
+      {
+        text: t('渠道'),
+        itemKey: 'channel',
+        to: '/channel',
+        icon: <IconLayers />,
+        className: isAdmin() ? '' : 'tableHiddle',
+      },
+      {
+        text: t('兑换码'),
+        itemKey: 'redemption',
+        to: '/redemption',
+        icon: <IconGift />,
+        className: isAdmin() ? '' : 'tableHiddle',
+      },
+      {
+        text: t('用户管理'),
+        itemKey: 'user',
+        to: '/user',
+        icon: <IconUser />,
+      },
+      {
+        text: t('系统设置'),
+        itemKey: 'setting',
+        to: '/setting',
+        icon: <IconSetting />,
+      },
+    ],
+    [isAdmin(), t],
+  );
+
+  const chatMenuItems = useMemo(
+    () => [
+      {
+        text: 'Playground',
+        itemKey: 'playground',
+        to: '/playground',
+        icon: <IconCommentStroked />,
+      },
+      {
+        text: t('聊天'),
+        itemKey: 'chat',
+        items: chatItems,
+        icon: <IconComment />,
+      },
+    ],
+    [chatItems, t],
   );
 
   useEffect(() => {
@@ -174,42 +195,56 @@ const SiderBar = () => {
       localKey = 'home';
     }
     setSelectedKeys([localKey]);
-    
+
     let chatLink = localStorage.getItem('chat_link');
     if (!chatLink) {
-        let chats = localStorage.getItem('chats');
-        if (chats) {
-            // console.log(chats);
-            try {
-                chats = JSON.parse(chats);
-                if (Array.isArray(chats)) {
-                    let chatItems = [];
-                    for (let i = 0; i < chats.length; i++) {
-                        let chat = {};
-                        for (let key in chats[i]) {
-                            chat.text = key;
-                            chat.itemKey = 'chat' + i;
-                            chat.to = '/chat/' + i;
-                        }
-                        // setRouterMap({ ...routerMap, chat: '/chat/' + i })
-                        chatItems.push(chat);
-                    }
-                    setChatItems(chatItems);
-                }
-            } catch (e) {
-                console.error(e);
-                showError('聊天数据解析失败')
+      let chats = localStorage.getItem('chats');
+      if (chats) {
+        // console.log(chats);
+        try {
+          chats = JSON.parse(chats);
+          if (Array.isArray(chats)) {
+            let chatItems = [];
+            for (let i = 0; i < chats.length; i++) {
+              let chat = {};
+              for (let key in chats[i]) {
+                chat.text = key;
+                chat.itemKey = 'chat' + i;
+                chat.to = '/chat/' + i;
+              }
+              // setRouterMap({ ...routerMap, chat: '/chat/' + i })
+              chatItems.push(chat);
             }
+            setChatItems(chatItems);
+          }
+        } catch (e) {
+          console.error(e);
+          showError('聊天数据解析失败')
         }
+      }
     }
-    
+
     setIsCollapsed(localStorage.getItem('default_collapse_sidebar') === 'true');
   }, []);
+
+  // Custom divider style
+  const dividerStyle = {
+    margin: '8px 0',
+    opacity: 0.6,
+  };
+
+  // Custom group label style
+  const groupLabelStyle = {
+    padding: '8px 16px',
+    color: 'var(--semi-color-text-2)',
+    fontSize: '12px',
+    fontWeight: 'normal',
+  };
 
   return (
     <>
       <Nav
-        style={{ maxWidth: 220, height: '100%' }}
+        style={{ maxWidth: 200, height: '100%' }}
         defaultIsCollapsed={
           localStorage.getItem('default_collapse_sidebar') === 'true'
         }
@@ -219,27 +254,27 @@ const SiderBar = () => {
         }}
         selectedKeys={selectedKeys}
         renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
-            let chatLink = localStorage.getItem('chat_link');
-            if (!chatLink) {
-                let chats = localStorage.getItem('chats');
-                if (chats) {
-                    chats = JSON.parse(chats);
-                    if (Array.isArray(chats) && chats.length > 0) {
-                        for (let i = 0; i < chats.length; i++) {
-                            routerMap['chat' + i] = '/chat/' + i;
-                        }
-                        if (chats.length > 1) {
-                            // delete /chat
-                            if (routerMap['chat']) {
-                                delete routerMap['chat'];
-                            }
-                        } else {
-                            // rename /chat to /chat/0
-                            routerMap['chat'] = '/chat/0';
-                        }
-                    }
+          let chatLink = localStorage.getItem('chat_link');
+          if (!chatLink) {
+            let chats = localStorage.getItem('chats');
+            if (chats) {
+              chats = JSON.parse(chats);
+              if (Array.isArray(chats) && chats.length > 0) {
+                for (let i = 0; i < chats.length; i++) {
+                  routerMap['chat' + i] = '/chat/' + i;
                 }
+                if (chats.length > 1) {
+                  // delete /chat
+                  if (routerMap['chat']) {
+                    delete routerMap['chat'];
+                  }
+                } else {
+                  // rename /chat to /chat/0
+                  routerMap['chat'] = '/chat/0';
+                }
+              }
             }
+          }
           return (
             <Link
               style={{ textDecoration: 'none' }}
@@ -249,7 +284,6 @@ const SiderBar = () => {
             </Link>
           );
         }}
-        items={headerButtons}
         onSelect={(key) => {
           if (key.itemKey.toString().startsWith('chat')) {
             styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
@@ -258,12 +292,101 @@ const SiderBar = () => {
           }
           setSelectedKeys([key.itemKey]);
         }}
-        footer={
-          <>
-          </>
-        }
       >
-        <Nav.Footer collapseButton={true}></Nav.Footer>
+        {/* Chat Section - Only show if there are chat items */}
+        {chatItems.length > 0 && (
+          <>
+            {chatMenuItems.map((item) => {
+              if (item.items && item.items.length > 0) {
+                return (
+                  <Nav.Sub
+                    key={item.itemKey}
+                    itemKey={item.itemKey}
+                    text={item.text}
+                    icon={item.icon}
+                  >
+                    {item.items.map((subItem) => (
+                      <Nav.Item
+                        key={subItem.itemKey}
+                        itemKey={subItem.itemKey}
+                        text={subItem.text}
+                      />
+                    ))}
+                  </Nav.Sub>
+                );
+              } else {
+                return (
+                  <Nav.Item
+                    key={item.itemKey}
+                    itemKey={item.itemKey}
+                    text={item.text}
+                    icon={item.icon}
+                  />
+                );
+              }
+            })}
+          </>
+        )}
+
+        {/* Divider */}
+        <Divider style={dividerStyle} />
+
+        {/* Workspace Section */}
+        {!isCollapsed && <div style={groupLabelStyle}>{t('控制台')}</div>}
+        {workspaceItems.map((item) => (
+          <Nav.Item
+            key={item.itemKey}
+            itemKey={item.itemKey}
+            text={item.text}
+            icon={item.icon}
+            className={item.className}
+          />
+        ))}
+
+        {/* Divider */}
+        <Divider style={dividerStyle} />
+
+        {/* Finance Management Section */}
+        {!isCollapsed && <div style={groupLabelStyle}>{t('个人中心')}</div>}
+        {financeItems.map((item) => (
+          <Nav.Item
+            key={item.itemKey}
+            itemKey={item.itemKey}
+            text={item.text}
+            icon={item.icon}
+            className={item.className}
+          />
+        ))}
+
+        {isAdmin() && (
+          <>
+            {/* Divider */}
+            <Divider style={dividerStyle} />
+
+            {/* Admin Section */}
+            {adminItems.map((item) => (
+              <Nav.Item
+                key={item.itemKey}
+                itemKey={item.itemKey}
+                text={item.text}
+                icon={item.icon}
+                className={item.className}
+              />
+            ))}
+          </>
+        )}
+
+        <Nav.Footer
+          collapseButton={true}
+          collapseText={(collapsed)=>
+            {
+              if(collapsed){
+                return t('展开侧边栏')
+              }
+                return t('收起侧边栏')
+            }
+          }
+        />
       </Nav>
     </>
   );

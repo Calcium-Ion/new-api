@@ -18,6 +18,8 @@ const CLAUDE_HEADER = {
 
 const CLAUDE_DEFAULT_MAX_TOKENS = {
   'default': 8192,
+  "claude-3-haiku-20240307": 4096,
+  "claude-3-opus-20240229": 4096,
   'claude-3-7-sonnet-20250219-thinking': 8192,
 }
 

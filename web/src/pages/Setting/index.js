@@ -18,9 +18,6 @@ const Setting = () => {
   const [tabActiveKey, setTabActiveKey] = useState('1');
   let panes = [
     {
-      tab: t('个人设置'),
-      content: <PersonalSetting />,
-      itemKey: 'personal',
     },
   ];
 
@@ -61,7 +58,7 @@ const Setting = () => {
     if (tab) {
       setTabActiveKey(tab);
     } else {
-      onChangeTab('personal');
+      onChangeTab('operation');
     }
   }, [location.search]);
   return (

@@ -393,7 +393,7 @@ const PersonalSetting = () => {
                             </div>
                         </div>
                     </Modal>
-                    <div style={{marginTop: 20}}>
+                    <div>
                         <Card
                             title={
                                 <Card.Meta

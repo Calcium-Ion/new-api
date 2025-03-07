@@ -621,6 +621,7 @@
   "窗口等待": "window wait",
   "失败": "Failed",
   "绘图": "Drawing",
+  "绘图日志": "Drawing log",
   "放大": "Upscalers",
   "微妙放大": "Upscale (Subtle)",
   "创造放大": "Upscale (Creative)",
@@ -1120,7 +1121,7 @@
   "知识库 ID": "Knowledge Base ID",
   "请输入知识库 ID，例如：123456": "Please enter knowledge base ID, e.g.: 123456",
   "可选值": "Optional value",
-  "异步任务": "Async task",
+  "任务日志": "Task log",
   "你好": "Hello",
   "你好，请问有什么可以帮助您的吗？": "Hello, how may I help you?",
   "用户分组": "Your default group",
@@ -1335,5 +1336,7 @@
   "Claude思考适配 BudgetTokens = MaxTokens * BudgetTokens 百分比": "Claude thinking adaptation BudgetTokens = MaxTokens * BudgetTokens percentage",
   "思考适配 BudgetTokens 百分比": "Thinking adaptation BudgetTokens percentage",
   "0.1-1之间的小数": "Decimal between 0.1 and 1",
-  "模型相关设置": "Model related settings"
+  "模型相关设置": "Model related settings",
+  "收起侧边栏": "Collapse sidebar",
+  "展开侧边栏": "Expand sidebar"
 }

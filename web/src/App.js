@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { StatusContext } from './context/Status';
 import { setStatusData } from './helpers/data.js';
 import { API, showError } from './helpers';
+import PersonalSetting from './components/PersonalSetting.js';
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
@@ -173,6 +174,16 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<Loading></Loading>}>
                 <Setting />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/personal'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>}>
+                <PersonalSetting />
               </Suspense>
             </PrivateRoute>
           }
