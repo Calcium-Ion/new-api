@@ -92,11 +92,12 @@ func InitOptionMap() {
 	common.OptionMap["ModelRequestRateLimitCount"] = strconv.Itoa(setting.ModelRequestRateLimitCount)
 	common.OptionMap["ModelRequestRateLimitDurationMinutes"] = strconv.Itoa(setting.ModelRequestRateLimitDurationMinutes)
 	common.OptionMap["ModelRequestRateLimitSuccessCount"] = strconv.Itoa(setting.ModelRequestRateLimitSuccessCount)
-	common.OptionMap["ModelRatio"] = setting.ModelRatio2JSONString()
-	common.OptionMap["ModelPrice"] = setting.ModelPrice2JSONString()
+	common.OptionMap["ModelRatio"] = operation_setting.ModelRatio2JSONString()
+	common.OptionMap["ModelPrice"] = operation_setting.ModelPrice2JSONString()
+	common.OptionMap["CacheRatio"] = operation_setting.CacheRatio2JSONString()
 	common.OptionMap["GroupRatio"] = setting.GroupRatio2JSONString()
 	common.OptionMap["UserUsableGroups"] = setting.UserUsableGroups2JSONString()
-	common.OptionMap["CompletionRatio"] = setting.CompletionRatio2JSONString()
+	common.OptionMap["CompletionRatio"] = operation_setting.CompletionRatio2JSONString()
 	common.OptionMap["TopUpLink"] = common.TopUpLink
 	common.OptionMap["ChatLink"] = common.ChatLink
 	common.OptionMap["ChatLink2"] = common.ChatLink2
@@ -344,15 +345,17 @@ func updateOptionMap(key string, value string) (err error) {
 	case "DataExportDefaultTime":
 		common.DataExportDefaultTime = value
 	case "ModelRatio":
-		err = setting.UpdateModelRatioByJSONString(value)
+		err = operation_setting.UpdateModelRatioByJSONString(value)
 	case "GroupRatio":
 		err = setting.UpdateGroupRatioByJSONString(value)
 	case "UserUsableGroups":
 		err = setting.UpdateUserUsableGroupsByJSONString(value)
 	case "CompletionRatio":
-		err = setting.UpdateCompletionRatioByJSONString(value)
+		err = operation_setting.UpdateCompletionRatioByJSONString(value)
 	case "ModelPrice":
-		err = setting.UpdateModelPriceByJSONString(value)
+		err = operation_setting.UpdateModelPriceByJSONString(value)
+	case "CacheRatio":
+		err = operation_setting.UpdateCacheRatioByJSONString(value)
 	case "TopUpLink":
 		common.TopUpLink = value
 	case "ChatLink":

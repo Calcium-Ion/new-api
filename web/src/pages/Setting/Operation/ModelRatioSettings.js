@@ -15,6 +15,7 @@ export default function ModelRatioSettings(props) {
   const [inputs, setInputs] = useState({
     ModelPrice: '',
     ModelRatio: '',
+    CacheRatio: '',
     CompletionRatio: '',
   });
   const refForm = useRef();
@@ -136,6 +137,25 @@ export default function ModelRatioSettings(props) {
                   }
                 ]}
                 onChange={(value) => setInputs({ ...inputs, ModelRatio: value })}
+              />
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={16}>
+              <Form.TextArea
+                label={t('提示缓存倍率')}
+                placeholder={t('为一个 JSON 文本，键为模型名称，值为倍率')}
+                field={'CacheRatio'}
+                autosize={{ minRows: 6, maxRows: 12 }}
+                trigger='blur'
+                stopValidateWithError
+                rules={[
+                  {
+                    validator: (rule, value) => verifyJSON(value),
+                    message: '不是合法的 JSON 字符串'
+                  }
+                ]}
+                onChange={(value) => setInputs({ ...inputs, CacheRatio: value })}
               />
             </Col>
           </Row>

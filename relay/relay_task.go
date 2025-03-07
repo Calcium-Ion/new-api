@@ -16,6 +16,7 @@ import (
 	relayconstant "one-api/relay/constant"
 	"one-api/service"
 	"one-api/setting"
+	"one-api/setting/operation_setting"
 )
 
 /*
@@ -37,9 +38,9 @@ func RelayTaskSubmit(c *gin.Context, relayMode int) (taskErr *dto.TaskError) {
 	}
 
 	modelName := service.CoverTaskActionToModelName(platform, relayInfo.Action)
-	modelPrice, success := setting.GetModelPrice(modelName, true)
+	modelPrice, success := operation_setting.GetModelPrice(modelName, true)
 	if !success {
-		defaultPrice, ok := setting.GetDefaultModelRatioMap()[modelName]
+		defaultPrice, ok := operation_setting.GetDefaultModelRatioMap()[modelName]
 		if !ok {
 			modelPrice = 0.1
 		} else {

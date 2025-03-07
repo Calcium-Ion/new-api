@@ -464,6 +464,8 @@ const LogsTable = () => {
           other.model_ratio,
           other.model_price,
           other.group_ratio,
+          other.cache_tokens || 0,
+          other.cache_ratio || 1.0,
         );
         return (
             <Paragraph
@@ -665,6 +667,8 @@ const LogsTable = () => {
             other?.audio_ratio,
             other?.audio_completion_ratio,
             other.group_ratio,
+            other.cache_tokens || 0,
+            other.cache_ratio || 1.0,
           );
         } else {
           content = renderModelPrice(
@@ -674,6 +678,8 @@ const LogsTable = () => {
             other.model_price,
             other.completion_ratio,
             other.group_ratio,
+            other.cache_tokens || 0,
+            other.cache_ratio || 1.0,
           );
         }
         expandDataLocal.push({

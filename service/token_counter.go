@@ -10,7 +10,7 @@ import (
 	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
-	"one-api/setting"
+	"one-api/setting/operation_setting"
 	"strings"
 	"unicode/utf8"
 
@@ -33,7 +33,7 @@ func InitTokenEncoders() {
 	if err != nil {
 		common.FatalLog(fmt.Sprintf("failed to get gpt-4o token encoder: %s", err.Error()))
 	}
-	for model, _ := range setting.GetDefaultModelRatioMap() {
+	for model, _ := range operation_setting.GetDefaultModelRatioMap() {
 		if strings.HasPrefix(model, "gpt-3.5") {
 			tokenEncoderMap[model] = cl100TokenEncoder
 		} else if strings.HasPrefix(model, "gpt-4") {
