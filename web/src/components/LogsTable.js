@@ -638,6 +638,12 @@ const LogsTable = () => {
           value: other.text_output,
         });
       }
+      if (other?.cache_tokens > 0) {
+        expandDataLocal.push({
+          key: t('缓存 Tokens'),
+          value: other.cache_tokens,
+        });
+      }
       expandDataLocal.push({
         key: t('日志详情'),
         value: logs[i].content,

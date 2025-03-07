@@ -336,7 +336,7 @@ export function renderModelPrice(
             total: completionRatioPrice * groupRatio
           })}</p>
           {cacheTokens > 0 && (
-            <p>{i18next.t('缓存：${{price}} * {{ratio}} = ${{total}} / 1M tokens (缓存比例: {{cacheRatio}})', {
+            <p>{i18next.t('缓存：${{price}} * {{ratio}} = ${{total}} / 1M tokens (缓存倍率: {{cacheRatio}})', {
               price: cacheRatioPrice,
               ratio: groupRatio,
               total: cacheRatioPrice * groupRatio,
@@ -387,7 +387,7 @@ export function renderModelPriceSimple(
     });
   } else {
     if (cacheTokens !== 0) {
-      return i18next.t('模型: {{ratio}} * 分组: {{groupRatio}} * 缓存比例: {{cacheRatio}}', {
+      return i18next.t('模型: {{ratio}} * 分组: {{groupRatio}} * 缓存倍率: {{cacheRatio}}', {
         ratio: modelRatio,
         groupRatio: groupRatio,
         cacheRatio: cacheRatio
@@ -452,7 +452,7 @@ export function renderAudioModelPrice(
             total: completionRatioPrice * groupRatio
           })}</p>
           {cacheTokens > 0 && (
-            <p>{i18next.t('缓存：${{price}} * {{ratio}} = ${{total}} / 1M tokens (缓存比例: {{cacheRatio}})', {
+            <p>{i18next.t('缓存：${{price}} * {{ratio}} = ${{total}} / 1M tokens (缓存倍率: {{cacheRatio}})', {
               price: cacheRatioPrice,
               ratio: groupRatio,
               total: cacheRatioPrice * groupRatio,

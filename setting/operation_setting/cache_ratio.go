@@ -21,6 +21,8 @@ var defaultCacheRatio = map[string]float64{
 	"deepseek-coder":               0.5,
 }
 
+var defaultCreateCacheRatio = map[string]float64{}
+
 var cacheRatioMap map[string]float64
 var cacheRatioMapMutex sync.RWMutex
 
