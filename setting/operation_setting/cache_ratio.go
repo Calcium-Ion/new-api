@@ -21,6 +21,8 @@ var defaultCacheRatio = map[string]float64{
 	"deepseek-coder":               0.5,
 }
 
+var defaultCreateCacheRatio = map[string]float64{}
+
 var cacheRatioMap map[string]float64
 var cacheRatioMapMutex sync.RWMutex
 
@@ -57,7 +59,7 @@ func GetCacheRatio(name string) (float64, bool) {
 	GetCacheRatioMap()
 	ratio, ok := cacheRatioMap[name]
 	if !ok {
-		return 0.5, false // Default to 0.5 if not found
+		return 1, false // Default to 0.5 if not found
 	}
 	return ratio, true
 }
