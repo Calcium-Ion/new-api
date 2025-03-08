@@ -23,4 +23,15 @@ COPY . .
 COPY --from=builder /build/dist ./web/dist
 RUN go build -ldflags "-s -w -X 'one-api/common.Version=$(cat VERSION)'" -o one-api
 
-FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/a
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/alpine:latest
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk update \
+    && apk upgrade \
+    && apk add --no-cache ca-certificates tzdata ffmpeg \
+    && update-ca-certificates
+
+COPY --from=builder2 /build/one-api /
+EXPOSE 3000
+WORKDIR /data
+ENTRYPOINT ["/one-api"]
