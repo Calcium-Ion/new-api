@@ -72,8 +72,8 @@ func TextHelper(c *gin.Context, channel *model.Channel) (openaiErr *dto.OpenAIEr
 
 	// get & validate textRequest 获取并验证文本请求
 	textRequest, err := getAndValidateTextRequest(c, relayInfo)
-
-	isConvertRole := channel.GetIsConvertRole()
+	role, err := model.GetIsConvertRole(channel.Id)
+	isConvertRole := role.IsConvertRole
 	if isConvertRole == 1 {
 		//转换  assistant -》 user
 		messages := textRequest.Messages

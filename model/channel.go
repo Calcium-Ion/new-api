@@ -47,11 +47,10 @@ func (channel *Channel) GetModels() []string {
 	return strings.Split(strings.Trim(channel.Models, ","), ",")
 }
 
-func (channel *Channel) GetIsConvertRole() int64 {
-	if 1 != channel.IsConvertRole {
-		return channel.IsConvertRole
-	}
-	return channel.IsConvertRole
+func GetIsConvertRole(id int) (*Channel, error) {
+	channel := Channel{Id: id}
+	err := DB.First(&channel, "id = ?", channel.Id).Error
+	return &channel, err
 }
 
 func (channel *Channel) SetIsConvertRole(isRole int64) {
