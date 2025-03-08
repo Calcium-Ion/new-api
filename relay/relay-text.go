@@ -66,12 +66,23 @@ func getAndValidateTextRequest(c *gin.Context, relayInfo *relaycommon.RelayInfo)
 	return textRequest, nil
 }
 
-func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
+func TextHelper(c *gin.Context, channel *model.Channel) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 
 	relayInfo := relaycommon.GenRelayInfo(c)
 
 	// get & validate textRequest 获取并验证文本请求
 	textRequest, err := getAndValidateTextRequest(c, relayInfo)
+
+	//channel.
+	//转换  assistant -》 user
+	messages := textRequest.Messages
+	for i := range messages {
+		role := messages[i].Role
+		if role == "assistant" {
+			messages[i].Role = "user"
+		}
+	}
+
 	if err != nil {
 		common.LogError(c, fmt.Sprintf("getAndValidateTextRequest failed: %s", err.Error()))
 		return service.OpenAIErrorWrapperLocal(err, "invalid_text_request", http.StatusBadRequest)
@@ -332,7 +343,7 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 		quota = int(modelPrice * common.QuotaPerUnit * groupRatio)
 	}
 	totalTokens := promptTokens + completionTokens
-	
+
 	var logContent string
 	if !priceData.UsePrice {
 		logContent = fmt.Sprintf("模型倍率 %.2f，补全倍率 %.2f，分组倍率 %.2f", modelRatio, completionRatio, groupRatio)

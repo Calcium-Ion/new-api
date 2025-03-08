@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
+func relayHandler(c *gin.Context, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {
 	var err *dto.OpenAIErrorWithStatusCode
 	switch relayMode {
 	case relayconstant.RelayModeImagesGenerations:
@@ -37,7 +37,7 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	case relayconstant.RelayModeEmbeddings:
 		err = relay.EmbeddingHelper(c)
 	default:
-		err = relay.TextHelper(c)
+		err = relay.TextHelper(c, channel)
 	}
 	return err
 }
@@ -152,7 +152,7 @@ func relayRequest(c *gin.Context, relayMode int, channel *model.Channel) *dto.Op
 	addUsedChannel(c, channel.Id)
 	requestBody, _ := common.GetRequestBody(c)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
-	return relayHandler(c, relayMode)
+	return relayHandler(c, relayMode, channel)
 }
 
 func wssRequest(c *gin.Context, ws *websocket.Conn, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {
