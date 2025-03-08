@@ -114,7 +114,7 @@ func main() {
 			controller.UpdateTaskBulk()
 		})
 	}
-	if common.IsMasterNode && os.Getenv("ENABLE_METRICS") != "" {
+	if os.Getenv("ENABLE_METRICS") != "" {
 		register := prometheus.NewRegistry()
 		metrics.RegisterMetrics(register)
 		gatherersRegistry := prometheus.Gatherers{register}
