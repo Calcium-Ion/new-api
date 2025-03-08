@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "antd": "^5.0.0", 
     "@douyinfe/semi-icons": "^2.63.1",
     "@douyinfe/semi-ui": "^2.69.1",
     "@visactor/react-vchart": "~1.8.8",

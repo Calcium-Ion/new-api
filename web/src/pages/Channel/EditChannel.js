@@ -27,6 +27,8 @@ import {
 import { Divider } from 'semantic-ui-react';
 import { getChannelModels, loadChannelModels } from '../../components/utils.js';
 import axios from 'axios';
+import { Switch } from 'antd';
+
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo': 'gpt-3.5-turbo-0125'
@@ -86,7 +88,8 @@ const EditChannel = (props) => {
     groups: ['default'],
     priority: 0,
     weight: 0,
-    tag: ''
+    tag: '',
+    is_convert_role: 2
   };
   const [batch, setBatch] = useState(false);
   const [autoBan, setAutoBan] = useState(true);
@@ -221,7 +224,7 @@ const EditChannel = (props) => {
             type: inputs['type'],
             key: inputs['key']
           });
-          
+
           if (res.data && res.data.success) {
             models.push(...res.data.data);
           } else {
@@ -426,7 +429,7 @@ const EditChannel = (props) => {
       >
         <Spin spinning={loading}>
           <div style={{ marginTop: 10 }}>
-            
+
             <Typography.Text strong>{t('类型')}：</Typography.Text>
           </div>
           <Select
@@ -443,16 +446,16 @@ const EditChannel = (props) => {
           {inputs.type === 40 && (
             <div style={{ marginTop: 10 }}>
               <Banner
-                type="info" 
+                type="info"
                 description={
                   <div>
                     <Typography.Text strong>
-                      {t('邀请链接')}: 
+                      {t('邀请链接')}:
                     </Typography.Text>
-                    <Typography.Text 
+                    <Typography.Text
                       link
-                      underline 
-                      style={{marginLeft: 8}}
+                      underline
+                      style={{ marginLeft: 8 }}
                       onClick={() => window.open('https://cloud.siliconflow.cn/i/hij0YNTZ')}
                     >
                       https://cloud.siliconflow.cn/i/hij0YNTZ
@@ -542,7 +545,8 @@ const EditChannel = (props) => {
               <div style={{ marginTop: 10 }}>
                 <Typography.Text strong>{t('代理站地址')}：</Typography.Text>
               </div>
-              <Tooltip content={t('对于官方渠道，new-api已经内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写')}>
+              <Tooltip
+                content={t('对于官方渠道，new-api已经内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写')}>
                 <Input
                   label={t('代理站地址')}
                   name="base_url"
@@ -879,6 +883,19 @@ const EditChannel = (props) => {
             value={inputs.tag}
             autoComplete="new-password"
           />
+
+          <div style={{ marginTop: 10 }}>
+            <Typography.Text strong>
+              {t('是否转换角色 assistant 为 user')}
+            </Typography.Text>
+          </div>
+          <Switch
+            checked={inputs.is_convert_role === 1}
+            onChange={(checked) => handleInputChange('is_convert_role', checked?1:2)}
+            checkedChildren={t('是')}
+            unCheckedChildren={t('否')}
+          />
+
           <div style={{ marginTop: 10 }}>
             <Typography.Text strong>
               {t('渠道优先级')}

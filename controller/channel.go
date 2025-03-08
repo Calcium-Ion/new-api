@@ -462,7 +462,9 @@ func DeleteChannelBatch(c *gin.Context) {
 
 func UpdateChannel(c *gin.Context) {
 	channel := model.Channel{}
+
 	err := c.ShouldBindJSON(&channel)
+
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

@@ -35,7 +35,9 @@ type Channel struct {
 	AutoBan           *int    `json:"auto_ban" gorm:"default:1"`
 	OtherInfo         string  `json:"other_info"`
 	Tag               *string `json:"tag" gorm:"index"`
-	Setting           string  `json:"setting" gorm:"type:text"`
+	//是否角色转换.1为开启，2为关闭
+	IsConvertRole int64  `json:"is_convert_role" gorm:"default:2"`
+	Setting       string `json:"setting" gorm:"type:text"`
 }
 
 func (channel *Channel) GetModels() []string {
@@ -43,6 +45,17 @@ func (channel *Channel) GetModels() []string {
 		return []string{}
 	}
 	return strings.Split(strings.Trim(channel.Models, ","), ",")
+}
+
+func (channel *Channel) GetIsConvertRole() int64 {
+	if 1 != channel.IsConvertRole {
+		return channel.IsConvertRole
+	}
+	return channel.IsConvertRole
+}
+
+func (channel *Channel) SetIsConvertRole(isRole int64) {
+	channel.IsConvertRole = isRole
 }
 
 func (channel *Channel) GetOtherInfo() map[string]interface{} {

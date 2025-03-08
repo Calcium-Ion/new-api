@@ -11,13 +11,14 @@ import (
 )
 
 type Ability struct {
-	Group     string  `json:"group" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
-	Model     string  `json:"model" gorm:"type:varchar(255);primaryKey;autoIncrement:false"`
-	ChannelId int     `json:"channel_id" gorm:"primaryKey;autoIncrement:false;index"`
-	Enabled   bool    `json:"enabled"`
-	Priority  *int64  `json:"priority" gorm:"bigint;default:0;index"`
-	Weight    uint    `json:"weight" gorm:"default:0;index"`
-	Tag       *string `json:"tag" gorm:"index"`
+	Group         string  `json:"group" gorm:"type:varchar(64);primaryKey;autoIncrement:false"`
+	Model         string  `json:"model" gorm:"type:varchar(255);primaryKey;autoIncrement:false"`
+	ChannelId     int     `json:"channel_id" gorm:"primaryKey;autoIncrement:false;index"`
+	Enabled       bool    `json:"enabled"`
+	Priority      *int64  `json:"priority" gorm:"bigint;default:0;index"`
+	Weight        uint    `json:"weight" gorm:"default:0;index"`
+	Tag           *string `json:"tag" gorm:"index"`
+	IsConvertRole int64   `json:"is_convert_role" gorm:"default:0"`
 }
 
 func GetGroupModels(group string) []string {
@@ -198,13 +199,14 @@ func (channel *Channel) UpdateAbilities(tx *gorm.DB) error {
 	for _, model := range models_ {
 		for _, group := range groups_ {
 			ability := Ability{
-				Group:     group,
-				Model:     model,
-				ChannelId: channel.Id,
-				Enabled:   channel.Status == common.ChannelStatusEnabled,
-				Priority:  channel.Priority,
-				Weight:    uint(channel.GetWeight()),
-				Tag:       channel.Tag,
+				Group:         group,
+				Model:         model,
+				ChannelId:     channel.Id,
+				Enabled:       channel.Status == common.ChannelStatusEnabled,
+				Priority:      channel.Priority,
+				Weight:        uint(channel.GetWeight()),
+				Tag:           channel.Tag,
+				IsConvertRole: channel.IsConvertRole,
 			}
 			abilities = append(abilities, ability)
 		}
