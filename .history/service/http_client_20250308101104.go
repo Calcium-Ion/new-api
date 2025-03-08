@@ -9,9 +9,6 @@ import (
 	"net/url"
 	"one-api/common"
 	"time"
-	"math/rand"
-	"strings"
-	"strconv"
 )
 
 var httpClient *http.Client
@@ -40,43 +37,11 @@ func GetImpatientHttpClient() *http.Client {
 }
 
 // NewProxyHttpClient 创建支持代理的 HTTP 客户端
-func NewProxyHttpClient(proxyURLs string) (*http.Client, error) {
-	if proxyURLs == "" {
+func NewProxyHttpClient(proxyURL string) (*http.Client, error) {
+	if proxyURL == "" {
 		return http.DefaultClient, nil
 	}
 
-	proxyList := strings.Split(proxyURLs, ",")
-	rand.Seed(time.Now().UnixNano())
-
-	var client *http.Client
-	var err error
-
-	for i := 0; i < len(proxyList); i++ {
-		proxyTimeoutPair := strings.Fields(proxyList[rand.Intn(len(proxyList))])
-		if len(proxyTimeoutPair) == 0 {
-			continue
-		}
-		proxyURL := proxyTimeoutPair[0]
-		timeout := 10000 * time.Millisecond
-
-		if len(proxyTimeoutPair) > 1 {
-			if customTimeout, parseErr := strconv.Atoi(proxyTimeoutPair[1]); parseErr == nil {
-				timeout = time.Duration(customTimeout) * time.Millisecond
-			} else {
-				fmt.Printf("Error parsing timeout value: %v\n", parseErr)
-			}
-		}
-
-		client, err = createHttpClientWithProxy(proxyURL, timeout)
-		if err == nil {
-			return client, nil
-		}
-	}
-
-	return nil, fmt.Errorf("all proxies failed")
-}
-
-func createHttpClientWithProxy(proxyURL string, timeout time.Duration) (*http.Client, error) {
 	parsedURL, err := url.Parse(proxyURL)
 	if err != nil {
 		return nil, err
@@ -88,10 +53,10 @@ func createHttpClientWithProxy(proxyURL string, timeout time.Duration) (*http.Cl
 			Transport: &http.Transport{
 				Proxy: http.ProxyURL(parsedURL),
 			},
-			Timeout: timeout,
 		}, nil
 
 	case "socks5":
+		// 获取认证信息
 		var auth *proxy.Auth
 		if parsedURL.User != nil {
 			auth = &proxy.Auth{
@@ -103,6 +68,7 @@ func createHttpClientWithProxy(proxyURL string, timeout time.Duration) (*http.Cl
 			}
 		}
 
+		// 创建 SOCKS5 代理拨号器
 		dialer, err := proxy.SOCKS5("tcp", parsedURL.Host, auth, proxy.Direct)
 		if err != nil {
 			return nil, err
@@ -114,7 +80,6 @@ func createHttpClientWithProxy(proxyURL string, timeout time.Duration) (*http.Cl
 					return dialer.Dial(network, addr)
 				},
 			},
-			Timeout: timeout,
 		}, nil
 
 	default:
