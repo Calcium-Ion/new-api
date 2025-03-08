@@ -29,10 +29,12 @@ import {
   Table,
   Tag,
   Tooltip,
-  Typography
+  Typography,
+  Checkbox,
+  Layout
 } from '@douyinfe/semi-ui';
 import EditChannel from '../pages/Channel/EditChannel';
-import { IconList, IconTreeTriangleDown } from '@douyinfe/semi-icons';
+import { IconList, IconTreeTriangleDown, IconClose, IconFilter, IconPlus, IconRefresh, IconSetting } from '@douyinfe/semi-icons';
 import { loadChannelModels } from './utils.js';
 import EditTagModal from '../pages/Channel/EditTagModal.js';
 import TextNumberInput from './custom/TextNumberInput.js';
@@ -141,21 +143,105 @@ const ChannelsTable = () => {
     }
   };
 
-  const columns = [
-    // {
-    //     title: '',
-    //     dataIndex: 'checkbox',
-    //     className: 'checkbox',
-    // },
+  // Define column keys for selection
+  const COLUMN_KEYS = {
+    ID: 'id',
+    NAME: 'name',
+    GROUP: 'group',
+    TYPE: 'type',
+    STATUS: 'status',
+    RESPONSE_TIME: 'response_time',
+    BALANCE: 'balance',
+    PRIORITY: 'priority',
+    WEIGHT: 'weight',
+    OPERATE: 'operate'
+  };
+
+  // State for column visibility
+  const [visibleColumns, setVisibleColumns] = useState({});
+  const [showColumnSelector, setShowColumnSelector] = useState(false);
+
+  // Load saved column preferences from localStorage
+  useEffect(() => {
+    const savedColumns = localStorage.getItem('channels-table-columns');
+    if (savedColumns) {
+      try {
+        const parsed = JSON.parse(savedColumns);
+        // Make sure all columns are accounted for
+        const defaults = getDefaultColumnVisibility();
+        const merged = { ...defaults, ...parsed };
+        setVisibleColumns(merged);
+      } catch (e) {
+        console.error('Failed to parse saved column preferences', e);
+        initDefaultColumns();
+      }
+    } else {
+      initDefaultColumns();
+    }
+  }, []);
+
+  // Update table when column visibility changes
+  useEffect(() => {
+    if (Object.keys(visibleColumns).length > 0) {
+      // Save to localStorage
+      localStorage.setItem('channels-table-columns', JSON.stringify(visibleColumns));
+    }
+  }, [visibleColumns]);
+
+  // Get default column visibility
+  const getDefaultColumnVisibility = () => {
+    return {
+      [COLUMN_KEYS.ID]: true,
+      [COLUMN_KEYS.NAME]: true,
+      [COLUMN_KEYS.GROUP]: true,
+      [COLUMN_KEYS.TYPE]: true,
+      [COLUMN_KEYS.STATUS]: true,
+      [COLUMN_KEYS.RESPONSE_TIME]: true,
+      [COLUMN_KEYS.BALANCE]: true,
+      [COLUMN_KEYS.PRIORITY]: true,
+      [COLUMN_KEYS.WEIGHT]: true,
+      [COLUMN_KEYS.OPERATE]: true
+    };
+  };
+
+  // Initialize default column visibility
+  const initDefaultColumns = () => {
+    const defaults = getDefaultColumnVisibility();
+    setVisibleColumns(defaults);
+  };
+
+  // Handle column visibility change
+  const handleColumnVisibilityChange = (columnKey, checked) => {
+    const updatedColumns = { ...visibleColumns, [columnKey]: checked };
+    setVisibleColumns(updatedColumns);
+  };
+
+  // Handle "Select All" checkbox
+  const handleSelectAll = (checked) => {
+    const allKeys = Object.keys(COLUMN_KEYS).map(key => COLUMN_KEYS[key]);
+    const updatedColumns = {};
+    
+    allKeys.forEach(key => {
+      updatedColumns[key] = checked;
+    });
+    
+    setVisibleColumns(updatedColumns);
+  };
+
+  // Define all columns with keys
+  const allColumns = [
     {
+      key: COLUMN_KEYS.ID,
       title: t('ID'),
       dataIndex: 'id'
     },
     {
+      key: COLUMN_KEYS.NAME,
       title: t('名称'),
       dataIndex: 'name'
     },
     {
+      key: COLUMN_KEYS.GROUP,
       title: t('分组'),
       dataIndex: 'group',
       render: (text, record, index) => {
@@ -177,6 +263,7 @@ const ChannelsTable = () => {
       }
     },
     {
+      key: COLUMN_KEYS.TYPE,
       title: t('类型'),
       dataIndex: 'type',
       render: (text, record, index) => {
@@ -188,6 +275,7 @@ const ChannelsTable = () => {
       }
     },
     {
+      key: COLUMN_KEYS.STATUS,
       title: t('状态'),
       dataIndex: 'status',
       render: (text, record, index) => {
@@ -211,6 +299,7 @@ const ChannelsTable = () => {
       }
     },
     {
+      key: COLUMN_KEYS.RESPONSE_TIME,
       title: t('响应时间'),
       dataIndex: 'response_time',
       render: (text, record, index) => {
@@ -218,6 +307,7 @@ const ChannelsTable = () => {
       }
     },
     {
+      key: COLUMN_KEYS.BALANCE,
       title: t('已用/剩余'),
       dataIndex: 'expired_time',
       render: (text, record, index) => {
@@ -255,6 +345,7 @@ const ChannelsTable = () => {
       }
     },
     {
+      key: COLUMN_KEYS.PRIORITY,
       title: t('优先级'),
       dataIndex: 'priority',
       render: (text, record, index) => {
@@ -304,6 +395,7 @@ const ChannelsTable = () => {
       }
     },
     {
+      key: COLUMN_KEYS.WEIGHT,
       title: t('权重'),
       dataIndex: 'weight',
       render: (text, record, index) => {
@@ -353,6 +445,7 @@ const ChannelsTable = () => {
       }
     },
     {
+      key: COLUMN_KEYS.OPERATE,
       title: '',
       dataIndex: 'operate',
       render: (text, record, index) => {
@@ -492,6 +585,68 @@ const ChannelsTable = () => {
       }
     }
   ];
+
+  // Filter columns based on visibility settings
+  const getVisibleColumns = () => {
+    return allColumns.filter(column => visibleColumns[column.key]);
+  };
+
+  // Column selector modal
+  const renderColumnSelector = () => {
+    return (
+      <Modal
+        title={t('列设置')}
+        visible={showColumnSelector}
+        onCancel={() => setShowColumnSelector(false)}
+        footer={
+          <>
+            <Button onClick={() => initDefaultColumns()}>{t('重置')}</Button>
+            <Button onClick={() => setShowColumnSelector(false)}>{t('取消')}</Button>
+            <Button type="primary" onClick={() => setShowColumnSelector(false)}>{t('确定')}</Button>
+          </>
+        }
+        style={{ width: 500 }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        <div style={{ marginBottom: 20 }}>
+          <Checkbox
+            checked={Object.values(visibleColumns).every(v => v === true)}
+            indeterminate={Object.values(visibleColumns).some(v => v === true) && !Object.values(visibleColumns).every(v => v === true)}
+            onChange={e => handleSelectAll(e.target.checked)}
+          >
+            {t('全选')}
+          </Checkbox>
+        </div>
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          maxHeight: '400px', 
+          overflowY: 'auto',
+          border: '1px solid var(--semi-color-border)',
+          borderRadius: '6px',
+          padding: '16px'
+        }}>
+          {allColumns.map(column => {
+            // Skip columns without title
+            if (!column.title) {
+              return null;
+            }
+            
+            return (
+              <div key={column.key} style={{ width: '50%', marginBottom: 16, paddingRight: 8 }}>
+                <Checkbox
+                  checked={!!visibleColumns[column.key]}
+                  onChange={e => handleColumnVisibilityChange(column.key, e.target.checked)}
+                >
+                  {column.title}
+                </Checkbox>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
+    );
+  };
 
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1032,6 +1187,7 @@ const ChannelsTable = () => {
 
   return (
     <>
+      {renderColumnSelector()}
       <EditTagModal
         visible={showEditTag}
         tag={editingTag}
@@ -1238,15 +1394,22 @@ const ChannelsTable = () => {
           >
             {t('批量设置标签')}
           </Button>
+          <Button
+            theme="light"
+            type="tertiary"
+            icon={<IconSetting />}
+            onClick={() => setShowColumnSelector(true)}
+            style={{ marginRight: 8 }}
+          >
+            {t('列设置')}
+          </Button>
         </Space>
-
       </div>
 
 
       <Table
-        className={'channel-table'}
-        style={{ marginTop: 15 }}
-        columns={columns}
+        loading={loading}
+        columns={getVisibleColumns()}
         dataSource={pageData}
         pagination={{
           currentPage: activePage,
@@ -1260,7 +1423,6 @@ const ChannelsTable = () => {
           },
           onPageChange: handlePageChange
         }}
-        loading={loading}
         onRow={handleRow}
         rowSelection={
           enableBatchDelete
