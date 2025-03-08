@@ -294,39 +294,36 @@ const SiderBar = () => {
         }}
       >
         {/* Chat Section - Only show if there are chat items */}
-        {chatItems.length > 0 && (
-          <>
-            {chatMenuItems.map((item) => {
-              if (item.items && item.items.length > 0) {
-                return (
-                  <Nav.Sub
-                    key={item.itemKey}
-                    itemKey={item.itemKey}
-                    text={item.text}
-                    icon={item.icon}
-                  >
-                    {item.items.map((subItem) => (
-                      <Nav.Item
-                        key={subItem.itemKey}
-                        itemKey={subItem.itemKey}
-                        text={subItem.text}
-                      />
-                    ))}
-                  </Nav.Sub>
-                );
-              } else {
-                return (
+        {chatMenuItems.map((item) => {
+          if (item.items && item.items.length > 0) {
+            return (
+              <Nav.Sub
+                key={item.itemKey}
+                itemKey={item.itemKey}
+                text={item.text}
+                icon={item.icon}
+              >
+                {item.items.map((subItem) => (
                   <Nav.Item
-                    key={item.itemKey}
-                    itemKey={item.itemKey}
-                    text={item.text}
-                    icon={item.icon}
+                    key={subItem.itemKey}
+                    itemKey={subItem.itemKey}
+                    text={subItem.text}
                   />
-                );
-              }
-            })}
-          </>
-        )}
+                ))}
+              </Nav.Sub>
+            );
+          } else {
+            return (
+              <Nav.Item
+                key={item.itemKey}
+                itemKey={item.itemKey}
+                text={item.text}
+                icon={item.icon}
+              />
+            );
+          }
+        })}
+
 
         {/* Divider */}
         <Divider style={dividerStyle} />
