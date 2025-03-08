@@ -17,10 +17,12 @@ ENV GO111MODULE=on \
 WORKDIR /build
 
 ADD go.mod go.sum ./
+RUN go mod tidy
 RUN go mod download
 
 COPY . .
 COPY --from=builder /build/dist ./web/dist
+RUN go mod tidy
 RUN go build -ldflags "-s -w -X 'one-api/common.Version=$(cat VERSION)'" -o one-api
 
 FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/alpine:latest
