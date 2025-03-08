@@ -21,7 +21,8 @@ import {
   Spin,
   Table,
   Tag,
-  Tooltip
+  Tooltip,
+  Checkbox
 } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import {
@@ -34,7 +35,7 @@ import {
 import Paragraph from '@douyinfe/semi-ui/lib/es/typography/paragraph';
 import { getLogOther } from '../helpers/other.js';
 import { StyleContext } from '../context/Style/index.js';
-import { IconInherit, IconRefresh } from '@douyinfe/semi-icons';
+import { IconInherit, IconRefresh, IconSetting } from '@douyinfe/semi-icons';
 
 const { Header } = Layout;
 
@@ -215,12 +216,104 @@ const LogsTable = () => {
 
   }
 
-  const columns = [
+  // Define column keys for selection
+  const COLUMN_KEYS = {
+    TIME: 'time',
+    CHANNEL: 'channel',
+    USERNAME: 'username',
+    TOKEN: 'token',
+    GROUP: 'group',
+    TYPE: 'type',
+    MODEL: 'model',
+    USE_TIME: 'use_time',
+    PROMPT: 'prompt',
+    COMPLETION: 'completion',
+    COST: 'cost',
+    RETRY: 'retry',
+    DETAILS: 'details'
+  };
+
+  // State for column visibility
+  const [visibleColumns, setVisibleColumns] = useState({});
+  const [showColumnSelector, setShowColumnSelector] = useState(false);
+
+  // Load saved column preferences from localStorage
+  useEffect(() => {
+    const savedColumns = localStorage.getItem('logs-table-columns');
+    if (savedColumns) {
+      try {
+        const parsed = JSON.parse(savedColumns);
+        // Make sure all columns are accounted for
+        const defaults = getDefaultColumnVisibility();
+        const merged = { ...defaults, ...parsed };
+        setVisibleColumns(merged);
+      } catch (e) {
+        console.error('Failed to parse saved column preferences', e);
+        initDefaultColumns();
+      }
+    } else {
+      initDefaultColumns();
+    }
+  }, []);
+
+  // Get default column visibility based on user role
+  const getDefaultColumnVisibility = () => {
+    return {
+      [COLUMN_KEYS.TIME]: true,
+      [COLUMN_KEYS.CHANNEL]: isAdminUser,
+      [COLUMN_KEYS.USERNAME]: isAdminUser,
+      [COLUMN_KEYS.TOKEN]: true,
+      [COLUMN_KEYS.GROUP]: true,
+      [COLUMN_KEYS.TYPE]: true,
+      [COLUMN_KEYS.MODEL]: true,
+      [COLUMN_KEYS.USE_TIME]: true,
+      [COLUMN_KEYS.PROMPT]: true,
+      [COLUMN_KEYS.COMPLETION]: true,
+      [COLUMN_KEYS.COST]: true,
+      [COLUMN_KEYS.RETRY]: isAdminUser,
+      [COLUMN_KEYS.DETAILS]: true
+    };
+  };
+
+  // Initialize default column visibility
+  const initDefaultColumns = () => {
+    const defaults = getDefaultColumnVisibility();
+    setVisibleColumns(defaults);
+    localStorage.setItem('logs-table-columns', JSON.stringify(defaults));
+  };
+
+  // Handle column visibility change
+  const handleColumnVisibilityChange = (columnKey, checked) => {
+    const updatedColumns = { ...visibleColumns, [columnKey]: checked };
+    setVisibleColumns(updatedColumns);
+  };
+
+  // Handle "Select All" checkbox
+  const handleSelectAll = (checked) => {
+    const allKeys = Object.keys(COLUMN_KEYS).map(key => COLUMN_KEYS[key]);
+    const updatedColumns = {};
+    
+    allKeys.forEach(key => {
+      // For admin-only columns, only enable them if user is admin
+      if ((key === COLUMN_KEYS.CHANNEL || key === COLUMN_KEYS.USERNAME || key === COLUMN_KEYS.RETRY) && !isAdminUser) {
+        updatedColumns[key] = false;
+      } else {
+        updatedColumns[key] = checked;
+      }
+    });
+    
+    setVisibleColumns(updatedColumns);
+  };
+
+  // Define all columns
+  const allColumns = [
     {
+      key: COLUMN_KEYS.TIME,
       title: t('时间'),
       dataIndex: 'timestamp2string',
     },
     {
+      key: COLUMN_KEYS.CHANNEL,
       title: t('渠道'),
       dataIndex: 'channel',
       className: isAdmin() ? 'tableShow' : 'tableHiddle',
@@ -249,6 +342,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.USERNAME,
       title: t('用户'),
       dataIndex: 'username',
       className: isAdmin() ? 'tableShow' : 'tableHiddle',
@@ -274,6 +368,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.TOKEN,
       title: t('令牌'),
       dataIndex: 'token_name',
       render: (text, record, index) => {
@@ -297,6 +392,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.GROUP,
       title: t('分组'),
       dataIndex: 'group',
       render: (text, record, index) => {
@@ -333,6 +429,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.TYPE,
       title: t('类型'),
       dataIndex: 'type',
       render: (text, record, index) => {
@@ -340,6 +437,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.MODEL,
       title: t('模型'),
       dataIndex: 'model_name',
       render: (text, record, index) => {
@@ -351,6 +449,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.USE_TIME,
       title: t('用时/首字'),
       dataIndex: 'use_time',
       render: (text, record, index) => {
@@ -378,6 +477,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.PROMPT,
       title: t('提示'),
       dataIndex: 'prompt_tokens',
       render: (text, record, index) => {
@@ -389,6 +489,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.COMPLETION,
       title: t('补全'),
       dataIndex: 'completion_tokens',
       render: (text, record, index) => {
@@ -401,6 +502,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.COST,
       title: t('花费'),
       dataIndex: 'quota',
       render: (text, record, index) => {
@@ -412,6 +514,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.RETRY,
       title: t('重试'),
       dataIndex: 'retry',
       className: isAdmin() ? 'tableShow' : 'tableHiddle',
@@ -439,6 +542,7 @@ const LogsTable = () => {
       },
     },
     {
+      key: COLUMN_KEYS.DETAILS,
       title: t('详情'),
       dataIndex: 'content',
       render: (text, record, index) => {
@@ -480,6 +584,76 @@ const LogsTable = () => {
       },
     },
   ];
+
+  // Update table when column visibility changes
+  useEffect(() => {
+    if (Object.keys(visibleColumns).length > 0) {
+      // Save to localStorage
+      localStorage.setItem('logs-table-columns', JSON.stringify(visibleColumns));
+    }
+  }, [visibleColumns]);
+
+  // Filter columns based on visibility settings
+  const getVisibleColumns = () => {
+    return allColumns.filter(column => visibleColumns[column.key]);
+  };
+
+  // Column selector modal
+  const renderColumnSelector = () => {
+    return (
+      <Modal
+        title={t('列设置')}
+        visible={showColumnSelector}
+        onCancel={() => setShowColumnSelector(false)}
+        footer={
+          <>
+            <Button onClick={() => initDefaultColumns()}>{t('重置')}</Button>
+            <Button onClick={() => setShowColumnSelector(false)}>{t('取消')}</Button>
+            <Button type="primary" onClick={() => setShowColumnSelector(false)}>{t('确定')}</Button>
+          </>
+        }
+      >
+        <div style={{ marginBottom: 20 }}>
+          <Checkbox
+            checked={Object.values(visibleColumns).every(v => v === true)}
+            indeterminate={Object.values(visibleColumns).some(v => v === true) && !Object.values(visibleColumns).every(v => v === true)}
+            onChange={e => handleSelectAll(e.target.checked)}
+          >
+            {t('全选')}
+          </Checkbox>
+        </div>
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap',
+          maxHeight: '400px',
+          overflowY: 'auto',
+          border: '1px solid var(--semi-color-border)',
+          borderRadius: '6px',
+          padding: '16px'
+        }}>
+          {allColumns.map(column => {
+            // Skip admin-only columns for non-admin users
+            if (!isAdminUser && (column.key === COLUMN_KEYS.CHANNEL || 
+                                column.key === COLUMN_KEYS.USERNAME || 
+                                column.key === COLUMN_KEYS.RETRY)) {
+              return null;
+            }
+            
+            return (
+              <div key={column.key} style={{ width: '50%', marginBottom: 16, paddingRight: 8 }}>
+                <Checkbox
+                  checked={!!visibleColumns[column.key]}
+                  onChange={e => handleColumnVisibilityChange(column.key, e.target.checked)}
+                >
+                  {column.title}
+                </Checkbox>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
+    );
+  };
 
   const [styleState, styleDispatch] = useContext(StyleContext);
   const [logs, setLogs] = useState([]);
@@ -782,8 +956,9 @@ const LogsTable = () => {
 
   return (
     <>
+      {renderColumnSelector()}
       <Layout>
-        <Header>
+        <Header style={{ backgroundColor: 'var(--semi-color-bg-1)' }}>
           <Spin spinning={loadingStat}>
             <Space>
               <Tag color='green' size='large' style={{ padding: 15 }}>
@@ -917,10 +1092,19 @@ const LogsTable = () => {
             <Select.Option value='3'>{t('管理')}</Select.Option>
             <Select.Option value='4'>{t('系统')}</Select.Option>
           </Select>
+          <Button
+            theme='light'
+            type='tertiary'
+            icon={<IconSetting />}
+            onClick={() => setShowColumnSelector(true)}
+            style={{ marginLeft: 8 }}
+          >
+            {t('列设置')}
+          </Button>
         </div>
         <Table
           style={{ marginTop: 5 }}
-          columns={columns}
+          columns={getVisibleColumns()}
           expandedRowRender={expandRowRender}
           expandRowByClick={true}
           dataSource={logs}
