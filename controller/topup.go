@@ -19,13 +19,13 @@ import (
 )
 
 type EpayRequest struct {
-	Amount        int    `json:"amount"`
+	Amount        int64  `json:"amount"`
 	PaymentMethod string `json:"payment_method"`
 	TopUpCode     string `json:"top_up_code"`
 }
 
 type AmountRequest struct {
-	Amount    int    `json:"amount"`
+	Amount    int64  `json:"amount"`
 	TopUpCode string `json:"top_up_code"`
 }
 
@@ -43,8 +43,8 @@ func GetEpayClient() *epay.Client {
 	return withUrl
 }
 
-func getPayMoney(amount float64, group string) float64 {
-	dAmount := decimal.NewFromFloat(amount)
+func getPayMoney(amount int64, group string) float64 {
+	dAmount := decimal.NewFromInt(amount)
 
 	if !common.DisplayInCurrencyEnabled {
 		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
@@ -64,14 +64,14 @@ func getPayMoney(amount float64, group string) float64 {
 	return payMoney.InexactFloat64()
 }
 
-func getMinTopup() int {
+func getMinTopup() int64 {
 	minTopup := setting.MinTopUp
 	if !common.DisplayInCurrencyEnabled {
 		dMinTopup := decimal.NewFromInt(int64(minTopup))
 		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
 		minTopup = int(dMinTopup.Mul(dQuotaPerUnit).IntPart())
 	}
-	return minTopup
+	return int64(minTopup)
 }
 
 func RequestEpay(c *gin.Context) {
@@ -92,7 +92,7 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
 		return
 	}
-	payMoney := getPayMoney(float64(req.Amount), group)
+	payMoney := getPayMoney(req.Amount, group)
 	if payMoney < 0.01 {
 		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
 		return
@@ -132,7 +132,7 @@ func RequestEpay(c *gin.Context) {
 	if !common.DisplayInCurrencyEnabled {
 		dAmount := decimal.NewFromInt(int64(amount))
 		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-		amount = int(dAmount.Div(dQuotaPerUnit).IntPart())
+		amount = dAmount.Div(dQuotaPerUnit).IntPart()
 	}
 	topUp := &model.TopUp{
 		UserId:     id,
@@ -258,7 +258,7 @@ func RequestAmount(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
 		return
 	}
-	payMoney := getPayMoney(float64(req.Amount), group)
+	payMoney := getPayMoney(req.Amount, group)
 	if payMoney <= 0.01 {
 		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
 		return
