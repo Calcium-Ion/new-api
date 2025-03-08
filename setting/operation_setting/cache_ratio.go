@@ -8,12 +8,17 @@ import (
 
 var defaultCacheRatio = map[string]float64{
 	"gpt-4":                        0.5,
+	"o1":                           0.5,
 	"o1-2024-12-17":                0.5,
 	"o1-preview-2024-09-12":        0.5,
+	"o1-preview":                   0.5,
 	"o1-mini-2024-09-12":           0.5,
+	"o1-mini":                      0.5,
 	"gpt-4o-2024-11-20":            0.5,
 	"gpt-4o-2024-08-06":            0.5,
+	"gpt-4o":                       0.5,
 	"gpt-4o-mini-2024-07-18":       0.5,
+	"gpt-4o-mini":                  0.5,
 	"gpt-4o-realtime-preview":      0.5,
 	"gpt-4o-mini-realtime-preview": 0.5,
 	"deepseek-chat":                0.1,

@@ -2,9 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/Calcium-Ion/go-epay/epay"
-	"github.com/gin-gonic/gin"
-	"github.com/samber/lo"
 	"log"
 	"net/url"
 	"one-api/common"
@@ -14,6 +11,11 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/Calcium-Ion/go-epay/epay"
+	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
+	"github.com/shopspring/decimal"
 )
 
 type EpayRequest struct {
@@ -42,22 +44,32 @@ func GetEpayClient() *epay.Client {
 }
 
 func getPayMoney(amount float64, group string) float64 {
+	dAmount := decimal.NewFromFloat(amount)
+
 	if !common.DisplayInCurrencyEnabled {
-		amount = amount / common.QuotaPerUnit
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		dAmount = dAmount.Div(dQuotaPerUnit)
 	}
-	// 别问为什么用float64，问就是这么点钱没必要
+
 	topupGroupRatio := common.GetTopupGroupRatio(group)
 	if topupGroupRatio == 0 {
 		topupGroupRatio = 1
 	}
-	payMoney := amount * setting.Price * topupGroupRatio
-	return payMoney
+
+	dTopupGroupRatio := decimal.NewFromFloat(topupGroupRatio)
+	dPrice := decimal.NewFromFloat(setting.Price)
+
+	payMoney := dAmount.Mul(dPrice).Mul(dTopupGroupRatio)
+
+	return payMoney.InexactFloat64()
 }
 
 func getMinTopup() int {
 	minTopup := setting.MinTopUp
 	if !common.DisplayInCurrencyEnabled {
-		minTopup = minTopup * int(common.QuotaPerUnit)
+		dMinTopup := decimal.NewFromInt(int64(minTopup))
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		minTopup = int(dMinTopup.Mul(dQuotaPerUnit).IntPart())
 	}
 	return minTopup
 }
@@ -118,7 +130,9 @@ func RequestEpay(c *gin.Context) {
 	}
 	amount := req.Amount
 	if !common.DisplayInCurrencyEnabled {
-		amount = amount / int(common.QuotaPerUnit)
+		dAmount := decimal.NewFromInt(int64(amount))
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		amount = int(dAmount.Div(dQuotaPerUnit).IntPart())
 	}
 	topUp := &model.TopUp{
 		UserId:     id,
@@ -210,13 +224,16 @@ func EpayNotify(c *gin.Context) {
 			}
 			//user, _ := model.GetUserById(topUp.UserId, false)
 			//user.Quota += topUp.Amount * 500000
-			err = model.IncreaseUserQuota(topUp.UserId, topUp.Amount*int(common.QuotaPerUnit), true)
+			dAmount := decimal.NewFromInt(int64(topUp.Amount))
+			dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+			quotaToAdd := int(dAmount.Mul(dQuotaPerUnit).IntPart())
+			err = model.IncreaseUserQuota(topUp.UserId, quotaToAdd, true)
 			if err != nil {
 				log.Printf("易支付回调更新用户失败: %v", topUp)
 				return
 			}
 			log.Printf("易支付回调更新用户成功 %v", topUp)
-			model.RecordLog(topUp.UserId, model.LogTypeTopup, fmt.Sprintf("使用在线充值成功，充值金额: %v，支付金额：%f", common.LogQuota(topUp.Amount*int(common.QuotaPerUnit)), topUp.Money))
+			model.RecordLog(topUp.UserId, model.LogTypeTopup, fmt.Sprintf("使用在线充值成功，充值金额: %v，支付金额：%f", common.LogQuota(quotaToAdd), topUp.Money))
 		}
 	} else {
 		log.Printf("易支付异常回调: %v", verifyInfo)
