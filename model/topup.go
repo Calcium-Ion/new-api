@@ -3,7 +3,7 @@ package model
 type TopUp struct {
 	Id         int     `json:"id"`
 	UserId     int     `json:"user_id" gorm:"index"`
-	Amount     int     `json:"amount"`
+	Amount     int64   `json:"amount"`
 	Money      float64 `json:"money"`
 	TradeNo    string  `json:"trade_no"`
 	CreateTime int64   `json:"create_time"`
