@@ -3,11 +3,14 @@ package main
 import (
 	"embed"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	"one-api/common"
 	"one-api/constant"
 	"one-api/controller"
+	"one-api/metrics"
 	"one-api/middleware"
 	"one-api/model"
 	"one-api/router"
@@ -89,7 +92,6 @@ func main() {
 
 	// 数据看板
 	go model.UpdateQuotaData()
-
 	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {
 		frequency, err := strconv.Atoi(os.Getenv("CHANNEL_UPDATE_FREQUENCY"))
 		if err != nil {
@@ -111,6 +113,21 @@ func main() {
 		gopool.Go(func() {
 			controller.UpdateTaskBulk()
 		})
+	}
+	if common.IsMasterNode && os.Getenv("ENABLE_METRICS") != "" {
+		register := prometheus.NewRegistry()
+		metrics.RegisterMetrics(register)
+		gatherersRegistry := prometheus.Gatherers{register}
+		go func() {
+			http.Handle("/metrics", promhttp.HandlerFor(gatherersRegistry, promhttp.HandlerOpts{}))
+			metricsPort := "9090"
+			if os.Getenv("METRICS_PORT") != "" {
+				metricsPort = os.Getenv("METRICS_PORT")
+			}
+			log.Println(http.ListenAndServe(fmt.Sprintf("0.0.0.0:%s", metricsPort),
+				nil))
+		}()
+
 	}
 	if os.Getenv("BATCH_UPDATE_ENABLED") == "true" {
 		common.BatchUpdateEnabled = true
