@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
-	"math"
 	"one-api/common"
 	constant2 "one-api/constant"
 	"one-api/dto"
@@ -44,16 +43,18 @@ func calculateAudioQuota(info QuotaInfo) int {
 	audioCompletionRatio := operation_setting.GetAudioCompletionRatio(info.ModelName)
 	ratio := info.GroupRatio * info.ModelRatio
 
-	quota := info.InputDetails.TextTokens + int(math.Round(float64(info.OutputDetails.TextTokens)*completionRatio))
-	quota += int(math.Round(float64(info.InputDetails.AudioTokens)*audioRatio)) +
-		int(math.Round(float64(info.OutputDetails.AudioTokens)*audioRatio*audioCompletionRatio))
+	quota := 0.0
+	quota += float64(info.InputDetails.TextTokens)
+	quota += float64(info.OutputDetails.TextTokens) * completionRatio
+	quota += float64(info.InputDetails.AudioTokens) * audioRatio
+	quota += float64(info.OutputDetails.AudioTokens) * audioRatio * audioCompletionRatio
 
-	quota = int(math.Round(float64(quota) * ratio))
+	quota = quota * ratio
 	if ratio != 0 && quota <= 0 {
 		quota = 1
 	}
 
-	return quota
+	return int(quota)
 }
 
 func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usage *dto.RealtimeUsage) error {
