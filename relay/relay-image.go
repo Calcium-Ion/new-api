@@ -10,12 +10,15 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/dto"
+	"one-api/metrics"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/helper"
 	"one-api/service"
 	"one-api/setting"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.ImageRequest, error) {
@@ -70,7 +73,8 @@ func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	return imageRequest, nil
 }
 
-func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
+func ImageHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
+	startTime := time.Now()
 	relayInfo := relaycommon.GenRelayInfo(c)
 
 	imageRequest, err := getAndValidImageRequest(c, relayInfo)
@@ -78,17 +82,28 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		common.LogError(c, fmt.Sprintf("getAndValidImageRequest failed: %s", err.Error()))
 		return service.OpenAIErrorWrapper(err, "invalid_image_request", http.StatusBadRequest)
 	}
-
+	var funcErr *dto.OpenAIErrorWithStatusCode
+	metrics.IncrementRelayRequestTotalCounter(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, 1)
+	defer func() {
+		if openaiErr != nil {
+			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), openaiErr.Error.Message, 1)
+		} else {
+			metrics.IncrementRelayRequestSuccessCounter(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, 1)
+			metrics.ObserveRelayRequestDuration(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, time.Since(startTime).Seconds())
+		}
+	}()
 	err = helper.ModelMappedHelper(c, relayInfo)
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "model_mapped_error", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "model_mapped_error", http.StatusInternalServerError)
+		return funcErr
 	}
 
 	imageRequest.Model = relayInfo.UpstreamModelName
 
 	priceData, err := helper.ModelPriceHelper(c, relayInfo, 0, 0)
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "model_price_error", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "model_price_error", http.StatusInternalServerError)
+		return funcErr
 	}
 	if !priceData.UsePrice {
 		// modelRatio 16 = modelPrice $0.04
@@ -122,12 +137,14 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 	quota := int(priceData.ModelPrice * priceData.GroupRatio * common.QuotaPerUnit)
 
 	if userQuota-quota < 0 {
-		return service.OpenAIErrorWrapperLocal(fmt.Errorf("image pre-consumed quota failed, user quota: %s, need quota: %s", common.FormatQuota(userQuota), common.FormatQuota(quota)), "insufficient_user_quota", http.StatusForbidden)
+		funcErr = service.OpenAIErrorWrapperLocal(fmt.Errorf("image pre-consumed quota failed, user quota: %s, need quota: %s", common.FormatQuota(userQuota), common.FormatQuota(quota)), "insufficient_user_quota", http.StatusForbidden)
+		return funcErr
 	}
 
 	adaptor := GetAdaptor(relayInfo.ApiType)
 	if adaptor == nil {
-		return service.OpenAIErrorWrapperLocal(fmt.Errorf("invalid api type: %d", relayInfo.ApiType), "invalid_api_type", http.StatusBadRequest)
+		funcErr = service.OpenAIErrorWrapperLocal(fmt.Errorf("invalid api type: %d", relayInfo.ApiType), "invalid_api_type", http.StatusBadRequest)
+		return funcErr
 	}
 	adaptor.Init(relayInfo)
 
@@ -135,12 +152,14 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	convertedRequest, err := adaptor.ConvertImageRequest(c, relayInfo, *imageRequest)
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
+		return funcErr
 	}
 
 	jsonData, err := json.Marshal(convertedRequest)
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
+		return funcErr
 	}
 	requestBody = bytes.NewBuffer(jsonData)
 
@@ -148,7 +167,8 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
+		return funcErr
 	}
 	var httpResp *http.Response
 	if resp != nil {
@@ -156,14 +176,16 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		relayInfo.IsStream = relayInfo.IsStream || strings.HasPrefix(httpResp.Header.Get("Content-Type"), "text/event-stream")
 		if httpResp.StatusCode != http.StatusOK {
 			openaiErr := service.RelayErrorHandler(httpResp)
+			funcErr = openaiErr
 			// reset status code 重置状态码
 			service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 			return openaiErr
 		}
 	}
 
-	_, openaiErr := adaptor.DoResponse(c, httpResp, relayInfo)
+	_, openaiErr = adaptor.DoResponse(c, httpResp, relayInfo)
 	if openaiErr != nil {
+		funcErr = openaiErr
 		// reset status code 重置状态码
 		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 		return openaiErr

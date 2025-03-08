@@ -12,12 +12,14 @@ import (
 	"one-api/common"
 	"one-api/constant"
 	"one-api/dto"
+	"one-api/metrics"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
 	relayconstant "one-api/relay/constant"
 	"one-api/relay/helper"
 	"one-api/service"
 	"one-api/setting"
+	"strconv"
 	"strings"
 	"time"
 
@@ -67,7 +69,7 @@ func getAndValidateTextRequest(c *gin.Context, relayInfo *relaycommon.RelayInfo)
 }
 
 func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
-
+	startTime := time.Now()
 	relayInfo := relaycommon.GenRelayInfo(c)
 
 	// get & validate textRequest 获取并验证文本请求
@@ -76,18 +78,30 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		common.LogError(c, fmt.Sprintf("getAndValidateTextRequest failed: %s", err.Error()))
 		return service.OpenAIErrorWrapperLocal(err, "invalid_text_request", http.StatusBadRequest)
 	}
+	var funcErr *dto.OpenAIErrorWithStatusCode
+	metrics.IncrementRelayRequestTotalCounter(strconv.Itoa(relayInfo.ChannelId), textRequest.Model, relayInfo.Group, 1)
+	defer func() {
+		if funcErr != nil {
+			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), textRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), funcErr.Error.Message, 1)
+		} else {
+			metrics.IncrementRelayRequestSuccessCounter(strconv.Itoa(relayInfo.ChannelId), textRequest.Model, relayInfo.Group, 1)
+			metrics.ObserveRelayRequestDuration(strconv.Itoa(relayInfo.ChannelId), textRequest.Model, relayInfo.Group, time.Since(startTime).Seconds())
+		}
+	}()
 
 	if setting.ShouldCheckPromptSensitive() {
 		words, err := checkRequestSensitive(textRequest, relayInfo)
 		if err != nil {
+			funcErr = service.OpenAIErrorWrapperLocal(err, "sensitive_words_detected", http.StatusBadRequest)
 			common.LogWarn(c, fmt.Sprintf("user sensitive words detected: %s", strings.Join(words, ", ")))
-			return service.OpenAIErrorWrapperLocal(err, "sensitive_words_detected", http.StatusBadRequest)
+			return funcErr
 		}
 	}
 
 	err = helper.ModelMappedHelper(c, relayInfo)
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "model_mapped_error", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "model_mapped_error", http.StatusInternalServerError)
+		return funcErr
 	}
 
 	textRequest.Model = relayInfo.UpstreamModelName
@@ -101,19 +115,22 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		promptTokens, err = getPromptTokens(textRequest, relayInfo)
 		// count messages token error 计算promptTokens错误
 		if err != nil {
-			return service.OpenAIErrorWrapper(err, "count_token_messages_failed", http.StatusInternalServerError)
+			funcErr = service.OpenAIErrorWrapper(err, "count_token_messages_failed", http.StatusInternalServerError)
+			return funcErr
 		}
 		c.Set("prompt_tokens", promptTokens)
 	}
 
 	priceData, err := helper.ModelPriceHelper(c, relayInfo, promptTokens, int(textRequest.MaxTokens))
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "model_price_error", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "model_price_error", http.StatusInternalServerError)
+		return funcErr
 	}
 
 	// pre-consume quota 预消耗配额
 	preConsumedQuota, userQuota, openaiErr := preConsumeQuota(c, priceData.ShouldPreConsumedQuota, relayInfo)
 	if openaiErr != nil {
+		funcErr = openaiErr
 		return openaiErr
 	}
 	defer func() {
@@ -145,7 +162,8 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 
 	adaptor := GetAdaptor(relayInfo.ApiType)
 	if adaptor == nil {
-		return service.OpenAIErrorWrapperLocal(fmt.Errorf("invalid api type: %d", relayInfo.ApiType), "invalid_api_type", http.StatusBadRequest)
+		funcErr = service.OpenAIErrorWrapperLocal(fmt.Errorf("invalid api type: %d", relayInfo.ApiType), "invalid_api_type", http.StatusBadRequest)
+		return funcErr
 	}
 	adaptor.Init(relayInfo)
 	var requestBody io.Reader
@@ -162,11 +180,13 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 
 	convertedRequest, err := adaptor.ConvertRequest(c, relayInfo, textRequest)
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
+		return funcErr
 	}
 	jsonData, err := json.Marshal(convertedRequest)
 	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
+		return funcErr
 	}
 	requestBody = bytes.NewBuffer(jsonData)
 
@@ -174,7 +194,8 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	var httpResp *http.Response
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
+		funcErr = service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
+		return funcErr
 	}
 
 	if resp != nil {
@@ -182,6 +203,7 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		relayInfo.IsStream = relayInfo.IsStream || strings.HasPrefix(httpResp.Header.Get("Content-Type"), "text/event-stream")
 		if httpResp.StatusCode != http.StatusOK {
 			openaiErr = service.RelayErrorHandler(httpResp)
+			funcErr = openaiErr
 			// reset status code 重置状态码
 			service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 			return openaiErr
@@ -190,6 +212,7 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 
 	usage, openaiErr := adaptor.DoResponse(c, httpResp, relayInfo)
 	if openaiErr != nil {
+		funcErr = openaiErr
 		// reset status code 重置状态码
 		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 		return openaiErr
@@ -332,7 +355,7 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 		quota = int(modelPrice * common.QuotaPerUnit * groupRatio)
 	}
 	totalTokens := promptTokens + completionTokens
-	
+
 	var logContent string
 	if !priceData.UsePrice {
 		logContent = fmt.Sprintf("模型倍率 %.2f，补全倍率 %.2f，分组倍率 %.2f", modelRatio, completionRatio, groupRatio)

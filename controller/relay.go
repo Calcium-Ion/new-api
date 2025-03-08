@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"one-api/common"
 	"one-api/dto"
+	"one-api/metrics"
 	"one-api/middleware"
 	"one-api/model"
 	"one-api/relay"
@@ -18,6 +19,7 @@ import (
 	relayconstant "one-api/relay/constant"
 	"one-api/relay/helper"
 	"one-api/service"
+	"strconv"
 	"strings"
 )
 
@@ -48,13 +50,15 @@ func Relay(c *gin.Context) {
 	group := c.GetString("group")
 	originalModel := c.GetString("original_model")
 	var openaiErr *dto.OpenAIErrorWithStatusCode
-
 	for i := 0; i <= common.RetryTimes; i++ {
 		channel, err := getChannel(c, group, originalModel, i)
 		if err != nil {
 			common.LogError(c, err.Error())
 			openaiErr = service.OpenAIErrorWrapperLocal(err, "get_channel_failed", http.StatusInternalServerError)
 			break
+		}
+		if i > 0 {
+			metrics.IncrementRelayRetryCounter(strconv.Itoa(channel.Id), group, 1)
 		}
 
 		openaiErr = relayRequest(c, relayMode, channel)
