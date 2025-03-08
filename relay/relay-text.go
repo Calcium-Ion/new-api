@@ -320,19 +320,20 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	groupRatio := priceData.GroupRatio
 	modelPrice := priceData.ModelPrice
 
-	quota := 0
+	quotaCalculate := 0.0
 	if !priceData.UsePrice {
-		quota = (promptTokens - cacheTokens) + int(math.Round(float64(cacheTokens)*cacheRatio))
-		quota += int(math.Round(float64(completionTokens) * completionRatio))
-		quota = int(math.Round(float64(quota) * ratio))
-		if ratio != 0 && quota <= 0 {
-			quota = 1
+		quotaCalculate = float64(promptTokens-cacheTokens) + float64(cacheTokens)*cacheRatio
+		quotaCalculate += float64(completionTokens) * completionRatio
+		quotaCalculate = quotaCalculate * ratio
+		if ratio != 0 && quotaCalculate <= 0 {
+			quotaCalculate = 1
 		}
 	} else {
-		quota = int(modelPrice * common.QuotaPerUnit * groupRatio)
+		quotaCalculate = modelPrice * common.QuotaPerUnit * groupRatio
 	}
+	quota := int(quotaCalculate)
 	totalTokens := promptTokens + completionTokens
-	
+
 	var logContent string
 	if !priceData.UsePrice {
 		logContent = fmt.Sprintf("模型倍率 %.2f，补全倍率 %.2f，分组倍率 %.2f", modelRatio, completionRatio, groupRatio)
