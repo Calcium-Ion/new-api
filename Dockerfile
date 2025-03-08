@@ -11,7 +11,8 @@ FROM golang:alpine AS builder2
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
-    GOOS=linux
+    GOOS=linux \
+    GOPROXY=https://goproxy.cn
 
 WORKDIR /build
 
@@ -24,7 +25,8 @@ RUN go build -ldflags "-s -w -X 'one-api/common.Version=$(cat VERSION)'" -o one-
 
 FROM alpine
 
-RUN apk update \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk update \
     && apk upgrade \
     && apk add --no-cache ca-certificates tzdata ffmpeg \
     && update-ca-certificates
