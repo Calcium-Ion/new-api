@@ -34,8 +34,8 @@ const OperationSetting = () => {
     GroupRatio: '',
     UserUsableGroups: '',
     TopUpLink: '',
-    ChatLink: '',
-    ChatLink2: '', // 添加的新状态变量
+    'general_setting.docs_link': '',
+    // ChatLink2: '', // 添加的新状态变量
     QuotaPerUnit: 0,
     AutomaticDisableChannelEnabled: false,
     AutomaticEnableChannelEnabled: false,

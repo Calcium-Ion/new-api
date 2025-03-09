@@ -19,14 +19,19 @@ export function setStatusData(data) {
   );
   localStorage.setItem('mj_notify_enabled', data.mj_notify_enabled);
   if (data.chat_link) {
-    localStorage.setItem('chat_link', data.chat_link);
+    // localStorage.setItem('chat_link', data.chat_link);
   } else {
     localStorage.removeItem('chat_link');
   }
   if (data.chat_link2) {
-    localStorage.setItem('chat_link2', data.chat_link2);
+    // localStorage.setItem('chat_link2', data.chat_link2);
   } else {
     localStorage.removeItem('chat_link2');
+  }
+  if (data.docs_link) {
+    localStorage.setItem('docs_link', data.docs_link);
+  } else {
+    localStorage.removeItem('docs_link');
   }
 }
 

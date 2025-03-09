@@ -196,31 +196,28 @@ const SiderBar = () => {
     }
     setSelectedKeys([localKey]);
 
-    let chatLink = localStorage.getItem('chat_link');
-    if (!chatLink) {
-      let chats = localStorage.getItem('chats');
-      if (chats) {
-        // console.log(chats);
-        try {
-          chats = JSON.parse(chats);
-          if (Array.isArray(chats)) {
-            let chatItems = [];
-            for (let i = 0; i < chats.length; i++) {
-              let chat = {};
-              for (let key in chats[i]) {
-                chat.text = key;
-                chat.itemKey = 'chat' + i;
-                chat.to = '/chat/' + i;
-              }
-              // setRouterMap({ ...routerMap, chat: '/chat/' + i })
-              chatItems.push(chat);
+    let chats = localStorage.getItem('chats');
+    if (chats) {
+      // console.log(chats);
+      try {
+        chats = JSON.parse(chats);
+        if (Array.isArray(chats)) {
+          let chatItems = [];
+          for (let i = 0; i < chats.length; i++) {
+            let chat = {};
+            for (let key in chats[i]) {
+              chat.text = key;
+              chat.itemKey = 'chat' + i;
+              chat.to = '/chat/' + i;
             }
-            setChatItems(chatItems);
+            // setRouterMap({ ...routerMap, chat: '/chat/' + i })
+            chatItems.push(chat);
           }
-        } catch (e) {
-          console.error(e);
-          showError('聊天数据解析失败')
+          setChatItems(chatItems);
         }
+      } catch (e) {
+        console.error(e);
+        showError('聊天数据解析失败')
       }
     }
 
@@ -254,24 +251,21 @@ const SiderBar = () => {
         }}
         selectedKeys={selectedKeys}
         renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
-          let chatLink = localStorage.getItem('chat_link');
-          if (!chatLink) {
-            let chats = localStorage.getItem('chats');
-            if (chats) {
-              chats = JSON.parse(chats);
-              if (Array.isArray(chats) && chats.length > 0) {
-                for (let i = 0; i < chats.length; i++) {
-                  routerMap['chat' + i] = '/chat/' + i;
+          let chats = localStorage.getItem('chats');
+          if (chats) {
+            chats = JSON.parse(chats);
+            if (Array.isArray(chats) && chats.length > 0) {
+              for (let i = 0; i < chats.length; i++) {
+                routerMap['chat' + i] = '/chat/' + i;
+              }
+              if (chats.length > 1) {
+                // delete /chat
+                if (routerMap['chat']) {
+                  delete routerMap['chat'];
                 }
-                if (chats.length > 1) {
-                  // delete /chat
-                  if (routerMap['chat']) {
-                    delete routerMap['chat'];
-                  }
-                } else {
-                  // rename /chat to /chat/0
-                  routerMap['chat'] = '/chat/0';
-                }
+              } else {
+                // rename /chat to /chat/0
+                routerMap['chat'] = '/chat/0';
               }
             }
           }

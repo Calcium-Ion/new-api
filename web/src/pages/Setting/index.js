@@ -16,10 +16,7 @@ const Setting = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [tabActiveKey, setTabActiveKey] = useState('1');
-  let panes = [
-    {
-    },
-  ];
+  let panes = [];
 
   if (isRoot()) {
     panes.push({

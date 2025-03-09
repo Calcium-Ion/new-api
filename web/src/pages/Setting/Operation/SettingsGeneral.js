@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Banner, Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { Banner, Button, Col, Form, Row, Spin, Collapse, Modal } from '@douyinfe/semi-ui';
 import {
   compareObjects,
   API,
@@ -12,10 +12,10 @@ import { useTranslation } from 'react-i18next';
 export default function GeneralSettings(props) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [showQuotaWarning, setShowQuotaWarning] = useState(false);
   const [inputs, setInputs] = useState({
     TopUpLink: '',
-    ChatLink: '',
-    ChatLink2: '',
+    'general_setting.docs_link': '',
     QuotaPerUnit: '',
     RetryTimes: '',
     DisplayInCurrencyEnabled: false,
@@ -104,20 +104,10 @@ export default function GeneralSettings(props) {
               </Col>
               <Col span={8}>
                 <Form.Input
-                  field={'ChatLink'}
-                  label={t('默认聊天页面链接')}
+                  field={'general_setting.docs_link'}
+                  label={t('文档地址')}
                   initValue={''}
-                  placeholder={t('例如 ChatGPT Next Web 的部署地址')}
-                  onChange={onChange}
-                  showClear
-                />
-              </Col>
-              <Col span={8}>
-                <Form.Input
-                  field={'ChatLink2'}
-                  label={t('聊天页面 2 链接')}
-                  initValue={''}
-                  placeholder={t('例如 ChatGPT Next Web 的部署地址')}
+                  placeholder={t('例如 https://docs.newapi.pro')}
                   onChange={onChange}
                   showClear
                 />
@@ -130,6 +120,7 @@ export default function GeneralSettings(props) {
                   placeholder={t('一单位货币能兑换的额度')}
                   onChange={onChange}
                   showClear
+                  onClick={() => setShowQuotaWarning(true)}
                 />
               </Col>
               <Col span={8}>
@@ -231,6 +222,23 @@ export default function GeneralSettings(props) {
           </Form.Section>
         </Form>
       </Spin>
+      
+      <Modal
+        title={t('警告')}
+        visible={showQuotaWarning}
+        onOk={() => setShowQuotaWarning(false)}
+        onCancel={() => setShowQuotaWarning(false)}
+        closeOnEsc={true}
+        width={500}
+      >
+        <Banner
+          type='warning'
+          description={t('此设置用于系统内部计算，默认值500000是为了精确到6位小数点设计，不推荐修改。')}
+          bordered
+          fullMode={false}
+          closeIcon={null}
+        />
+      </Modal>
     </>
   );
 }
