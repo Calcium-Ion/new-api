@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bytedance/gopkg/util/gopool"
 	"io"
 	"math"
 	"net/http"
@@ -20,6 +19,9 @@ import (
 	"one-api/setting"
 	"strings"
 	"time"
+
+	"github.com/bytedance/gopkg/util/gopool"
+	"github.com/shopspring/decimal"
 
 	"github.com/gin-gonic/gin"
 )
@@ -110,7 +112,7 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	if err != nil {
 		return service.OpenAIErrorWrapperLocal(err, "model_price_error", http.StatusInternalServerError)
 	}
-	
+
 	// pre-consume quota 预消耗配额
 	preConsumedQuota, userQuota, openaiErr := preConsumeQuota(c, priceData.ShouldPreConsumedQuota, relayInfo)
 	if openaiErr != nil {
@@ -304,34 +306,55 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 			CompletionTokens: 0,
 			TotalTokens:      relayInfo.PromptTokens,
 		}
-		extraContent += "  ，（可能是请求出错）"
+		extraContent += "（可能是请求出错）"
 	}
 	useTimeSeconds := time.Now().Unix() - relayInfo.StartTime.Unix()
 	promptTokens := usage.PromptTokens
+	cacheTokens := usage.PromptTokensDetails.CachedTokens
 	completionTokens := usage.CompletionTokens
 	modelName := relayInfo.OriginModelName
 
 	tokenName := ctx.GetString("token_name")
-	completionRatio := setting.GetCompletionRatio(modelName)
-	ratio := priceData.ModelRatio * priceData.GroupRatio
+	completionRatio := priceData.CompletionRatio
+	cacheRatio := priceData.CacheRatio
 	modelRatio := priceData.ModelRatio
 	groupRatio := priceData.GroupRatio
 	modelPrice := priceData.ModelPrice
-	usePrice := priceData.UsePrice
 
-	quota := 0
+	// Convert values to decimal for precise calculation
+	dPromptTokens := decimal.NewFromInt(int64(promptTokens))
+	dCacheTokens := decimal.NewFromInt(int64(cacheTokens))
+	dCompletionTokens := decimal.NewFromInt(int64(completionTokens))
+	dCompletionRatio := decimal.NewFromFloat(completionRatio)
+	dCacheRatio := decimal.NewFromFloat(cacheRatio)
+	dModelRatio := decimal.NewFromFloat(modelRatio)
+	dGroupRatio := decimal.NewFromFloat(groupRatio)
+	dModelPrice := decimal.NewFromFloat(modelPrice)
+	dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+
+	ratio := dModelRatio.Mul(dGroupRatio)
+
+	var quotaCalculateDecimal decimal.Decimal
 	if !priceData.UsePrice {
-		quota = promptTokens + int(math.Round(float64(completionTokens)*completionRatio))
-		quota = int(math.Round(float64(quota) * ratio))
-		if ratio != 0 && quota <= 0 {
-			quota = 1
+		nonCachedTokens := dPromptTokens.Sub(dCacheTokens)
+		cachedTokensWithRatio := dCacheTokens.Mul(dCacheRatio)
+		promptQuota := nonCachedTokens.Add(cachedTokensWithRatio)
+		completionQuota := dCompletionTokens.Mul(dCompletionRatio)
+
+		quotaCalculateDecimal = promptQuota.Add(completionQuota).Mul(ratio)
+
+		if !ratio.IsZero() && quotaCalculateDecimal.LessThanOrEqual(decimal.Zero) {
+			quotaCalculateDecimal = decimal.NewFromInt(1)
 		}
 	} else {
-		quota = int(modelPrice * common.QuotaPerUnit * groupRatio)
+		quotaCalculateDecimal = dModelPrice.Mul(dQuotaPerUnit).Mul(dGroupRatio)
 	}
+
+	quota := int(quotaCalculateDecimal.Round(0).IntPart())
 	totalTokens := promptTokens + completionTokens
+
 	var logContent string
-	if !usePrice {
+	if !priceData.UsePrice {
 		logContent = fmt.Sprintf("模型倍率 %.2f，补全倍率 %.2f，分组倍率 %.2f", modelRatio, completionRatio, groupRatio)
 	} else {
 		logContent = fmt.Sprintf("模型价格 %.2f，分组倍率 %.2f", modelPrice, groupRatio)
@@ -346,9 +369,6 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 		common.LogError(ctx, fmt.Sprintf("total tokens is 0, cannot consume quota, userId %d, channelId %d, "+
 			"tokenId %d, model %s， pre-consumed quota %d", relayInfo.UserId, relayInfo.ChannelId, relayInfo.TokenId, modelName, preConsumedQuota))
 	} else {
-		//if sensitiveResp != nil {
-		//	logContent += fmt.Sprintf("，敏感词：%s", strings.Join(sensitiveResp.SensitiveWords, ", "))
-		//}
 		quotaDelta := quota - preConsumedQuota
 		if quotaDelta != 0 {
 			err := service.PostConsumeQuota(relayInfo, quotaDelta, preConsumedQuota, true)
@@ -372,11 +392,7 @@ func postConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	if extraContent != "" {
 		logContent += ", " + extraContent
 	}
-	other := service.GenerateTextOtherInfo(ctx, relayInfo, modelRatio, groupRatio, completionRatio, modelPrice)
+	other := service.GenerateTextOtherInfo(ctx, relayInfo, modelRatio, groupRatio, completionRatio, cacheTokens, cacheRatio, modelPrice)
 	model.RecordConsumeLog(ctx, relayInfo.UserId, relayInfo.ChannelId, promptTokens, completionTokens, logModel,
 		tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, relayInfo.Group, other)
-
-	//if quota != 0 {
-	//
-	//}
 }

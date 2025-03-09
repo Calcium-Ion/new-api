@@ -1338,5 +1338,9 @@
   "0.1-1之间的小数": "Decimal between 0.1 and 1",
   "模型相关设置": "Model related settings",
   "收起侧边栏": "Collapse sidebar",
-  "展开侧边栏": "Expand sidebar"
+  "展开侧边栏": "Expand sidebar",
+  "提示缓存倍率": "Prompt cache ratio",
+  "缓存：${{price}} * {{ratio}} = ${{total}} / 1M tokens (缓存倍率: {{cacheRatio}})": "Cache: ${{price}} * {{ratio}} = ${{total}} / 1M tokens (cache ratio: {{cacheRatio}})",
+  "提示 {{nonCacheInput}} tokens + 缓存 {{cacheInput}} tokens * {{cacheRatio}} / 1M tokens * ${{price}} + 补全 {{completion}} tokens / 1M tokens * ${{compPrice}} * 分组 {{ratio}} = ${{total}}": "Prompt {{nonCacheInput}} tokens + cache {{cacheInput}} tokens * {{cacheRatio}} / 1M tokens * ${{price}} + completion {{completion}} tokens / 1M tokens * ${{compPrice}} * group {{ratio}} = ${{total}}",
+  "缓存 Tokens": "Cache Tokens"
 }

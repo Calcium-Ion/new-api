@@ -28,6 +28,7 @@ const OperationSetting = () => {
     PreConsumedQuota: 0,
     StreamCacheQueueLength: 0,
     ModelRatio: '',
+    CacheRatio: '',
     CompletionRatio: '',
     ModelPrice: '',
     GroupRatio: '',
@@ -77,7 +78,8 @@ const OperationSetting = () => {
           item.key === 'GroupRatio' ||
           item.key === 'UserUsableGroups' ||
           item.key === 'CompletionRatio' ||
-          item.key === 'ModelPrice'
+          item.key === 'ModelPrice' ||
+          item.key === 'CacheRatio'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }

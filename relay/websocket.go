@@ -11,6 +11,7 @@ import (
 	relaycommon "one-api/relay/common"
 	"one-api/service"
 	"one-api/setting"
+	"one-api/setting/operation_setting"
 )
 
 func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWithStatusCode) {
@@ -39,7 +40,7 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 		}
 	}
 	//relayInfo.UpstreamModelName = textRequest.Model
-	modelPrice, getModelPriceSuccess := setting.GetModelPrice(relayInfo.UpstreamModelName, false)
+	modelPrice, getModelPriceSuccess := operation_setting.GetModelPrice(relayInfo.UpstreamModelName, false)
 	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 
 	var preConsumedQuota int
@@ -65,7 +66,7 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 		//if realtimeEvent.Session.MaxResponseOutputTokens != 0 {
 		//	preConsumedTokens = promptTokens + int(realtimeEvent.Session.MaxResponseOutputTokens)
 		//}
-		modelRatio, _ = setting.GetModelRatio(relayInfo.UpstreamModelName)
+		modelRatio, _ = operation_setting.GetModelRatio(relayInfo.UpstreamModelName)
 		ratio = modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
 	} else {
