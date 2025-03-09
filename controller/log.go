@@ -150,7 +150,7 @@ func GetLogsStat(c *gin.Context) {
 	channel, _ := strconv.Atoi(c.Query("channel"))
 	group := c.Query("group")
 	stat := model.SumUsedQuota(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel, group)
-	totalTokens, tokenStat := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, "")
+	totalTokens, tokenStat := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
