@@ -206,7 +206,7 @@ export function renderNumber(num) {
     return (num / 1000).toFixed(1) + 'k';
   } else {
     return num;
-  }
+  } 
 }
 
 export function renderQuotaNumberWithDigit(num, digits = 2) {
