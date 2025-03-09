@@ -62,20 +62,57 @@ const PageLayout = () => {
     if (savedLang) {
       i18n.changeLanguage(savedLang);
     }
+    
+    // 默认显示侧边栏
+    styleDispatch({ type: 'SET_SIDER', payload: true });
   }, [i18n]);
+
+  // 获取侧边栏折叠状态
+  const isSidebarCollapsed = localStorage.getItem('default_collapse_sidebar') === 'true';
 
   return (
     <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header>
+      <Header style={{ 
+        padding: 0, 
+        height: 'auto', 
+        lineHeight: 'normal', 
+        position: 'fixed', 
+        width: '100%', 
+        top: 0, 
+        zIndex: 100,
+        boxShadow: '0 1px 6px rgba(0, 0, 0, 0.08)'
+      }}>
         <HeaderBar />
       </Header>
-      <Layout style={{ flex: 1, overflow: 'hidden' }}>
-        <Sider>
-          {styleState.showSider ? <SiderBar /> : null}
-        </Sider>
-        <Layout>
+      <Layout style={{ marginTop: '56px', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
+        {styleState.showSider && (
+          <Sider style={{ 
+            height: 'calc(100vh - 56px)', 
+            position: 'fixed',
+            left: 0,
+            top: '56px',
+            zIndex: 90,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            width: 'auto',
+            background: 'transparent',
+            boxShadow: 'none',
+            border: 'none',
+            paddingRight: '5px'
+          }}>
+            <SiderBar />
+          </Sider>
+        )}
+        <Layout style={{ 
+          marginLeft: styleState.showSider ? (isSidebarCollapsed ? '60px' : '200px') : '0', 
+          transition: 'margin-left 0.3s ease'
+        }}>
           <Content
-            style={{ overflowY: 'auto', padding: styleState.shouldInnerPadding? '24px': '0' }}
+            style={{ 
+              height: '100%',
+              overflowY: 'auto', 
+              padding: styleState.shouldInnerPadding? '24px': '0' 
+            }}
           >
             <App />
           </Content>

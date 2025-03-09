@@ -1,7 +1,7 @@
 body {
   margin: 0;
-  padding-top: 55px;
-  overflow-y: scroll;
+  padding-top: 0;
+  overflow: hidden;
   font-family: Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei',
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -15,6 +15,7 @@ body {
 #root {
   height: 100vh;
   flex-direction: column;
+  overflow: hidden;
 }
 
 #root > section > header > section > div > div > div > div.semi-navigation-header-list-outer > div.semi-navigation-list-wrapper > ul > div > a > li > span{
@@ -29,6 +30,15 @@ body {
   /*.semi-navigation-sub-wrap .semi-navigation-sub-title, .semi-navigation-item {*/
   /*  padding: 0 0;*/
   /*}*/
+  .topnav {
+    padding: 0 8px;
+  }
+  
+  .topnav .semi-navigation-item {
+    margin: 0 1px;
+    padding: 0 4px;
+  }
+  
   .topnav .semi-navigation-list-wrapper {
     max-width: calc(55vw - 20px);
     overflow-x: auto;
@@ -120,6 +130,38 @@ code {
   margin-bottom: 0;
 }
 
+/* 自定义侧边栏按钮悬停效果 */
+.semi-navigation-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(var(--semi-color-primary-rgb), 0.2);
+}
+
+/* 自定义侧边栏按钮选中效果 */
+.semi-navigation-item-selected {
+  position: relative;
+  overflow: hidden;
+}
+
+.semi-navigation-item-selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: var(--semi-color-primary);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 .semi-navigation-vertical {
   /*flex: 0 0 auto;*/
   /*display: flex;*/
@@ -146,4 +188,68 @@ code {
   .hide-on-mobile {
     display: none !important;
   }
+}
+
+/* 顶部栏样式 */
+.topnav {
+  padding: 0 16px;
+}
+
+.topnav .semi-navigation-item {
+  border-radius: 4px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+}
+
+.topnav .semi-navigation-item:hover {
+  background-color: var(--semi-color-primary-light-default);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(var(--semi-color-primary-rgb), 0.2);
+}
+
+.topnav .semi-navigation-item-selected {
+  background-color: var(--semi-color-primary-light-default);
+  color: var(--semi-color-primary);
+  font-weight: 600;
+}
+
+/* 顶部栏文本样式 */
+.header-bar-text {
+  color: var(--semi-color-text-0);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.header-bar-text:hover {
+  color: var(--semi-color-primary);
+}
+
+/* 自定义滚动条样式 */
+.semi-layout-content::-webkit-scrollbar,
+.semi-sider::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.semi-layout-content::-webkit-scrollbar-thumb,
+.semi-sider::-webkit-scrollbar-thumb {
+  background: var(--semi-color-tertiary-light-default);
+  border-radius: 3px;
+}
+
+.semi-layout-content::-webkit-scrollbar-thumb:hover,
+.semi-sider::-webkit-scrollbar-thumb:hover {
+  background: var(--semi-color-tertiary);
+}
+
+.semi-layout-content::-webkit-scrollbar-track,
+.semi-sider::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Custom sidebar shadow */
+.custom-sidebar-nav {
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;
+  -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;
+  -moz-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;
 }
