@@ -459,7 +459,7 @@ const LogsTable = () => {
             <>
               <Space>
                 {renderUseTime(text)}
-                {renderFirstUseTime(other.frt)}
+                {renderFirstUseTime(other?.frt)}
                 {renderIsStream(record.is_stream)}
               </Space>
             </>
@@ -837,29 +837,29 @@ const LogsTable = () => {
         let content = '';
         if (other?.ws || other?.audio) {
           content = renderAudioModelPrice(
-            other.text_input,
-            other.text_output,
-            other.model_ratio,
-            other.model_price,
-            other.completion_ratio,
-            other.audio_input,
-            other.audio_output,
+            other?.text_input,
+            other?.text_output,
+            other?.model_ratio,
+            other?.model_price,
+            other?.completion_ratio,
+            other?.audio_input,
+            other?.audio_output,
             other?.audio_ratio,
             other?.audio_completion_ratio,
-            other.group_ratio,
-            other.cache_tokens || 0,
-            other.cache_ratio || 1.0,
+            other?.group_ratio,
+            other?.cache_tokens || 0,
+            other?.cache_ratio || 1.0,
           );
         } else {
           content = renderModelPrice(
             logs[i].prompt_tokens,
             logs[i].completion_tokens,
-            other.model_ratio,
-            other.model_price,
-            other.completion_ratio,
-            other.group_ratio,
-            other.cache_tokens || 0,
-            other.cache_ratio || 1.0,
+            other?.model_ratio,
+            other?.model_price,
+            other?.completion_ratio,
+            other?.group_rati,
+            other?.cache_tokens || 0,
+            other?.cache_ratio || 1.0,
           );
         }
         expandDataLocal.push({
