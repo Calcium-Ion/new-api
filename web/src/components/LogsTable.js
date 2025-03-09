@@ -857,7 +857,7 @@ const LogsTable = () => {
             other?.model_ratio,
             other?.model_price,
             other?.completion_ratio,
-            other?.group_rati,
+            other?.group_ratio,
             other?.cache_tokens || 0,
             other?.cache_ratio || 1.0,
           );
