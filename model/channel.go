@@ -35,7 +35,7 @@ type Channel struct {
 	AutoBan           *int    `json:"auto_ban" gorm:"default:1"`
 	OtherInfo         string  `json:"other_info"`
 	Tag               *string `json:"tag" gorm:"index"`
-	Setting           string  `json:"setting" gorm:"type:text"`
+	Setting           *string `json:"setting" gorm:"type:text"`
 }
 
 func (channel *Channel) GetModels() []string {
@@ -493,8 +493,8 @@ func SearchTags(keyword string, group string, model string, idSort bool) ([]*str
 
 func (channel *Channel) GetSetting() map[string]interface{} {
 	setting := make(map[string]interface{})
-	if channel.Setting != "" {
-		err := json.Unmarshal([]byte(channel.Setting), &setting)
+	if channel.Setting != nil && *channel.Setting != "" {
+		err := json.Unmarshal([]byte(*channel.Setting), &setting)
 		if err != nil {
 			common.SysError("failed to unmarshal setting: " + err.Error())
 		}
@@ -508,7 +508,7 @@ func (channel *Channel) SetSetting(setting map[string]interface{}) {
 		common.SysError("failed to marshal setting: " + err.Error())
 		return
 	}
-	channel.Setting = string(settingBytes)
+	channel.Setting = common.GetPointer[string](string(settingBytes))
 }
 
 func GetChannelsByIds(ids []int) ([]*Channel, error) {
