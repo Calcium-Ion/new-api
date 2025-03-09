@@ -175,10 +175,10 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 	}
 
 	// 先判断是否为 Embedding 模型
-	if strings.Contains(strings.ToLower(model), "embedding") ||
+	if strings.Contains(strings.ToLower(model), "embedding") || // 其他 embedding 模型
 		strings.HasPrefix(model, "m3e") || // m3e 系列模型
-		strings.Contains(model, "bge-") || // bge 系列模型
-		model == "text-embedding-v1" { // 其他 embedding 模型
+		strings.Contains(model, "bge-") {
+		testRequest.Model = model
 		// Embedding 请求
 		testRequest.Input = []string{"hello world"}
 		return testRequest
