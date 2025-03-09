@@ -958,16 +958,32 @@ const LogsTable = () => {
     <>
       {renderColumnSelector()}
       <Layout>
-        <Header style={{ backgroundColor: 'var(--semi-color-bg-1)' }}>
+        <Header>
           <Spin spinning={loadingStat}>
             <Space>
-              <Tag color='green' size='large' style={{ padding: 15 }}>
-                {t('总消耗额度')}: {renderQuota(stat.quota)}
+              <Tag color='blue' size='large' style={{ 
+                padding: 15, 
+                borderRadius: '8px', 
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                {t('消耗额度')}: {renderQuota(stat.quota)}
               </Tag>
-              <Tag color='blue' size='large' style={{ padding: 15 }}>
+              <Tag color='pink' size='large' style={{ 
+                padding: 15, 
+                borderRadius: '8px', 
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
                 RPM: {stat.rpm}
               </Tag>
-              <Tag color='purple' size='large' style={{ padding: 15 }}>
+              <Tag color='white' size='large' style={{ 
+                padding: 15, 
+                border: 'none', 
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', 
+                borderRadius: '8px',
+                fontWeight: 500,
+              }}>
                 TPM: {stat.tpm}
               </Tag>
             </Space>
