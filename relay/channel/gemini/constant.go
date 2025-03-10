@@ -18,6 +18,10 @@ var ModelList = []string{
 	"gemini-2.0-flash-thinking-exp",
 	// imagen models
 	"imagen-3.0-generate-002",
+	// embedding models
+	"gemini-embedding-exp-03-07",
+	"text-embedding-004",
+	"embedding-001",
 }
 
 var SafetySettingList = []string{
