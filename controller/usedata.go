@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-api/model"
 	"strconv"
-	"fmt"
 	"time"
 )
 
@@ -79,21 +79,29 @@ func GetUserQuotaDates(c *gin.Context) {
 
 func ExportBillingExcel(c *gin.Context) {
 	// 从查询参数获取时间范围
-	startStr := c.Query("start")
-	endStr := c.Query("end")
-	
-	// 转换时间字符串为时间戳
-	startTime, err := time.Parse("2006-01-02", startStr)
-	if err != nil {
+	startTimestamp, _ := strconv.ParseInt(c.Query("start_timestamp"), 10, 64)
+	endTimestamp, _ := strconv.ParseInt(c.Query("end_timestamp"), 10, 64)
+	// 判断时间跨度是否超过 1 个月
+	if endTimestamp-startTimestamp > 2592000 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "时间跨度不能超过 1 个月",
+		})
+		return
+	}
+
+	// 转换时间戳为时间格式
+	startTime := time.Unix(startTimestamp, 0)
+	if startTime.IsZero() {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "无效的开始时间格式",
 		})
 		return
 	}
-	
-	endTime, err := time.Parse("2006-01-02", endStr)
-	if err != nil {
+
+	endTime := time.Unix(endTimestamp, 0)
+	if endTime.IsZero() {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "无效的结束时间格式",
@@ -112,7 +120,7 @@ func ExportBillingExcel(c *gin.Context) {
 	}
 
 	// 设置文件名
-	filename := fmt.Sprintf("billing_%s_%s.xlsx", 
+	filename := fmt.Sprintf("billing_%s_%s.xlsx",
 		startTime.Format("20060102"),
 		endTime.Format("20060102"))
 

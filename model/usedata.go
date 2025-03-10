@@ -190,7 +190,16 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 
 		// 处理当天的数据
 		for _, data := range billingData {
-			modelPrice := operation_setting.GetDefaultModelRatioMap()[data.ModelName]
+			modelPrice1, ok1 := operation_setting.GetDefaultModelRatioMap()[data.ModelName]
+			modelPrice2, ok2 := operation_setting.GetNewModelRationMap()[data.ModelName]
+			modelPrice := 1.0
+
+			if ok1 {
+				modelPrice = modelPrice1
+			}
+			if ok2 {
+				modelPrice = modelPrice2
+			}
 
 			billingJsonData = append(billingJsonData, &BillingJsonData{
 				ChannelId:          data.ChannelId,
@@ -284,7 +293,7 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 	// 写入最后一个渠道的总计行
 	if channelTotal > 0 {
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), currentChannelID)
-		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), "-")
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), "总计")
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), "-")
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), "-")
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), "-")
