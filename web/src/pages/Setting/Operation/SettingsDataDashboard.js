@@ -86,7 +86,7 @@ export default function DataDashboard(props) {
         >
           <Form.Section text={t('数据看板设置')}>
             <Row gutter={16}>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Switch
                   field={'DataExportEnabled'}
                   label={t('启用数据看板（实验性）')}
@@ -103,7 +103,7 @@ export default function DataDashboard(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.InputNumber
                   label={t('数据看板更新间隔')}
                   step={1}
@@ -120,7 +120,7 @@ export default function DataDashboard(props) {
                   }
                 />
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Select
                   label={t('数据看板默认时间粒度')}
                   optionList={optionsDataExportDefaultTime}

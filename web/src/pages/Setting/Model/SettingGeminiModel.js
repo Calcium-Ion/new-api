@@ -86,7 +86,7 @@ export default function SettingGeminiModel(props) {
         >
           <Form.Section text={t('Gemini设置')}>
             <Row>
-              <Col span={16}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.TextArea
                   label={t('Gemini安全设置')}
                   placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(GEMINI_SETTING_EXAMPLE, null, 2)}
@@ -106,7 +106,7 @@ export default function SettingGeminiModel(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={16}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.TextArea
                   label={t('Gemini版本设置')}
                   placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(GEMINI_VERSION_EXAMPLE, null, 2)}

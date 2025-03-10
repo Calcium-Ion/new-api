@@ -75,7 +75,7 @@ export default function SettingsSensitiveWords(props) {
         >
           <Form.Section text={t('屏蔽词过滤设置')}>
             <Row gutter={16}>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Switch
                   field={'CheckSensitiveEnabled'}
                   label={t('启用屏蔽词过滤功能')}
@@ -90,7 +90,7 @@ export default function SettingsSensitiveWords(props) {
                   }}
                 />
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Switch
                   field={'CheckSensitiveOnPromptEnabled'}
                   label={t('启用 Prompt 检查')}
@@ -107,7 +107,7 @@ export default function SettingsSensitiveWords(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={16}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.TextArea
                   label={t('屏蔽词列表')}
                   extraText={t('一行一个屏蔽词，不需要符号分割')}
