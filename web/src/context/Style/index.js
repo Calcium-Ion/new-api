@@ -11,6 +11,7 @@ export const StyleProvider = ({ children }) => {
   const [state, setState] = useState({
     isMobile: isMobile(),
     showSider: false,
+    siderCollapsed: false,
     shouldInnerPadding: false,
   });
 
@@ -26,6 +27,9 @@ export const StyleProvider = ({ children }) => {
         case 'SET_MOBILE':
           setState(prev => ({ ...prev, isMobile: action.payload }));
           break;
+        case 'SET_SIDER_COLLAPSED':
+          setState(prev => ({ ...prev, siderCollapsed: action.payload }));
+          break
         case 'SET_INNER_PADDING':
           setState(prev => ({ ...prev, shouldInnerPadding: action.payload }));
           break;
@@ -64,6 +68,13 @@ export const StyleProvider = ({ children }) => {
     };
 
     updateShowSider();
+
+    const updateSiderCollapsed = () => {
+      const isCollapsed = localStorage.getItem('default_collapse_sidebar') === 'true';
+      dispatch({ type: 'SET_SIDER_COLLAPSED', payload: isCollapsed });
+    };
+
+    updateSiderCollapsed();
 
     // Add event listeners to handle window resize
     const handleResize = () => {

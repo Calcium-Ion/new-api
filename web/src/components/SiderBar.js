@@ -316,10 +316,10 @@ const SiderBar = () => {
         isCollapsed={isCollapsed}
         onCollapseChange={(collapsed) => {
           setIsCollapsed(collapsed);
+          // styleDispatch({ type: 'SET_SIDER', payload: true });
+          styleDispatch({ type: 'SET_SIDER_COLLAPSED', payload: collapsed });
           localStorage.setItem('default_collapse_sidebar', collapsed);
-          // 始终保持侧边栏显示，只是宽度不同
-          styleDispatch({ type: 'SET_SIDER', payload: true });
-          
+
           // 确保在收起侧边栏时有选中的项目，避免不必要的计算
           if (selectedKeys.length === 0) {
             const currentPath = location.pathname;
@@ -330,7 +330,7 @@ const SiderBar = () => {
             } else if (currentPath.startsWith('/chat/')) {
               setSelectedKeys(['chat']);
             } else {
-              setSelectedKeys(['home']); // 默认选中首页
+              setSelectedKeys(['detail']); // 默认选中首页
             }
           }
         }}
@@ -467,7 +467,7 @@ const SiderBar = () => {
 
         <Nav.Footer
           style={{
-            paddingBottom: styleState?.isMobile ? '112px' : '0',
+            paddingBottom: styleState?.isMobile ? '112px' : '20px',
           }}
           collapseButton={true}
           collapseText={(collapsed)=>
