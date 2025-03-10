@@ -228,8 +228,46 @@ const Detail = (props) => {
     }
   };
 
-  const refresh = async () => {
-    await loadQuotaData();
+  const exportBillingData = async () => {
+    setLoading(true);
+    try {
+      let url = '';
+      let localStartTimestamp = Date.parse(start_timestamp) / 1000;
+      let localEndTimestamp = Date.parse(end_timestamp) / 1000;
+      if (isAdminUser) {
+        url = `/api/data/billing/?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('导出失败');
+        
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        
+        // 从Content-Disposition获取文件名，如果没有则使用默认名称
+        const filename = response.headers.get('Content-Disposition')?.split('filename=')[1] || 
+          `billing_${timestamp2string1(localStartTimestamp, 'day')}_${timestamp2string1(localEndTimestamp, 'day')}.xlsx`;
+        
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+      } 
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    const refresh = async () => {
+      await loadQuotaData();
+    };
+
+  const exportBilling = async () => {
+    await exportBillingData();
   };
 
   const initChart = async () => {
@@ -467,6 +505,17 @@ const Detail = (props) => {
                 style={{ marginTop: 24 }}
               >
                 {t('查询')}
+              </Button>
+              <Button
+                label={t('导出')}
+                type='primary'
+                htmlType='submit'
+                className='btn-margin-right'
+                onClick={exportBilling}
+                loading={loading}
+                style={{ marginTop: 24 }}
+              >
+                {t('导出')}
               </Button>
               <Form.Section>
               </Form.Section>
