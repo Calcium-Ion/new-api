@@ -109,7 +109,12 @@ const ModelPricing = () => {
          // if record.enable_groups contains selectedGroup, then available is true
         return renderAvailable(record.enable_groups.includes(selectedGroup));
       },
-      sorter: (a, b) => a.available - b.available,
+      sorter: (a, b) => {
+        const aAvailable = a.enable_groups.includes(selectedGroup);
+        const bAvailable = b.enable_groups.includes(selectedGroup);
+        return Number(aAvailable) - Number(bAvailable);
+      },
+      defaultSortOrder: 'descend',
     },
     {
       title: t('模型名称'),
