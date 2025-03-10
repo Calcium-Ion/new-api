@@ -81,7 +81,7 @@ const ModelPricing = () => {
   }
   
   function renderAvailable(available) {
-    return (
+    return available ? (
       <Popover
         content={
           <div style={{ padding: 8 }}>{t('您的分组可以使用该模型')}</div>
@@ -98,7 +98,7 @@ const ModelPricing = () => {
       >
         <IconVerify style={{ color: 'green' }}  size="large" />
       </Popover>
-    )
+    ) : null;
   }
 
   const columns = [
