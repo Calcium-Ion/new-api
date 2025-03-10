@@ -84,7 +84,11 @@ const PageLayout = () => {
       }}>
         <HeaderBar />
       </Header>
-      <Layout style={{ marginTop: '56px', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
+      <Layout style={{ 
+        marginTop: '56px', 
+        height: 'calc(100vh - 56px)', 
+        overflow: styleState.isMobile ? 'auto' : 'hidden' 
+      }}>
         {styleState.showSider && (
           <Sider style={{ 
             height: 'calc(100vh - 56px)', 
@@ -105,13 +109,17 @@ const PageLayout = () => {
         )}
         <Layout style={{ 
           marginLeft: styleState.showSider ? (isSidebarCollapsed ? '60px' : '200px') : '0', 
-          transition: 'margin-left 0.3s ease'
+          transition: 'margin-left 0.3s ease',
+          height: '100%',
+          overflow: 'auto'
         }}>
           <Content
             style={{ 
               height: '100%',
               overflowY: 'auto', 
-              padding: styleState.shouldInnerPadding? '24px': '0' 
+              WebkitOverflowScrolling: 'touch',
+              padding: styleState.shouldInnerPadding? '24px': '0',
+              position: 'relative'
             }}
           >
             <App />

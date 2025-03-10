@@ -9,7 +9,7 @@ export const StyleContext = React.createContext({
 
 export const StyleProvider = ({ children }) => {
   const [state, setState] = useState({
-    isMobile: false,
+    isMobile: isMobile(),
     showSider: false,
     shouldInnerPadding: false,
   });
@@ -39,7 +39,13 @@ export const StyleProvider = ({ children }) => {
 
   useEffect(() => {
     const updateIsMobile = () => {
-      dispatch({ type: 'SET_MOBILE', payload: isMobile() });
+      const mobileDetected = isMobile();
+      dispatch({ type: 'SET_MOBILE', payload: mobileDetected });
+      
+      // If on mobile, we might want to auto-hide the sidebar
+      if (mobileDetected && state.showSider) {
+        dispatch({ type: 'SET_SIDER', payload: false });
+      }
     };
 
     updateIsMobile();
@@ -51,24 +57,24 @@ export const StyleProvider = ({ children }) => {
         dispatch({ type: 'SET_SIDER', payload: false });
         dispatch({ type: 'SET_INNER_PADDING', payload: false });
       } else {
-        dispatch({ type: 'SET_SIDER', payload: true });
+        // Only show sidebar on non-mobile devices by default
+        dispatch({ type: 'SET_SIDER', payload: !isMobile() });
         dispatch({ type: 'SET_INNER_PADDING', payload: true });
-      }
-
-      if (isMobile()) {
-        dispatch({ type: 'SET_SIDER', payload: false });
       }
     };
 
-    updateShowSider()
+    updateShowSider();
 
-
-    // Optionally, add event listeners to handle window resize
-    window.addEventListener('resize', updateIsMobile);
+    // Add event listeners to handle window resize
+    const handleResize = () => {
+      updateIsMobile();
+    };
+    
+    window.addEventListener('resize', handleResize);
 
     // Cleanup event listener on component unmount
     return () => {
-      window.removeEventListener('resize', updateIsMobile);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 

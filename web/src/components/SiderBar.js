@@ -305,7 +305,9 @@ const SiderBar = () => {
           borderRadius: '0 8px 8px 0',
           transition: 'all 0.3s ease',
           position: 'relative',
-          zIndex: 95
+          zIndex: 95,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch' // Improve scrolling on iOS devices
         }}
         defaultIsCollapsed={
           localStorage.getItem('default_collapse_sidebar') === 'true'
