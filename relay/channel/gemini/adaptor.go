@@ -70,6 +70,12 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		return fmt.Sprintf("%s/%s/models/%s:predict", info.BaseUrl, version, info.UpstreamModelName), nil
 	}
 
+	if strings.HasPrefix(info.UpstreamModelName, "text-embedding") ||
+		strings.HasPrefix(info.UpstreamModelName, "embedding") ||
+		strings.HasPrefix(info.UpstreamModelName, "gemini-embedding") {
+		return fmt.Sprintf("%s/%s/models/%s:embedContent", info.BaseUrl, version, info.UpstreamModelName), nil
+	}
+
 	action := "generateContent"
 	if info.IsStream {
 		action = "streamGenerateContent?alt=sse"
@@ -99,8 +105,37 @@ func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dt
 }
 
 func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.EmbeddingRequest) (any, error) {
-	//TODO implement me
-	return nil, errors.New("not implemented")
+	if request.Input == nil {
+		return nil, errors.New("input is required")
+	}
+
+	inputs := request.ParseInput()
+	if len(inputs) == 0 {
+		return nil, errors.New("input is empty")
+	}
+
+	// only process the first input
+	geminiRequest := GeminiEmbeddingRequest{
+		Content: GeminiChatContent{
+			Parts: []GeminiPart{
+				{
+					Text: inputs[0],
+				},
+			},
+		},
+	}
+
+	// set specific parameters for different models
+	// https://ai.google.dev/api/embeddings?hl=zh-cn#method:-models.embedcontent
+	switch info.UpstreamModelName {
+	case "text-embedding-004":
+		// except embedding-001 supports setting `OutputDimensionality`
+		if request.Dimensions > 0 {
+			geminiRequest.OutputDimensionality = request.Dimensions
+		}
+	}
+
+	return geminiRequest, nil
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
@@ -110,6 +145,13 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
 	if strings.HasPrefix(info.UpstreamModelName, "imagen") {
 		return GeminiImageHandler(c, resp, info)
+	}
+
+	// check if the model is an embedding model
+	if strings.HasPrefix(info.UpstreamModelName, "text-embedding") ||
+		strings.HasPrefix(info.UpstreamModelName, "embedding") ||
+		strings.HasPrefix(info.UpstreamModelName, "gemini-embedding") {
+		return GeminiEmbeddingHandler(c, resp, info)
 	}
 
 	if info.IsStream {
