@@ -2,12 +2,13 @@ package model
 
 import (
 	"fmt"
+	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 	"one-api/common"
 	"one-api/setting/operation_setting"
+	"sort"
 	"sync"
 	"time"
-	"github.com/xuri/excelize/v2"
 )
 
 // QuotaData 柱状图数据
@@ -157,34 +158,69 @@ func GetAllQuotaDates(startTime int64, endTime int64, username string) (quotaDat
 }
 
 func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonData, err error) {
-	var billingData []*BillingData
-	err = DB.Table("logs").
-		Select("logs.channel_id,  channels.name as channel_name, logs.model_name, "+
-			"SUM(logs.prompt_tokens) as prompt_tokens, "+
-			"SUM(logs.completion_tokens) as completions_tokens, ", startTime).
-		Joins("JOIN channels ON logs.channel_id = channels.id").
-		Where("logs.created_at BETWEEN ? AND ?", startTime, endTime).
-		Group("logs.channel_id, channels.name, logs.model_name").
-		Order("logs.channel_id").
-		Find(&billingData).Error
+	// 将时间戳转换为当天的开始时间（00:00:00）
+	currentTime := time.Unix(startTime, 0)
+	currentTime = time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, currentTime.Location())
+	endDateTime := time.Unix(endTime, 0)
 
-	for _, data := range billingData {
-		modelPrice := operation_setting.GetDefaultModelRatioMap()[data.ModelName]
+	// 按天遍历时间范围
+	for currentTime.Unix() <= endDateTime.Unix() {
+		dayStart := currentTime.Unix()
+		dayEnd := currentTime.Add(24 * time.Hour).Add(-time.Second).Unix()
 
-		billingJsonData = append(billingJsonData, &BillingJsonData{
-			ChannelId:          data.ChannelId,
-			ChannelName:        data.ChannelName,
-			CurrentDate:        time.Unix(startTime, 0).Format("2006-01-02"),
-			Count:              data.Count,
-			ModelName:          data.ModelName,
-			PromptTokens:       float32(data.PromptTokens),
-			CompletionsTokens:  float32(data.CompletionsTokens),
-			PromptPricing:      float32(modelPrice * 2),
-			CompletionsPricing: float32(modelPrice * 2 * operation_setting.GetCompletionRatio(data.ModelName)),
-			Cost:               (float32(data.PromptTokens)*float32(modelPrice*2) + float32(data.CompletionsTokens)*float32(modelPrice*2*operation_setting.GetCompletionRatio(data.ModelName))) / 100_0000,
-		})
+		if dayEnd > endTime {
+			dayEnd = endTime
+		}
+
+		var billingData []*BillingData
+		err = DB.Table("logs").
+			Select("logs.channel_id, channels.name as channel_name, logs.model_name, "+
+				"COUNT(*) as count, "+
+				"SUM(logs.prompt_tokens) as prompt_tokens, "+
+				"SUM(logs.completion_tokens) as completions_tokens").
+			Joins("JOIN channels ON logs.channel_id = channels.id").
+			Where("logs.created_at BETWEEN ? AND ?", dayStart, dayEnd).
+			Group("logs.channel_id, channels.name, logs.model_name").
+			Order("logs.channel_id").
+			Find(&billingData).Error
+
+		if err != nil {
+			return nil, err
+		}
+
+		// 处理当天的数据
+		for _, data := range billingData {
+			modelPrice := operation_setting.GetDefaultModelRatioMap()[data.ModelName]
+
+			billingJsonData = append(billingJsonData, &BillingJsonData{
+				ChannelId:          data.ChannelId,
+				ChannelName:        data.ChannelName,
+				CurrentDate:        currentTime.Format("2006-01-02"),
+				Count:              data.Count,
+				ModelName:          data.ModelName,
+				PromptTokens:       float32(data.PromptTokens),
+				CompletionsTokens:  float32(data.CompletionsTokens),
+				PromptPricing:      float32(modelPrice * 2),
+				CompletionsPricing: float32(modelPrice * 2 * operation_setting.GetCompletionRatio(data.ModelName)),
+				Cost:               (float32(data.PromptTokens)*float32(modelPrice*2) + float32(data.CompletionsTokens)*float32(modelPrice*2*operation_setting.GetCompletionRatio(data.ModelName))) / 100_0000,
+			})
+		}
+
+		// 移动到下一天
+		currentTime = currentTime.Add(24 * time.Hour)
 	}
-	return billingJsonData, err
+
+	// 在返回之前对数据进行排序
+	sort.Slice(billingJsonData, func(i, j int) bool {
+		// 首先按照 ChannelId 排序
+		if billingJsonData[i].ChannelId != billingJsonData[j].ChannelId {
+			return billingJsonData[i].ChannelId < billingJsonData[j].ChannelId
+		}
+		// ChannelId 相同时，按照 CurrentDate 排序
+		return billingJsonData[i].CurrentDate < billingJsonData[j].CurrentDate
+	})
+
+	return billingJsonData, nil
 }
 
 func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
@@ -198,7 +234,7 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 	defer f.Close()
 
 	// 设置表头
-	headers := []string{"渠道ID", "渠道名称", "日期", "调用次数", "模型名字", 
+	headers := []string{"渠道ID", "渠道名称", "日期", "调用次数", "模型名字",
 		"提示Tokens", "补全Tokens", "提示价格", "补全价格", "金额"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%c1", 'A'+i)
