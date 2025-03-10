@@ -78,7 +78,7 @@ var (
 	relayRequestE2EDurationObsever = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Subsystem: Namespace,
-			Name:      "relay_request_duration",
+			Name:      "relay_request_e2e_duration",
 			Help:      "Duration of relay request e2e",
 			Buckets:   prometheus.ExponentialBuckets(1, 2, 12),
 		},
