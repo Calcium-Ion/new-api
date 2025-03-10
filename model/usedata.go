@@ -248,6 +248,8 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 	for i, header := range headers {
 		cell := fmt.Sprintf("%c1", 'A'+i)
 		f.SetCellValue("Sheet1", cell, header)
+		// 设置列宽为25
+		f.SetColWidth("Sheet1", string('A'+i), string('A'+i), 25)
 	}
 
 	row := 2
