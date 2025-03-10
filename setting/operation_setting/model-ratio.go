@@ -206,6 +206,121 @@ var defaultModelRatio = map[string]float64{
 	"llama-3-sonar-large-32k-online": 1 / 1000 * USD,
 }
 
+var newModelRation = map[string]float64{
+	"gemini-2.0-flash-lite":               4,
+	"deepseek-v3":                         4,
+	"deepseek-reasoner":                   4,
+	"gemini-2.0-flash-thinking-exp-01-21": 4,
+	"claude-3-5-sonnet-latest":            5,
+	"grok-2-latest":                       5,
+	"grok-2":                              5,
+	"grok-2-1212":                         5,
+	"grok-2-vision-1212":                  5,
+	"grok-vision-beta":                    3,
+	"grok-beta":                           3,
+	"gpt-4o-2024-11-20":                   4,
+	"deepseek-chat":                       4,
+	"gemini-1.5-pro":                      4,
+	"gemini-exp-1114":                     4,
+	"gemini-exp-1121":                     4,
+	"gemini-exp-1206":                     4,
+	"gemini-1.5-flash-latest":             4,
+	"gemini-1.5-pro-latest":               4,
+	"gemini-1.5-pro-001":                  4,
+	"gpt-4-all":                           4,
+	"gpt-4o":                              4,
+	"gpt-4o-2024-08-06":                   4,
+	"gpt-4o-2024-08-06-1":                 4,
+	"gpt-4o-mini":                         4,
+	"gpt-4o-mini-2024-07-18":              4,
+	"gpt-4o-all":                          3,
+	"net-gpt-4":                           1,
+	"mixtral-8x7b-instruct":               1,
+	"Meta-Llama-3.1-405B-Instruct":        1,
+	"Llama-3.1-405B":                      1,
+	"gemini-1.5-pro-exp-0801":             4,
+	"o1-mini":                             4,
+	"o1-mini-2024-09-12":                  4,
+	"o1-preview":                          4,
+	"o1-preview-2024-09-12":               4,
+	"gemini-1.5-pro-exp-0827":             4,
+	"gemini-1.5-flash-exp-0827":           4,
+	"GPT-4o-TL":                           3,
+	"gemma2-27b-it":                       1,
+	"gemma2-9b-it":                        1,
+	"gemini-1.5-flash-002":                4,
+	"gemini-1.5-flash-8b":                 4,
+	"gemini-1.5-flash":                    4,
+	"gemini-1.5-pro-002":                  4,
+	"gemini-2.0-flash-thinking-exp-1219":  4,
+	"gemini-2.0-flash-thinking-exp":       4,
+	"gemini-2.0-flash-exp":                4,
+	"gpt-4o-realtime-preview":             4,
+	"deepseek-r1":                         4,
+	"gpt-4o-realtime-preview-2024-10-01":  4,
+	"cursor-3-5-sonnet-20240620":          5,
+	"claude-3-7-sonnet-20250219":          5,
+	"claude-3-7-sonnet-20250219-thinking": 5,
+}
+
+var completionRation = map[string]float64{
+
+	"gemini-2.0-flash-lite":               4,
+	"deepseek-v3":                         4,
+	"deepseek-reasoner":                   4,
+	"gemini-2.0-flash-thinking-exp-01-21": 4,
+	"claude-3-5-sonnet-latest":            5,
+	"grok-2-latest":                       5,
+	"grok-2":                              5,
+	"grok-2-1212":                         5,
+	"grok-2-vision-1212":                  5,
+	"grok-vision-beta":                    3,
+	"grok-beta":                           3,
+	"gpt-4o-2024-11-20":                   4,
+	"deepseek-chat":                       4,
+	"gemini-1.5-pro":                      4,
+	"gemini-exp-1114":                     4,
+	"gemini-exp-1121":                     4,
+	"gemini-exp-1206":                     4,
+	"gemini-1.5-flash-latest":             4,
+	"gemini-1.5-pro-latest":               4,
+	"gemini-1.5-pro-001":                  4,
+	"gpt-4-all":                           4,
+	"gpt-4o":                              4,
+	"gpt-4o-2024-08-06":                   4,
+	"gpt-4o-2024-08-06-1":                 4,
+	"gpt-4o-mini":                         4,
+	"gpt-4o-mini-2024-07-18":              4,
+	"gpt-4o-all":                          3,
+	"net-gpt-4":                           1,
+	"mixtral-8x7b-instruct":               1,
+	"Meta-Llama-3.1-405B-Instruct":        1,
+	"Llama-3.1-405B":                      1,
+	"gemini-1.5-pro-exp-0801":             4,
+	"o1-mini":                             4,
+	"o1-mini-2024-09-12":                  4,
+	"o1-preview":                          4,
+	"o1-preview-2024-09-12":               4,
+	"gemini-1.5-pro-exp-0827":             4,
+	"gemini-1.5-flash-exp-0827":           4,
+	"GPT-4o-TL":                           3,
+	"gemma2-27b-it":                       1,
+	"gemma2-9b-it":                        1,
+	"gemini-1.5-flash-002":                4,
+	"gemini-1.5-flash-8b":                 4,
+	"gemini-1.5-flash":                    4,
+	"gemini-1.5-pro-002":                  4,
+	"gemini-2.0-flash-thinking-exp-1219":  4,
+	"gemini-2.0-flash-thinking-exp":       4,
+	"gemini-2.0-flash-exp":                4,
+	"gpt-4o-realtime-preview":             4,
+	"deepseek-r1":                         4,
+	"gpt-4o-realtime-preview-2024-10-01":  4,
+	"cursor-3-5-sonnet-20240620":          5,
+	"claude-3-7-sonnet-20250219":          5,
+	"claude-3-7-sonnet-20250219-thinking": 5,
+}
+
 var defaultModelPrice = map[string]float64{
 	"suno_music":        0.1,
 	"suno_lyrics":       0.01,
@@ -342,6 +457,10 @@ func GetDefaultModelRatioMap() map[string]float64 {
 	return defaultModelRatio
 }
 
+func GetNewModelRationMap() map[string]float64 {
+	return newModelRation
+}
+
 func GetCompletionRatioMap() map[string]float64 {
 	CompletionRatioMutex.Lock()
 	defer CompletionRatioMutex.Unlock()
@@ -463,6 +582,9 @@ func GetCompletionRatio(name string) float64 {
 		return 0.79 / 0.59
 	}
 	if ratio, ok := CompletionRatio[name]; ok {
+		return ratio
+	}
+	if ratio, ok := completionRation[name]; ok {
 		return ratio
 	}
 	return 1

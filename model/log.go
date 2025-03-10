@@ -314,3 +314,42 @@ func DeleteOldLog(targetTimestamp int64) (int64, error) {
 	result := LOG_DB.Where("created_at < ?", targetTimestamp).Delete(&Log{})
 	return result.RowsAffected, result.Error
 }
+
+
+// SELECT 
+// logs.channel_id,
+// COALESCE(channels.name, logs.channel_name, '未知渠道') AS channel_name,
+// logs.model_name,
+// SUM(logs.prompt_tokens) AS total_prompt_tokens,
+// SUM(logs.completion_tokens) AS total_completion_tokens
+// FROM logs
+// LEFT JOIN channels ON logs.channel_id = channels.id
+// WHERE 
+// logs.created_at BETWEEN 1741338023 AND 1741341623
+// GROUP BY 
+// logs.channel_id,   -- 渠道ID作为主分组键
+// channel_name,      -- 直接使用SELECT中的别名（COALESCE表达式结果）
+// logs.model_name    -- 模型名称
+// ORDER BY 
+// logs.channel_id;
+
+func GetAllChannelBilling(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string) (token int) {
+	tx := LOG_DB.Table("logs").Select("ifnull(sum(prompt_tokens),0) + ifnull(sum(completion_tokens),0)")
+	if username != "" {
+		tx = tx.Where("username = ?", username)
+	}
+	if tokenName != "" {
+		tx = tx.Where("token_name = ?", tokenName)
+	}
+	if startTimestamp != 0 {
+		tx = tx.Where("created_at >= ?", startTimestamp)
+	}
+	if endTimestamp != 0 {
+		tx = tx.Where("created_at <= ?", endTimestamp)
+	}
+	if modelName != "" {
+		tx = tx.Where("model_name = ?", modelName)
+	}
+	tx.Where("type = ?", LogTypeConsume).Scan(&token)
+	return token
+}
