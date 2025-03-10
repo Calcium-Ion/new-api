@@ -15,36 +15,98 @@ import (
 	"one-api/middleware"
 	"one-api/model"
 	"one-api/relay"
+	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
 	relayconstant "one-api/relay/constant"
 	"one-api/relay/helper"
 	"one-api/service"
 	"strconv"
 	"strings"
+	"time"
 )
 
-func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode {
-	var err *dto.OpenAIErrorWithStatusCode
+func relayInfoHandler(c *gin.Context, relayMode int) (*relaycommon.RelayInfo, interface{}, string, *dto.OpenAIErrorWithStatusCode) {
 	switch relayMode {
 	case relayconstant.RelayModeImagesGenerations:
-		err = relay.ImageHelper(c)
+		relayInfo, request, err := relay.ImageInfo(c)
+		if err != nil {
+			return nil, nil, "", err
+		}
+		return relayInfo, request, request.Model, nil
 	case relayconstant.RelayModeAudioSpeech:
 		fallthrough
 	case relayconstant.RelayModeAudioTranslation:
 		fallthrough
 	case relayconstant.RelayModeAudioTranscription:
-		err = relay.AudioHelper(c)
+		relayInfo, request, err := relay.AudioInfo(c)
+		if err != nil {
+			return nil, nil, "", err
+		}
+		return relayInfo, request, request.Model, nil
 	case relayconstant.RelayModeRerank:
-		err = relay.RerankHelper(c, relayMode)
+		relayInfo, request, err := relay.EmbeddingInfo(c)
+		if err != nil {
+			return nil, nil, "", err
+		}
+		return relayInfo, request, request.Model, nil
 	case relayconstant.RelayModeEmbeddings:
-		err = relay.EmbeddingHelper(c)
+		relayInfo, request, err := relay.EmbeddingInfo(c)
+		if err != nil {
+			return nil, nil, "", err
+		}
+		return relayInfo, request, request.Model, nil
 	default:
-		err = relay.TextHelper(c)
+		relayInfo, request, err := relay.TextInfo(c)
+		if err != nil {
+			return nil, nil, "", err
+		}
+		return relayInfo, request, request.Model, nil
+	}
+}
+
+func relayExecuteHandler(c *gin.Context, relayMode int, relayInfo *relaycommon.RelayInfo, request interface{}) *dto.OpenAIErrorWithStatusCode {
+	var err *dto.OpenAIErrorWithStatusCode
+	switch relayMode {
+	case relayconstant.RelayModeImagesGenerations:
+		imageRequest, ok := request.(*dto.ImageRequest)
+		if !ok {
+			return service.OpenAIErrorWrapperLocal(fmt.Errorf("failed assert request: %d", relayMode), "invalid_request_type", http.StatusInternalServerError)
+		}
+		err = relay.ImageHelper(c, relayInfo, imageRequest)
+	case relayconstant.RelayModeAudioSpeech:
+		fallthrough
+	case relayconstant.RelayModeAudioTranslation:
+		fallthrough
+	case relayconstant.RelayModeAudioTranscription:
+		audioRequest, ok := request.(*dto.AudioRequest)
+		if !ok {
+			return service.OpenAIErrorWrapperLocal(fmt.Errorf("failed assert request: %d", relayMode), "invalid_request_type", http.StatusInternalServerError)
+		}
+		err = relay.AudioHelper(c, relayInfo, audioRequest)
+	case relayconstant.RelayModeRerank:
+		rerankRequest, ok := request.(*dto.RerankRequest)
+		if !ok {
+			return service.OpenAIErrorWrapperLocal(fmt.Errorf("failed assert request: %d", relayMode), "invalid_request_type", http.StatusInternalServerError)
+		}
+		err = relay.RerankHelper(c, relayInfo, rerankRequest)
+	case relayconstant.RelayModeEmbeddings:
+		embeddingRequest, ok := request.(*dto.EmbeddingRequest)
+		if !ok {
+			return service.OpenAIErrorWrapperLocal(fmt.Errorf("failed assert request: %d", relayMode), "invalid_request_type", http.StatusInternalServerError)
+		}
+		err = relay.EmbeddingHelper(c, relayInfo, embeddingRequest)
+	default:
+		textRequest, ok := request.(*dto.GeneralOpenAIRequest)
+		if !ok {
+			return service.OpenAIErrorWrapperLocal(fmt.Errorf("failed assert request: %d", relayMode), "invalid_request_type", http.StatusInternalServerError)
+		}
+		err = relay.TextHelper(c, relayInfo, textRequest)
 	}
 	return err
 }
 
 func Relay(c *gin.Context) {
+	startTime := time.Now()
 	relayMode := constant.Path2RelayMode(c.Request.URL.Path)
 	requestId := c.GetString(common.RequestIdKey)
 	group := c.GetString("group")
@@ -57,19 +119,34 @@ func Relay(c *gin.Context) {
 			openaiErr = service.OpenAIErrorWrapperLocal(err, "get_channel_failed", http.StatusInternalServerError)
 			break
 		}
-		if i > 0 {
-			metrics.IncrementRelayRetryCounter(strconv.Itoa(channel.Id), group, 1)
+		fillRelayRequest(c, channel)
+		var (
+			relayInfo    *relaycommon.RelayInfo
+			request      interface{}
+			requestModel string
+		)
+		relayInfo, request, requestModel, openaiErr = relayInfoHandler(c, relayMode)
+		if i == 0 {
+			// e2e 用户请求计数
+			metrics.IncrementRelayRequestE2ETotalCounter(strconv.Itoa(channel.Id), requestModel, group, 1)
+		} else {
+			// 重试计数
+			metrics.IncrementRelayRetryCounter(strconv.Itoa(channel.Id), requestModel, group, 1)
 		}
-
-		openaiErr = relayRequest(c, relayMode, channel)
-
 		if openaiErr == nil {
-			return // 成功处理请求，直接返回
+			openaiErr = executeRelayRequest(c, relayMode, relayInfo, request)
+			if openaiErr == nil {
+				metrics.IncrementRelayRequestE2ESuccessCounter(strconv.Itoa(channel.Id), requestModel, group, 1)
+				metrics.ObserveRelayRequestE2EDuration(strconv.Itoa(channel.Id), requestModel, group, time.Since(startTime).Seconds())
+				return
+			}
 		}
 
 		go processChannelError(c, channel.Id, channel.Type, channel.Name, channel.GetAutoBan(), openaiErr)
 
 		if !shouldRetry(c, openaiErr, common.RetryTimes-i) {
+			// e2e 失败计数
+			metrics.IncrementRelayRequestE2EFailedCounter(strconv.Itoa(channel.Id), requestModel, group, strconv.Itoa(openaiErr.StatusCode), 1)
 			break
 		}
 	}
@@ -152,11 +229,14 @@ func WssRelay(c *gin.Context) {
 	}
 }
 
-func relayRequest(c *gin.Context, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {
+func fillRelayRequest(c *gin.Context, channel *model.Channel) {
 	addUsedChannel(c, channel.Id)
 	requestBody, _ := common.GetRequestBody(c)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
-	return relayHandler(c, relayMode)
+}
+
+func executeRelayRequest(c *gin.Context, relayMode int, relayInfo *relaycommon.RelayInfo, request interface{}) *dto.OpenAIErrorWithStatusCode {
+	return relayExecuteHandler(c, relayMode, relayInfo, request)
 }
 
 func wssRequest(c *gin.Context, ws *websocket.Conn, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {

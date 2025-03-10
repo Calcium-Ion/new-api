@@ -73,26 +73,30 @@ func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	return imageRequest, nil
 }
 
-func ImageHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
-	startTime := time.Now()
+func ImageInfo(c *gin.Context) (*relaycommon.RelayInfo, *dto.ImageRequest, *dto.OpenAIErrorWithStatusCode) {
 	relayInfo := relaycommon.GenRelayInfo(c)
 
 	imageRequest, err := getAndValidImageRequest(c, relayInfo)
 	if err != nil {
 		common.LogError(c, fmt.Sprintf("getAndValidImageRequest failed: %s", err.Error()))
-		return service.OpenAIErrorWrapper(err, "invalid_image_request", http.StatusBadRequest)
+		return nil, nil, service.OpenAIErrorWrapper(err, "invalid_image_request", http.StatusBadRequest)
 	}
+	return relayInfo, imageRequest, nil
+}
+
+func ImageHelper(c *gin.Context, relayInfo *relaycommon.RelayInfo, imageRequest *dto.ImageRequest) (openaiErr *dto.OpenAIErrorWithStatusCode) {
+	startTime := time.Now()
 	var funcErr *dto.OpenAIErrorWithStatusCode
 	metrics.IncrementRelayRequestTotalCounter(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, 1)
 	defer func() {
 		if openaiErr != nil {
-			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), openaiErr.Error.Message, 1)
+			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), 1)
 		} else {
 			metrics.IncrementRelayRequestSuccessCounter(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, 1)
 			metrics.ObserveRelayRequestDuration(strconv.Itoa(relayInfo.ChannelId), imageRequest.Model, relayInfo.Group, time.Since(startTime).Seconds())
 		}
 	}()
-	err = helper.ModelMappedHelper(c, relayInfo)
+	err := helper.ModelMappedHelper(c, relayInfo)
 	if err != nil {
 		funcErr = service.OpenAIErrorWrapperLocal(err, "model_mapped_error", http.StatusInternalServerError)
 		return funcErr

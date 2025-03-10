@@ -57,25 +57,33 @@ func getAndValidAudioRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	return audioRequest, nil
 }
 
-func AudioHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
-	startTime := time.Now()
+func AudioInfo(c *gin.Context) (*relaycommon.RelayInfo, *dto.AudioRequest, *dto.OpenAIErrorWithStatusCode) {
 	relayInfo := relaycommon.GenRelayInfo(c)
 	audioRequest, err := getAndValidAudioRequest(c, relayInfo)
 	if err != nil {
 		common.LogError(c, fmt.Sprintf("getAndValidAudioRequest failed: %s", err.Error()))
-		return service.OpenAIErrorWrapper(err, "invalid_audio_request", http.StatusBadRequest)
+		return nil, nil, service.OpenAIErrorWrapper(err, "invalid_audio_request", http.StatusBadRequest)
 	}
+
+	return relayInfo, audioRequest, nil
+}
+
+func AudioHelper(c *gin.Context, relayInfo *relaycommon.RelayInfo, audioRequest *dto.AudioRequest) (openaiErr *dto.OpenAIErrorWithStatusCode) {
+	startTime := time.Now()
 	var funcErr *dto.OpenAIErrorWithStatusCode
 	metrics.IncrementRelayRequestTotalCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, 1)
 	defer func() {
 		if openaiErr != nil {
-			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), openaiErr.Error.Message, 1)
+			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), 1)
 		} else {
 			metrics.IncrementRelayRequestSuccessCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, 1)
 			metrics.ObserveRelayRequestDuration(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, time.Since(startTime).Seconds())
 		}
 	}()
-	promptTokens := 0
+	var (
+		err          error
+		promptTokens = 0
+	)
 	preConsumedTokens := common.PreConsumedQuota
 	if relayInfo.RelayMode == relayconstant.RelayModeAudioSpeech {
 		promptTokens, err = service.CountTTSToken(audioRequest.Input, audioRequest.Model)

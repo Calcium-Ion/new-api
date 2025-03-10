@@ -35,28 +35,32 @@ func validateEmbeddingRequest(c *gin.Context, info *relaycommon.RelayInfo, embed
 	return nil
 }
 
-func EmbeddingHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
-	startTime := time.Now()
+func EmbeddingInfo(c *gin.Context) (*relaycommon.RelayInfo, *dto.EmbeddingRequest, *dto.OpenAIErrorWithStatusCode) {
 	relayInfo := relaycommon.GenRelayInfo(c)
 
 	var embeddingRequest *dto.EmbeddingRequest
 	err := common.UnmarshalBodyReusable(c, &embeddingRequest)
 	if err != nil {
 		common.LogError(c, fmt.Sprintf("getAndValidateTextRequest failed: %s", err.Error()))
-		return service.OpenAIErrorWrapperLocal(err, "invalid_text_request", http.StatusBadRequest)
+		return nil, nil, service.OpenAIErrorWrapperLocal(err, "invalid_text_request", http.StatusBadRequest)
 	}
+	return relayInfo, embeddingRequest, nil
+}
+
+func EmbeddingHelper(c *gin.Context, relayInfo *relaycommon.RelayInfo, embeddingRequest *dto.EmbeddingRequest) (openaiErr *dto.OpenAIErrorWithStatusCode) {
+	startTime := time.Now()
 	var funcErr *dto.OpenAIErrorWithStatusCode
 	metrics.IncrementRelayRequestTotalCounter(strconv.Itoa(relayInfo.ChannelId), embeddingRequest.Model, relayInfo.Group, 1)
 	defer func() {
 		if funcErr != nil {
-			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), embeddingRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), funcErr.Error.Message, 1)
+			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), embeddingRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), 1)
 		} else {
 			metrics.IncrementRelayRequestSuccessCounter(strconv.Itoa(relayInfo.ChannelId), embeddingRequest.Model, relayInfo.Group, 1)
 			metrics.ObserveRelayRequestDuration(strconv.Itoa(relayInfo.ChannelId), embeddingRequest.Model, relayInfo.Group, time.Since(startTime).Seconds())
 		}
 	}()
 
-	err = validateEmbeddingRequest(c, relayInfo, *embeddingRequest)
+	err := validateEmbeddingRequest(c, relayInfo, *embeddingRequest)
 	if err != nil {
 		funcErr = service.OpenAIErrorWrapperLocal(err, "invalid_embedding_request", http.StatusBadRequest)
 		return funcErr
