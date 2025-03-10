@@ -314,6 +314,9 @@ func shouldRetry(c *gin.Context, openaiErr *dto.OpenAIErrorWithStatusCode, retry
 	if openaiErr.StatusCode/100 == 2 {
 		return false
 	}
+	if strings.Contains(openaiErr.Error.Message, "deadline exceeded") || strings.Contains(openaiErr.Error.Message, "request canceled") {
+		return false
+	}
 	return true
 }
 

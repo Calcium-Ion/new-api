@@ -73,8 +73,8 @@ func AudioHelper(c *gin.Context, relayInfo *relaycommon.RelayInfo, audioRequest 
 	var funcErr *dto.OpenAIErrorWithStatusCode
 	metrics.IncrementRelayRequestTotalCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, 1)
 	defer func() {
-		if openaiErr != nil {
-			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, strconv.Itoa(openaiErr.StatusCode), 1)
+		if funcErr != nil {
+			metrics.IncrementRelayRequestFailedCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, strconv.Itoa(funcErr.StatusCode), 1)
 		} else {
 			metrics.IncrementRelayRequestSuccessCounter(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, 1)
 			metrics.ObserveRelayRequestDuration(strconv.Itoa(relayInfo.ChannelId), audioRequest.Model, relayInfo.Group, time.Since(startTime).Seconds())
