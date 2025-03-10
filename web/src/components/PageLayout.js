@@ -106,7 +106,6 @@ const PageLayout = () => {
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
             border: 'none',
             paddingRight: '0',
-            transition: 'transform 0.3s ease',
             height: 'calc(100vh - 56px)',
           }}>
             <SiderBar />
@@ -126,7 +125,6 @@ const PageLayout = () => {
               WebkitOverflowScrolling: 'touch',
               padding: styleState.shouldInnerPadding? '24px': '0',
               position: 'relative',
-              paddingBottom: styleState.isMobile ? '80px' : '0' // 移动端底部额外内边距
             }}
           >
             <App />

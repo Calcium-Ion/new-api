@@ -39,7 +39,6 @@ import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 const navItemStyle = {
   borderRadius: '6px',
   margin: '4px 8px',
-  transition: 'all 0.3s ease'
 };
 
 // 自定义侧边栏按钮悬停样式
@@ -60,7 +59,6 @@ const iconStyle = (itemKey, selectedKeys) => {
   return {
     fontSize: '18px',
     color: selectedKeys.includes(itemKey) ? 'var(--semi-color-primary)' : 'var(--semi-color-text-2)',
-    transition: 'all 0.3s ease'
   };
 };
 
@@ -81,7 +79,7 @@ const SiderBar = () => {
 
   // 预先计算所有可能的图标样式
   const allItemKeys = useMemo(() => {
-    const keys = ['home', 'channel', 'token', 'redemption', 'topup', 'user', 'log', 'midjourney', 
+    const keys = ['home', 'channel', 'token', 'redemption', 'topup', 'user', 'log', 'midjourney',
                  'setting', 'about', 'chat', 'detail', 'pricing', 'task', 'playground', 'personal'];
     // 添加聊天项的keys
     for (let i = 0; i < chatItems.length; i++) {
@@ -242,13 +240,15 @@ const SiderBar = () => {
   useEffect(() => {
     const currentPath = location.pathname;
     const matchingKey = Object.keys(routerMap).find(key => routerMap[key] === currentPath);
-    
+
     if (matchingKey) {
       setSelectedKeys([matchingKey]);
     } else if (currentPath.startsWith('/chat/')) {
       setSelectedKeys(['chat']);
     }
+  }, [location.pathname]);
 
+  useEffect(() => {
     let chats = localStorage.getItem('chats');
     if (chats) {
       // console.log(chats);
@@ -274,8 +274,8 @@ const SiderBar = () => {
       }
     }
 
-    setIsCollapsed(localStorage.getItem('default_collapse_sidebar') === 'true');
-  }, [location.pathname]);
+    setIsCollapsed(styleState.siderCollapsed);
+  })
 
   // Custom divider style
   const dividerStyle = {
@@ -303,7 +303,6 @@ const SiderBar = () => {
           borderRight: '1px solid var(--semi-color-border)',
           background: 'var(--semi-color-bg-1)',
           borderRadius: styleState.isMobile ? '0' : '0 8px 8px 0',
-          transition: 'all 0.3s ease',
           position: 'relative',
           zIndex: 95,
           height: '100%',
@@ -324,13 +323,13 @@ const SiderBar = () => {
           if (selectedKeys.length === 0) {
             const currentPath = location.pathname;
             const matchingKey = Object.keys(routerMap).find(key => routerMap[key] === currentPath);
-            
+
             if (matchingKey) {
               setSelectedKeys([matchingKey]);
             } else if (currentPath.startsWith('/chat/')) {
               setSelectedKeys(['chat']);
             } else {
-              setSelectedKeys(['detail']); // 默认选中首页
+              setSelectedKeys([]); // 默认选中首页
             }
           }
         }}
