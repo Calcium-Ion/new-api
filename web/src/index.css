@@ -82,6 +82,16 @@ body {
   .semi-navigation-horizontal .semi-navigation-header {
     margin-right: 0;
   }
+
+  /* 确保移动端内容可滚动 */
+  .semi-layout-content {
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* 隐藏在移动设备上 */
+  .hide-on-mobile {
+    display: none !important;
+  }
 }
 
 .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
@@ -162,14 +172,14 @@ code {
   }
 }
 
-.semi-navigation-vertical {
-  /*flex: 0 0 auto;*/
-  /*display: flex;*/
-  /*flex-direction: column;*/
-  /*width: 100%;*/
-  height: 100%;
-  overflow: hidden;
-}
+/*.semi-navigation-vertical {*/
+/*  !*flex: 0 0 auto;*!*/
+/*  !*display: flex;*!*/
+/*  !*flex-direction: column;*!*/
+/*  !*width: 100%;*!*/
+/*  height: 100%;*/
+/*  overflow: hidden;*/
+/*}*/
 
 .main-content {
   padding: 4px;
@@ -182,12 +192,6 @@ code {
 
 .custom-footer {
   font-size: 1.1em;
-}
-
-@media only screen and (max-width: 600px) {
-  .hide-on-mobile {
-    display: none !important;
-  }
 }
 
 /* 顶部栏样式 */
@@ -248,8 +252,9 @@ code {
 }
 
 /* Custom sidebar shadow */
-.custom-sidebar-nav {
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;
-  -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;
-  -moz-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;
-}
+/*.custom-sidebar-nav {*/
+/*  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;*/
+/*  -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;*/
+/*  -moz-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08) !important;*/
+/*  min-height: 100%;*/
+/*}*/

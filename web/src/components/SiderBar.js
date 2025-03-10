@@ -33,6 +33,7 @@ import { setStatusData } from '../helpers/data.js';
 import { stringToColor } from '../helpers/render.js';
 import { useSetTheme, useTheme } from '../context/Theme/index.js';
 import { StyleContext } from '../context/Style/index.js';
+import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 
 // 自定义侧边栏按钮样式
 const navItemStyle = {
@@ -298,16 +299,16 @@ const SiderBar = () => {
         className="custom-sidebar-nav"
         style={{ 
           width: isCollapsed ? '60px' : '200px',
-          height: '100%',
-          boxShadow: '0 1px 6px rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
           borderRight: '1px solid var(--semi-color-border)',
-          background: 'var(--semi-color-bg-0)',
-          borderRadius: '0 8px 8px 0',
+          background: 'var(--semi-color-bg-1)',
+          borderRadius: styleState.isMobile ? '0' : '0 8px 8px 0',
           transition: 'all 0.3s ease',
           position: 'relative',
           zIndex: 95,
+          height: '100%',
           overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch' // Improve scrolling on iOS devices
+          WebkitOverflowScrolling: 'touch', // Improve scrolling on iOS devices
         }}
         defaultIsCollapsed={
           localStorage.getItem('default_collapse_sidebar') === 'true'
@@ -419,7 +420,7 @@ const SiderBar = () => {
         <Divider style={dividerStyle} />
 
         {/* Workspace Section */}
-        {!isCollapsed && <div style={groupLabelStyle}>{t('控制台')}</div>}
+        {!isCollapsed && <Text style={groupLabelStyle}>{t('控制台')}</Text>}
         {workspaceItems.map((item) => (
           <Nav.Item
             key={item.itemKey}
@@ -436,7 +437,7 @@ const SiderBar = () => {
             <Divider style={dividerStyle} />
 
             {/* Admin Section */}
-            {!isCollapsed && <div style={groupLabelStyle}>{t('管理员')}</div>}
+            {!isCollapsed && <Text style={groupLabelStyle}>{t('管理员')}</Text>}
             {adminItems.map((item) => (
               <Nav.Item
                 key={item.itemKey}
@@ -453,7 +454,7 @@ const SiderBar = () => {
         <Divider style={dividerStyle} />
 
         {/* Finance Management Section */}
-        {!isCollapsed && <div style={groupLabelStyle}>{t('个人中心')}</div>}
+        {!isCollapsed && <Text style={groupLabelStyle}>{t('个人中心')}</Text>}
         {financeItems.map((item) => (
           <Nav.Item
             key={item.itemKey}
@@ -465,12 +466,10 @@ const SiderBar = () => {
         ))}
 
         <Nav.Footer
-          collapseButton={true}
           style={{
-            borderTop: '1px solid var(--semi-color-border)',
-            padding: '12px 0',
-            marginTop: 'auto'
+            paddingBottom: styleState?.isMobile ? '112px' : '0',
           }}
+          collapseButton={true}
           collapseText={(collapsed)=>
             {
               if(collapsed){
