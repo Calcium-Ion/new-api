@@ -8,6 +8,7 @@ import (
 	"one-api/model"
 	"one-api/setting"
 	"one-api/setting/operation_setting"
+	"one-api/setting/system_setting"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -68,9 +69,9 @@ func GetStatus(c *gin.Context) {
 			"chats":                       setting.Chats,
 			"demo_site_enabled":           operation_setting.DemoSiteEnabled,
 			"self_use_mode_enabled":       operation_setting.SelfUseModeEnabled,
-			"oidc":                        common.OIDCEnabled,
-			"oidc_client_id":              common.OIDCClientId,
-			"oidc_authorization_endpoint": common.OIDCAuthorizationEndpoint,
+			"oidc_enabled":                system_setting.GetOIDCSettings().Enabled,
+			"oidc_client_id":              system_setting.GetOIDCSettings().ClientId,
+			"oidc_authorization_endpoint": system_setting.GetOIDCSettings().AuthorizationEndpoint,
 		},
 	})
 	return

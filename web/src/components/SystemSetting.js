@@ -20,13 +20,13 @@ const SystemSetting = () => {
     GitHubOAuthEnabled: '',
     GitHubClientId: '',
     GitHubClientSecret: '',
-    OIDCEnabled: '',
-    OIDCClientId: '',
-    OIDCClientSecret: '',
-    OIDCWellKnown: '',
-    OIDCAuthorizationEndpoint: '',
-    OIDCTokenEndpoint: '',
-    OIDCUserInfoEndpoint: '',
+    'oidc.enabled': '',
+    'oidc.client_id': '',
+    'oidc.client_secret': '',
+    'oidc.well_known': '',
+    'oidc.authorization_endpoint': '',
+    'oidc.token_endpoint': '',
+    'oidc.user_info_endpoint': '',
     Notice: '',
     SMTPServer: '',
     SMTPPort: '',
@@ -113,7 +113,7 @@ const SystemSetting = () => {
       case 'PasswordRegisterEnabled':
       case 'EmailVerificationEnabled':
       case 'GitHubOAuthEnabled':
-      case 'OIDCEnabled':
+      case 'oidc.enabled':
       case 'LinuxDOOAuthEnabled':
       case 'WeChatAuthEnabled':
       case 'TelegramOAuthEnabled':
@@ -167,12 +167,12 @@ const SystemSetting = () => {
       name === 'PayAddress' ||
       name === 'GitHubClientId' ||
       name === 'GitHubClientSecret' ||
-      name === 'OIDCWellKnown' ||
-      name === 'OIDCClientId' ||
-      name === 'OIDCClientSecret' ||
-      name === 'OIDCAuthorizationEndpoint' ||
-      name === 'OIDCTokenEndpoint' ||
-      name === 'OIDCUserInfoEndpoint' ||
+      name === 'oidc.well_known' ||
+      name === 'oidc.client_id' ||
+      name === 'oidc.client_secret' ||
+      name === 'oidc.authorization_endpoint' ||
+      name === 'oidc.token_endpoint' ||
+      name === 'oidc.user_info_endpoint' ||
       name === 'WeChatServerAddress' ||
       name === 'WeChatServerToken' ||
       name === 'WeChatAccountQRCodeImageURL' ||
@@ -301,39 +301,39 @@ const SystemSetting = () => {
   };
 
   const submitOIDCSettings = async () => {
-    if (inputs.OIDCWellKnown !== '') {
-      if (!inputs.OIDCWellKnown.startsWith('http://') && !inputs.OIDCWellKnown.startsWith('https://')) {
+    if (inputs['oidc.well_known'] !== '') {
+      if (!inputs['oidc.well_known'].startsWith('http://') && !inputs['oidc.well_known'].startsWith('https://')) {
         showError('Well-Known URL 必须以 http:// 或 https:// 开头');
         return;
       }
       try {
-        const res = await API.get(inputs.OIDCWellKnown);
-        inputs.OIDCAuthorizationEndpoint = res.data['authorization_endpoint'];
-        inputs.OIDCTokenEndpoint = res.data['token_endpoint'];
-        inputs.OIDCUserInfoEndpoint = res.data['userinfo_endpoint'];
+        const res = await API.get(inputs['oidc.well_known']);
+        inputs['oidc.authorization_endpoint'] = res.data['authorization_endpoint'];
+        inputs['oidc.token_endpoint'] = res.data['token_endpoint'];
+        inputs['oidc.user_info_endpoint'] = res.data['userinfo_endpoint'];
         showSuccess('获取 OIDC 配置成功！');
       } catch (err) {
         showError("获取 OIDC 配置失败，请检查网络状况和 Well-Known URL 是否正确");
       }
     }
 
-    if (originInputs['OIDCWellKnown'] !== inputs.OIDCWellKnown) {
-      await updateOption('OIDCWellKnown', inputs.OIDCWellKnown);
+    if (originInputs['oidc.well_known'] !== inputs['oidc.well_known']) {
+      await updateOption('oidc.well_known', inputs['oidc.well_known']);
     }
-    if (originInputs['OIDCClientId'] !== inputs.OIDCClientId) {
-      await updateOption('OIDCClientId', inputs.OIDCClientId);
+    if (originInputs['oidc.client_id'] !== inputs['oidc.client_id']) {
+      await updateOption('oidc.client_id', inputs['oidc.client_id']);
     }
-    if (originInputs['OIDCClientSecret'] !== inputs.OIDCClientSecret && inputs.OIDCClientSecret !== '') {
-      await updateOption('OIDCClientSecret', inputs.OIDCClientSecret);
+    if (originInputs['oidc.client_secret'] !== inputs['oidc.client_secret'] && inputs['oidc.client_secret'] !== '') {
+      await updateOption('oidc.client_secret', inputs['oidc.client_secret']);
     }
-    if (originInputs['OIDCAuthorizationEndpoint'] !== inputs.OIDCAuthorizationEndpoint) {
-      await updateOption('OIDCAuthorizationEndpoint', inputs.OIDCAuthorizationEndpoint);
+    if (originInputs['oidc.authorization_endpoint'] !== inputs['oidc.authorization_endpoint']) {
+      await updateOption('oidc.authorization_endpoint', inputs['oidc.authorization_endpoint']);
     }
-    if (originInputs['OIDCTokenEndpoint'] !== inputs.OIDCTokenEndpoint) {
-      await updateOption('OIDCTokenEndpoint', inputs.OIDCTokenEndpoint);
+    if (originInputs['oidc.token_endpoint'] !== inputs['oidc.token_endpoint']) {
+      await updateOption('oidc.token_endpoint', inputs['oidc.token_endpoint']);
     }
-    if (originInputs['OIDCUserInfoEndpoint'] !== inputs.OIDCUserInfoEndpoint) {
-      await updateOption('OIDCUserInfoEndpoint', inputs.OIDCUserInfoEndpoint);
+    if (originInputs['oidc.user_info_endpoint'] !== inputs['oidc.user_info_endpoint']) {
+      await updateOption('oidc.user_info_endpoint', inputs['oidc.user_info_endpoint']);
     }
   }
 
@@ -570,9 +570,9 @@ const SystemSetting = () => {
               onChange={handleInputChange}
             />
             <Form.Checkbox
-                checked={inputs.OIDCEnabled === 'true'}
+                checked={inputs['oidc.enabled'] === 'true'}
                 label='允许通过 OIDC 登录 & 注册'
-                name='OIDCEnabled'
+                name='oidc.enabled'
                 onChange={handleInputChange}
             />
             <Form.Checkbox
@@ -938,45 +938,45 @@ const SystemSetting = () => {
           <Form.Group widths={3}>
             <Form.Input
                 label='Client ID'
-                name='OIDCClientId'
+                name='oidc.client_id'
                 onChange={handleInputChange}
-                value={inputs.OIDCClientId}
+                value={inputs['oidc.client_id']}
                 placeholder='输入 OIDC 的 Client ID'
             />
             <Form.Input
                 label='Client Secret'
-                name='OIDCClientSecret'
+                name='oidc.client_secret'
                 onChange={handleInputChange}
                 type='password'
-                value={inputs.OIDCClientSecret}
+                value={inputs['oidc.client_secret']}
                 placeholder='敏感信息不会发送到前端显示'
             />
             <Form.Input
                 label='Well-Known URL'
-                name='OIDCWellKnown'
+                name='oidc.well_known'
                 onChange={handleInputChange}
-                value={inputs.OIDCWellKnown}
+                value={inputs['oidc.well_known']}
                 placeholder='请输入 OIDC 的 Well-Known URL'
             />
             <Form.Input
                 label='Authorization Endpoint'
-                name='OIDCAuthorizationEndpoint'
+                name='oidc.authorization_endpoint'
                 onChange={handleInputChange}
-                value={inputs.OIDCAuthorizationEndpoint}
+                value={inputs['oidc.authorization_endpoint']}
                 placeholder='输入 OIDC 的 Authorization Endpoint'
             />
             <Form.Input
                 label='Token Endpoint'
-                name='OIDCTokenEndpoint'
+                name='oidc.token_endpoint'
                 onChange={handleInputChange}
-                value={inputs.OIDCTokenEndpoint}
+                value={inputs['oidc.token_endpoint']}
                 placeholder='输入 OIDC 的 Token Endpoint'
             />
             <Form.Input
                 label='Userinfo Endpoint'
-                name='OIDCUserInfoEndpoint'
+                name='oidc.user_info_endpoint'
                 onChange={handleInputChange}
-                value={inputs.OIDCUserInfoEndpoint}
+                value={inputs['oidc.user_info_endpoint']}
                 placeholder='输入 OIDC 的 Userinfo Endpoint'
             />
           </Form.Group>
