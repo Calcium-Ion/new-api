@@ -662,10 +662,10 @@ const PersonalSetting = () => {
                                             }}
                                             disabled={
                                                 (userState.user && userState.user.oidc_id !== '') ||
-                                                !status.oidc
+                                                !status.oidc_enabled
                                             }
                                         >
-                                            {status.oidc ? t('绑定') : t('未启用')}
+                                            {status.oidc_enabled ? t('绑定') : t('未启用')}
                                         </Button>
                                     </div>
                                 </div>

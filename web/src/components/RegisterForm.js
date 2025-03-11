@@ -263,7 +263,7 @@ const RegisterForm = () => {
                   </Text>
                 </div>
                 {status.github_oauth ||
-                status.oidc ||
+                status.oidc_enabled ||
                 status.wechat_login ||
                 status.telegram_oauth ||
                 status.linuxdo_oauth ? (
@@ -289,7 +289,7 @@ const RegisterForm = () => {
                       ) : (
                         <></>
                       )}
-                      {status.oidc ? (
+                      {status.oidc_enabled ? (
                           <Button
                               type='primary'
                               icon={<OIDCIcon />}
