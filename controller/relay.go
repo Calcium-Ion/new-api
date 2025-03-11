@@ -293,6 +293,10 @@ func shouldRetry(c *gin.Context, openaiErr *dto.OpenAIErrorWithStatusCode, retry
 	if openaiErr.StatusCode == 307 {
 		return true
 	}
+	if strings.Contains(openaiErr.Error.Message, "deadline exceeded") || strings.Contains(openaiErr.Error.Message, "request canceled") {
+		common.LogInfo(c, "客户端请求下游超时，不再重试")
+		return false
+	}
 	if openaiErr.StatusCode/100 == 5 {
 		// 超时不重试
 		if openaiErr.StatusCode == 504 || openaiErr.StatusCode == 524 {
@@ -312,10 +316,6 @@ func shouldRetry(c *gin.Context, openaiErr *dto.OpenAIErrorWithStatusCode, retry
 		return false
 	}
 	if openaiErr.StatusCode/100 == 2 {
-		return false
-	}
-	if strings.Contains(openaiErr.Error.Message, "deadline exceeded") || strings.Contains(openaiErr.Error.Message, "request canceled") {
-		common.LogInfo(c, "客户端请求下游超时，不再重试")
 		return false
 	}
 	return true
