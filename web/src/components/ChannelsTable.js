@@ -450,13 +450,6 @@ const ChannelsTable = () => {
       dataIndex: 'operate',
       render: (text, record, index) => {
         if (record.children === undefined) {
-          // 构建模型测试菜单
-          const modelMenuItems = record.models.split(',').map(model => ({
-            node: 'item',
-            name: model,
-            onClick: () => testChannel(record, model)
-          }));
-
           return (
             <div>
               <SplitButtonGroup
@@ -1566,8 +1559,9 @@ const ChannelsTable = () => {
               
               <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-                gap: '10px' 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                gap: '12px',
+                marginBottom: '16px'
               }}>
                 {currentTestChannel.models.split(',')
                   .filter(model => model.toLowerCase().includes(modelSearchKeyword.toLowerCase()))
@@ -1575,27 +1569,31 @@ const ChannelsTable = () => {
 
                     return (
                       <Button
-                        key={index}
-                        theme="light"
-                        type="tertiary"
-                        style={{ 
-                          height: 'auto',
-                          padding: '8px 12px',
-                          textAlign: 'center',
-                        }}
-                        onClick={() => {
-                          testChannel(currentTestChannel, model);
-                        }}
-                      >
-                        {model}
-                      </Button>
+                          theme="light"
+                          type="tertiary"
+                          style={{ 
+                            height: 'auto',
+                            padding: '10px 12px',
+                            textAlign: 'center',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            width: '100%',
+                            borderRadius: '6px'
+                          }}
+                          onClick={() => {
+                            testChannel(currentTestChannel, model);
+                          }}
+                        >
+                          {model}
+                        </Button>
                     );
                   })}
               </div>
               
               {/* 显示搜索结果数量 */}
               {modelSearchKeyword && (
-                <Typography.Text type="secondary" style={{ marginTop: '16px', display: 'block' }}>
+                <Typography.Text type="secondary" style={{ display: 'block' }}>
                   {t('找到')} {currentTestChannel.models.split(',').filter(model => 
                     model.toLowerCase().includes(modelSearchKeyword.toLowerCase())
                   ).length} {t('个模型')}
