@@ -8,7 +8,7 @@ import {
   Message,
   Modal,
 } from 'semantic-ui-react';
-import { API, removeTrailingSlash, showError, verifyJSON } from '../helpers';
+import { API, removeTrailingSlash, showError, showSuccess, verifyJSON } from '../helpers';
 
 import { useTheme } from '../context/Theme';
 
@@ -313,6 +313,7 @@ const SystemSetting = () => {
         inputs['oidc.user_info_endpoint'] = res.data['userinfo_endpoint'];
         showSuccess('获取 OIDC 配置成功！');
       } catch (err) {
+        console.error(err);
         showError("获取 OIDC 配置失败，请检查网络状况和 Well-Known URL 是否正确");
       }
     }
