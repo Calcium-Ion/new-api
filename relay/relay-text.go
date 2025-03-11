@@ -17,6 +17,7 @@ import (
 	"one-api/relay/helper"
 	"one-api/service"
 	"one-api/setting"
+	"one-api/setting/model_setting"
 	"strings"
 	"time"
 
@@ -152,32 +153,31 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	adaptor.Init(relayInfo)
 	var requestBody io.Reader
 
-	//if relayInfo.ChannelType == common.ChannelTypeOpenAI && !isModelMapped {
-	//	body, err := common.GetRequestBody(c)
-	//	if err != nil {
-	//		return service.OpenAIErrorWrapperLocal(err, "get_request_body_failed", http.StatusInternalServerError)
-	//	}
-	//	requestBody = bytes.NewBuffer(body)
-	//} else {
-	//
-	//}
-
-	convertedRequest, err := adaptor.ConvertRequest(c, relayInfo, textRequest)
-	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
+	if model_setting.GetGlobalSettings().PassThroughRequestEnabled {
+		body, err := common.GetRequestBody(c)
+		if err != nil {
+			return service.OpenAIErrorWrapperLocal(err, "get_request_body_failed", http.StatusInternalServerError)
+		}
+		requestBody = bytes.NewBuffer(body)
+	} else {
+		convertedRequest, err := adaptor.ConvertRequest(c, relayInfo, textRequest)
+		if err != nil {
+			return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
+		}
+		jsonData, err := json.Marshal(convertedRequest)
+		if err != nil {
+			return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
+		}
+		requestBody = bytes.NewBuffer(jsonData)
 	}
-	jsonData, err := json.Marshal(convertedRequest)
-	if err != nil {
-		return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
-	}
-	requestBody = bytes.NewBuffer(jsonData)
 
-	statusCodeMappingStr := c.GetString("status_code_mapping")
 	var httpResp *http.Response
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
 	}
+
+	statusCodeMappingStr := c.GetString("status_code_mapping")
 
 	if resp != nil {
 		httpResp = resp.(*http.Response)
