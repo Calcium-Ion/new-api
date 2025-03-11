@@ -26,6 +26,7 @@ type QuotaData struct {
 type BillingData struct {
 	ChannelId         int    `json:"chanel_id"`
 	ChannelName       string `json:"channel_name"`
+	ChannelTag        string `json:"channel_tag"`
 	Count             int    `json:"count"`
 	ModelName         string `json:"model_name"`
 	PromptTokens      int    `json:"prompt_tokens"`
@@ -36,13 +37,14 @@ type BillingJsonData struct {
 	ChannelId          int     `json:"chanel_id"`
 	CurrentDate        string  `json:"current_date"`
 	ChannelName        string  `json:"channel_name"`
+	ChannelTag         string  `json:"channel_tag"`
 	Count              int     `json:"count"`
 	ModelName          string  `json:"model_name"`
 	PromptTokens       float32 `json:"prompt_tokens"`
 	CompletionsTokens  float32 `json:"completions_tokens"`
 	PromptPricing      float32 `json:"prompt_pricing"`
 	CompletionsPricing float32 `json:"completions_pricing"`
-	/**/ Cost          float32 `json:"cost"`
+	/**/ Cost float32 `json:"cost"`
 }
 
 func UpdateQuotaData() {
@@ -174,7 +176,7 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 
 		var billingData []*BillingData
 		err = DB.Table("logs").
-			Select("logs.channel_id, channels.name as channel_name, logs.model_name, "+
+			Select("logs.channel_id, channels.name as channel_name, channels.tag as channel_tag, logs.model_name, "+
 				"COUNT(*) as count, "+
 				"SUM(logs.prompt_tokens) as prompt_tokens, "+
 				"SUM(logs.completion_tokens) as completions_tokens").
@@ -204,6 +206,7 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 			billingJsonData = append(billingJsonData, &BillingJsonData{
 				ChannelId:          data.ChannelId,
 				ChannelName:        data.ChannelName,
+				ChannelTag:         data.ChannelTag,
 				CurrentDate:        currentTime.Format("2006-01-02"),
 				Count:              data.Count,
 				ModelName:          data.ModelName,
@@ -221,11 +224,11 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 
 	// 在返回之前对数据进行排序
 	sort.Slice(billingJsonData, func(i, j int) bool {
-		// 首先按照 ChannelId 排序
-		if billingJsonData[i].ChannelId != billingJsonData[j].ChannelId {
-			return billingJsonData[i].ChannelId < billingJsonData[j].ChannelId
+		// 首先按照 ChannelTag 排序
+		if billingJsonData[i].ChannelTag != billingJsonData[j].ChannelTag {
+			return billingJsonData[i].ChannelTag < billingJsonData[j].ChannelTag
 		}
-		// ChannelId 相同时，按照 CurrentDate 排序
+		// ChannelTag 相同时，按照 CurrentDate 排序
 		return billingJsonData[i].CurrentDate < billingJsonData[j].CurrentDate
 	})
 
@@ -243,7 +246,7 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 	defer f.Close()
 
 	// 设置表头
-	headers := []string{"渠道ID", "渠道名称", "日期", "调用次数", "模型名字",
+	headers := []string{"渠道ID", "渠道名称", "渠道Tag（Tag相同则聚合）", "日期", "调用次数", "模型名字",
 		"提示Tokens", "补全Tokens", "提示价格", "补全价格", "金额"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%c1", 'A'+i)
@@ -255,6 +258,18 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 	row := 2
 	currentChannelID := -1
 	var channelTotal float32 = 0
+
+	// 在 GetBillingAndExportExcel 函数开始处添加样式定义
+	style, err := f.NewStyle(&excelize.Style{
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Color:   []string{"FFD699"}, // 橙色
+			Pattern: 1,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	// 写入数据
 	for _, data := range billingData {
@@ -270,22 +285,28 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 			f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), "-")
 			f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), "-")
 			f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), "-")
-			f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), channelTotal)
-			row++
+			f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), "-")
+			f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), channelTotal)
+			// 为整行设置样式
+			for col := 'A'; col <= 'K'; col++ {
+				f.SetCellStyle("Sheet1", fmt.Sprintf("%c%d", col, row), fmt.Sprintf("%c%d", col, row), style)
+			}
+			row += 3
 			channelTotal = 0
 		}
 
 		// 写入详细数据
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), data.ChannelId)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), data.ChannelName)
-		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), data.CurrentDate)
-		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), data.Count)
-		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), data.ModelName)
-		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), data.PromptTokens)
-		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), data.CompletionsTokens)
-		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), data.PromptPricing)
-		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), data.CompletionsPricing)
-		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), data.Cost)
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), data.ChannelTag)
+		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), data.CurrentDate)
+		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), data.Count)
+		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), data.ModelName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), data.PromptTokens)
+		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), data.CompletionsTokens)
+		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), data.PromptPricing)
+		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), data.CompletionsPricing)
+		f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), data.Cost)
 
 		channelTotal += data.Cost
 		currentChannelID = data.ChannelId
@@ -303,7 +324,11 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), "-")
 		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), "-")
 		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), "-")
-		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), channelTotal)
+		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), "-")
+		f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), channelTotal)
+		for col := 'A'; col <= 'K'; col++ {
+			f.SetCellStyle("Sheet1", fmt.Sprintf("%c%d", col, row), fmt.Sprintf("%c%d", col, row), style)
+		}
 	}
 
 	// 删除保存文件的代码，改为返回字节流
