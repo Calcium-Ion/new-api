@@ -77,12 +77,6 @@ func InitOptionMap() {
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
 	common.OptionMap["GitHubClientId"] = ""
 	common.OptionMap["GitHubClientSecret"] = ""
-	common.OptionMap["OIDCClientId"] = ""
-	common.OptionMap["OIDCClientSecret"] = ""
-	common.OptionMap["OIDCWellKnown"] = ""
-	common.OptionMap["OIDCAuthorizationEndpoint"] = ""
-	common.OptionMap["OIDCTokenEndpoint"] = ""
-	common.OptionMap["OIDCUserInfoEndpoint"] = ""
 	common.OptionMap["TelegramBotToken"] = ""
 	common.OptionMap["TelegramBotName"] = ""
 	common.OptionMap["WeChatServerAddress"] = ""
