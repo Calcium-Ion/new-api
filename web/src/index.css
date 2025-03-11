@@ -1,7 +1,6 @@
 body {
   margin: 0;
   padding-top: 0;
-  overflow: hidden;
   font-family: Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei',
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -13,7 +12,8 @@ body {
 }
 
 #root {
-  height: 100vh;
+  height: 100%;
+  display: flex;
   flex-direction: column;
   overflow: hidden;
 }
@@ -86,8 +86,23 @@ body {
   /* 确保移动端内容可滚动 */
   .semi-layout-content {
     -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: auto !important;
   }
 
+  /* 修复移动端下拉刷新 */
+  body {
+    overflow: visible !important;
+    overscroll-behavior-y: auto !important;
+    position: static !important;
+    height: 100% !important;
+  }
+  
+  /* 确保内容区域在移动端可以正常滚动 */
+  #root {
+    overflow: visible !important;
+    height: 100% !important;
+  }
+  
   /* 隐藏在移动设备上 */
   .hide-on-mobile {
     display: none !important;

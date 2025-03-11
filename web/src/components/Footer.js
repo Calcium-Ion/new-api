@@ -61,7 +61,7 @@ const FooterBar = () => {
   return (
     <div style={{
       textAlign: 'center',
-      paddingBottom: styleState?.isMobile ? '112px' : '5px',
+      paddingBottom: '5px',
     }}>
       {footer ? (
         <div

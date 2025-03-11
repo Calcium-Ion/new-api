@@ -75,13 +75,13 @@ const PageLayout = () => {
       height: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      overflow: 'hidden'
+      overflow: styleState.isMobile ? 'visible' : 'hidden'
     }}>
       <Header style={{ 
         padding: 0, 
         height: 'auto', 
         lineHeight: 'normal', 
-        position: 'fixed', 
+        position: styleState.isMobile ? 'sticky' : 'fixed',
         width: '100%', 
         top: 0, 
         zIndex: 100,
@@ -90,9 +90,9 @@ const PageLayout = () => {
         <HeaderBar />
       </Header>
       <Layout style={{ 
-        marginTop: '56px',
-        height: 'calc(100vh - 56px)',
-        overflow: 'auto',
+        marginTop: styleState.isMobile ? '0' : '56px',
+        height: styleState.isMobile ? 'auto' : 'calc(100vh - 56px)',
+        overflow: styleState.isMobile ? 'visible' : 'auto',
         display: 'flex',
         flexDirection: 'column'
       }}>
@@ -121,10 +121,11 @@ const PageLayout = () => {
           <Content
             style={{ 
               flex: '1 0 auto',
-              overflowY: 'auto',
+              overflowY: styleState.isMobile ? 'visible' : 'auto',
               WebkitOverflowScrolling: 'touch',
               padding: styleState.shouldInnerPadding? '24px': '0',
               position: 'relative',
+              marginTop: styleState.isMobile ? '2px' : '0',
             }}
           >
             <App />
