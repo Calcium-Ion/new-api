@@ -62,6 +62,25 @@ const iconStyle = (itemKey, selectedKeys) => {
   };
 };
 
+// Define routerMap as a constant outside the component
+const routerMap = {
+  home: '/',
+  channel: '/channel',
+  token: '/token',
+  redemption: '/redemption',
+  topup: '/topup',
+  user: '/user',
+  log: '/log',
+  midjourney: '/midjourney',
+  setting: '/setting',
+  about: '/about',
+  detail: '/detail',
+  pricing: '/pricing',
+  task: '/task',
+  playground: '/playground',
+  personal: '/personal',
+};
+
 const SiderBar = () => {
   const { t } = useTranslation();
   const [styleState, styleDispatch] = useContext(StyleContext);
@@ -76,6 +95,7 @@ const SiderBar = () => {
   const theme = useTheme();
   const setTheme = useSetTheme();
   const location = useLocation();
+  const [routerMapState, setRouterMapState] = useState(routerMap);
 
   // 预先计算所有可能的图标样式
   const allItemKeys = useMemo(() => {
@@ -96,25 +116,6 @@ const SiderBar = () => {
     });
     return styles;
   }, [allItemKeys, selectedKeys]);
-
-  const routerMap = {
-    home: '/',
-    channel: '/channel',
-    token: '/token',
-    redemption: '/redemption',
-    topup: '/topup',
-    user: '/user',
-    log: '/log',
-    midjourney: '/midjourney',
-    setting: '/setting',
-    about: '/about',
-    chat: '/chat',
-    detail: '/detail',
-    pricing: '/pricing',
-    task: '/task',
-    playground: '/playground',
-    personal: '/personal',
-  };
 
   const workspaceItems = useMemo(
     () => [
@@ -237,21 +238,24 @@ const SiderBar = () => {
     [chatItems, t],
   );
 
-  useEffect(() => {
-    const currentPath = location.pathname;
-    const matchingKey = Object.keys(routerMap).find(key => routerMap[key] === currentPath);
-
-    if (matchingKey) {
-      setSelectedKeys([matchingKey]);
-    } else if (currentPath.startsWith('/chat/')) {
-      setSelectedKeys(['chat']);
+  // Function to update router map with chat routes
+  const updateRouterMapWithChats = (chats) => {
+    const newRouterMap = { ...routerMap };
+    
+    if (Array.isArray(chats) && chats.length > 0) {
+      for (let i = 0; i < chats.length; i++) {
+        newRouterMap['chat' + i] = '/chat/' + i;
+      }
     }
-  }, [location.pathname]);
+    
+    setRouterMapState(newRouterMap);
+    return newRouterMap;
+  };
 
+  // Update the useEffect for chat items
   useEffect(() => {
     let chats = localStorage.getItem('chats');
     if (chats) {
-      // console.log(chats);
       try {
         chats = JSON.parse(chats);
         if (Array.isArray(chats)) {
@@ -263,19 +267,44 @@ const SiderBar = () => {
               chat.itemKey = 'chat' + i;
               chat.to = '/chat/' + i;
             }
-            // setRouterMap({ ...routerMap, chat: '/chat/' + i })
             chatItems.push(chat);
           }
           setChatItems(chatItems);
+          
+          // Update router map with chat routes
+          updateRouterMapWithChats(chats);
         }
       } catch (e) {
         console.error(e);
         showError('聊天数据解析失败')
       }
     }
+  }, []);
 
+  // Update the useEffect for route selection
+  useEffect(() => {
+    const currentPath = location.pathname;
+    let matchingKey = Object.keys(routerMapState).find(key => routerMapState[key] === currentPath);
+
+    // Handle chat routes
+    if (!matchingKey && currentPath.startsWith('/chat/')) {
+      const chatIndex = currentPath.split('/').pop();
+      if (!isNaN(chatIndex)) {
+        matchingKey = 'chat' + chatIndex;
+      } else {
+        matchingKey = 'chat';
+      }
+    }
+
+    // If we found a matching key, update the selected keys
+    if (matchingKey) {
+      setSelectedKeys([matchingKey]);
+    }
+  }, [location.pathname, routerMapState]);
+
+  useEffect(() => {
     setIsCollapsed(styleState.siderCollapsed);
-  })
+  }, [styleState.siderCollapsed]);
 
   // Custom divider style
   const dividerStyle = {
@@ -322,14 +351,14 @@ const SiderBar = () => {
           // 确保在收起侧边栏时有选中的项目，避免不必要的计算
           if (selectedKeys.length === 0) {
             const currentPath = location.pathname;
-            const matchingKey = Object.keys(routerMap).find(key => routerMap[key] === currentPath);
+            const matchingKey = Object.keys(routerMapState).find(key => routerMapState[key] === currentPath);
 
             if (matchingKey) {
               setSelectedKeys([matchingKey]);
             } else if (currentPath.startsWith('/chat/')) {
               setSelectedKeys(['chat']);
             } else {
-              setSelectedKeys([]); // 默认选中首页
+              setSelectedKeys(['detail']); // 默认选中首页
             }
           }
         }}
@@ -338,28 +367,10 @@ const SiderBar = () => {
         hoverStyle={navItemHoverStyle}
         selectedStyle={navItemSelectedStyle}
         renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
-          let chats = localStorage.getItem('chats');
-          if (chats) {
-            chats = JSON.parse(chats);
-            if (Array.isArray(chats) && chats.length > 0) {
-              for (let i = 0; i < chats.length; i++) {
-                routerMap['chat' + i] = '/chat/' + i;
-              }
-              if (chats.length > 1) {
-                // delete /chat
-                if (routerMap['chat']) {
-                  delete routerMap['chat'];
-                }
-              } else {
-                // rename /chat to /chat/0
-                routerMap['chat'] = '/chat/0';
-              }
-            }
-          }
           return (
             <Link
               style={{ textDecoration: 'none' }}
-              to={routerMap[props.itemKey]}
+              to={routerMapState[props.itemKey] || routerMap[props.itemKey]}
             >
               {itemElement}
             </Link>
@@ -466,7 +477,7 @@ const SiderBar = () => {
 
         <Nav.Footer
           style={{
-            paddingBottom: styleState?.isMobile ? '112px' : '20px',
+            paddingBottom: styleState?.isMobile ? '112px' : '',
           }}
           collapseButton={true}
           collapseText={(collapsed)=>

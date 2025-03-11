@@ -1,5 +1,6 @@
 {
   "主页": "Home",
+  "文档": "Docs",
   "控制台": "Console",
   "$%.6f 额度": "$%.6f quota",
   "%d 点额度": "%d point quota",
