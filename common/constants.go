@@ -77,7 +77,6 @@ var SMTPToken = ""
 
 var GitHubClientId = ""
 var GitHubClientSecret = ""
-
 var LinuxDOClientId = ""
 var LinuxDOClientSecret = ""
 

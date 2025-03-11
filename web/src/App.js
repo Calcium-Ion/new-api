@@ -157,6 +157,14 @@ function App() {
           }
         />
         <Route
+            path='/oauth/oidc'
+            element={
+                <Suspense fallback={<Loading></Loading>}>
+                    <OAuth2Callback type='oidc'></OAuth2Callback>
+                </Suspense>
+            }
+        />
+        <Route
           path='/oauth/linuxdo'
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>

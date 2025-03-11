@@ -10,7 +10,7 @@ import {
 } from '../helpers';
 import Turnstile from 'react-turnstile';
 import {UserContext} from '../context/User';
-import {onGitHubOAuthClicked, onLinuxDOOAuthClicked} from './utils';
+import {onGitHubOAuthClicked, onOIDCClicked, onLinuxDOOAuthClicked} from './utils';
 import {
     Avatar,
     Banner,
@@ -636,6 +636,36 @@ const PersonalSetting = () => {
                                             }
                                         >
                                             {status.github_oauth ? t('绑定') : t('未启用')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{marginTop: 10}}>
+                                <Typography.Text strong>{t('OIDC')}</Typography.Text>
+                                <div
+                                    style={{display: 'flex', justifyContent: 'space-between'}}
+                                >
+                                    <div>
+                                        <Input
+                                            value={
+                                                userState.user && userState.user.oidc_id !== ''
+                                                    ? userState.user.oidc_id
+                                                    : t('未绑定')
+                                            }
+                                            readonly={true}
+                                        ></Input>
+                                    </div>
+                                    <div>
+                                        <Button
+                                            onClick={() => {
+                                                onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id);
+                                            }}
+                                            disabled={
+                                                (userState.user && userState.user.oidc_id !== '') ||
+                                                !status.oidc_enabled
+                                            }
+                                        >
+                                            {status.oidc_enabled ? t('绑定') : t('未启用')}
                                         </Button>
                                     </div>
                                 </div>

@@ -152,6 +152,12 @@ const Home = () => {
                       : t('未启用')}
                   </p>
                   <p>
+                    {t('OIDC 身份验证')}：
+                    {statusState?.status?.oidc === true
+                        ? t('已启用')
+                        : t('未启用')}
+                  </p>
+                  <p>
                     {t('微信身份验证')}：
                     {statusState?.status?.wechat_login === true
                       ? t('已启用')
