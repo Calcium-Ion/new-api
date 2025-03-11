@@ -50,7 +50,7 @@ func OpenAIErrorWrapperLocal(err error, code string, statusCode int) *dto.OpenAI
 	return openaiErr
 }
 
-func RelayErrorHandler(resp *http.Response) (errWithStatusCode *dto.OpenAIErrorWithStatusCode) {
+func RelayErrorHandler(resp *http.Response, showBodyWhenFail bool) (errWithStatusCode *dto.OpenAIErrorWithStatusCode) {
 	errWithStatusCode = &dto.OpenAIErrorWithStatusCode{
 		StatusCode: resp.StatusCode,
 		Error: dto.OpenAIError{
@@ -70,6 +70,11 @@ func RelayErrorHandler(resp *http.Response) (errWithStatusCode *dto.OpenAIErrorW
 	var errResponse dto.GeneralErrorResponse
 	err = json.Unmarshal(responseBody, &errResponse)
 	if err != nil {
+		if showBodyWhenFail {
+			errWithStatusCode.Error.Message = string(responseBody)
+		} else {
+			errWithStatusCode.Error.Message = fmt.Sprintf("bad response status code %d", resp.StatusCode)
+		}
 		return
 	}
 	if errResponse.Error.Message != "" {
