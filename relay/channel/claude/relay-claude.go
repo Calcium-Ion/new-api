@@ -330,7 +330,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *dto.ClaudeResponse
 		} else if claudeResponse.Type == "content_block_delta" {
 			if claudeResponse.Delta != nil {
 				choice.Index = *claudeResponse.Index
-				choice.Delta.SetContentString(*claudeResponse.Delta.Text)
+				choice.Delta.Content = claudeResponse.Delta.Text
 				switch claudeResponse.Delta.Type {
 				case "input_json_delta":
 					tools = append(tools, dto.ToolCallResponse{
@@ -452,7 +452,9 @@ func FormatClaudeResponseInfo(requestMode int, claudeResponse *dto.ClaudeRespons
 			claudeInfo.Model = claudeResponse.Message.Model
 			claudeInfo.Usage.PromptTokens = claudeResponse.Message.Usage.InputTokens
 		} else if claudeResponse.Type == "content_block_delta" {
-			claudeInfo.ResponseText.WriteString(*claudeResponse.Delta.Text)
+			if claudeResponse.Delta.Text != nil {
+				claudeInfo.ResponseText.WriteString(*claudeResponse.Delta.Text)
+			}
 		} else if claudeResponse.Type == "message_delta" {
 			claudeInfo.Usage.CompletionTokens = claudeResponse.Usage.OutputTokens
 			claudeInfo.Usage.TotalTokens = claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens
