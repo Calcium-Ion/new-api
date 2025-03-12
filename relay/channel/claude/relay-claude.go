@@ -471,7 +471,6 @@ func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 				usage.CompletionTokens = claudeUsage.OutputTokens
 				usage.TotalTokens = claudeUsage.InputTokens + claudeUsage.OutputTokens
 			} else if claudeResponse.Type == "content_block_start" {
-				return true
 			} else {
 				return true
 			}
