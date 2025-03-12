@@ -9,7 +9,7 @@ import {
   showSuccess,
   updateAPI,
 } from '../helpers';
-import { onGitHubOAuthClicked, onLinuxDOOAuthClicked } from './utils';
+import {onGitHubOAuthClicked, onOIDCClicked, onLinuxDOOAuthClicked} from './utils';
 import Turnstile from 'react-turnstile';
 import {
   Button,
@@ -25,6 +25,7 @@ import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import TelegramLoginButton from 'react-telegram-login';
 
 import { IconGithubLogo, IconAlarm } from '@douyinfe/semi-icons';
+import OIDCIcon from './OIDCIcon.js';
 import WeChatIcon from './WeChatIcon';
 import { setUserData } from '../helpers/data.js';
 import LinuxDoIcon from './LinuxDoIcon.js';
@@ -229,6 +230,7 @@ const LoginForm = () => {
                   </Text>
                 </div>
                 {status.github_oauth ||
+                status.oidc_enabled ||
                 status.wechat_login ||
                 status.telegram_oauth ||
                 status.linuxdo_oauth ? (
@@ -253,6 +255,17 @@ const LoginForm = () => {
                         />
                       ) : (
                         <></>
+                      )}
+                      {status.oidc_enabled ? (
+                          <Button
+                              type='primary'
+                              icon={<OIDCIcon />}
+                              onClick={() =>
+                                  onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id)
+                              }
+                          />
+                      ) : (
+                          <></>
                       )}
                       {status.linuxdo_oauth ? (
                         <Button

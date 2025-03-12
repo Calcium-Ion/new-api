@@ -8,7 +8,7 @@ import {
   Message,
   Modal,
 } from 'semantic-ui-react';
-import { API, removeTrailingSlash, showError, verifyJSON } from '../helpers';
+import { API, removeTrailingSlash, showError, showSuccess, verifyJSON } from '../helpers';
 
 import { useTheme } from '../context/Theme';
 
@@ -20,6 +20,13 @@ const SystemSetting = () => {
     GitHubOAuthEnabled: '',
     GitHubClientId: '',
     GitHubClientSecret: '',
+    'oidc.enabled': '',
+    'oidc.client_id': '',
+    'oidc.client_secret': '',
+    'oidc.well_known': '',
+    'oidc.authorization_endpoint': '',
+    'oidc.token_endpoint': '',
+    'oidc.user_info_endpoint': '',
     Notice: '',
     SMTPServer: '',
     SMTPPort: '',
@@ -106,6 +113,7 @@ const SystemSetting = () => {
       case 'PasswordRegisterEnabled':
       case 'EmailVerificationEnabled':
       case 'GitHubOAuthEnabled':
+      case 'oidc.enabled':
       case 'LinuxDOOAuthEnabled':
       case 'WeChatAuthEnabled':
       case 'TelegramOAuthEnabled':
@@ -159,6 +167,12 @@ const SystemSetting = () => {
       name === 'PayAddress' ||
       name === 'GitHubClientId' ||
       name === 'GitHubClientSecret' ||
+      name === 'oidc.well_known' ||
+      name === 'oidc.client_id' ||
+      name === 'oidc.client_secret' ||
+      name === 'oidc.authorization_endpoint' ||
+      name === 'oidc.token_endpoint' ||
+      name === 'oidc.user_info_endpoint' ||
       name === 'WeChatServerAddress' ||
       name === 'WeChatServerToken' ||
       name === 'WeChatAccountQRCodeImageURL' ||
@@ -286,6 +300,44 @@ const SystemSetting = () => {
     }
   };
 
+  const submitOIDCSettings = async () => {
+    if (inputs['oidc.well_known'] !== '') {
+      if (!inputs['oidc.well_known'].startsWith('http://') && !inputs['oidc.well_known'].startsWith('https://')) {
+        showError('Well-Known URL 必须以 http:// 或 https:// 开头');
+        return;
+      }
+      try {
+        const res = await API.get(inputs['oidc.well_known']);
+        inputs['oidc.authorization_endpoint'] = res.data['authorization_endpoint'];
+        inputs['oidc.token_endpoint'] = res.data['token_endpoint'];
+        inputs['oidc.user_info_endpoint'] = res.data['userinfo_endpoint'];
+        showSuccess('获取 OIDC 配置成功！');
+      } catch (err) {
+        console.error(err);
+        showError("获取 OIDC 配置失败，请检查网络状况和 Well-Known URL 是否正确");
+      }
+    }
+
+    if (originInputs['oidc.well_known'] !== inputs['oidc.well_known']) {
+      await updateOption('oidc.well_known', inputs['oidc.well_known']);
+    }
+    if (originInputs['oidc.client_id'] !== inputs['oidc.client_id']) {
+      await updateOption('oidc.client_id', inputs['oidc.client_id']);
+    }
+    if (originInputs['oidc.client_secret'] !== inputs['oidc.client_secret'] && inputs['oidc.client_secret'] !== '') {
+      await updateOption('oidc.client_secret', inputs['oidc.client_secret']);
+    }
+    if (originInputs['oidc.authorization_endpoint'] !== inputs['oidc.authorization_endpoint']) {
+      await updateOption('oidc.authorization_endpoint', inputs['oidc.authorization_endpoint']);
+    }
+    if (originInputs['oidc.token_endpoint'] !== inputs['oidc.token_endpoint']) {
+      await updateOption('oidc.token_endpoint', inputs['oidc.token_endpoint']);
+    }
+    if (originInputs['oidc.user_info_endpoint'] !== inputs['oidc.user_info_endpoint']) {
+      await updateOption('oidc.user_info_endpoint', inputs['oidc.user_info_endpoint']);
+    }
+  }
+
   const submitTelegramSettings = async () => {
     // await updateOption('TelegramOAuthEnabled', inputs.TelegramOAuthEnabled);
     await updateOption('TelegramBotToken', inputs.TelegramBotToken);
@@ -370,7 +422,7 @@ const SystemSetting = () => {
           </Header>
           <Message info>
             注意：代理功能仅对图片请求和 Webhook 请求生效，不会影响其他 API 请求。如需配置 API 请求代理，请参考
-            <a 
+            <a
               href='https://github.com/Calcium-Ion/new-api/blob/main/docs/channel/other_setting.md'
               target='_blank'
               rel='noreferrer'
@@ -517,6 +569,12 @@ const SystemSetting = () => {
               label='允许通过 GitHub 账户登录 & 注册'
               name='GitHubOAuthEnabled'
               onChange={handleInputChange}
+            />
+            <Form.Checkbox
+                checked={inputs['oidc.enabled'] === 'true'}
+                label='允许通过 OIDC 登录 & 注册'
+                name='oidc.enabled'
+                onChange={handleInputChange}
             />
             <Form.Checkbox
               checked={inputs.LinuxDOOAuthEnabled === 'true'}
@@ -863,6 +921,68 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitLinuxDOOAuth}>
             保存 LinuxDO OAuth 设置
+          </Form.Button>
+          <Divider />
+          <Header as='h3' inverted={isDark}>
+            配置 OIDC
+            <Header.Subheader>
+              用以支持通过 OIDC 登录，例如 Okta、Auth0 等兼容 OIDC 协议的 IdP
+            </Header.Subheader>
+          </Header>
+          <Message>
+            主页链接填 <code>{ inputs.ServerAddress }</code>，
+            重定向 URL 填 <code>{ `${ inputs.ServerAddress }/oauth/oidc` }</code>
+          </Message>
+          <Message>
+            若你的 OIDC Provider 支持 Discovery Endpoint，你可以仅填写 OIDC Well-Known URL，系统会自动获取 OIDC 配置
+          </Message>
+          <Form.Group widths={3}>
+            <Form.Input
+                label='Client ID'
+                name='oidc.client_id'
+                onChange={handleInputChange}
+                value={inputs['oidc.client_id']}
+                placeholder='输入 OIDC 的 Client ID'
+            />
+            <Form.Input
+                label='Client Secret'
+                name='oidc.client_secret'
+                onChange={handleInputChange}
+                type='password'
+                value={inputs['oidc.client_secret']}
+                placeholder='敏感信息不会发送到前端显示'
+            />
+            <Form.Input
+                label='Well-Known URL'
+                name='oidc.well_known'
+                onChange={handleInputChange}
+                value={inputs['oidc.well_known']}
+                placeholder='请输入 OIDC 的 Well-Known URL'
+            />
+            <Form.Input
+                label='Authorization Endpoint'
+                name='oidc.authorization_endpoint'
+                onChange={handleInputChange}
+                value={inputs['oidc.authorization_endpoint']}
+                placeholder='输入 OIDC 的 Authorization Endpoint'
+            />
+            <Form.Input
+                label='Token Endpoint'
+                name='oidc.token_endpoint'
+                onChange={handleInputChange}
+                value={inputs['oidc.token_endpoint']}
+                placeholder='输入 OIDC 的 Token Endpoint'
+            />
+            <Form.Input
+                label='Userinfo Endpoint'
+                name='oidc.user_info_endpoint'
+                onChange={handleInputChange}
+                value={inputs['oidc.user_info_endpoint']}
+                placeholder='输入 OIDC 的 Userinfo Endpoint'
+            />
+          </Form.Group>
+          <Form.Button onClick={submitOIDCSettings}>
+            保存 OIDC 设置
           </Form.Button>
         </Form>
       </Grid.Column>
