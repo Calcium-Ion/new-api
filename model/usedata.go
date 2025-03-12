@@ -169,7 +169,10 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 	for currentTime.Unix() <= endDateTime.Unix() {
 		dayStart := currentTime.Unix()
 		dayEnd := currentTime.Add(24 * time.Hour).Add(-time.Second).Unix()
-
+		tableName := fmt.Sprintf("logs_%04d_%02d_%02d", currentTime.Year(), currentTime.Month(), currentTime.Day())
+		if currentTime.Before(time.Date(2025, 3, 12, 23, 59, 59, 0, time.Local)) {
+			tableName = "logs"
+		}
 		if dayEnd > endTime {
 			dayEnd = endTime
 		}
@@ -190,7 +193,7 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 			}
 
 			// 分页查询原始日志数据
-			err = DB.Table("logs").
+			err = DB.Table(tableName).
 				Select("logs.channel_id, channels.name as channel_name, channels.tag as channel_tag, "+
 					"logs.model_name, logs.prompt_tokens, logs.completion_tokens").
 				Joins("JOIN channels ON logs.channel_id = channels.id").
