@@ -176,13 +176,12 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 
 		var billingData []*BillingData
 		var tempBillingMap = make(map[string]*BillingData) // 用于临时存储聚合结果
-		pageSize := 100
+		pageSize := 100000
 		offset := 0
 
 		for {
 			var tempData []*struct {
 				ChannelId        int
-				Count            int
 				ChannelName      string
 				ChannelTag       string
 				ModelName        string
@@ -192,7 +191,7 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 
 			// 分页查询原始日志数据
 			err = DB.Table("logs").
-				Select("logs.channel_id, COUNT(*), channels.name as channel_name, channels.tag as channel_tag, "+
+				Select("logs.channel_id, channels.name as channel_name, channels.tag as channel_tag, "+
 					"logs.model_name, logs.prompt_tokens, logs.completion_tokens").
 				Joins("JOIN channels ON logs.channel_id = channels.id").
 				Where("logs.created_at BETWEEN ? AND ?", dayStart, dayEnd).
@@ -212,7 +211,7 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 
 			// 处理当前页的数据，进行内存聚合
 			for _, item := range tempData {
-				key := fmt.Sprintf("%s_%s", item.ChannelTag, item.ModelName)
+				key := fmt.Sprintf("%s_%s_%d", item.ChannelTag, item.ModelName, item.ChannelId)
 				if _, ok := tempBillingMap[key]; !ok {
 					tempBillingMap[key] = &BillingData{
 						ChannelId:         item.ChannelId,
@@ -226,7 +225,7 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 				}
 				existing, _ := tempBillingMap[key]
 				// 已存在的记录，累加计数
-				existing.Count += item.Count
+				existing.Count++
 				existing.PromptTokens += item.PromptTokens
 				existing.CompletionsTokens += item.CompletionTokens
 			}
