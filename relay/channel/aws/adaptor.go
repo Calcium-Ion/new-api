@@ -20,6 +20,10 @@ type Adaptor struct {
 	RequestMode int
 }
 
+func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.ClaudeRequest) (any, error) {
+	return request, nil
+}
+
 func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.AudioRequest) (io.Reader, error) {
 	//TODO implement me
 	return nil, errors.New("not implemented")
@@ -48,7 +52,7 @@ func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, re
 		return nil, errors.New("request is nil")
 	}
 
-	var claudeReq *claude.ClaudeRequest
+	var claudeReq *dto.ClaudeRequest
 	var err error
 	claudeReq, err = claude.RequestOpenAI2ClaudeMessage(*request)
 	if err != nil {

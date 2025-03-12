@@ -9,7 +9,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
-	relaymodel "one-api/dto"
+	"one-api/dto"
 	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/helper"
@@ -39,10 +39,10 @@ func newAwsClient(c *gin.Context, info *relaycommon.RelayInfo) (*bedrockruntime.
 	return client, nil
 }
 
-func wrapErr(err error) *relaymodel.OpenAIErrorWithStatusCode {
-	return &relaymodel.OpenAIErrorWithStatusCode{
+func wrapErr(err error) *dto.OpenAIErrorWithStatusCode {
+	return &dto.OpenAIErrorWithStatusCode{
 		StatusCode: http.StatusInternalServerError,
-		Error: relaymodel.OpenAIError{
+		Error: dto.OpenAIError{
 			Message: fmt.Sprintf("%s", err.Error()),
 		},
 	}
@@ -56,7 +56,7 @@ func awsModelID(requestModel string) (string, error) {
 	return requestModel, nil
 }
 
-func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*relaymodel.OpenAIErrorWithStatusCode, *relaymodel.Usage) {
+func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	awsCli, err := newAwsClient(c, info)
 	if err != nil {
 		return wrapErr(errors.Wrap(err, "newAwsClient")), nil
@@ -77,7 +77,7 @@ func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*
 	if !ok {
 		return wrapErr(errors.New("request not found")), nil
 	}
-	claudeReq := claudeReq_.(*claude.ClaudeRequest)
+	claudeReq := claudeReq_.(*dto.ClaudeRequest)
 	awsClaudeReq := copyRequest(claudeReq)
 	awsReq.Body, err = json.Marshal(awsClaudeReq)
 	if err != nil {
@@ -89,14 +89,14 @@ func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*
 		return wrapErr(errors.Wrap(err, "InvokeModel")), nil
 	}
 
-	claudeResponse := new(claude.ClaudeResponse)
+	claudeResponse := new(dto.ClaudeResponse)
 	err = json.Unmarshal(awsResp.Body, claudeResponse)
 	if err != nil {
 		return wrapErr(errors.Wrap(err, "unmarshal response")), nil
 	}
 
 	openaiResp := claude.ResponseClaude2OpenAI(requestMode, claudeResponse)
-	usage := relaymodel.Usage{
+	usage := dto.Usage{
 		PromptTokens:     claudeResponse.Usage.InputTokens,
 		CompletionTokens: claudeResponse.Usage.OutputTokens,
 		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens,
@@ -107,7 +107,7 @@ func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*
 	return nil, &usage
 }
 
-func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, requestMode int) (*relaymodel.OpenAIErrorWithStatusCode, *relaymodel.Usage) {
+func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, requestMode int) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	awsCli, err := newAwsClient(c, info)
 	if err != nil {
 		return wrapErr(errors.Wrap(err, "newAwsClient")), nil
@@ -128,7 +128,7 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	if !ok {
 		return wrapErr(errors.New("request not found")), nil
 	}
-	claudeReq := claudeReq_.(*claude.ClaudeRequest)
+	claudeReq := claudeReq_.(*dto.ClaudeRequest)
 
 	awsClaudeReq := copyRequest(claudeReq)
 	awsReq.Body, err = json.Marshal(awsClaudeReq)
@@ -149,7 +149,7 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		Created:      common.GetTimestamp(),
 		Model:        info.UpstreamModelName,
 		ResponseText: strings.Builder{},
-		Usage:        &relaymodel.Usage{},
+		Usage:        &dto.Usage{},
 	}
 	isFirst := true
 	c.Stream(func(w io.Writer) bool {
@@ -164,7 +164,7 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 				isFirst = false
 				info.FirstResponseTime = time.Now()
 			}
-			claudeResponse := new(claude.ClaudeResponse)
+			claudeResponse := new(dto.ClaudeResponse)
 			err := json.NewDecoder(bytes.NewReader(v.Value.Bytes)).Decode(claudeResponse)
 			if err != nil {
 				common.SysError("error unmarshalling stream response: " + err.Error())

@@ -194,6 +194,75 @@ func PostWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, mod
 		tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, relayInfo.Group, other)
 }
 
+func PostClaudeConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
+	usage *dto.Usage, preConsumedQuota int, userQuota int, priceData helper.PriceData, extraContent string) {
+
+	useTimeSeconds := time.Now().Unix() - relayInfo.StartTime.Unix()
+	promptTokens := usage.PromptTokens
+	completionTokens := usage.CompletionTokens
+	modelName := relayInfo.OriginModelName
+
+	tokenName := ctx.GetString("token_name")
+	completionRatio := priceData.CompletionRatio
+	modelRatio := priceData.ModelRatio
+	groupRatio := priceData.GroupRatio
+	modelPrice := priceData.ModelPrice
+
+	cacheRatio := priceData.CacheRatio
+	cacheTokens := usage.PromptTokensDetails.CachedTokens
+
+	cacheCreationRatio := priceData.CacheCreationRatio
+	cacheCreationTokens := usage.PromptTokensDetails.CachedCreationTokens
+
+	calculateQuota := 0.0
+	if !priceData.UsePrice {
+		calculateQuota = float64(promptTokens)
+		calculateQuota += float64(cacheTokens) * cacheRatio
+		calculateQuota += float64(cacheCreationTokens) * cacheCreationRatio
+		calculateQuota += float64(completionTokens) * completionRatio
+		calculateQuota = calculateQuota * groupRatio * modelRatio
+	} else {
+		calculateQuota = modelPrice * common.QuotaPerUnit * groupRatio
+	}
+
+	if modelRatio != 0 && calculateQuota <= 0 {
+		calculateQuota = 1
+	}
+
+	quota := int(calculateQuota)
+
+	totalTokens := promptTokens + completionTokens
+
+	var logContent string
+	// record all the consume log even if quota is 0
+	if totalTokens == 0 {
+		// in this case, must be some error happened
+		// we cannot just return, because we may have to return the pre-consumed quota
+		quota = 0
+		logContent += fmt.Sprintf("（可能是上游出错）")
+		common.LogError(ctx, fmt.Sprintf("total tokens is 0, cannot consume quota, userId %d, channelId %d, "+
+			"tokenId %d, model %s， pre-consumed quota %d", relayInfo.UserId, relayInfo.ChannelId, relayInfo.TokenId, modelName, preConsumedQuota))
+	} else {
+		//if sensitiveResp != nil {
+		//	logContent += fmt.Sprintf("，敏感词：%s", strings.Join(sensitiveResp.SensitiveWords, ", "))
+		//}
+		quotaDelta := quota - preConsumedQuota
+		if quotaDelta != 0 {
+			err := PostConsumeQuota(relayInfo, quotaDelta, preConsumedQuota, true)
+			if err != nil {
+				common.LogError(ctx, "error consuming token remain quota: "+err.Error())
+			}
+		}
+		model.UpdateUserUsedQuotaAndRequestCount(relayInfo.UserId, quota)
+		model.UpdateChannelUsedQuota(relayInfo.ChannelId, quota)
+	}
+
+	other := GenerateClaudeOtherInfo(ctx, relayInfo, modelRatio, groupRatio, completionRatio,
+		cacheTokens, cacheRatio, cacheCreationTokens, cacheCreationRatio, modelPrice)
+	model.RecordConsumeLog(ctx, relayInfo.UserId, relayInfo.ChannelId, promptTokens, completionTokens, modelName,
+		tokenName, quota, logContent, relayInfo.TokenId, userQuota, int(useTimeSeconds), relayInfo.IsStream, relayInfo.Group, other)
+}
+
 func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	usage *dto.Usage, preConsumedQuota int, userQuota int, priceData helper.PriceData, extraContent string) {
 

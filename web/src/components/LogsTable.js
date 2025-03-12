@@ -26,8 +26,14 @@ import {
 } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import {
-  renderAudioModelPrice, renderGroup,
-  renderModelPrice, renderModelPriceSimple,
+  renderAudioModelPrice,
+  renderClaudeLogContent,
+  renderClaudeModelPrice,
+  renderClaudeModelPriceSimple,
+  renderGroup,
+  renderLogContent,
+  renderModelPrice,
+  renderModelPriceSimple,
   renderNumber,
   renderQuota,
   stringToColor
@@ -564,13 +570,23 @@ const LogsTable = () => {
           );
         }
 
-        let content = renderModelPriceSimple(
-          other.model_ratio,
-          other.model_price,
-          other.group_ratio,
-          other.cache_tokens || 0,
-          other.cache_ratio || 1.0,
-        );
+        let content = other?.claude
+          ? renderClaudeModelPriceSimple(
+            other.model_ratio,
+            other.model_price,
+            other.group_ratio,
+            other.cache_tokens || 0,
+            other.cache_ratio || 1.0,
+            other.cache_creation_tokens || 0,
+            other.cache_creation_ratio || 1.0,
+          )
+          : renderModelPriceSimple(
+            other.model_ratio,
+            other.model_price,
+            other.group_ratio,
+            other.cache_tokens || 0,
+            other.cache_ratio || 1.0,
+          );
         return (
             <Paragraph
                 ellipsis={{
@@ -818,10 +834,34 @@ const LogsTable = () => {
           value: other.cache_tokens,
         });
       }
-      expandDataLocal.push({
-        key: t('日志详情'),
-        value: logs[i].content,
-      });
+      if (other?.cache_creation_tokens > 0) {
+        expandDataLocal.push({
+          key: t('缓存创建 Tokens'),
+          value: other.cache_creation_tokens,
+        });
+      }
+      if (logs[i].type === 2) {
+        expandDataLocal.push({
+          key: t('日志详情'),
+          value: other?.claude
+            ? renderClaudeLogContent(
+              other?.model_ratio,
+              other.completion_ratio,
+              other.model_price,
+              other.group_ratio,
+              other.user_group_ratio,
+              other.cache_ratio || 1.0,
+              other.cache_creation_ratio || 1.0
+            )
+            : renderLogContent(
+              other?.model_ratio,
+              other.completion_ratio,
+              other.model_price,
+              other.group_ratio,
+              other.user_group_ratio
+            ),
+        });
+      }
       if (logs[i].type === 2) {
         let modelMapped = other?.is_model_mapped && other?.upstream_model_name && other?.upstream_model_name !== '';
         if (modelMapped) {
@@ -849,6 +889,19 @@ const LogsTable = () => {
             other?.group_ratio,
             other?.cache_tokens || 0,
             other?.cache_ratio || 1.0,
+          );
+        } else if (other?.claude) {
+          content = renderClaudeModelPrice(
+            logs[i].prompt_tokens,
+            logs[i].completion_tokens,
+            other.model_ratio,
+            other.model_price,
+            other.completion_ratio,
+            other.group_ratio,
+            other.cache_tokens || 0,
+            other.cache_ratio || 1.0,
+            other.cache_creation_tokens || 0,
+            other.cache_creation_ratio || 1.0,
           );
         } else {
           content = renderModelPrice(

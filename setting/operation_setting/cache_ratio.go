@@ -7,26 +7,45 @@ import (
 )
 
 var defaultCacheRatio = map[string]float64{
-	"gpt-4":                        0.5,
-	"o1":                           0.5,
-	"o1-2024-12-17":                0.5,
-	"o1-preview-2024-09-12":        0.5,
-	"o1-preview":                   0.5,
-	"o1-mini-2024-09-12":           0.5,
-	"o1-mini":                      0.5,
-	"gpt-4o-2024-11-20":            0.5,
-	"gpt-4o-2024-08-06":            0.5,
-	"gpt-4o":                       0.5,
-	"gpt-4o-mini-2024-07-18":       0.5,
-	"gpt-4o-mini":                  0.5,
-	"gpt-4o-realtime-preview":      0.5,
-	"gpt-4o-mini-realtime-preview": 0.5,
-	"deepseek-chat":                0.1,
-	"deepseek-reasoner":            0.1,
-	"deepseek-coder":               0.1,
+	"gpt-4":                               0.5,
+	"o1":                                  0.5,
+	"o1-2024-12-17":                       0.5,
+	"o1-preview-2024-09-12":               0.5,
+	"o1-preview":                          0.5,
+	"o1-mini-2024-09-12":                  0.5,
+	"o1-mini":                             0.5,
+	"gpt-4o-2024-11-20":                   0.5,
+	"gpt-4o-2024-08-06":                   0.5,
+	"gpt-4o":                              0.5,
+	"gpt-4o-mini-2024-07-18":              0.5,
+	"gpt-4o-mini":                         0.5,
+	"gpt-4o-realtime-preview":             0.5,
+	"gpt-4o-mini-realtime-preview":        0.5,
+	"deepseek-chat":                       0.25,
+	"deepseek-reasoner":                   0.25,
+	"deepseek-coder":                      0.25,
+	"claude-3-sonnet-20240229":            0.1,
+	"claude-3-opus-20240229":              0.1,
+	"claude-3-haiku-20240307":             0.1,
+	"claude-3-5-haiku-20241022":           0.1,
+	"claude-3-5-sonnet-20240620":          0.1,
+	"claude-3-5-sonnet-20241022":          0.1,
+	"claude-3-7-sonnet-20250219":          0.1,
+	"claude-3-7-sonnet-20250219-thinking": 0.1,
 }
 
-var defaultCreateCacheRatio = map[string]float64{}
+var defaultCreateCacheRatio = map[string]float64{
+	"claude-3-sonnet-20240229":            1.25,
+	"claude-3-opus-20240229":              1.25,
+	"claude-3-haiku-20240307":             1.25,
+	"claude-3-5-haiku-20241022":           1.25,
+	"claude-3-5-sonnet-20240620":          1.25,
+	"claude-3-5-sonnet-20241022":          1.25,
+	"claude-3-7-sonnet-20250219":          1.25,
+	"claude-3-7-sonnet-20250219-thinking": 1.25,
+}
+
+//var defaultCreateCacheRatio = map[string]float64{}
 
 var cacheRatioMap map[string]float64
 var cacheRatioMapMutex sync.RWMutex
@@ -69,16 +88,10 @@ func GetCacheRatio(name string) (float64, bool) {
 	return ratio, true
 }
 
-// DefaultCacheRatio2JSONString converts the default cache ratio map to a JSON string
-func DefaultCacheRatio2JSONString() string {
-	jsonBytes, err := json.Marshal(defaultCacheRatio)
-	if err != nil {
-		common.SysError("error marshalling default cache ratio: " + err.Error())
+func GetCreateCacheRatio(name string) (float64, bool) {
+	ratio, ok := defaultCreateCacheRatio[name]
+	if !ok {
+		return 1.25, false // Default to 1.25 if not found
 	}
-	return string(jsonBytes)
-}
-
-// GetDefaultCacheRatioMap returns the default cache ratio map
-func GetDefaultCacheRatioMap() map[string]float64 {
-	return defaultCacheRatio
+	return ratio, true
 }

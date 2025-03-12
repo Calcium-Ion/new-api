@@ -148,6 +148,50 @@ func WssRelay(c *gin.Context) {
 	}
 }
 
+func RelayClaude(c *gin.Context) {
+	//relayMode := constant.Path2RelayMode(c.Request.URL.Path)
+	requestId := c.GetString(common.RequestIdKey)
+	group := c.GetString("group")
+	originalModel := c.GetString("original_model")
+	var claudeErr *dto.ClaudeErrorWithStatusCode
+
+	for i := 0; i <= common.RetryTimes; i++ {
+		channel, err := getChannel(c, group, originalModel, i)
+		if err != nil {
+			common.LogError(c, err.Error())
+			claudeErr = service.ClaudeErrorWrapperLocal(err, "get_channel_failed", http.StatusInternalServerError)
+			break
+		}
+
+		claudeErr = claudeRequest(c, channel)
+
+		if claudeErr == nil {
+			return // 成功处理请求，直接返回
+		}
+
+		openaiErr := service.ClaudeErrorToOpenAIError(claudeErr)
+
+		go processChannelError(c, channel.Id, channel.Type, channel.Name, channel.GetAutoBan(), openaiErr)
+
+		if !shouldRetry(c, openaiErr, common.RetryTimes-i) {
+			break
+		}
+	}
+	useChannel := c.GetStringSlice("use_channel")
+	if len(useChannel) > 1 {
+		retryLogStr := fmt.Sprintf("重试：%s", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(useChannel)), "->"), "[]"))
+		common.LogInfo(c, retryLogStr)
+	}
+
+	if claudeErr != nil {
+		claudeErr.Error.Message = common.MessageWithRequestId(claudeErr.Error.Message, requestId)
+		c.JSON(claudeErr.StatusCode, gin.H{
+			"type":  "error",
+			"error": claudeErr.Error,
+		})
+	}
+}
+
 func relayRequest(c *gin.Context, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {
 	addUsedChannel(c, channel.Id)
 	requestBody, _ := common.GetRequestBody(c)
@@ -160,6 +204,13 @@ func wssRequest(c *gin.Context, ws *websocket.Conn, relayMode int, channel *mode
 	requestBody, _ := common.GetRequestBody(c)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 	return relay.WssHelper(c, ws)
+}
+
+func claudeRequest(c *gin.Context, channel *model.Channel) *dto.ClaudeErrorWithStatusCode {
+	addUsedChannel(c, channel.Id)
+	requestBody, _ := common.GetRequestBody(c)
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+	return relay.ClaudeHelper(c)
 }
 
 func addUsedChannel(c *gin.Context, channelId int) {
