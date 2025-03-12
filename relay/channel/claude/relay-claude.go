@@ -443,9 +443,6 @@ type ClaudeResponseInfo struct {
 }
 
 func FormatClaudeResponseInfo(requestMode int, claudeResponse *ClaudeResponse, oaiResponse *dto.ChatCompletionsStreamResponse, claudeInfo *ClaudeResponseInfo) bool {
-	if oaiResponse == nil {
-		return false
-	}
 	if requestMode == RequestModeCompletion {
 		claudeInfo.ResponseText.WriteString(claudeResponse.Completion)
 	} else {
@@ -464,9 +461,11 @@ func FormatClaudeResponseInfo(requestMode int, claudeResponse *ClaudeResponse, o
 			return false
 		}
 	}
-	oaiResponse.Id = claudeInfo.ResponseId
-	oaiResponse.Created = claudeInfo.Created
-	oaiResponse.Model = claudeInfo.Model
+	if oaiResponse != nil {
+		oaiResponse.Id = claudeInfo.ResponseId
+		oaiResponse.Created = claudeInfo.Created
+		oaiResponse.Model = claudeInfo.Model
+	}
 	return true
 }
 
