@@ -144,11 +144,14 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	defer stream.Close()
 
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
-	var usage relaymodel.Usage
-	var id string
-	var model string
+	claudeInfo := &claude.ClaudeResponseInfo{
+		ResponseId:   fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
+		Created:      common.GetTimestamp(),
+		Model:        info.UpstreamModelName,
+		ResponseText: strings.Builder{},
+		Usage:        &relaymodel.Usage{},
+	}
 	isFirst := true
-	createdTime := common.GetTimestamp()
 	c.Stream(func(w io.Writer) bool {
 		event, ok := <-stream.Events()
 		if !ok {
@@ -161,32 +164,18 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 				isFirst = false
 				info.FirstResponseTime = time.Now()
 			}
-			claudeResp := new(claude.ClaudeResponse)
-			err := json.NewDecoder(bytes.NewReader(v.Value.Bytes)).Decode(claudeResp)
+			claudeResponse := new(claude.ClaudeResponse)
+			err := json.NewDecoder(bytes.NewReader(v.Value.Bytes)).Decode(claudeResponse)
 			if err != nil {
 				common.SysError("error unmarshalling stream response: " + err.Error())
 				return false
 			}
 
-			response, claudeUsage := claude.StreamResponseClaude2OpenAI(requestMode, claudeResp)
-			if claudeUsage != nil {
-				usage.PromptTokens += claudeUsage.InputTokens
-				usage.CompletionTokens += claudeUsage.OutputTokens
-			}
+			response := claude.StreamResponseClaude2OpenAI(requestMode, claudeResponse)
 
-			if response == nil {
+			if !claude.FormatClaudeResponseInfo(RequestModeMessage, claudeResponse, response, claudeInfo) {
 				return true
 			}
-
-			if response.Id != "" {
-				id = response.Id
-			}
-			if response.Model != "" {
-				model = response.Model
-			}
-			response.Created = createdTime
-			response.Id = id
-			response.Model = model
 
 			jsonStr, err := json.Marshal(response)
 			if err != nil {
@@ -203,8 +192,16 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			return false
 		}
 	})
+
+	if claudeInfo.Usage.PromptTokens == 0 {
+		//上游出错
+	}
+	if claudeInfo.Usage.CompletionTokens == 0 {
+		claudeInfo.Usage, _ = service.ResponseText2Usage(claudeInfo.ResponseText.String(), info.UpstreamModelName, claudeInfo.Usage.PromptTokens)
+	}
+
 	if info.ShouldIncludeUsage {
-		response := helper.GenerateFinalUsageResponse(id, createdTime, info.UpstreamModelName, usage)
+		response := helper.GenerateFinalUsageResponse(claudeInfo.ResponseId, claudeInfo.Created, info.UpstreamModelName, *claudeInfo.Usage)
 		err := helper.ObjectData(c, response)
 		if err != nil {
 			common.SysError("send final response failed: " + err.Error())
@@ -217,5 +214,5 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			return service.OpenAIErrorWrapperLocal(err, "close_response_body_failed", http.StatusInternalServerError), nil
 		}
 	}
-	return nil, &usage
+	return nil, claudeInfo.Usage
 }
