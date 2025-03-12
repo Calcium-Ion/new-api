@@ -44,7 +44,7 @@ type BillingJsonData struct {
 	CompletionsTokens  float32 `json:"completions_tokens"`
 	PromptPricing      float32 `json:"prompt_pricing"`
 	CompletionsPricing float32 `json:"completions_pricing"`
-	/**/ Cost          float32 `json:"cost"`
+	/**/ Cost float32 `json:"cost"`
 }
 
 func UpdateQuotaData() {
