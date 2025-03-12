@@ -44,7 +44,7 @@ var fieldReplacer = strings.NewReplacer(
 	"\r", "\\r")
 
 var dataReplacer = strings.NewReplacer(
-	"\n", "\ndata:",
+	"\n", "\n",
 	"\r", "\\r")
 
 type CustomEvent struct {

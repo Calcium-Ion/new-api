@@ -17,6 +17,11 @@ type ThinkingContentInfo struct {
 	SendLastThinkingContent bool
 }
 
+const (
+	RelayFormatOpenAI = "openai"
+	RelayFormatClaude = "claude"
+)
+
 type RelayInfo struct {
 	ChannelType       int
 	ChannelId         int
@@ -58,6 +63,8 @@ type RelayInfo struct {
 	UserSetting          map[string]interface{}
 	UserEmail            string
 	UserQuota            int
+	RelayFormat          string
+	ResponseTimes        int64
 	ThinkingContentInfo
 }
 
@@ -79,6 +86,13 @@ func GenRelayInfoWs(c *gin.Context, ws *websocket.Conn) *RelayInfo {
 	info.InputAudioFormat = "pcm16"
 	info.OutputAudioFormat = "pcm16"
 	info.IsFirstRequest = true
+	return info
+}
+
+func GenRelayInfoClaude(c *gin.Context) *RelayInfo {
+	info := GenRelayInfo(c)
+	info.RelayFormat = RelayFormatClaude
+	info.ShouldIncludeUsage = false
 	return info
 }
 
@@ -123,6 +137,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		ApiKey:         strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
 		Organization:   c.GetString("channel_organization"),
 		ChannelSetting: channelSetting,
+		RelayFormat:    RelayFormatOpenAI,
 		ThinkingContentInfo: ThinkingContentInfo{
 			IsFirstThinkingContent:  true,
 			SendLastThinkingContent: false,
@@ -157,6 +172,7 @@ func (info *RelayInfo) SetIsStream(isStream bool) {
 }
 
 func (info *RelayInfo) SetFirstResponseTime() {
+	info.ResponseTimes++
 	if info.isFirstResponse {
 		info.FirstResponseTime = time.Now()
 		info.isFirstResponse = false
