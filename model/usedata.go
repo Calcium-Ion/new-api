@@ -26,6 +26,7 @@ type QuotaData struct {
 type BillingData struct {
 	ChannelId         int    `json:"chanel_id"`
 	ChannelName       string `json:"channel_name"`
+	ChannelTag        string `json:"channel_tag"`
 	Count             int    `json:"count"`
 	ModelName         string `json:"model_name"`
 	PromptTokens      int    `json:"prompt_tokens"`
@@ -36,13 +37,14 @@ type BillingJsonData struct {
 	ChannelId          int     `json:"chanel_id"`
 	CurrentDate        string  `json:"current_date"`
 	ChannelName        string  `json:"channel_name"`
+	ChannelTag         string  `json:"channel_tag"`
 	Count              int     `json:"count"`
 	ModelName          string  `json:"model_name"`
 	PromptTokens       float32 `json:"prompt_tokens"`
 	CompletionsTokens  float32 `json:"completions_tokens"`
 	PromptPricing      float32 `json:"prompt_pricing"`
 	CompletionsPricing float32 `json:"completions_pricing"`
-	/**/ Cost          float32 `json:"cost"`
+	/**/ Cost float32 `json:"cost"`
 }
 
 func UpdateQuotaData() {
@@ -173,20 +175,78 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 		}
 
 		var billingData []*BillingData
-		err = DB.Table("logs").
-			Select("logs.channel_id, channels.name as channel_name, logs.model_name, "+
-				"COUNT(*) as count, "+
-				"SUM(logs.prompt_tokens) as prompt_tokens, "+
-				"SUM(logs.completion_tokens) as completions_tokens").
-			Joins("JOIN channels ON logs.channel_id = channels.id").
-			Where("logs.created_at BETWEEN ? AND ?", dayStart, dayEnd).
-			Group("logs.channel_id, channels.name, logs.model_name").
-			Order("logs.channel_id").
-			Find(&billingData).Error
+		var tempBillingMap = make(map[string]*BillingData) // 用于临时存储聚合结果
+		pageSize := 100000
+		offset := 0
 
-		if err != nil {
-			return nil, err
+		for {
+			var tempData []*struct {
+				ChannelId        int
+				ChannelName      string
+				ChannelTag       string
+				ModelName        string
+				PromptTokens     int
+				CompletionTokens int
+			}
+
+			// 分页查询原始日志数据
+			err = DB.Table("logs").
+				Select("logs.channel_id, channels.name as channel_name, channels.tag as channel_tag, "+
+					"logs.model_name, logs.prompt_tokens, logs.completion_tokens").
+				Joins("JOIN channels ON logs.channel_id = channels.id").
+				Where("logs.created_at BETWEEN ? AND ?", dayStart, dayEnd).
+				Order("logs.id").
+				Limit(pageSize).
+				Offset(offset).
+				Find(&tempData).Error
+
+			if err != nil {
+				return nil, err
+			}
+
+			// 如果没有更多数据，退出循环
+			if len(tempData) == 0 {
+				break
+			}
+
+			// 处理当前页的数据，进行内存聚合
+			for _, item := range tempData {
+				key := fmt.Sprintf("%s_%s_%d", item.ChannelTag, item.ModelName, item.ChannelId)
+				if _, ok := tempBillingMap[key]; !ok {
+					tempBillingMap[key] = &BillingData{
+						ChannelId:         item.ChannelId,
+						ChannelName:       item.ChannelName,
+						ChannelTag:        item.ChannelTag,
+						ModelName:         item.ModelName,
+						Count:             0,
+						PromptTokens:      0,
+						CompletionsTokens: 0,
+					}
+				}
+				existing, _ := tempBillingMap[key]
+				// 已存在的记录，累加计数
+				existing.Count++
+				existing.PromptTokens += item.PromptTokens
+				existing.CompletionsTokens += item.CompletionTokens
+			}
+
+			offset += pageSize
 		}
+
+		// 将聚合结果转换为切片
+		for _, data := range tempBillingMap {
+			billingData = append(billingData, data)
+		}
+
+		sort.Slice(billingData, func(i, j int) bool {
+			if billingData[i].ChannelTag != billingData[j].ChannelTag {
+				return billingData[i].ChannelTag < billingData[j].ChannelTag
+			} else if billingData[i].ChannelId != billingData[j].ChannelId {
+				return billingData[i].ChannelId < billingData[j].ChannelId
+			} else {
+				return billingData[i].ModelName < billingData[j].ModelName
+			}
+		})
 
 		// 处理当天的数据
 		for _, data := range billingData {
@@ -204,6 +264,7 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 			billingJsonData = append(billingJsonData, &BillingJsonData{
 				ChannelId:          data.ChannelId,
 				ChannelName:        data.ChannelName,
+				ChannelTag:         data.ChannelTag,
 				CurrentDate:        currentTime.Format("2006-01-02"),
 				Count:              data.Count,
 				ModelName:          data.ModelName,
@@ -221,11 +282,11 @@ func GetBilling(startTime int64, endTime int64) (billingJsonData []*BillingJsonD
 
 	// 在返回之前对数据进行排序
 	sort.Slice(billingJsonData, func(i, j int) bool {
-		// 首先按照 ChannelId 排序
-		if billingJsonData[i].ChannelId != billingJsonData[j].ChannelId {
-			return billingJsonData[i].ChannelId < billingJsonData[j].ChannelId
+		// 首先按照 ChannelTag 排序
+		if billingJsonData[i].ChannelTag != billingJsonData[j].ChannelTag {
+			return billingJsonData[i].ChannelTag < billingJsonData[j].ChannelTag
 		}
-		// ChannelId 相同时，按照 CurrentDate 排序
+		// ChannelTag 相同时，按照 CurrentDate 排序
 		return billingJsonData[i].CurrentDate < billingJsonData[j].CurrentDate
 	})
 
@@ -243,7 +304,7 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 	defer f.Close()
 
 	// 设置表头
-	headers := []string{"渠道ID", "渠道名称", "日期", "调用次数", "模型名字",
+	headers := []string{"渠道Tag（Tag相同则聚合）", "渠道ID", "渠道名称", "日期", "调用次数", "模型名字",
 		"提示Tokens", "补全Tokens", "提示价格", "补全价格", "金额"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%c1", 'A'+i)
@@ -253,15 +314,27 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 	}
 
 	row := 2
-	currentChannelID := -1
+	currentChannelTag := "null"
 	var channelTotal float32 = 0
+
+	// 在 GetBillingAndExportExcel 函数开始处添加样式定义
+	style, err := f.NewStyle(&excelize.Style{
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Color:   []string{"FFD699"}, // 橙色
+			Pattern: 1,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	// 写入数据
 	for _, data := range billingData {
 		// 如果是新的渠道ID，且不是第一条数据
-		if currentChannelID != -1 && currentChannelID != data.ChannelId && channelTotal > 0 {
+		if currentChannelTag != "null" && currentChannelTag != data.ChannelTag && channelTotal > 0 {
 			// 写入渠道总计行
-			f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), currentChannelID)
+			f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), data.ChannelTag)
 			f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), "总计")
 			f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), "-")
 			f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), "-")
@@ -270,31 +343,37 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 			f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), "-")
 			f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), "-")
 			f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), "-")
-			f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), channelTotal)
-			row++
+			f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), "-")
+			f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), channelTotal)
+			// 为整行设置样式
+			for col := 'A'; col <= 'K'; col++ {
+				f.SetCellStyle("Sheet1", fmt.Sprintf("%c%d", col, row), fmt.Sprintf("%c%d", col, row), style)
+			}
+			row += 3
 			channelTotal = 0
 		}
 
 		// 写入详细数据
-		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), data.ChannelId)
-		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), data.ChannelName)
-		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), data.CurrentDate)
-		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), data.Count)
-		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), data.ModelName)
-		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), data.PromptTokens)
-		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), data.CompletionsTokens)
-		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), data.PromptPricing)
-		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), data.CompletionsPricing)
-		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), data.Cost)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), data.ChannelTag)
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), data.ChannelId)
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), data.ChannelName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), data.CurrentDate)
+		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), data.Count)
+		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), data.ModelName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), data.PromptTokens)
+		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), data.CompletionsTokens)
+		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), data.PromptPricing)
+		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), data.CompletionsPricing)
+		f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), data.Cost)
 
 		channelTotal += data.Cost
-		currentChannelID = data.ChannelId
+		currentChannelTag = data.ChannelTag
 		row++
 	}
 
 	// 写入最后一个渠道的总计行
 	if channelTotal > 0 {
-		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), currentChannelID)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), currentChannelTag)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), "总计")
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), "-")
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), "-")
@@ -303,7 +382,11 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), "-")
 		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), "-")
 		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), "-")
-		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), channelTotal)
+		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), "-")
+		f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), channelTotal)
+		for col := 'A'; col <= 'K'; col++ {
+			f.SetCellStyle("Sheet1", fmt.Sprintf("%c%d", col, row), fmt.Sprintf("%c%d", col, row), style)
+		}
 	}
 
 	// 删除保存文件的代码，改为返回字节流
