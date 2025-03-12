@@ -21,9 +21,9 @@ var defaultCacheRatio = map[string]float64{
 	"gpt-4o-mini":                  0.5,
 	"gpt-4o-realtime-preview":      0.5,
 	"gpt-4o-mini-realtime-preview": 0.5,
-	"deepseek-chat":                0.1,
-	"deepseek-reasoner":            0.1,
-	"deepseek-coder":               0.1,
+	"deepseek-chat":                0.25,
+	"deepseek-reasoner":            0.25,
+	"deepseek-coder":               0.25,
 }
 
 var defaultCreateCacheRatio = map[string]float64{}
