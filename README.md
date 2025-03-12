@@ -156,9 +156,6 @@ docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 ```
 
 ## 渠道重试与缓存
-
-详细说明请参考[配置与维护-缓存设置](https://docs.newapi.pro/installation/configuration/cache)：
-
 渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。
 
 ### 缓存设置方法
