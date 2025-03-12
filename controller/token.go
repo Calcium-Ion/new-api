@@ -36,6 +36,33 @@ func GetAllTokens(c *gin.Context) {
 	return
 }
 
+func RootGetAllTokens(c *gin.Context) {
+	p, _ := strconv.Atoi(c.Query("p"))
+	size, _ := strconv.Atoi(c.Query("size"))
+	if p < 0 {
+		p = 0
+	}
+	if size <= 0 {
+		size = common.ItemsPerPage
+	} else if size > 100 {
+		size = 100
+	}
+	tokens, err := model.GetAllTokens(p*size, size)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    tokens,
+	})
+	return
+}
+
 func SearchTokens(c *gin.Context) {
 	userId := c.GetInt("id")
 	keyword := c.Query("keyword")

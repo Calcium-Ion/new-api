@@ -62,6 +62,13 @@ func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {
 	return tokens, err
 }
 
+func GetAllTokens(startIdx int, num int) ([]*Token, error) {
+	var tokens []*Token
+	var err error
+	err = DB.Where("user_id is not null").Order("id desc").Limit(num).Offset(startIdx).Find(&tokens).Error
+	return tokens, err
+}
+
 func SearchUserTokens(userId int, keyword string, token string) (tokens []*Token, err error) {
 	if token != "" {
 		token = strings.Trim(token, "sk-")

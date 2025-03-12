@@ -5,6 +5,7 @@ import {
   showError,
   showSuccess,
   timestamp2string,
+    isRoot
 } from '../helpers';
 
 import { ITEMS_PER_PAGE } from '../constants';
@@ -348,7 +349,10 @@ const TokensTable = () => {
   );
   const loadTokens = async (startIdx) => {
     setLoading(true);
-    const res = await API.get(`/api/token/?p=${startIdx}&size=${pageSize}`);
+    const apiUrl = isRoot() 
+      ? `/api/alltoken/?p=${startIdx}&size=${pageSize}`
+      : `/api/token/?p=${startIdx}&size=${pageSize}`;
+    const res = await API.get(apiUrl);
     const { success, message, data } = res.data;
     if (success) {
       if (startIdx === 0) {

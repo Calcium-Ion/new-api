@@ -113,6 +113,11 @@ func SetApiRouter(router *gin.Engine) {
 			tokenRoute.PUT("/", controller.UpdateToken)
 			tokenRoute.DELETE("/:id", controller.DeleteToken)
 		}
+		allTokenRoute := apiRouter.Group("/alltoken")
+		allTokenRoute.Use(middleware.RootAuth())
+		{
+			allTokenRoute.GET("/", controller.RootGetAllTokens)
+		}
 		redemptionRoute := apiRouter.Group("/redemption")
 		redemptionRoute.Use(middleware.AdminAuth())
 		{
