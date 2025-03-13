@@ -334,7 +334,7 @@ func GetBillingAndExportExcel(startTime int64, endTime int64) ([]byte, error) {
 		// 如果是新的渠道ID，且不是第一条数据
 		if currentChannelTag != "null" && currentChannelTag != data.ChannelTag && channelTotal > 0 {
 			// 写入渠道总计行
-			f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), data.ChannelTag)
+			f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), currentChannelTag)
 			f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), "总计")
 			f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), "-")
 			f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), "-")
