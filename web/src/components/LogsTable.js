@@ -1022,14 +1022,29 @@ const LogsTable = () => {
               }}>
                 {t('消耗额度')}: {renderQuota(stat.quota)}
               </Tag>
-              <Tag color='cyan' size='large' style={{ padding: 15 }}>
-                {t('total')}: {stat.total_tokens || 0}
+              <Tag color='red' size='large' style={{ 
+                padding: 15, 
+                borderRadius: '8px', 
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+               }}>
+                Total tokens: {stat.total_tokens || 0}
               </Tag>
-              <Tag color='orange' size='large' style={{ padding: 15 }}>
-                {t('input')}: {stat.prompt_tokens || 0}
+              <Tag color='green' size='large' style={{ 
+                padding: 15, 
+                borderRadius: '8px', 
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+               }}>
+                Input Tokens: {stat.prompt_tokens || 0}
               </Tag>
-              <Tag color='pink' size='large' style={{ padding: 15 }}>
-                {t('output')}: {stat.completion_tokens || 0}
+              <Tag color='cyan' size='large' style={{ 
+                padding: 15, 
+                borderRadius: '8px', 
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+               }}>
+                Output tokens: {stat.completion_tokens || 0}
               </Tag>
               <Tag color='pink' size='large' style={{ 
                 padding: 15, 
