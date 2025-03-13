@@ -335,7 +335,7 @@ func StreamResponseClaude2OpenAI(reqMode int, claudeResponse *dto.ClaudeResponse
 				case "input_json_delta":
 					tools = append(tools, dto.ToolCallResponse{
 						Function: dto.FunctionResponse{
-							Arguments: claudeResponse.Delta.PartialJson,
+							Arguments: *claudeResponse.Delta.PartialJson,
 						},
 					})
 				case "signature_delta":

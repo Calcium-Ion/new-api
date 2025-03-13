@@ -114,12 +114,13 @@ func ClaudeHelper(c *gin.Context) (claudeError *dto.ClaudeErrorWithStatusCode) {
 		return service.ClaudeErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
 	}
 	jsonData, err := json.Marshal(convertedRequest)
+	if common.DebugEnabled {
+		println("requestBody: ", string(jsonData))
+	}
 	if err != nil {
 		return service.ClaudeErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
 	}
 	requestBody = bytes.NewBuffer(jsonData)
-
-	//log.Printf("requestBody: %s", requestBody)
 
 	statusCodeMappingStr := c.GetString("status_code_mapping")
 	var httpResp *http.Response

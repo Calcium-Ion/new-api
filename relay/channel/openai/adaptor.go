@@ -21,6 +21,7 @@ import (
 	"one-api/relay/channel/xinference"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
+	"one-api/service"
 	"strings"
 )
 
@@ -29,10 +30,20 @@ type Adaptor struct {
 	ResponseFormat string
 }
 
-func (a *Adaptor) ConvertClaudeRequest(*gin.Context, *relaycommon.RelayInfo, *dto.ClaudeRequest) (any, error) {
-	//TODO implement me
-	panic("implement me")
-	return nil, nil
+func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.ClaudeRequest) (any, error) {
+	if !strings.HasPrefix(request.Model, "claude") {
+		return nil, fmt.Errorf("you are using openai channel type with path /v1/messages, only claude model supported convert, but got %s", request.Model)
+	}
+	aiRequest, err := service.ClaudeToOpenAIRequest(*request)
+	if err != nil {
+		return nil, err
+	}
+	if info.SupportStreamOptions {
+		aiRequest.StreamOptions = &dto.StreamOptions{
+			IncludeUsage: true,
+		}
+	}
+	return a.ConvertOpenAIRequest(c, info, aiRequest)
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
@@ -40,6 +51,9 @@ func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }
 
 func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
+	if info.RelayFormat == relaycommon.RelayFormatClaude {
+		return fmt.Sprintf("%s/v1/chat/completions", info.BaseUrl), nil
+	}
 	if info.RelayMode == constant.RelayModeRealtime {
 		if strings.HasPrefix(info.BaseUrl, "https://") {
 			baseUrl := strings.TrimPrefix(info.BaseUrl, "https://")
@@ -115,7 +129,7 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, header *http.Header, info *
 	return nil
 }
 
-func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.GeneralOpenAIRequest) (any, error) {
+func (a *Adaptor) ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.GeneralOpenAIRequest) (any, error) {
 	if request == nil {
 		return nil, errors.New("request is nil")
 	}

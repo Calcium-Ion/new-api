@@ -18,6 +18,16 @@ type ThinkingContentInfo struct {
 }
 
 const (
+	LastMessageTypeText  = "text"
+	LastMessageTypeTools = "tools"
+)
+
+type ClaudeConvertInfo struct {
+	LastMessagesType string
+	Index            int
+}
+
+const (
 	RelayFormatOpenAI = "openai"
 	RelayFormatClaude = "claude"
 )
@@ -64,8 +74,9 @@ type RelayInfo struct {
 	UserEmail            string
 	UserQuota            int
 	RelayFormat          string
-	ResponseTimes        int64
+	SendResponseCount    int
 	ThinkingContentInfo
+	ClaudeConvertInfo
 }
 
 // 定义支持流式选项的通道类型
@@ -93,6 +104,9 @@ func GenRelayInfoClaude(c *gin.Context) *RelayInfo {
 	info := GenRelayInfo(c)
 	info.RelayFormat = RelayFormatClaude
 	info.ShouldIncludeUsage = false
+	info.ClaudeConvertInfo = ClaudeConvertInfo{
+		LastMessagesType: LastMessageTypeText,
+	}
 	return info
 }
 
@@ -172,7 +186,6 @@ func (info *RelayInfo) SetIsStream(isStream bool) {
 }
 
 func (info *RelayInfo) SetFirstResponseTime() {
-	info.ResponseTimes++
 	if info.isFirstResponse {
 		info.FirstResponseTime = time.Now()
 		info.isFirstResponse = false
