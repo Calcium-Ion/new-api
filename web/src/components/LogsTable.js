@@ -1068,27 +1068,50 @@ const LogsTable = () => {
         </Header>
         <Form layout='horizontal' style={{ marginTop: 10 }}>
           <>
-            <Form.DatePicker
-              field='start_timestamp'
-              label={t('起始时间')}
-              style={{ width: 200 }}
-              initValue={start_timestamp}
-              type='dateTime'
-              onChange={(value) => {
-                console.log(value);
-                handleInputChange(value, 'start_timestamp')
-              }}
-            />
-            <Form.DatePicker
-              field='end_timestamp'
-              fluid
-              label={t('结束时间')}
-              style={{ width: 200 }}
-              initValue={end_timestamp}
-              type='dateTime'
-              onChange={(value) => handleInputChange(value, 'end_timestamp')}
-            />
-            <div class='semi-form-section' style={{ marginTop: 10}}></div>
+            <Form.Section>
+              <div style={{ marginBottom: 10 }}>
+              {
+                  styleState.isMobile ? (
+                    <div>
+                      <Form.DatePicker
+                        field='start_timestamp'
+                        label={t('起始时间')}
+                        style={{ width: 272 }}
+                        initValue={start_timestamp}
+                        type='dateTime'
+                        onChange={(value) => {
+                          console.log(value);
+                          handleInputChange(value, 'start_timestamp')
+                        }}
+                      />
+                      <Form.DatePicker
+                        field='end_timestamp'
+                        fluid
+                        label={t('结束时间')}
+                        style={{ width: 272 }}
+                        initValue={end_timestamp}
+                        type='dateTime'
+                        onChange={(value) => handleInputChange(value, 'end_timestamp')}
+                      />
+                    </div>
+                  ) : (
+                    <Form.DatePicker
+                      field="range_timestamp"
+                      label={t('时间范围')}
+                      initValue={[start_timestamp, end_timestamp]}
+                      type="dateTimeRange"
+                      name="range_timestamp"
+                      onChange={(value) => {
+                        if (Array.isArray(value) && value.length === 2) {
+                          handleInputChange(value[0], 'start_timestamp');
+                          handleInputChange(value[1], 'end_timestamp');
+                        }
+                      }}
+                    />
+                  )
+                }
+              </div>
+            </Form.Section>
             <Form.Input
               field='token_name'
               label={t('令牌名称')}
