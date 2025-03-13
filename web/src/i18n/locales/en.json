@@ -1,5 +1,6 @@
 {
   "主页": "Home",
+  "文档": "Docs",
   "控制台": "Console",
   "$%.6f 额度": "$%.6f quota",
   "%d 点额度": "%d point quota",
@@ -192,6 +193,8 @@
   "通用设置": "General Settings",
   "充值链接": "Recharge Link",
   "例如发卡网站的购买链接": "E.g., purchase link from card issuing website",
+  "文档地址": "Document Link",
+  "例如 https://docs.newapi.pro": "E.g., https://docs.newapi.pro",
   "聊天页面链接": "Chat Page Link",
   "例如 ChatGPT Next Web 的部署地址": "E.g., ChatGPT Next Web deployment address",
   "单位美元额度": "Quota per USD",

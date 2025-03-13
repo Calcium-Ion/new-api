@@ -580,3 +580,52 @@ func GeminiChatHandler(c *gin.Context, resp *http.Response, info *relaycommon.Re
 	_, err = c.Writer.Write(jsonResponse)
 	return nil, &usage
 }
+
+func GeminiEmbeddingHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
+	responseBody, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		return nil, service.OpenAIErrorWrapper(readErr, "read_response_body_failed", http.StatusInternalServerError)
+	}
+	_ = resp.Body.Close()
+
+	var geminiResponse GeminiEmbeddingResponse
+	if jsonErr := json.Unmarshal(responseBody, &geminiResponse); jsonErr != nil {
+		return nil, service.OpenAIErrorWrapper(jsonErr, "unmarshal_response_body_failed", http.StatusInternalServerError)
+	}
+
+	// convert to openai format response
+	openAIResponse := dto.OpenAIEmbeddingResponse{
+		Object: "list",
+		Data: []dto.OpenAIEmbeddingResponseItem{
+			{
+				Object:    "embedding",
+				Embedding: geminiResponse.Embedding.Values,
+				Index:     0,
+			},
+		},
+		Model: info.UpstreamModelName,
+	}
+
+	// calculate usage
+	// https://ai.google.dev/gemini-api/docs/pricing?hl=zh-cn#text-embedding-004
+	// Google has not yet clarified how embedding models will be billed
+	// refer to openai billing method to use input tokens billing
+	// https://platform.openai.com/docs/guides/embeddings#what-are-embeddings
+	usage = &dto.Usage{
+		PromptTokens:     info.PromptTokens,
+		CompletionTokens: 0,
+		TotalTokens:      info.PromptTokens,
+	}
+	openAIResponse.Usage = *usage.(*dto.Usage)
+
+	jsonResponse, jsonErr := json.Marshal(openAIResponse)
+	if jsonErr != nil {
+		return nil, service.OpenAIErrorWrapper(jsonErr, "marshal_response_failed", http.StatusInternalServerError)
+	}
+
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(resp.StatusCode)
+	_, _ = c.Writer.Write(jsonResponse)
+
+	return usage, nil
+}

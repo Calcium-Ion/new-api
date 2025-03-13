@@ -15,8 +15,9 @@ var SystemName = "New API"
 var Footer = ""
 var Logo = ""
 var TopUpLink = ""
-var ChatLink = ""
-var ChatLink2 = ""
+
+// var ChatLink = ""
+// var ChatLink2 = ""
 var QuotaPerUnit = 500 * 1000.0 // $0.002 / 1K tokens
 var DisplayInCurrencyEnabled = true
 var DisplayTokenStatEnabled = true
@@ -76,7 +77,6 @@ var SMTPToken = ""
 
 var GitHubClientId = ""
 var GitHubClientSecret = ""
-
 var LinuxDOClientId = ""
 var LinuxDOClientSecret = ""
 
@@ -234,6 +234,7 @@ const (
 	ChannelTypeMokaAI         = 44
 	ChannelTypeVolcEngine     = 45
 	ChannelTypeBaiduV2        = 46
+	ChannelTypeXinference     = 47
 	ChannelTypeDummy          // this one is only for count, do not add any channel after this
 
 )
@@ -286,4 +287,5 @@ var ChannelBaseURLs = []string{
 	"https://api.moka.ai",                       //44
 	"https://ark.cn-beijing.volces.com",         //45
 	"https://qianfan.baidubce.com",              //46
+	"",                                          //47
 }

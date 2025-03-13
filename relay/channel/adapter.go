@@ -22,6 +22,7 @@ type Adaptor interface {
 	DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode)
 	GetModelList() []string
 	GetChannelName() string
+	ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.ClaudeRequest) (any, error)
 }
 
 type TaskAdaptor interface {

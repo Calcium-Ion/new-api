@@ -450,13 +450,6 @@ const ChannelsTable = () => {
       dataIndex: 'operate',
       render: (text, record, index) => {
         if (record.children === undefined) {
-          // 构建模型测试菜单
-          const modelMenuItems = record.models.split(',').map(model => ({
-            node: 'item',
-            name: model,
-            onClick: () => testChannel(record, model)
-          }));
-
           return (
             <div>
               <SplitButtonGroup
@@ -605,7 +598,7 @@ const ChannelsTable = () => {
             <Button type="primary" onClick={() => setShowColumnSelector(false)}>{t('确定')}</Button>
           </>
         }
-        style={{ width: 500 }}
+        style={{ width: isMobile() ? '90%' : 500 }}
         bodyStyle={{ padding: '24px' }}
       >
         <div style={{ marginBottom: 20 }}>
@@ -633,7 +626,11 @@ const ChannelsTable = () => {
             }
             
             return (
-              <div key={column.key} style={{ width: '50%', marginBottom: 16, paddingRight: 8 }}>
+              <div key={column.key} style={{ 
+                width: isMobile() ? '100%' : '50%', 
+                marginBottom: 16, 
+                paddingRight: 8 
+              }}>
                 <Checkbox
                   checked={!!visibleColumns[column.key]}
                   onChange={e => handleColumnVisibilityChange(column.key, e.target.checked)}
@@ -1253,87 +1250,137 @@ const ChannelsTable = () => {
       <Divider style={{ marginBottom: 15 }} />
       <div
         style={{
-          display: isMobile() ? '' : 'flex',
+          display: 'flex',
+          flexDirection: isMobile() ? 'column' : 'row',
           marginTop: isMobile() ? 0 : -45,
           zIndex: 999,
           pointerEvents: 'none'
         }}
       >
         <Space
-          style={{ pointerEvents: 'auto', marginTop: isMobile() ? 0 : 45 }}
+          style={{ 
+            pointerEvents: 'auto', 
+            marginTop: isMobile() ? 0 : 45,
+            marginBottom: isMobile() ? 16 : 0,
+            display: 'flex',
+            flexWrap: isMobile() ? 'wrap' : 'nowrap',
+            gap: '8px'
+          }}
         >
-          <Typography.Text strong>{t('使用ID排序')}</Typography.Text>
-          <Switch
-            checked={idSort}
-            label={t('使用ID排序')}
-            uncheckedText={t('关')}
-            aria-label={t('是否用ID排序')}
-            onChange={(v) => {
-              localStorage.setItem('id-sort', v + '');
-              setIdSort(v);
-              loadChannels(0, pageSize, v, enableTagMode)
-                .then()
-                .catch((reason) => {
-                  showError(reason);
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            marginRight: 16,
+            flexWrap: 'nowrap'
+          }}>
+            <Typography.Text strong style={{ marginRight: 8 }}>{t('使用ID排序')}</Typography.Text>
+            <Switch
+              checked={idSort}
+              label={t('使用ID排序')}
+              uncheckedText={t('关')}
+              aria-label={t('是否用ID排序')}
+              onChange={(v) => {
+                localStorage.setItem('id-sort', v + '');
+                setIdSort(v);
+                loadChannels(0, pageSize, v, enableTagMode)
+                  .then()
+                  .catch((reason) => {
+                    showError(reason);
+                  });
+              }}
+            ></Switch>
+          </div>
+          
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap',
+            gap: '8px'
+          }}>
+            <Button
+              theme="light"
+              type="primary"
+              icon={<IconPlus />}
+              onClick={() => {
+                setEditingChannel({
+                  id: undefined
                 });
-            }}
-          ></Switch>
-          <Button
-            theme="light"
-            type="primary"
-            style={{ marginRight: 8 }}
-            onClick={() => {
-              setEditingChannel({
-                id: undefined
-              });
-              setShowEdit(true);
-            }}
-          >
-            {t('添加渠道')}
-          </Button>
-          <Popconfirm
-            title={t('确定？')}
-            okType={'warning'}
-            onConfirm={testAllChannels}
-            position={isMobile() ? 'top' : 'top'}
-          >
-            <Button theme="light" type="warning" style={{ marginRight: 8 }}>
-              {t('测试所有通道')}
+                setShowEdit(true);
+              }}
+            >
+              {t('添加渠道')}
             </Button>
-          </Popconfirm>
-          <Popconfirm
-            title={t('确定？')}
-            okType={'secondary'}
-            onConfirm={updateAllChannelsBalance}
-          >
-            <Button theme="light" type="secondary" style={{ marginRight: 8 }}>
-              {t('更新所有已启用通道余额')}
+            
+            <Button
+              theme="light"
+              type="primary"
+              icon={<IconRefresh />}
+              onClick={refresh}
+            >
+              {t('刷新')}
             </Button>
-          </Popconfirm>
-          <Popconfirm
-            title={t('确定是否要删除禁用通道？')}
-            content={t('此修改将不可逆')}
-            okType={'danger'}
-            onConfirm={deleteAllDisabledChannels}
-          >
-            <Button theme="light" type="danger" style={{ marginRight: 8 }}>
-              {t('删除禁用通道')}
-            </Button>
-          </Popconfirm>
-
-          <Button
-            theme="light"
-            type="primary"
-            style={{ marginRight: 8 }}
-            onClick={refresh}
-          >
-            {t('刷新')}
-          </Button>
+            
+            <Dropdown
+              trigger="click"
+              render={
+                <Dropdown.Menu>
+                  <Dropdown.Item>
+                    <Popconfirm
+                      title={t('确定？')}
+                      okType={'warning'}
+                      onConfirm={testAllChannels}
+                      position={isMobile() ? 'top' : 'top'}
+                    >
+                      <Button theme="light" type="warning" style={{ width: '100%' }}>
+                        {t('测试所有通道')}
+                      </Button>
+                    </Popconfirm>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    <Popconfirm
+                      title={t('确定？')}
+                      okType={'secondary'}
+                      onConfirm={updateAllChannelsBalance}
+                    >
+                      <Button theme="light" type="secondary" style={{ width: '100%' }}>
+                        {t('更新所有已启用通道余额')}
+                      </Button>
+                    </Popconfirm>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    <Popconfirm
+                      title={t('确定是否要删除禁用通道？')}
+                      content={t('此修改将不可逆')}
+                      okType={'danger'}
+                      onConfirm={deleteAllDisabledChannels}
+                    >
+                      <Button theme="light" type="danger" style={{ width: '100%' }}>
+                        {t('删除禁用通道')}
+                      </Button>
+                    </Popconfirm>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              }
+            >
+              <Button theme="light" type="tertiary" icon={<IconSetting />}>
+                {t('批量操作')}
+              </Button>
+            </Dropdown>
+          </div>
         </Space>
       </div>
-      <div style={{ marginTop: 20 }}>
-        <Space>
-          <Typography.Text strong>{t('开启批量操作')}</Typography.Text>
+      <div style={{ 
+        marginTop: 20,
+        display: 'flex',
+        flexDirection: isMobile() ? 'column' : 'row',
+        alignItems: isMobile() ? 'flex-start' : 'center',
+        gap: isMobile() ? '8px' : '16px'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          marginBottom: isMobile() ? 8 : 0
+        }}>
+          <Typography.Text strong style={{ marginRight: 8 }}>{t('开启批量操作')}</Typography.Text>
           <Switch
             label={t('开启批量操作')}
             uncheckedText={t('关')}
@@ -1341,20 +1388,25 @@ const ChannelsTable = () => {
             onChange={(v) => {
               setEnableBatchDelete(v);
             }}
-          ></Switch>
+          />
+        </div>
+        
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap',
+          gap: '8px'
+        }}>
           <Popconfirm
             title={t('确定是否要删除所选通道？')}
             content={t('此修改将不可逆')}
             okType={'danger'}
             onConfirm={batchDeleteChannels}
             disabled={!enableBatchDelete}
-            position={'top'}
           >
             <Button
               disabled={!enableBatchDelete}
               theme="light"
               type="danger"
-              style={{ marginRight: 8 }}
             >
               {t('删除所选通道')}
             </Button>
@@ -1364,17 +1416,27 @@ const ChannelsTable = () => {
             content={t('进行该操作时，可能导致渠道访问错误，请仅在数据库出现问题时使用')}
             okType={'warning'}
             onConfirm={fixChannelsAbilities}
-            position={'top'}
           >
-            <Button theme="light" type="secondary" style={{ marginRight: 8 }}>
+            <Button theme="light" type="secondary">
               {t('修复数据库一致性')}
             </Button>
           </Popconfirm>
-        </Space>
+        </div>
       </div>
-      <div style={{ marginTop: 20 }}>
-        <Space>
-          <Typography.Text strong>{t('标签聚合模式')}</Typography.Text>
+      
+      <div style={{ 
+        marginTop: 20,
+        display: 'flex',
+        flexDirection: isMobile() ? 'column' : 'row',
+        alignItems: isMobile() ? 'flex-start' : 'center',
+        gap: isMobile() ? '8px' : '16px'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          marginBottom: isMobile() ? 8 : 0
+        }}>
+          <Typography.Text strong style={{ marginRight: 8 }}>{t('标签聚合模式')}</Typography.Text>
           <Switch
             checked={enableTagMode}
             label={t('标签聚合模式')}
@@ -1385,27 +1447,32 @@ const ChannelsTable = () => {
               loadChannels(0, pageSize, idSort, v);
             }}
           />
+        </div>
+        
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap',
+          gap: '8px'
+        }}>
           <Button
             disabled={!enableBatchDelete}
             theme="light"
             type="primary"
-            style={{ marginRight: 8 }}
             onClick={() => setShowBatchSetTag(true)}
           >
             {t('批量设置标签')}
           </Button>
+          
           <Button
             theme="light"
             type="tertiary"
             icon={<IconSetting />}
             onClick={() => setShowColumnSelector(true)}
-            style={{ marginRight: 8 }}
           >
             {t('列设置')}
           </Button>
-        </Space>
+        </div>
       </div>
-
 
       <Table
         loading={loading}
@@ -1423,6 +1490,7 @@ const ChannelsTable = () => {
           },
           onPageChange: handlePageChange
         }}
+        expandAllRows={false}
         onRow={handleRow}
         rowSelection={
           enableBatchDelete
@@ -1442,6 +1510,7 @@ const ChannelsTable = () => {
         onCancel={() => setShowBatchSetTag(false)}
         maskClosable={false}
         centered={true}
+        style={{ width: isMobile() ? '90%' : 500 }}
       >
         <div style={{ marginBottom: 20 }}>
           <Typography.Text>{t('请输入要设置的标签名称')}</Typography.Text>
@@ -1450,7 +1519,13 @@ const ChannelsTable = () => {
           placeholder={t('请输入标签名称')}
           value={batchSetTagValue}
           onChange={(v) => setBatchSetTagValue(v)}
+          size="large"
         />
+        <div style={{ marginTop: 16 }}>
+          <Typography.Text type="secondary">
+            {t('已选择 ${count} 个渠道').replace('${count}', selectedChannels.length)}
+          </Typography.Text>
+        </div>
       </Modal>
       
       {/* 模型测试弹窗 */}
@@ -1464,7 +1539,6 @@ const ChannelsTable = () => {
         footer={null}
         maskClosable={true}
         centered={true}
-        width={600}
       >
         <div style={{ maxHeight: '500px', overflowY: 'auto', padding: '10px' }}>
           {currentTestChannel && (
@@ -1477,15 +1551,17 @@ const ChannelsTable = () => {
               <Input
                 placeholder={t('搜索模型...')}
                 value={modelSearchKeyword}
-                onChange={(value) => setModelSearchKeyword(value)}
+                onChange={(v) => setModelSearchKeyword(v)}
                 style={{ marginBottom: '16px' }}
+                prefix={<IconFilter />}
                 showClear
               />
               
               <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-                gap: '10px' 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                gap: '12px',
+                marginBottom: '16px'
               }}>
                 {currentTestChannel.models.split(',')
                   .filter(model => model.toLowerCase().includes(modelSearchKeyword.toLowerCase()))
@@ -1493,27 +1569,31 @@ const ChannelsTable = () => {
 
                     return (
                       <Button
-                        key={index}
-                        theme="light"
-                        type="tertiary"
-                        style={{ 
-                          height: 'auto',
-                          padding: '8px 12px',
-                          textAlign: 'center',
-                        }}
-                        onClick={() => {
-                          testChannel(currentTestChannel, model);
-                        }}
-                      >
-                        {model}
-                      </Button>
+                          theme="light"
+                          type="tertiary"
+                          style={{ 
+                            height: 'auto',
+                            padding: '10px 12px',
+                            textAlign: 'center',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            width: '100%',
+                            borderRadius: '6px'
+                          }}
+                          onClick={() => {
+                            testChannel(currentTestChannel, model);
+                          }}
+                        >
+                          {model}
+                        </Button>
                     );
                   })}
               </div>
               
               {/* 显示搜索结果数量 */}
               {modelSearchKeyword && (
-                <Typography.Text type="secondary" style={{ marginTop: '16px', display: 'block' }}>
+                <Typography.Text type="secondary" style={{ display: 'block' }}>
                   {t('找到')} {currentTestChannel.models.split(',').filter(model => 
                     model.toLowerCase().includes(modelSearchKeyword.toLowerCase())
                   ).length} {t('个模型')}

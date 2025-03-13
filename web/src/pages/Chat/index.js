@@ -10,10 +10,8 @@ const ChatPage = () => {
   const comLink = (key) => {
     // console.log('chatLink:', chatLink);
     if (!serverAddress || !key) return '';
-      let link = localStorage.getItem('chat_link');
-      if (link) {
-          link = `${link}/#/?settings={"key":"sk-${key}","url":"${encodeURIComponent(serverAddress)}"}`;
-      } else if (id) {
+      let link = "";
+      if (id) {
           let chats = localStorage.getItem('chats');
           if (chats) {
               chats = JSON.parse(chats);

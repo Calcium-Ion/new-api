@@ -27,7 +27,7 @@ func oaiImage2Ali(request dto.ImageRequest) *AliImageRequest {
 }
 
 func updateTask(info *relaycommon.RelayInfo, taskID string, key string) (*AliResponse, error, []byte) {
-	url := fmt.Sprintf("/api/v1/tasks/%s", taskID)
+	url := fmt.Sprintf("%s/api/v1/tasks/%s", info.BaseUrl, taskID)
 
 	var aliResponse AliResponse
 

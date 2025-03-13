@@ -18,6 +18,7 @@ import (
 	"one-api/relay/channel/lingyiwanwu"
 	"one-api/relay/channel/minimax"
 	"one-api/relay/channel/moonshot"
+	"one-api/relay/channel/xinference"
 	relaycommon "one-api/relay/common"
 	"one-api/relay/constant"
 	"strings"
@@ -26,6 +27,12 @@ import (
 type Adaptor struct {
 	ChannelType    int
 	ResponseFormat string
+}
+
+func (a *Adaptor) ConvertClaudeRequest(*gin.Context, *relaycommon.RelayInfo, *dto.ClaudeRequest) (any, error) {
+	//TODO implement me
+	panic("implement me")
+	return nil, nil
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
@@ -251,6 +258,8 @@ func (a *Adaptor) GetModelList() []string {
 		return lingyiwanwu.ModelList
 	case common.ChannelTypeMiniMax:
 		return minimax.ModelList
+	case common.ChannelTypeXinference:
+		return xinference.ModelList
 	default:
 		return ModelList
 	}
@@ -266,6 +275,8 @@ func (a *Adaptor) GetChannelName() string {
 		return lingyiwanwu.ChannelName
 	case common.ChannelTypeMiniMax:
 		return minimax.ChannelName
+	case common.ChannelTypeXinference:
+		return xinference.ChannelName
 	default:
 		return ChannelName
 	}

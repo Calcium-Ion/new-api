@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useContext, useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import Loading from './components/Loading';
 import User from './pages/User';
 import { PrivateRoute } from './components/PrivateRoute';
@@ -8,10 +8,8 @@ import LoginForm from './components/LoginForm';
 import NotFound from './pages/NotFound';
 import Setting from './pages/Setting';
 import EditUser from './pages/User/EditUser';
-import { getLogo, getSystemName } from './helpers';
 import PasswordResetForm from './components/PasswordResetForm';
 import PasswordResetConfirm from './components/PasswordResetConfirm';
-import { UserContext } from './context/User';
 import Channel from './pages/Channel';
 import Token from './pages/Token';
 import EditChannel from './pages/Channel/EditChannel';
@@ -26,10 +24,6 @@ import Pricing from './pages/Pricing/index.js';
 import Task from "./pages/Task/index.js";
 import Playground from './pages/Playground/Playground.js';
 import OAuth2Callback from "./components/OAuth2Callback.js";
-import { useTranslation } from 'react-i18next';
-import { StatusContext } from './context/Status';
-import { setStatusData } from './helpers/data.js';
-import { API, showError } from './helpers';
 import PersonalSetting from './components/PersonalSetting.js';
 
 const Home = lazy(() => import('./pages/Home'));
@@ -37,13 +31,15 @@ const Detail = lazy(() => import('./pages/Detail'));
 const About = lazy(() => import('./pages/About'));
 
 function App() {
+  const location = useLocation();
+  
   return (
     <>
       <Routes>
         <Route
           path='/'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <Home />
             </Suspense>
           }
@@ -59,7 +55,7 @@ function App() {
         <Route
           path='/channel/edit/:id'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <EditChannel />
             </Suspense>
           }
@@ -67,7 +63,7 @@ function App() {
         <Route
           path='/channel/add'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <EditChannel />
             </Suspense>
           }
@@ -107,7 +103,7 @@ function App() {
         <Route
           path='/user/edit/:id'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <EditUser />
             </Suspense>
           }
@@ -115,7 +111,7 @@ function App() {
         <Route
           path='/user/edit'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <EditUser />
             </Suspense>
           }
@@ -123,7 +119,7 @@ function App() {
         <Route
           path='/user/reset'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <PasswordResetConfirm />
             </Suspense>
           }
@@ -131,7 +127,7 @@ function App() {
         <Route
           path='/login'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <LoginForm />
             </Suspense>
           }
@@ -139,7 +135,7 @@ function App() {
         <Route
           path='/register'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <RegisterForm />
             </Suspense>
           }
@@ -147,7 +143,7 @@ function App() {
         <Route
           path='/reset'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <PasswordResetForm />
             </Suspense>
           }
@@ -155,15 +151,23 @@ function App() {
         <Route
           path='/oauth/github'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <OAuth2Callback type='github'></OAuth2Callback>
             </Suspense>
           }
         />
         <Route
+            path='/oauth/oidc'
+            element={
+                <Suspense fallback={<Loading></Loading>}>
+                    <OAuth2Callback type='oidc'></OAuth2Callback>
+                </Suspense>
+            }
+        />
+        <Route
           path='/oauth/linuxdo'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <OAuth2Callback type='linuxdo'></OAuth2Callback>
             </Suspense>
           }
@@ -172,7 +176,7 @@ function App() {
           path='/setting'
           element={
             <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>}>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <Setting />
               </Suspense>
             </PrivateRoute>
@@ -182,7 +186,7 @@ function App() {
           path='/personal'
           element={
             <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>}>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <PersonalSetting />
               </Suspense>
             </PrivateRoute>
@@ -192,7 +196,7 @@ function App() {
           path='/topup'
           element={
             <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>}>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <TopUp />
               </Suspense>
             </PrivateRoute>
@@ -210,7 +214,7 @@ function App() {
           path='/detail'
           element={
             <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>}>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <Detail />
               </Suspense>
             </PrivateRoute>
@@ -220,7 +224,7 @@ function App() {
           path='/midjourney'
           element={
             <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>}>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <Midjourney />
               </Suspense>
             </PrivateRoute>
@@ -230,7 +234,7 @@ function App() {
           path='/task'
           element={
             <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>}>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <Task />
               </Suspense>
             </PrivateRoute>
@@ -239,7 +243,7 @@ function App() {
         <Route
           path='/pricing'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <Pricing />
             </Suspense>
           }
@@ -247,7 +251,7 @@ function App() {
         <Route
           path='/about'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <About />
             </Suspense>
           }
@@ -255,7 +259,7 @@ function App() {
         <Route
           path='/chat/:id?'
           element={
-            <Suspense fallback={<Loading></Loading>}>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <Chat />
             </Suspense>
           }
@@ -265,7 +269,7 @@ function App() {
             path='/chat2link'
             element={
               <PrivateRoute>
-                <Suspense fallback={<Loading></Loading>}>
+                <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                     <Chat2Link />
                 </Suspense>
               </PrivateRoute>

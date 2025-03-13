@@ -6,6 +6,7 @@ import (
 	"one-api/common"
 	"one-api/model"
 	"one-api/setting"
+	"one-api/setting/system_setting"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -50,6 +51,13 @@ func UpdateOption(c *gin.Context) {
 				"message": "无法启用 GitHub OAuth，请先填入 GitHub Client Id 以及 GitHub Client Secret！",
 			})
 			return
+		}
+	case "oidc.enabled":
+		if option.Value == "true" && system_setting.GetOIDCSettings().Enabled {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无法启用 OIDC 登录，请先填入 OIDC Client Id 以及 OIDC Client Secret！",
+			})
 		}
 	case "LinuxDOOAuthEnabled":
 		if option.Value == "true" && common.LinuxDOClientId == "" {

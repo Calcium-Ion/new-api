@@ -16,6 +16,7 @@ type PriceData struct {
 	CacheRatio             float64
 	GroupRatio             float64
 	UsePrice               bool
+	CacheCreationRatio     float64
 	ShouldPreConsumedQuota int
 }
 
@@ -26,6 +27,7 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 	var modelRatio float64
 	var completionRatio float64
 	var cacheRatio float64
+	var cacheCreationRatio float64
 	if !usePrice {
 		preConsumedTokens := common.PreConsumedQuota
 		if maxTokens != 0 {
@@ -42,6 +44,7 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		}
 		completionRatio = operation_setting.GetCompletionRatio(info.OriginModelName)
 		cacheRatio, _ = operation_setting.GetCacheRatio(info.OriginModelName)
+		cacheCreationRatio, _ = operation_setting.GetCreateCacheRatio(info.OriginModelName)
 		ratio := modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
 	} else {
@@ -54,6 +57,7 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		GroupRatio:             groupRatio,
 		UsePrice:               usePrice,
 		CacheRatio:             cacheRatio,
+		CacheCreationRatio:     cacheCreationRatio,
 		ShouldPreConsumedQuota: preConsumedQuota,
 	}, nil
 }

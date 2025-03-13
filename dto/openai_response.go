@@ -125,6 +125,20 @@ type ChatCompletionsStreamResponse struct {
 	Usage             *Usage                                `json:"usage"`
 }
 
+func (c *ChatCompletionsStreamResponse) IsToolCall() bool {
+	if len(c.Choices) == 0 {
+		return false
+	}
+	return len(c.Choices[0].Delta.ToolCalls) > 0
+}
+
+func (c *ChatCompletionsStreamResponse) GetFirstToolCall() *ToolCallResponse {
+	if c.IsToolCall() {
+		return &c.Choices[0].Delta.ToolCalls[0]
+	}
+	return nil
+}
+
 func (c *ChatCompletionsStreamResponse) Copy() *ChatCompletionsStreamResponse {
 	choices := make([]ChatCompletionsStreamResponseChoice, len(c.Choices))
 	copy(choices, c.Choices)

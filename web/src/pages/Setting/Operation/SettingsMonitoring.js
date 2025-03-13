@@ -78,7 +78,7 @@ export default function SettingsMonitoring(props) {
         >
           <Form.Section text={t('监控设置')}>
             <Row gutter={16}>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.InputNumber
                   label={t('测试所有渠道的最长响应时间')}
                   step={1}
@@ -95,7 +95,7 @@ export default function SettingsMonitoring(props) {
                   }
                 />
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.InputNumber
                   label={t('额度提醒阈值')}
                   step={1}
@@ -114,7 +114,7 @@ export default function SettingsMonitoring(props) {
               </Col>
             </Row>
             <Row gutter={16}>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Switch
                   field={'AutomaticDisableChannelEnabled'}
                   label={t('失败时自动禁用通道')}
@@ -129,7 +129,7 @@ export default function SettingsMonitoring(props) {
                   }}
                 />
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Switch
                   field={'AutomaticEnableChannelEnabled'}
                   label={t('成功时自动启用通道')}
@@ -146,7 +146,7 @@ export default function SettingsMonitoring(props) {
               </Col>
             </Row>
             <Row gutter={16}>
-              <Col span={16}>
+              <Col xs={24} sm={16}>
                 <Form.TextArea
                   label={t('自动禁用关键词')}
                   placeholder={t('一行一个，不区分大小写')}

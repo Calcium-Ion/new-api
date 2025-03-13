@@ -50,7 +50,31 @@ func OpenAIErrorWrapperLocal(err error, code string, statusCode int) *dto.OpenAI
 	return openaiErr
 }
 
-func RelayErrorHandler(resp *http.Response) (errWithStatusCode *dto.OpenAIErrorWithStatusCode) {
+func ClaudeErrorWrapper(err error, code string, statusCode int) *dto.ClaudeErrorWithStatusCode {
+	text := err.Error()
+	lowerText := strings.ToLower(text)
+	if strings.Contains(lowerText, "post") || strings.Contains(lowerText, "dial") || strings.Contains(lowerText, "http") {
+		common.SysLog(fmt.Sprintf("error: %s", text))
+		text = "请求上游地址失败"
+	}
+	claudeError := dto.ClaudeError{
+		Message: text,
+		Type:    "new_api_error",
+		//Code:    code,
+	}
+	return &dto.ClaudeErrorWithStatusCode{
+		Error:      claudeError,
+		StatusCode: statusCode,
+	}
+}
+
+func ClaudeErrorWrapperLocal(err error, code string, statusCode int) *dto.ClaudeErrorWithStatusCode {
+	claudeErr := ClaudeErrorWrapper(err, code, statusCode)
+	claudeErr.LocalError = true
+	return claudeErr
+}
+
+func RelayErrorHandler(resp *http.Response, showBodyWhenFail bool) (errWithStatusCode *dto.OpenAIErrorWithStatusCode) {
 	errWithStatusCode = &dto.OpenAIErrorWithStatusCode{
 		StatusCode: resp.StatusCode,
 		Error: dto.OpenAIError{
@@ -70,6 +94,11 @@ func RelayErrorHandler(resp *http.Response) (errWithStatusCode *dto.OpenAIErrorW
 	var errResponse dto.GeneralErrorResponse
 	err = json.Unmarshal(responseBody, &errResponse)
 	if err != nil {
+		if showBodyWhenFail {
+			errWithStatusCode.Error.Message = string(responseBody)
+		} else {
+			errWithStatusCode.Error.Message = fmt.Sprintf("bad response status code %d", resp.StatusCode)
+		}
 		return
 	}
 	if errResponse.Error.Message != "" {

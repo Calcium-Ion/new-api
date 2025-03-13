@@ -144,33 +144,8 @@ const TokensTable = () => {
       render: (text, record, index) => {
         let chats = localStorage.getItem('chats');
         let chatsArray = []
-        let chatLink = localStorage.getItem('chat_link');
-        let mjLink = localStorage.getItem('chat_link2');
         let shouldUseCustom = true;
-        if (chatLink) {
-          shouldUseCustom = false;
-          chatLink += `/#/?settings={"key":"{key}","url":"{address}"}`;
-          chatsArray.push({
-            node: 'item',
-            key: 'default',
-            name: 'ChatGPT Next Web',
-            onClick: () => {
-              onOpenLink('default', chatLink, record);
-            },
-          });
-        }
-        if (mjLink) {
-          shouldUseCustom = false;
-          mjLink += `/#/?settings={"key":"{key}","url":"{address}"}`;
-          chatsArray.push({
-            node: 'item',
-            key: 'mj',
-            name: 'ChatGPT Next Midjourney',
-            onClick: () => {
-              onOpenLink('mj', mjLink, record);
-            },
-          });
-        }
+
         if (shouldUseCustom) {
           try {
             // console.log(chats);

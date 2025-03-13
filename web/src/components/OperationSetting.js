@@ -7,7 +7,6 @@ import SettingsLog from '../pages/Setting/Operation/SettingsLog.js';
 import SettingsDataDashboard from '../pages/Setting/Operation/SettingsDataDashboard.js';
 import SettingsMonitoring from '../pages/Setting/Operation/SettingsMonitoring.js';
 import SettingsCreditLimit from '../pages/Setting/Operation/SettingsCreditLimit.js';
-import SettingsMagnification from '../pages/Setting/Operation/SettingsMagnification.js';
 import ModelSettingsVisualEditor from '../pages/Setting/Operation/ModelSettingsVisualEditor.js';
 import GroupRatioSettings from '../pages/Setting/Operation/GroupRatioSettings.js';
 import ModelRatioSettings from '../pages/Setting/Operation/ModelRatioSettings.js';
@@ -34,8 +33,8 @@ const OperationSetting = () => {
     GroupRatio: '',
     UserUsableGroups: '',
     TopUpLink: '',
-    ChatLink: '',
-    ChatLink2: '', // 添加的新状态变量
+    'general_setting.docs_link': '',
+    // ChatLink2: '', // 添加的新状态变量
     QuotaPerUnit: 0,
     AutomaticDisableChannelEnabled: false,
     AutomaticEnableChannelEnabled: false,

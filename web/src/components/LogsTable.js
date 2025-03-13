@@ -26,8 +26,14 @@ import {
 } from '@douyinfe/semi-ui';
 import { ITEMS_PER_PAGE } from '../constants';
 import {
-  renderAudioModelPrice, renderGroup,
-  renderModelPrice, renderModelPriceSimple,
+  renderAudioModelPrice,
+  renderClaudeLogContent,
+  renderClaudeModelPrice,
+  renderClaudeModelPriceSimple,
+  renderGroup,
+  renderLogContent,
+  renderModelPrice,
+  renderModelPriceSimple,
   renderNumber,
   renderQuota,
   stringToColor
@@ -459,7 +465,7 @@ const LogsTable = () => {
             <>
               <Space>
                 {renderUseTime(text)}
-                {renderFirstUseTime(other.frt)}
+                {renderFirstUseTime(other?.frt)}
                 {renderIsStream(record.is_stream)}
               </Space>
             </>
@@ -564,13 +570,23 @@ const LogsTable = () => {
           );
         }
 
-        let content = renderModelPriceSimple(
-          other.model_ratio,
-          other.model_price,
-          other.group_ratio,
-          other.cache_tokens || 0,
-          other.cache_ratio || 1.0,
-        );
+        let content = other?.claude
+          ? renderClaudeModelPriceSimple(
+            other.model_ratio,
+            other.model_price,
+            other.group_ratio,
+            other.cache_tokens || 0,
+            other.cache_ratio || 1.0,
+            other.cache_creation_tokens || 0,
+            other.cache_creation_ratio || 1.0,
+          )
+          : renderModelPriceSimple(
+            other.model_ratio,
+            other.model_price,
+            other.group_ratio,
+            other.cache_tokens || 0,
+            other.cache_ratio || 1.0,
+          );
         return (
             <Paragraph
                 ellipsis={{
@@ -818,10 +834,34 @@ const LogsTable = () => {
           value: other.cache_tokens,
         });
       }
-      expandDataLocal.push({
-        key: t('日志详情'),
-        value: logs[i].content,
-      });
+      if (other?.cache_creation_tokens > 0) {
+        expandDataLocal.push({
+          key: t('缓存创建 Tokens'),
+          value: other.cache_creation_tokens,
+        });
+      }
+      if (logs[i].type === 2) {
+        expandDataLocal.push({
+          key: t('日志详情'),
+          value: other?.claude
+            ? renderClaudeLogContent(
+              other?.model_ratio,
+              other.completion_ratio,
+              other.model_price,
+              other.group_ratio,
+              other.user_group_ratio,
+              other.cache_ratio || 1.0,
+              other.cache_creation_ratio || 1.0
+            )
+            : renderLogContent(
+              other?.model_ratio,
+              other.completion_ratio,
+              other.model_price,
+              other.group_ratio,
+              other.user_group_ratio
+            ),
+        });
+      }
       if (logs[i].type === 2) {
         let modelMapped = other?.is_model_mapped && other?.upstream_model_name && other?.upstream_model_name !== '';
         if (modelMapped) {
@@ -837,21 +877,21 @@ const LogsTable = () => {
         let content = '';
         if (other?.ws || other?.audio) {
           content = renderAudioModelPrice(
-            other.text_input,
-            other.text_output,
-            other.model_ratio,
-            other.model_price,
-            other.completion_ratio,
-            other.audio_input,
-            other.audio_output,
+            other?.text_input,
+            other?.text_output,
+            other?.model_ratio,
+            other?.model_price,
+            other?.completion_ratio,
+            other?.audio_input,
+            other?.audio_output,
             other?.audio_ratio,
             other?.audio_completion_ratio,
-            other.group_ratio,
-            other.cache_tokens || 0,
-            other.cache_ratio || 1.0,
+            other?.group_ratio,
+            other?.cache_tokens || 0,
+            other?.cache_ratio || 1.0,
           );
-        } else {
-          content = renderModelPrice(
+        } else if (other?.claude) {
+          content = renderClaudeModelPrice(
             logs[i].prompt_tokens,
             logs[i].completion_tokens,
             other.model_ratio,
@@ -860,6 +900,19 @@ const LogsTable = () => {
             other.group_ratio,
             other.cache_tokens || 0,
             other.cache_ratio || 1.0,
+            other.cache_creation_tokens || 0,
+            other.cache_creation_ratio || 1.0,
+          );
+        } else {
+          content = renderModelPrice(
+            logs[i].prompt_tokens,
+            logs[i].completion_tokens,
+            other?.model_ratio,
+            other?.model_price,
+            other?.completion_ratio,
+            other?.group_ratio,
+            other?.cache_tokens || 0,
+            other?.cache_ratio || 1.0,
           );
         }
         expandDataLocal.push({
@@ -958,11 +1011,16 @@ const LogsTable = () => {
     <>
       {renderColumnSelector()}
       <Layout>
-        <Header style={{ backgroundColor: 'var(--semi-color-bg-1)' }}>
+        <Header>
           <Spin spinning={loadingStat}>
             <Space>
-              <Tag color='green' size='large' style={{ padding: 15 }}>
-                {t('总消耗额度')}: {renderQuota(stat.quota)}
+              <Tag color='blue' size='large' style={{ 
+                padding: 15, 
+                borderRadius: '8px', 
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
+                {t('消耗额度')}: {renderQuota(stat.quota)}
               </Tag>
               <Tag color='cyan' size='large' style={{ padding: 15 }}>
                 {t('total')}: {stat.total_tokens || 0}
@@ -973,10 +1031,21 @@ const LogsTable = () => {
               <Tag color='pink' size='large' style={{ padding: 15 }}>
                 {t('output')}: {stat.completion_tokens || 0}
               </Tag>
-              <Tag color='blue' size='large' style={{ padding: 15 }}>
+              <Tag color='pink' size='large' style={{ 
+                padding: 15, 
+                borderRadius: '8px', 
+                fontWeight: 500,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}>
                 RPM: {stat.rpm}
               </Tag>
-              <Tag color='purple' size='large' style={{ padding: 15 }}>
+              <Tag color='white' size='large' style={{ 
+                padding: 15, 
+                border: 'none', 
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', 
+                borderRadius: '8px',
+                fontWeight: 500,
+              }}>
                 TPM: {stat.tpm}
               </Tag>
             </Space>

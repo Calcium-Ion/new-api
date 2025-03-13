@@ -125,7 +125,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	if resp != nil {
 		httpResp = resp.(*http.Response)
 		if httpResp.StatusCode != http.StatusOK {
-			err := service.RelayErrorHandler(httpResp)
+			err := service.RelayErrorHandler(httpResp, true)
 			return fmt.Errorf("status code %d: %s", httpResp.StatusCode, err.Error.Message), err
 		}
 	}
@@ -175,10 +175,10 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 	}
 
 	// 先判断是否为 Embedding 模型
-	if strings.Contains(strings.ToLower(model), "embedding") ||
+	if strings.Contains(strings.ToLower(model), "embedding") || // 其他 embedding 模型
 		strings.HasPrefix(model, "m3e") || // m3e 系列模型
-		strings.Contains(model, "bge-") || // bge 系列模型
-		model == "text-embedding-v1" { // 其他 embedding 模型
+		strings.Contains(model, "bge-") {
+		testRequest.Model = model
 		// Embedding 请求
 		testRequest.Input = []string{"hello world"}
 		return testRequest
@@ -186,6 +186,8 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 	// 并非Embedding 模型
 	if strings.HasPrefix(model, "o1") || strings.HasPrefix(model, "o3") {
 		testRequest.MaxCompletionTokens = 10
+	} else if strings.Contains(model, "thinking") {
+		testRequest.MaxTokens = 50
 	} else {
 		testRequest.MaxTokens = 10
 	}

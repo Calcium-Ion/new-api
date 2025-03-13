@@ -19,13 +19,83 @@ import {
   IconNoteMoneyStroked,
   IconPriceTag,
   IconUser,
-  IconLanguage
+  IconLanguage,
+  IconInfoCircle,
+  IconCreditCard,
+  IconTerminal
 } from '@douyinfe/semi-icons';
 import { Avatar, Button, Dropdown, Layout, Nav, Switch, Tag } from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import { StyleContext } from '../context/Style/index.js';
 import { StatusContext } from '../context/Status/index.js';
+
+// 自定义顶部栏样式
+const headerStyle = {
+  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+  borderBottom: '1px solid var(--semi-color-border)',
+  background: 'var(--semi-color-bg-0)',
+  transition: 'all 0.3s ease',
+  width: '100%'
+};
+
+// 自定义顶部栏按钮样式
+const headerItemStyle = {
+  borderRadius: '4px',
+  margin: '0 4px',
+  transition: 'all 0.3s ease'
+};
+
+// 自定义顶部栏按钮悬停样式
+const headerItemHoverStyle = {
+  backgroundColor: 'var(--semi-color-primary-light-default)',
+  color: 'var(--semi-color-primary)'
+};
+
+// 自定义顶部栏Logo样式
+const logoStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  padding: '0 10px',
+  height: '100%'
+};
+
+// 自定义顶部栏系统名称样式
+const systemNameStyle = {
+  fontWeight: 'bold',
+  fontSize: '18px',
+  background: 'linear-gradient(45deg, var(--semi-color-primary), var(--semi-color-secondary))',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  padding: '0 5px'
+};
+
+// 自定义顶部栏按钮图标样式
+const headerIconStyle = {
+  fontSize: '18px',
+  transition: 'all 0.3s ease'
+};
+
+// 自定义头像样式
+const avatarStyle = {
+  margin: '4px',
+  cursor: 'pointer',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+  transition: 'all 0.3s ease'
+};
+
+// 自定义下拉菜单样式
+const dropdownStyle = {
+  borderRadius: '8px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  overflow: 'hidden'
+};
+
+// 自定义主题切换开关样式
+const switchStyle = {
+  margin: '0 8px'
+};
 
 const HeaderBar = () => {
   const { t, i18n } = useTranslation();
@@ -44,6 +114,7 @@ const HeaderBar = () => {
 
   // Check if self-use mode is enabled
   const isSelfUseMode = statusState?.status?.self_use_mode_enabled || false;
+  const docsLink = statusState?.status?.docs_link || '';
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
 
   let buttons = [
@@ -51,21 +122,33 @@ const HeaderBar = () => {
       text: t('首页'),
       itemKey: 'home',
       to: '/',
+      icon: <IconHome style={headerIconStyle} />,
     },
     {
       text: t('控制台'),
       itemKey: 'detail',
       to: '/',
+      icon: <IconTerminal style={headerIconStyle} />,
     },
     {
       text: t('定价'),
       itemKey: 'pricing',
       to: '/pricing',
+      icon: <IconPriceTag style={headerIconStyle} />,
     },
+    // Only include the docs button if docsLink exists
+    ...(docsLink ? [{
+      text: t('文档'),
+      itemKey: 'docs',
+      isExternal: true,
+      externalLink: docsLink,
+      icon: <IconHelpCircle style={headerIconStyle} />,
+    }] : []),
     {
       text: t('关于'),
       itemKey: 'about',
       to: '/about',
+      icon: <IconInfoCircle style={headerIconStyle} />,
     },
   ];
 
@@ -135,6 +218,9 @@ const HeaderBar = () => {
           <Nav
             className={'topnav'}
             mode={'horizontal'}
+            style={headerStyle}
+            itemStyle={headerItemStyle}
+            hoverStyle={headerItemHoverStyle}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
                 about: '/about',
@@ -157,13 +243,25 @@ const HeaderBar = () => {
                     }
                   }
                 }}>
-                  <Link
-                    className="header-bar-text"
-                    style={{ textDecoration: 'none' }}
-                    to={routerMap[props.itemKey]}
-                  >
-                    {itemElement}
-                  </Link>
+                  {props.isExternal ? (
+                    <a
+                      className="header-bar-text"
+                      style={{ textDecoration: 'none' }}
+                      href={props.externalLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {itemElement}
+                    </a>
+                  ) : (
+                    <Link
+                      className="header-bar-text"
+                      style={{ textDecoration: 'none' }}
+                      to={routerMap[props.itemKey]}
+                    >
+                      {itemElement}
+                    </Link>
+                  )}
                 </div>
               );
             }}
@@ -204,11 +302,13 @@ const HeaderBar = () => {
               ),
             }:{
               logo: (
-                <img src={logo} alt='logo' />
+                <div style={logoStyle}>
+                  <img src={logo} alt='logo' style={{ height: '28px' }} />
+                </div>
               ),
               text: (
                 <div style={{ position: 'relative', display: 'inline-block' }}>
-                  {systemName}
+                  <span style={systemNameStyle}>{systemName}</span>
                   {(isSelfUseMode || isDemoSiteMode) && (
                     <Tag 
                       color={isSelfUseMode ? 'purple' : 'blue'}
@@ -237,7 +337,7 @@ const HeaderBar = () => {
                   <Dropdown
                     position='bottomRight'
                     render={
-                      <Dropdown.Menu>
+                      <Dropdown.Menu style={dropdownStyle}>
                         <Dropdown.Item onClick={handleNewYearClick}>
                           Happy New Year!!!
                         </Dropdown.Item>
@@ -254,6 +354,7 @@ const HeaderBar = () => {
                     size={styleState.isMobile?'default':'large'}
                     checked={theme === 'dark'}
                     uncheckedText='🌙'
+                    style={switchStyle}
                     onChange={(checked) => {
                       setTheme(checked);
                     }}
@@ -262,7 +363,7 @@ const HeaderBar = () => {
                 <Dropdown
                   position='bottomRight'
                   render={
-                    <Dropdown.Menu>
+                    <Dropdown.Menu style={dropdownStyle}>
                       <Dropdown.Item
                         onClick={() => handleLanguageChange('zh')}
                         type={currentLang === 'zh' ? 'primary' : 'tertiary'}
@@ -280,7 +381,7 @@ const HeaderBar = () => {
                 >
                   <Nav.Item
                     itemKey={'language'}
-                    icon={<IconLanguage />}
+                    icon={<IconLanguage style={headerIconStyle} />}
                   />
                 </Dropdown>
                 {userState.user ? (
@@ -288,7 +389,7 @@ const HeaderBar = () => {
                     <Dropdown
                       position='bottomRight'
                       render={
-                        <Dropdown.Menu>
+                        <Dropdown.Menu style={dropdownStyle}>
                           <Dropdown.Item onClick={logout}>{t('退出')}</Dropdown.Item>
                         </Dropdown.Menu>
                       }
@@ -296,11 +397,11 @@ const HeaderBar = () => {
                       <Avatar
                         size='small'
                         color={stringToColor(userState.user.username)}
-                        style={{ margin: 4 }}
+                        style={avatarStyle}
                       >
                         {userState.user.username[0]}
                       </Avatar>
-                      {styleState.isMobile?null:<Text>{userState.user.username}</Text>}
+                      {styleState.isMobile?null:<Text style={{ marginLeft: '4px', fontWeight: '500' }}>{userState.user.username}</Text>}
                     </Dropdown>
                   </>
                 ) : (
@@ -308,7 +409,7 @@ const HeaderBar = () => {
                     <Nav.Item
                       itemKey={'login'}
                       text={!styleState.isMobile?t('登录'):null}
-                      icon={<IconUser />}
+                      icon={<IconUser style={headerIconStyle} />}
                     />
                     {
                       // Hide register option in self-use mode
@@ -316,7 +417,7 @@ const HeaderBar = () => {
                         <Nav.Item
                           itemKey={'register'}
                           text={t('注册')}
-                          icon={<IconKey />}
+                          icon={<IconKey style={headerIconStyle} />}
                         />
                       )
                     }

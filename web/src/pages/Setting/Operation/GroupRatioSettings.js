@@ -86,7 +86,7 @@ export default function GroupRatioSettings(props) {
       >
         <Form.Section text={t('分组设置')}>
           <Row gutter={16}>
-            <Col span={16}>
+            <Col xs={24} sm={16}>
               <Form.TextArea
                 label={t('分组倍率')}
                 placeholder={t('为一个 JSON 文本，键为分组名称，值为倍率')}
@@ -105,7 +105,7 @@ export default function GroupRatioSettings(props) {
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={16}>
+            <Col xs={24} sm={16}>
               <Form.TextArea
                 label={t('用户可选分组')}
                 placeholder={t('为一个 JSON 文本，键为分组名称，值为分组描述')}

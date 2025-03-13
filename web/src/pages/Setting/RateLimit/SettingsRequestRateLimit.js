@@ -78,7 +78,7 @@ export default function RequestRateLimit(props) {
         >
           <Form.Section text={t('模型请求速率限制')}>
             <Row gutter={16}>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Switch
                   field={'ModelRequestRateLimitEnabled'}
                   label={t('启用用户模型请求速率限制（可能会影响高并发性能）')}
@@ -95,7 +95,7 @@ export default function RequestRateLimit(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.InputNumber
                   label={t('限制周期')}
                   step={1}
@@ -113,7 +113,7 @@ export default function RequestRateLimit(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.InputNumber
                   label={t('用户每周期最多请求次数')}
                   step={1}
@@ -129,7 +129,7 @@ export default function RequestRateLimit(props) {
                   }
                 />
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.InputNumber
                   label={t('用户每周期最多请求完成次数')}
                   step={1}

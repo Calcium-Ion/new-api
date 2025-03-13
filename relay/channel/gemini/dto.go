@@ -136,3 +136,19 @@ type GeminiImagePrediction struct {
 	RaiFilteredReason  string `json:"raiFilteredReason,omitempty"`
 	SafetyAttributes   any    `json:"safetyAttributes,omitempty"`
 }
+
+// Embedding related structs
+type GeminiEmbeddingRequest struct {
+	Content              GeminiChatContent `json:"content"`
+	TaskType             string            `json:"taskType,omitempty"`
+	Title                string            `json:"title,omitempty"`
+	OutputDimensionality int               `json:"outputDimensionality,omitempty"`
+}
+
+type GeminiEmbeddingResponse struct {
+	Embedding ContentEmbedding `json:"embedding"`
+}
+
+type ContentEmbedding struct {
+	Values []float64 `json:"values"`
+}

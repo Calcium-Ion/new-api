@@ -88,7 +88,7 @@ export default function SettingClaudeModel(props) {
         >
           <Form.Section text={t('Claude设置')}>
             <Row>
-              <Col span={16}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.TextArea
                   label={t('Claude请求头覆盖')}
                   field={'claude.model_headers_settings'}
@@ -108,7 +108,7 @@ export default function SettingClaudeModel(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.TextArea
                   label={t('缺省 MaxTokens')}
                   field={'claude.default_max_tokens'}
@@ -145,7 +145,7 @@ export default function SettingClaudeModel(props) {
               </Col>
             </Row>
             <Row>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.InputNumber
                   label={t('思考适配 BudgetTokens 百分比')}
                   field={'claude.thinking_adapter_budget_tokens_percentage'}

@@ -6,6 +6,7 @@ import { API, showError, showSuccess } from '../helpers';
 import { useTranslation } from 'react-i18next';
 import SettingGeminiModel from '../pages/Setting/Model/SettingGeminiModel.js';
 import SettingClaudeModel from '../pages/Setting/Model/SettingClaudeModel.js';
+import SettingGlobalModel from '../pages/Setting/Model/SettingGlobalModel.js';
 
 const ModelSetting = () => {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ const ModelSetting = () => {
     'claude.thinking_adapter_enabled': true,
     'claude.default_max_tokens': '',
     'claude.thinking_adapter_budget_tokens_percentage': 0.8,
+    'global.pass_through_request_enabled': false,
   });
 
   let [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ const ModelSetting = () => {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
         if (
-          item.key.endsWith('Enabled')
+          item.key.endsWith('Enabled') || item.key.endsWith('enabled')
         ) {
           newInputs[item.key] = item.value === 'true' ? true : false;
         } else {
@@ -67,6 +69,10 @@ const ModelSetting = () => {
   return (
     <>
       <Spin spinning={loading} size='large'>
+        {/* OpenAI */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingGlobalModel options={inputs} refresh={onRefresh} />
+        </Card>
         {/* Gemini */}
         <Card style={{ marginTop: '10px' }}>
           <SettingGeminiModel options={inputs} refresh={onRefresh} />
