@@ -65,6 +65,7 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 				response.Choices[i].Delta.Reasoning = nil
 			}
 			info.ThinkingContentInfo.IsFirstThinkingContent = false
+			info.ThinkingContentInfo.HasSentThinkingContent = true
 			return helper.ObjectData(c, response)
 		}
 	}
@@ -76,7 +77,8 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 	// Process each choice
 	for i, choice := range lastStreamResponse.Choices {
 		// Handle transition from thinking to content
-		if hasContent && !info.ThinkingContentInfo.SendLastThinkingContent {
+		// only send `</think>` tag when previous thinking content has been sent
+		if hasContent && !info.ThinkingContentInfo.SendLastThinkingContent && info.ThinkingContentInfo.HasSentThinkingContent {
 			response := lastStreamResponse.Copy()
 			for j := range response.Choices {
 				response.Choices[j].Delta.SetContentString("\n</think>\n")
@@ -87,7 +89,7 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 			helper.ObjectData(c, response)
 		}
 
-		// Convert reasoning content to regular content
+		// Convert reasoning content to regular content if any
 		if len(choice.Delta.GetReasoningContent()) > 0 {
 			lastStreamResponse.Choices[i].Delta.SetContentString(choice.Delta.GetReasoningContent())
 			lastStreamResponse.Choices[i].Delta.ReasoningContent = nil
