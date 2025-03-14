@@ -457,7 +457,10 @@ func FormatClaudeResponseInfo(requestMode int, claudeResponse *dto.ClaudeRespons
 			}
 		} else if claudeResponse.Type == "message_delta" {
 			claudeInfo.Usage.CompletionTokens = claudeResponse.Usage.OutputTokens
-			claudeInfo.Usage.TotalTokens = claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens
+			if claudeResponse.Usage.InputTokens > 0 {
+				claudeInfo.Usage.PromptTokens = claudeResponse.Usage.InputTokens
+			}
+			claudeInfo.Usage.TotalTokens = claudeInfo.Usage.PromptTokens + claudeResponse.Usage.OutputTokens
 		} else if claudeResponse.Type == "content_block_start" {
 		} else {
 			return false
