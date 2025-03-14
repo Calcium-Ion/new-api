@@ -376,8 +376,10 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *dto.ClaudeResponse) *dto
 		Created: common.GetTimestamp(),
 	}
 	var responseText string
+	var responseThinking string
 	if len(claudeResponse.Content) > 0 {
-		responseText = *claudeResponse.Content[0].Text
+		responseText = claudeResponse.Content[0].GetText()
+		responseThinking = claudeResponse.Content[0].Thinking
 	}
 	tools := make([]dto.ToolCallResponse, 0)
 	thinkingContent := ""
@@ -424,6 +426,9 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *dto.ClaudeResponse) *dto
 		FinishReason: stopReasonClaude2OpenAI(claudeResponse.StopReason),
 	}
 	choice.SetStringContent(responseText)
+	if len(responseThinking) > 0 {
+		choice.ReasoningContent = responseThinking
+	}
 	if len(tools) > 0 {
 		choice.Message.SetToolCalls(tools)
 	}
@@ -589,6 +594,9 @@ func ClaudeHandler(c *gin.Context, resp *http.Response, requestMode int, info *r
 	err = resp.Body.Close()
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+	}
+	if common.DebugEnabled {
+		println("responseBody: ", string(responseBody))
 	}
 	var claudeResponse dto.ClaudeResponse
 	err = json.Unmarshal(responseBody, &claudeResponse)
