@@ -15,6 +15,7 @@ import (
 type ThinkingContentInfo struct {
 	IsFirstThinkingContent  bool
 	SendLastThinkingContent bool
+	HasSentThinkingContent  bool
 }
 
 const (
