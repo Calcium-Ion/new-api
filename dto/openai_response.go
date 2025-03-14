@@ -1,16 +1,5 @@
 package dto
 
-type TextResponseWithError struct {
-	Id      string                        `json:"id"`
-	Object  string                        `json:"object"`
-	Created int64                         `json:"created"`
-	Choices []OpenAITextResponseChoice    `json:"choices"`
-	Data    []OpenAIEmbeddingResponseItem `json:"data"`
-	Model   string                        `json:"model"`
-	Usage   `json:"usage"`
-	Error   OpenAIError `json:"error"`
-}
-
 type SimpleResponse struct {
 	Usage   `json:"usage"`
 	Error   OpenAIError                `json:"error"`

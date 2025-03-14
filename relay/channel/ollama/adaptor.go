@@ -75,7 +75,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		if info.RelayMode == relayconstant.RelayModeEmbeddings {
 			err, usage = ollamaEmbeddingHandler(c, resp, info.PromptTokens, info.UpstreamModelName, info.RelayMode)
 		} else {
-			err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+			err, usage = openai.OpenaiHandler(c, resp, info)
 		}
 	}
 	return

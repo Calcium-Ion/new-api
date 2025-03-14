@@ -195,7 +195,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	return nil, usage
 }
 
-func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+func OpenaiHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	var simpleResponse dto.SimpleResponse
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -233,13 +233,13 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if simpleResponse.Usage.TotalTokens == 0 || (simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.CompletionTokens == 0) {
 		completionTokens := 0
 		for _, choice := range simpleResponse.Choices {
-			ctkm, _ := service.CountTextToken(choice.Message.StringContent()+choice.Message.ReasoningContent+choice.Message.Reasoning, model)
+			ctkm, _ := service.CountTextToken(choice.Message.StringContent()+choice.Message.ReasoningContent+choice.Message.Reasoning, info.UpstreamModelName)
 			completionTokens += ctkm
 		}
 		simpleResponse.Usage = dto.Usage{
-			PromptTokens:     promptTokens,
+			PromptTokens:     info.PromptTokens,
 			CompletionTokens: completionTokens,
-			TotalTokens:      promptTokens + completionTokens,
+			TotalTokens:      info.PromptTokens + completionTokens,
 		}
 	}
 	return nil, &simpleResponse.Usage

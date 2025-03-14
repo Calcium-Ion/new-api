@@ -13,12 +13,13 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel"
 	"one-api/relay/channel/ai360"
-	"one-api/relay/channel/jina"
 	"one-api/relay/channel/lingyiwanwu"
 	"one-api/relay/channel/minimax"
 	"one-api/relay/channel/moonshot"
+	"one-api/relay/channel/openrouter"
 	"one-api/relay/channel/xinference"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/common_handler"
 	"one-api/relay/constant"
 	"one-api/service"
 	"strings"
@@ -32,7 +33,7 @@ type Adaptor struct {
 }
 
 func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.ClaudeRequest) (any, error) {
-	if !strings.HasPrefix(request.Model, "claude") {
+	if !strings.Contains(request.Model, "claude") {
 		return nil, fmt.Errorf("you are using openai channel type with path /v1/messages, only claude model supported convert, but got %s", request.Model)
 	}
 	aiRequest, err := service.ClaudeToOpenAIRequest(*request)
@@ -132,10 +133,10 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, header *http.Header, info *
 	} else {
 		header.Set("Authorization", "Bearer "+info.ApiKey)
 	}
-	//if info.ChannelType == common.ChannelTypeOpenRouter {
-	//	req.Header.Set("HTTP-Referer", "https://github.com/songquanpeng/one-api")
-	//	req.Header.Set("X-Title", "One API")
-	//}
+	if info.ChannelType == common.ChannelTypeOpenRouter {
+		header.Set("HTTP-Referer", "https://github.com/Calcium-Ion/new-api")
+		header.Set("X-Title", "New API")
+	}
 	return nil
 }
 
@@ -261,12 +262,12 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	case constant.RelayModeImagesGenerations:
 		err, usage = OpenaiTTSHandler(c, resp, info)
 	case constant.RelayModeRerank:
-		err, usage = jina.JinaRerankHandler(c, resp)
+		err, usage = common_handler.RerankHandler(c, resp)
 	default:
 		if info.IsStream {
 			err, usage = OaiStreamHandler(c, resp, info)
 		} else {
-			err, usage = OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+			err, usage = OpenaiHandler(c, resp, info)
 		}
 	}
 	return
@@ -284,6 +285,8 @@ func (a *Adaptor) GetModelList() []string {
 		return minimax.ModelList
 	case common.ChannelTypeXinference:
 		return xinference.ModelList
+	case common.ChannelTypeOpenRouter:
+		return openrouter.ModelList
 	default:
 		return ModelList
 	}
@@ -301,6 +304,8 @@ func (a *Adaptor) GetChannelName() string {
 		return minimax.ChannelName
 	case common.ChannelTypeXinference:
 		return xinference.ChannelName
+	case common.ChannelTypeOpenRouter:
+		return openrouter.ChannelName
 	default:
 		return ChannelName
 	}

@@ -68,7 +68,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	if info.IsStream {
 		err, usage = openai.OaiStreamHandler(c, resp, info)
 	} else {
-		err, usage = openai.OpenaiHandler(c, resp, info.PromptTokens, info.UpstreamModelName)
+		err, usage = openai.OpenaiHandler(c, resp, info)
 	}
 	return
 }
