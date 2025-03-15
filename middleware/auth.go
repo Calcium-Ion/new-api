@@ -174,6 +174,14 @@ func TokenAuth() func(c *gin.Context) {
 			}
 			c.Request.Header.Set("Authorization", "Bearer "+key)
 		}
+		// 检查path包含/v1/messages
+		if strings.Contains(c.Request.URL.Path, "/v1/messages") {
+			// 从x-api-key中获取key
+			key := c.Request.Header.Get("x-api-key")
+			if key != "" {
+				c.Request.Header.Set("Authorization", "Bearer "+key)
+			}
+		}
 		key := c.Request.Header.Get("Authorization")
 		parts := make([]string, 0)
 		key = strings.TrimPrefix(key, "Bearer ")

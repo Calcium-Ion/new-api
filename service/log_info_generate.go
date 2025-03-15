@@ -53,3 +53,12 @@ func GenerateAudioOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, 
 	info["audio_completion_ratio"] = audioCompletionRatio
 	return info
 }
+
+func GenerateClaudeOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, modelRatio, groupRatio, completionRatio float64,
+	cacheTokens int, cacheRatio float64, cacheCreationTokens int, cacheCreationRatio float64, modelPrice float64) map[string]interface{} {
+	info := GenerateTextOtherInfo(ctx, relayInfo, modelRatio, groupRatio, completionRatio, cacheTokens, cacheRatio, modelPrice)
+	info["claude"] = true
+	info["cache_creation_tokens"] = cacheCreationTokens
+	info["cache_creation_ratio"] = cacheCreationRatio
+	return info
+}

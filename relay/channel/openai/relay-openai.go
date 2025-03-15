@@ -12,7 +12,6 @@ import (
 	"one-api/constant"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
-	relayconstant "one-api/relay/constant"
 	"one-api/relay/helper"
 	"one-api/service"
 	"os"
@@ -66,6 +65,7 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 				response.Choices[i].Delta.Reasoning = nil
 			}
 			info.ThinkingContentInfo.IsFirstThinkingContent = false
+			info.ThinkingContentInfo.HasSentThinkingContent = true
 			return helper.ObjectData(c, response)
 		}
 	}
@@ -77,7 +77,8 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 	// Process each choice
 	for i, choice := range lastStreamResponse.Choices {
 		// Handle transition from thinking to content
-		if hasContent && !info.ThinkingContentInfo.SendLastThinkingContent {
+		// only send `</think>` tag when previous thinking content has been sent
+		if hasContent && !info.ThinkingContentInfo.SendLastThinkingContent && info.ThinkingContentInfo.HasSentThinkingContent {
 			response := lastStreamResponse.Copy()
 			for j := range response.Choices {
 				response.Choices[j].Delta.SetContentString("\n</think>\n")
@@ -88,7 +89,7 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 			helper.ObjectData(c, response)
 		}
 
-		// Convert reasoning content to regular content
+		// Convert reasoning content to regular content if any
 		if len(choice.Delta.GetReasoningContent()) > 0 {
 			lastStreamResponse.Choices[i].Delta.SetContentString(choice.Delta.GetReasoningContent())
 			lastStreamResponse.Choices[i].Delta.ReasoningContent = nil
@@ -137,10 +138,11 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 
 	helper.StreamScannerHandler(c, resp, info, func(data string) bool {
 		if lastStreamData != "" {
-			err := sendStreamData(c, info, lastStreamData, forceFormat, thinkToContent)
+			err := handleStreamFormat(c, info, lastStreamData, forceFormat, thinkToContent)
 			if err != nil {
-				common.LogError(c, "streaming error: "+err.Error())
+				common.SysError("error handling stream format: " + err.Error())
 			}
+			info.SetFirstResponseTime()
 		}
 		lastStreamData = data
 		streamItems = append(streamItems, data)
@@ -172,83 +174,9 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		sendStreamData(c, info, lastStreamData, forceFormat, thinkToContent)
 	}
 
-	// 计算token
-	streamResp := "[" + strings.Join(streamItems, ",") + "]"
-	switch info.RelayMode {
-	case relayconstant.RelayModeChatCompletions:
-		var streamResponses []dto.ChatCompletionsStreamResponse
-		err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
-		if err != nil {
-			// 一次性解析失败，逐个解析
-			common.SysError("error unmarshalling stream response: " + err.Error())
-			for _, item := range streamItems {
-				var streamResponse dto.ChatCompletionsStreamResponse
-				err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
-				if err == nil {
-					//if service.ValidUsage(streamResponse.Usage) {
-					//	usage = streamResponse.Usage
-					//}
-					for _, choice := range streamResponse.Choices {
-						responseTextBuilder.WriteString(choice.Delta.GetContentString())
-
-						// handle both reasoning_content and reasoning
-						responseTextBuilder.WriteString(choice.Delta.GetReasoningContent())
-
-						if choice.Delta.ToolCalls != nil {
-							if len(choice.Delta.ToolCalls) > toolCount {
-								toolCount = len(choice.Delta.ToolCalls)
-							}
-							for _, tool := range choice.Delta.ToolCalls {
-								responseTextBuilder.WriteString(tool.Function.Name)
-								responseTextBuilder.WriteString(tool.Function.Arguments)
-							}
-						}
-					}
-				}
-			}
-		} else {
-			for _, streamResponse := range streamResponses {
-				//if service.ValidUsage(streamResponse.Usage) {
-				//	usage = streamResponse.Usage
-				//	containStreamUsage = true
-				//}
-				for _, choice := range streamResponse.Choices {
-					responseTextBuilder.WriteString(choice.Delta.GetContentString())
-					responseTextBuilder.WriteString(choice.Delta.GetReasoningContent()) // This will handle both reasoning_content and reasoning
-					if choice.Delta.ToolCalls != nil {
-						if len(choice.Delta.ToolCalls) > toolCount {
-							toolCount = len(choice.Delta.ToolCalls)
-						}
-						for _, tool := range choice.Delta.ToolCalls {
-							responseTextBuilder.WriteString(tool.Function.Name)
-							responseTextBuilder.WriteString(tool.Function.Arguments)
-						}
-					}
-				}
-			}
-		}
-	case relayconstant.RelayModeCompletions:
-		var streamResponses []dto.CompletionsStreamResponse
-		err := json.Unmarshal(common.StringToByteSlice(streamResp), &streamResponses)
-		if err != nil {
-			// 一次性解析失败，逐个解析
-			common.SysError("error unmarshalling stream response: " + err.Error())
-			for _, item := range streamItems {
-				var streamResponse dto.CompletionsStreamResponse
-				err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse)
-				if err == nil {
-					for _, choice := range streamResponse.Choices {
-						responseTextBuilder.WriteString(choice.Text)
-					}
-				}
-			}
-		} else {
-			for _, streamResponse := range streamResponses {
-				for _, choice := range streamResponse.Choices {
-					responseTextBuilder.WriteString(choice.Text)
-				}
-			}
-		}
+	// 处理token计算
+	if err := processTokens(info.RelayMode, streamItems, &responseTextBuilder, &toolCount); err != nil {
+		common.SysError("error processing tokens: " + err.Error())
 	}
 
 	if !containStreamUsage {
@@ -262,19 +190,12 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		}
 	}
 
-	if info.ShouldIncludeUsage && !containStreamUsage {
-		response := helper.GenerateFinalUsageResponse(responseId, createAt, model, *usage)
-		response.SetSystemFingerprint(systemFingerprint)
-		helper.ObjectData(c, response)
-	}
+	handleFinalResponse(c, info, lastStreamData, responseId, createAt, model, systemFingerprint, usage, containStreamUsage)
 
-	helper.Done(c)
-
-	//resp.Body.Close()
 	return nil, usage
 }
 
-func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model string) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+func OpenaiHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	var simpleResponse dto.SimpleResponse
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -312,13 +233,13 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, promptTokens int, model 
 	if simpleResponse.Usage.TotalTokens == 0 || (simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.CompletionTokens == 0) {
 		completionTokens := 0
 		for _, choice := range simpleResponse.Choices {
-			ctkm, _ := service.CountTextToken(choice.Message.StringContent()+choice.Message.ReasoningContent+choice.Message.Reasoning, model)
+			ctkm, _ := service.CountTextToken(choice.Message.StringContent()+choice.Message.ReasoningContent+choice.Message.Reasoning, info.UpstreamModelName)
 			completionTokens += ctkm
 		}
 		simpleResponse.Usage = dto.Usage{
-			PromptTokens:     promptTokens,
+			PromptTokens:     info.PromptTokens,
 			CompletionTokens: completionTokens,
-			TotalTokens:      promptTokens + completionTokens,
+			TotalTokens:      info.PromptTokens + completionTokens,
 		}
 	}
 	return nil, &simpleResponse.Usage

@@ -107,7 +107,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 
 	adaptor.Init(info)
 
-	convertedRequest, err := adaptor.ConvertRequest(c, info, request)
+	convertedRequest, err := adaptor.ConvertOpenAIRequest(c, info, request)
 	if err != nil {
 		return err, nil
 	}

@@ -15,7 +15,23 @@ import (
 type ThinkingContentInfo struct {
 	IsFirstThinkingContent  bool
 	SendLastThinkingContent bool
+	HasSentThinkingContent  bool
 }
+
+const (
+	LastMessageTypeText  = "text"
+	LastMessageTypeTools = "tools"
+)
+
+type ClaudeConvertInfo struct {
+	LastMessagesType string
+	Index            int
+}
+
+const (
+	RelayFormatOpenAI = "openai"
+	RelayFormatClaude = "claude"
+)
 
 type RelayInfo struct {
 	ChannelType       int
@@ -58,7 +74,10 @@ type RelayInfo struct {
 	UserSetting          map[string]interface{}
 	UserEmail            string
 	UserQuota            int
+	RelayFormat          string
+	SendResponseCount    int
 	ThinkingContentInfo
+	ClaudeConvertInfo
 }
 
 // 定义支持流式选项的通道类型
@@ -79,6 +98,16 @@ func GenRelayInfoWs(c *gin.Context, ws *websocket.Conn) *RelayInfo {
 	info.InputAudioFormat = "pcm16"
 	info.OutputAudioFormat = "pcm16"
 	info.IsFirstRequest = true
+	return info
+}
+
+func GenRelayInfoClaude(c *gin.Context) *RelayInfo {
+	info := GenRelayInfo(c)
+	info.RelayFormat = RelayFormatClaude
+	info.ShouldIncludeUsage = false
+	info.ClaudeConvertInfo = ClaudeConvertInfo{
+		LastMessagesType: LastMessageTypeText,
+	}
 	return info
 }
 
@@ -123,6 +152,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		ApiKey:         strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
 		Organization:   c.GetString("channel_organization"),
 		ChannelSetting: channelSetting,
+		RelayFormat:    RelayFormatOpenAI,
 		ThinkingContentInfo: ThinkingContentInfo{
 			IsFirstThinkingContent:  true,
 			SendLastThinkingContent: false,

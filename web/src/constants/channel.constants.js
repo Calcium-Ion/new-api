@@ -80,11 +80,12 @@ export const CHANNEL_OPTIONS = [
     label: 'Google PaLM2'
   },
   {
-    value: 45,
+    value: 47,
     color: 'blue',
-    label: '字节火山方舟、豆包、DeepSeek通用'
+    label: 'Xinference'
   },
   { value: 25, color: 'green', label: 'Moonshot' },
+  { value: 20, color: 'green', label: 'OpenRouter' },
   { value: 19, color: 'blue', label: '360 智脑' },
   { value: 23, color: 'teal', label: '腾讯混元' },
   { value: 31, color: 'green', label: '零一万物' },
@@ -108,5 +109,10 @@ export const CHANNEL_OPTIONS = [
     value: 44,
     color: 'purple',
     label: '嵌入模型：MokaAI M3E'
-  }
+  },
+  {
+    value: 45,
+    color: 'blue',
+    label: '字节火山方舟、豆包、DeepSeek通用'
+  },
 ];

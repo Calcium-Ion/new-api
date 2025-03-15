@@ -18,7 +18,6 @@ import (
 	"one-api/relay/channel/mokaai"
 	"one-api/relay/channel/ollama"
 	"one-api/relay/channel/openai"
-	"one-api/relay/channel/openrouter"
 	"one-api/relay/channel/palm"
 	"one-api/relay/channel/perplexity"
 	"one-api/relay/channel/siliconflow"
@@ -34,8 +33,6 @@ import (
 
 func GetAdaptor(apiType int) channel.Adaptor {
 	switch apiType {
-	//case constant.APITypeAIProxyLibrary:
-	//	return &aiproxy.Adaptor{}
 	case constant.APITypeAli:
 		return &ali.Adaptor{}
 	case constant.APITypeAnthropic:
@@ -85,7 +82,9 @@ func GetAdaptor(apiType int) channel.Adaptor {
 	case constant.APITypeBaiduV2:
 		return &baidu_v2.Adaptor{}
 	case constant.APITypeOpenRouter:
-		return &openrouter.Adaptor{}
+		return &openai.Adaptor{}
+	case constant.APITypeXinference:
+		return &openai.Adaptor{}
 	}
 	return nil
 }

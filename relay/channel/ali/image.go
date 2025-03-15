@@ -26,7 +26,7 @@ func oaiImage2Ali(request dto.ImageRequest) *AliImageRequest {
 	return &imageRequest
 }
 
-func updateTask(info *relaycommon.RelayInfo, taskID string, key string) (*AliResponse, error, []byte) {
+func updateTask(info *relaycommon.RelayInfo, taskID string) (*AliResponse, error, []byte) {
 	url := fmt.Sprintf("%s/api/v1/tasks/%s", info.BaseUrl, taskID)
 
 	var aliResponse AliResponse
@@ -36,7 +36,7 @@ func updateTask(info *relaycommon.RelayInfo, taskID string, key string) (*AliRes
 		return &aliResponse, err, nil
 	}
 
-	req.Header.Set("Authorization", "Bearer "+key)
+	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -58,7 +58,7 @@ func updateTask(info *relaycommon.RelayInfo, taskID string, key string) (*AliRes
 	return &response, nil, responseBody
 }
 
-func asyncTaskWait(info *relaycommon.RelayInfo, taskID string, key string) (*AliResponse, []byte, error) {
+func asyncTaskWait(info *relaycommon.RelayInfo, taskID string) (*AliResponse, []byte, error) {
 	waitSeconds := 3
 	step := 0
 	maxStep := 20
@@ -68,7 +68,7 @@ func asyncTaskWait(info *relaycommon.RelayInfo, taskID string, key string) (*Ali
 
 	for {
 		step++
-		rsp, err, body := updateTask(info, taskID, key)
+		rsp, err, body := updateTask(info, taskID)
 		responseBody = body
 		if err != nil {
 			return &taskResponse, responseBody, err
@@ -125,8 +125,6 @@ func responseAli2OpenAIImage(c *gin.Context, response *AliResponse, info *relayc
 }
 
 func aliImageHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
-	apiKey := c.Request.Header.Get("Authorization")
-	apiKey = strings.TrimPrefix(apiKey, "Bearer ")
 	responseFormat := c.GetString("response_format")
 
 	var aliTaskResponse AliResponse
@@ -148,7 +146,7 @@ func aliImageHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 		return service.OpenAIErrorWrapper(errors.New(aliTaskResponse.Message), "ali_async_task_failed", http.StatusInternalServerError), nil
 	}
 
-	aliResponse, _, err := asyncTaskWait(info, aliTaskResponse.Output.TaskId, apiKey)
+	aliResponse, _, err := asyncTaskWait(info, aliTaskResponse.Output.TaskId)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "ali_async_task_wait_failed", http.StatusInternalServerError), nil
 	}

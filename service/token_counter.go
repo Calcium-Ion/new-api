@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
@@ -190,6 +191,110 @@ func CountTokenChatRequest(info *relaycommon.RelayInfo, request dto.GeneralOpenA
 	}
 
 	return tkm, nil
+}
+
+func CountTokenClaudeRequest(request dto.ClaudeRequest, model string) (int, error) {
+	tkm := 0
+
+	// Count tokens in messages
+	msgTokens, err := CountTokenClaudeMessages(request.Messages, model, request.Stream)
+	if err != nil {
+		return 0, err
+	}
+	tkm += msgTokens
+
+	// Count tokens in system message
+	if request.System != "" {
+		systemTokens, err := CountTokenInput(request.System, model)
+		if err != nil {
+			return 0, err
+		}
+		tkm += systemTokens
+	}
+
+	if request.Tools != nil {
+		// check is array
+		if tools, ok := request.Tools.([]any); ok {
+			if len(tools) > 0 {
+				parsedTools, err1 := common.Any2Type[[]dto.Tool](request.Tools)
+				if err1 != nil {
+					return 0, fmt.Errorf("tools: Input should be a valid list: %v", err)
+				}
+				toolTokens, err2 := CountTokenClaudeTools(parsedTools, model)
+				if err2 != nil {
+					return 0, fmt.Errorf("tools: %v", err)
+				}
+				tkm += toolTokens
+			}
+		} else {
+			return 0, errors.New("tools: Input should be a valid list")
+		}
+	}
+
+	return tkm, nil
+}
+
+func CountTokenClaudeMessages(messages []dto.ClaudeMessage, model string, stream bool) (int, error) {
+	tokenEncoder := getTokenEncoder(model)
+	tokenNum := 0
+
+	for _, message := range messages {
+		// Count tokens for role
+		tokenNum += getTokenNum(tokenEncoder, message.Role)
+		if message.IsStringContent() {
+			tokenNum += getTokenNum(tokenEncoder, message.GetStringContent())
+		} else {
+			content, err := message.ParseContent()
+			if err != nil {
+				return 0, err
+			}
+			for _, mediaMessage := range content {
+				switch mediaMessage.Type {
+				case "text":
+					tokenNum += getTokenNum(tokenEncoder, mediaMessage.GetText())
+				case "image":
+					//imageTokenNum, err := getClaudeImageToken(mediaMsg.Source, model, stream)
+					//if err != nil {
+					//	return 0, err
+					//}
+					tokenNum += 1000
+				case "tool_use":
+					tokenNum += getTokenNum(tokenEncoder, mediaMessage.Name)
+					inputJSON, _ := json.Marshal(mediaMessage.Input)
+					tokenNum += getTokenNum(tokenEncoder, string(inputJSON))
+				case "tool_result":
+					contentJSON, _ := json.Marshal(mediaMessage.Content)
+					tokenNum += getTokenNum(tokenEncoder, string(contentJSON))
+				}
+			}
+		}
+	}
+
+	// Add a constant for message formatting (this may need adjustment based on Claude's exact formatting)
+	tokenNum += len(messages) * 2 // Assuming 2 tokens per message for formatting
+
+	return tokenNum, nil
+}
+
+func CountTokenClaudeTools(tools []dto.Tool, model string) (int, error) {
+	tokenEncoder := getTokenEncoder(model)
+	tokenNum := 0
+
+	for _, tool := range tools {
+		tokenNum += getTokenNum(tokenEncoder, tool.Name)
+		tokenNum += getTokenNum(tokenEncoder, tool.Description)
+
+		schemaJSON, err := json.Marshal(tool.InputSchema)
+		if err != nil {
+			return 0, errors.New(fmt.Sprintf("marshal_tool_schema_fail: %s", err.Error()))
+		}
+		tokenNum += getTokenNum(tokenEncoder, string(schemaJSON))
+	}
+
+	// Add a constant for tool formatting (this may need adjustment based on Claude's exact formatting)
+	tokenNum += len(tools) * 3 // Assuming 3 tokens per tool for formatting
+
+	return tokenNum, nil
 }
 
 func CountTokenRealtime(info *relaycommon.RelayInfo, request dto.RealtimeEvent, model string) (int, int, error) {

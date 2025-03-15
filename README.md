@@ -7,7 +7,6 @@
 
 # New API
 
-
 🍥新一代大模型网关与AI资产管理系统
 
 <a href="https://trendshift.io/repositories/8227" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8227" alt="Calcium-Ion%2Fnew-api | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -41,39 +40,40 @@
 > - 本项目仅供个人学习使用，不保证稳定性，且不提供任何技术支持。
 > - 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
 
+## 📚 文档
+
+详细文档请访问我们的官方Wiki：[https://docs.newapi.pro/](https://docs.newapi.pro/)
+
 ## ✨ 主要特性
 
-1. 🎨 全新的UI界面（部分界面还待更新）
-2. 🌍 多语言支持（待完善）
-3. 🎨 添加[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口支持，[对接文档](Midjourney.md)
-4. 💰 支持在线充值功能，可在系统设置中设置：
-    - [x] 易支付
-5. 🔍 支持用key查询使用额度：
-    - 配合项目[neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)可实现用key查询使用
+New API提供了丰富的功能，详细特性请参考[维基百科-特性说明](https://docs.newapi.pro/wiki/features-introduction)：
+
+1. 🎨 全新的UI界面
+2. 🌍 多语言支持
+3. 🎨 支持[Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](https://docs.newapi.pro/api/relay/image/midjourney)
+4. 💰 支持在线充值功能（易支付）
+5. 🔍 支持用key查询使用额度（配合[neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)）
 6. 📑 分页支持选择每页显示数量
-7. 🔄 兼容原版One API的数据库，可直接使用原版数据库（one-api.db）
-8. 💵 支持模型按次数收费，可在 系统设置-运营设置 中设置
-9. ⚖️ 支持渠道**加权随机**
+7. 🔄 兼容原版One API的数据库
+8. 💵 支持模型按次数收费
+9. ⚖️ 支持渠道加权随机
 10. 📈 数据看板（控制台）
 11. 🔒 可设置令牌能调用的模型
-12. 🤖 支持Telegram授权登录：
-    1. 系统设置-配置登录注册-允许通过Telegram登录
-    2. 对[@Botfather](https://t.me/botfather)输入指令/setdomain
-    3. 选择你的bot，然后输入http(s)://你的网站地址/login
-    4. Telegram Bot 名称是bot username 去掉@后的字符串
-13. 🎵 添加 [Suno API](https://github.com/Suno-API/Suno-API)接口支持，[对接文档](Suno.md)
-14. 🔄 支持Rerank模型，目前兼容Cohere和Jina，可接入Dify，[对接文档](Rerank.md)
-15. ⚡ **[OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime/integration)** - 支持OpenAI的Realtime API，支持Azure渠道
-16. 支持使用路由/chat2link 进入聊天界面
-17. 🧠 支持通过模型名称后缀设置 reasoning effort：
+12. 🤖 支持Telegram授权登录
+13. 🎵 支持[Suno API](https://github.com/Suno-API/Suno-API)接口，[接口文档](https://docs.newapi.pro/api/suno-music)
+14. 🔄 支持Rerank模型（Cohere和Jina），[接口文档](https://docs.newapi.pro/api/jinaai-rerank)
+15. ⚡ 支持OpenAI Realtime API（包括Azure渠道），[接口文档](https://docs.newapi.pro/api/openai-realtime)
+16. ⚡ 支持Claude Messages 格式，[接口文档](https://docs.newapi.pro/api/anthropic-chat)
+17. 支持使用路由/chat2link进入聊天界面
+18. 🧠 支持通过模型名称后缀设置 reasoning effort：
     1. OpenAI o系列模型
         - 添加后缀 `-high` 设置为 high reasoning effort (例如: `o3-mini-high`)
         - 添加后缀 `-medium` 设置为 medium reasoning effort (例如: `o3-mini-medium`)
         - 添加后缀 `-low` 设置为 low reasoning effort (例如: `o3-mini-low`)
     2. Claude 思考模型
         - 添加后缀 `-thinking` 启用思考模式 (例如: `claude-3-7-sonnet-20250219-thinking`)
-18. 🔄 思考转内容，支持在 `渠道-编辑-渠道额外设置` 中设置 `thinking_to_content` 选项，默认`false`，开启后会将思考内容`reasoning_content`转换为`<think>`标签拼接到内容中返回。
-19. 🔄 模型限流，支持在 `系统设置-速率限制设置` 中设置模型限流，支持设置总请求数限制和成功请求数限制
+19. 🔄 思考转内容功能
+20. 🔄 模型限流功能
 20. 💰 缓存计费支持，开启后可以在缓存命中时按照设定的比例计费：
     1. 在 `系统设置-运营设置` 中设置 `提示缓存倍率` 选项
     2. 在渠道中设置 `提示缓存倍率`，范围 0-1，例如设置为 0.5 表示缓存命中时按照 50% 计费
@@ -81,155 +81,116 @@
         - [x] OpenAI
         - [x] Azure
         - [x] DeepSeek
-        - [ ] Claude
+        - [x] Claude
 
 ## 模型支持
-此版本额外支持以下模型：
+
+此版本支持多种模型，详情请参考[接口文档-中继接口](https://docs.newapi.pro/api)：
+
 1. 第三方模型 **gpts** （gpt-4-gizmo-*）
-2. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[对接文档](Midjourney.md)
+2. [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy)接口，[接口文档](https://docs.newapi.pro/api/midjourney-proxy-image)
 3. 自定义渠道，支持填入完整调用地址
-4. [Suno API](https://github.com/Suno-API/Suno-API) 接口，[对接文档](Suno.md)
-5. Rerank模型，目前支持[Cohere](https://cohere.ai/)和[Jina](https://jina.ai/)，[对接文档](Rerank.md)
-6. Dify
+4. [Suno API](https://github.com/Suno-API/Suno-API)接口，[接口文档](https://docs.newapi.pro/api/suno-music)
+5. Rerank模型（[Cohere](https://cohere.ai/)和[Jina](https://jina.ai/)），[接口文档](https://docs.newapi.pro/api/jinaai-rerank)
+6. Claude Messages 格式，[接口文档](https://docs.newapi.pro/api/anthropic-chat)
+7. Dify
 
-您可以在渠道中添加自定义模型gpt-4-gizmo-*，此模型并非OpenAI官方模型，而是第三方模型，使用官方key无法调用。
+## 环境变量配置
 
-## 比原版One API多出的配置
-- `GENERATE_DEFAULT_TOKEN`：是否为新注册用户生成初始令牌，默认为 `false`。
-- `STREAMING_TIMEOUT`：设置流式一次回复的超时时间，默认为 60 秒。
-- `DIFY_DEBUG`：设置 Dify 渠道是否输出工作流和节点信息到客户端，默认为 `true`。
-- `FORCE_STREAM_OPTION`：是否覆盖客户端stream_options参数，请求上游返回流模式usage，默认为 `true`，建议开启，不影响客户端传入stream_options参数返回结果。
-- `GET_MEDIA_TOKEN`：是否统计图片token，默认为 `true`，关闭后将不再在本地计算图片token，可能会导致和上游计费不同，此项覆盖 `GET_MEDIA_TOKEN_NOT_STREAM` 选项作用。
-- `GET_MEDIA_TOKEN_NOT_STREAM`：是否在非流（`stream=false`）情况下统计图片token，默认为 `true`。
-- `UPDATE_TASK`：是否更新异步任务（Midjourney、Suno），默认为 `true`，关闭后将不会更新任务进度。
-- `COHERE_SAFETY_SETTING`：Cohere模型[安全设置](https://docs.cohere.com/docs/safety-modes#overview)，可选值为 `NONE`, `CONTEXTUAL`, `STRICT`，默认为 `NONE`。
-- `GEMINI_VISION_MAX_IMAGE_NUM`：Gemini模型最大图片数量，默认为 `16`，设置为 `-1` 则不限制。
-- `MAX_FILE_DOWNLOAD_MB`: 最大文件下载大小，单位 MB，默认为 `20`。
-- `CRYPTO_SECRET`：加密密钥，用于加密数据库内容。
-- `AZURE_DEFAULT_API_VERSION`：Azure渠道默认API版本，如果渠道设置中未指定API版本，则使用此版本，默认为 `2024-12-01-preview`
-- `NOTIFICATION_LIMIT_DURATION_MINUTE`：通知限制的持续时间（分钟），默认为 `10`。
-- `NOTIFY_LIMIT_COUNT`：用户通知在指定持续时间内的最大数量，默认为 `2`。
+详细配置说明请参考[安装指南-环境变量配置](https://docs.newapi.pro/installation/environment-variables)：
 
-## 已废弃的环境变量
-- ~~`GEMINI_MODEL_MAP`（已废弃）~~：改为到`设置-模型相关设置`中设置
-- ~~`GEMINI_SAFETY_SETTING`（已废弃）~~：改为到`设置-模型相关设置`中设置
+- `GENERATE_DEFAULT_TOKEN`：是否为新注册用户生成初始令牌，默认为 `false`
+- `STREAMING_TIMEOUT`：流式回复超时时间，默认60秒
+- `DIFY_DEBUG`：Dify渠道是否输出工作流和节点信息，默认 `true`
+- `FORCE_STREAM_OPTION`：是否覆盖客户端stream_options参数，默认 `true`
+- `GET_MEDIA_TOKEN`：是否统计图片token，默认 `true`
+- `GET_MEDIA_TOKEN_NOT_STREAM`：非流情况下是否统计图片token，默认 `true`
+- `UPDATE_TASK`：是否更新异步任务（Midjourney、Suno），默认 `true`
+- `COHERE_SAFETY_SETTING`：Cohere模型安全设置，可选值为 `NONE`, `CONTEXTUAL`, `STRICT`，默认 `NONE`
+- `GEMINI_VISION_MAX_IMAGE_NUM`：Gemini模型最大图片数量，默认 `16`
+- `MAX_FILE_DOWNLOAD_MB`: 最大文件下载大小，单位MB，默认 `20`
+- `CRYPTO_SECRET`：加密密钥，用于加密数据库内容
+- `AZURE_DEFAULT_API_VERSION`：Azure渠道默认API版本，默认 `2024-12-01-preview`
+- `NOTIFICATION_LIMIT_DURATION_MINUTE`：通知限制持续时间，默认 `10`分钟
+- `NOTIFY_LIMIT_COUNT`：用户通知在指定持续时间内的最大数量，默认 `2`
 
 ## 部署
+
+详细部署指南请参考[安装指南-部署方式](https://docs.newapi.pro/installation)：
 
 > [!TIP]
 > 最新版Docker镜像：`calciumion/new-api:latest`  
 > 默认账号root 密码123456
 
-### 多机部署
-- 必须设置环境变量 `SESSION_SECRET`，否则会导致多机部署时登录状态不一致。
-- 如果公用Redis，必须设置 `CRYPTO_SECRET`，否则会导致多机部署时Redis内容无法获取。
+### 多机部署注意事项
+- 必须设置环境变量 `SESSION_SECRET`，否则会导致多机部署时登录状态不一致
+- 如果公用Redis，必须设置 `CRYPTO_SECRET`，否则会导致多机部署时Redis内容无法获取
 
 ### 部署要求
-- 本地数据库（默认）：SQLite（Docker 部署默认使用 SQLite，必须挂载 `/data` 目录到宿主机）
-- 远程数据库：MySQL 版本 >= 5.7.8，PgSQL 版本 >= 9.6
+- 本地数据库（默认）：SQLite（Docker部署必须挂载`/data`目录）
+- 远程数据库：MySQL版本 >= 5.7.8，PgSQL版本 >= 9.6
 
-### 使用宝塔面板Docker功能部署
-安装宝塔面板 (**9.2.0版本**及以上)，前往 [宝塔面板](https://www.bt.cn/new/download.html) 官网，选择正式版的脚本下载安装  
-安装后登录宝塔面板，在菜单栏中点击 Docker ，首次进入会提示安装 Docker 服务，点击立即安装，按提示完成安装  
-安装完成后在应用商店中找到 **New-API** ，点击安装，配置基本选项 即可完成安装  
+### 部署方式
+
+#### 使用宝塔面板Docker功能部署
+安装宝塔面板（**9.2.0版本**及以上），在应用商店中找到**New-API**安装即可。
 [图文教程](BT.md)
 
-### 基于 Docker 进行部署
-
-> [!TIP]
-> 默认管理员账号root 密码123456
-
-### 使用 Docker Compose 部署（推荐）
+#### 使用Docker Compose部署（推荐）
 ```shell
 # 下载项目
 git clone https://github.com/Calcium-Ion/new-api.git
 cd new-api
-# 按需编辑 docker-compose.yml
-# nano docker-compose.yml
-# vim docker-compose.yml
+# 按需编辑docker-compose.yml
 # 启动
 docker-compose up -d
 ```
 
-#### 更新版本
+#### 直接使用Docker镜像
 ```shell
-docker-compose pull
-docker-compose up -d
-```
-
-### 直接使用 Docker 镜像
-```shell
-# 使用 SQLite 的部署命令：
+# 使用SQLite
 docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
 
-# 使用 MySQL 的部署命令，在上面的基础上添加 `-e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi"`，请自行修改数据库连接参数。
-# 例如：
+# 使用MySQL
 docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
 ```
 
-#### 更新版本
-```shell
-# 拉取最新镜像
-docker pull calciumion/new-api:latest
-# 停止并删除旧容器
-docker stop new-api
-docker rm new-api
-# 使用相同参数运行新容器
-docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
-```
+## 渠道重试与缓存
+渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。
 
-或者使用 Watchtower 自动更新（不推荐，可能会导致数据库不兼容）：
-```shell
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR
-```
-
-## 渠道重试
-渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。  
-如果开启了重试功能，重试使用下一个优先级，以此类推。
 ### 缓存设置方法
-1. `REDIS_CONN_STRING`：设置之后将使用 Redis 作为缓存使用。
-    + 例子：`REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
-2. `MEMORY_CACHE_ENABLED`：启用内存缓存（如果设置了`REDIS_CONN_STRING`，则无需手动设置），会导致用户额度的更新存在一定的延迟，可选值为 `true` 和 `false`，未设置则默认为 `false`。
-    + 例子：`MEMORY_CACHE_ENABLED=true`
-### 为什么有的时候没有重试
-这些错误码不会重试：400，504，524
-### 我想让400也重试
-在`渠道->编辑`中，将`状态码复写`改为
-```json
-{
-  "400": "500"
-}
-```
-可以实现400错误转为500错误，从而重试
+1. `REDIS_CONN_STRING`：设置Redis作为缓存
+2. `MEMORY_CACHE_ENABLED`：启用内存缓存（设置了Redis则无需手动设置）
 
-## Midjourney接口设置文档
-[对接文档](Midjourney.md)
+## 接口文档
 
-## Suno接口设置文档
-[对接文档](Suno.md)
+详细接口文档请参考[接口文档](https://docs.newapi.pro/api)：
 
-## 界面截图
-![image](https://github.com/user-attachments/assets/a0dcd349-5df8-4dc8-9acf-ca272b239919)
-
-
-![image](https://github.com/user-attachments/assets/c7d0f7e1-729c-43e2-ac7c-2cb73b0afc8e)
-
-![image](https://github.com/user-attachments/assets/29f81de5-33fc-4fc5-a5ff-f9b54b653c7c)
-
-![image](https://github.com/user-attachments/assets/4fa53e18-d2c5-477a-9b26-b86e44c71e35)
-
-## 交流群
-<img src="https://github.com/user-attachments/assets/9ca0bc82-e057-4230-a28d-9f198fa022e3" width="200">
+- [聊天接口（Chat）](https://docs.newapi.pro/api/openai-chat)
+- [图像接口（Image）](https://docs.newapi.pro/api/openai-image)
+- [Midjourney接口](https://docs.newapi.pro/api/midjourney-proxy-image)
+- [音乐接口（Music）](https://docs.newapi.pro/api/relay/music)
+- [Suno接口](https://docs.newapi.pro/api/suno-music)
+- [重排序接口（Rerank）](https://docs.newapi.pro/api/jinaai-rerank)
+- [实时对话接口（Realtime）](https://docs.newapi.pro/api/openai-realtime)
+- [Claude聊天接口（messages）](https://docs.newapi.pro/api/anthropic-chat)
 
 ## 相关项目
 - [One API](https://github.com/songquanpeng/one-api)：原版项目
 - [Midjourney-Proxy](https://github.com/novicezk/midjourney-proxy)：Midjourney接口支持
-- [chatnio](https://github.com/Deeptrain-Community/chatnio)：下一代 AI 一站式 B/C 端解决方案
+- [chatnio](https://github.com/Deeptrain-Community/chatnio)：下一代AI一站式B/C端解决方案
 - [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool)：用key查询使用额度
 
 其他基于New API的项目：
-- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon)：New API高性能优化版，专注于高并发优化，并支持Claude格式
-- [VoAPI](https://github.com/VoAPI/VoAPI)：基于New API的前端美化版本，闭源免费
+- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon)：New API高性能优化版
+- [VoAPI](https://github.com/VoAPI/VoAPI)：基于New API的前端美化版本
+
+## 帮助支持
+
+如有问题，请参考[帮助支持](https://docs.newapi.pro/support)：
+- [社区交流](https://docs.newapi.pro/support/community-interaction)
+- [反馈问题](https://docs.newapi.pro/support/feedback-issues)
+- [常见问题](https://docs.newapi.pro/support/faq)
 
 ## 🌟 Star History
 
