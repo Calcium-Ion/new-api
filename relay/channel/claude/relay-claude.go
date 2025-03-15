@@ -241,7 +241,7 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*dto.Cla
 					if mediaMessage.Type == "text" {
 						claudeMediaMessage.Text = common.GetPointer[string](mediaMessage.Text)
 					} else {
-						imageUrl := mediaMessage.ImageUrl.(dto.MessageImageUrl)
+						imageUrl := mediaMessage.GetImageMedia()
 						claudeMediaMessage.Type = "image"
 						claudeMediaMessage.Source = &dto.ClaudeMessageSource{
 							Type: "base64",

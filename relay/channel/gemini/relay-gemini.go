@@ -180,9 +180,9 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 					return nil, fmt.Errorf("too many images in the message, max allowed is %d", constant.GeminiVisionMaxImageNum)
 				}
 				// 判断是否是url
-				if strings.HasPrefix(part.ImageUrl.(dto.MessageImageUrl).Url, "http") {
+				if strings.HasPrefix(part.GetImageMedia().Url, "http") {
 					// 是url，获取图片的类型和base64编码的数据
-					fileData, err := service.GetFileBase64FromUrl(part.ImageUrl.(dto.MessageImageUrl).Url)
+					fileData, err := service.GetFileBase64FromUrl(part.GetImageMedia().Url)
 					if err != nil {
 						return nil, fmt.Errorf("get file base64 from url failed: %s", err.Error())
 					}
@@ -193,7 +193,7 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest) (*GeminiChatReque
 						},
 					})
 				} else {
-					format, base64String, err := service.DecodeBase64FileData(part.ImageUrl.(dto.MessageImageUrl).Url)
+					format, base64String, err := service.DecodeBase64FileData(part.GetImageMedia().Url)
 					if err != nil {
 						return nil, fmt.Errorf("decode base64 image data failed: %s", err.Error())
 					}
