@@ -414,7 +414,7 @@ func ResponseClaude2OpenAI(reqMode int, claudeResponse *dto.ClaudeResponse) *dto
 				// 加密的不管， 只输出明文的推理过程
 				thinkingContent = message.Thinking
 			case "text":
-				responseText = *message.Text
+				responseText = message.GetText()
 			}
 		}
 	}
