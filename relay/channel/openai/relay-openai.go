@@ -33,7 +33,7 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 	}
 
 	var lastStreamResponse dto.ChatCompletionsStreamResponse
-	if err := json.Unmarshal(common.StringToByteSlice(data), &lastStreamResponse); err != nil {
+	if err := common.DecodeJsonStr(data, &lastStreamResponse); err != nil {
 		return err
 	}
 
@@ -151,7 +151,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 
 	shouldSendLastResp := true
 	var lastStreamResponse dto.ChatCompletionsStreamResponse
-	err := json.Unmarshal(common.StringToByteSlice(lastStreamData), &lastStreamResponse)
+	err := common.DecodeJsonStr(lastStreamData, &lastStreamResponse)
 	if err == nil {
 		responseId = lastStreamResponse.Id
 		createAt = lastStreamResponse.Created
@@ -196,7 +196,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 }
 
 func OpenaiHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
-	var simpleResponse dto.SimpleResponse
+	var simpleResponse dto.OpenAITextResponse
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
@@ -205,16 +205,29 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayI
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
-	err = json.Unmarshal(responseBody, &simpleResponse)
+	err = common.DecodeJson(responseBody, &simpleResponse)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
-	if simpleResponse.Error.Type != "" {
+	if simpleResponse.Error != nil && simpleResponse.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
-			Error:      simpleResponse.Error,
+			Error:      *simpleResponse.Error,
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
+
+	switch info.RelayFormat {
+	case relaycommon.RelayFormatOpenAI:
+		break
+	case relaycommon.RelayFormatClaude:
+		claudeResp := service.ResponseOpenAI2Claude(&simpleResponse, info)
+		claudeRespStr, err := json.Marshal(claudeResp)
+		if err != nil {
+			return service.OpenAIErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil
+		}
+		responseBody = claudeRespStr
+	}
+
 	// Reset response body
 	resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	// We shouldn't set the header before we parse the response body, because the parse part may fail.

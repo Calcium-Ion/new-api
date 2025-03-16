@@ -1,7 +1,6 @@
 package claude
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -481,7 +480,7 @@ func FormatClaudeResponseInfo(requestMode int, claudeResponse *dto.ClaudeRespons
 
 func HandleResponseData(c *gin.Context, info *relaycommon.RelayInfo, claudeInfo *ClaudeResponseInfo, data string, requestMode int) error {
 	var claudeResponse dto.ClaudeResponse
-	err := json.NewDecoder(bytes.NewReader(common.StringToByteSlice(data))).Decode(&claudeResponse)
+	err := common.DecodeJsonStr(data, &claudeResponse)
 	if err != nil {
 		common.SysError("error unmarshalling stream response: " + err.Error())
 		return fmt.Errorf("error unmarshalling stream aws response: %w", err)

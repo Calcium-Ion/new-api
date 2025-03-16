@@ -1,9 +1,8 @@
 package dto
 
 type SimpleResponse struct {
-	Usage   `json:"usage"`
-	Error   OpenAIError                `json:"error"`
-	Choices []OpenAITextResponseChoice `json:"choices"`
+	Usage `json:"usage"`
+	Error *OpenAIError `json:"error"`
 }
 
 type TextResponse struct {
@@ -27,6 +26,7 @@ type OpenAITextResponse struct {
 	Object  string                     `json:"object"`
 	Created int64                      `json:"created"`
 	Choices []OpenAITextResponseChoice `json:"choices"`
+	Error   *OpenAIError               `json:"error"`
 	Usage   `json:"usage"`
 }
 
