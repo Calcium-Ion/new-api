@@ -33,6 +33,10 @@ const (
 	RelayFormatClaude = "claude"
 )
 
+type RerankerInfo struct {
+	Documents []any
+}
+
 type RelayInfo struct {
 	ChannelType       int
 	ChannelId         int
@@ -78,6 +82,7 @@ type RelayInfo struct {
 	SendResponseCount    int
 	ThinkingContentInfo
 	ClaudeConvertInfo
+	*RerankerInfo
 }
 
 // 定义支持流式选项的通道类型
@@ -107,6 +112,15 @@ func GenRelayInfoClaude(c *gin.Context) *RelayInfo {
 	info.ShouldIncludeUsage = false
 	info.ClaudeConvertInfo = ClaudeConvertInfo{
 		LastMessagesType: LastMessageTypeText,
+	}
+	return info
+}
+
+func GenRelayInfoRerank(c *gin.Context, documents []any) *RelayInfo {
+	info := GenRelayInfo(c)
+	info.RelayMode = relayconstant.RelayModeRerank
+	info.RerankerInfo = &RerankerInfo{
+		Documents: documents,
 	}
 	return info
 }

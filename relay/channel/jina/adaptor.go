@@ -69,7 +69,7 @@ func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.Rela
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
 	if info.RelayMode == constant.RelayModeRerank {
-		err, usage = common_handler.RerankHandler(c, resp)
+		err, usage = common_handler.RerankHandler(c, info, resp)
 	} else if info.RelayMode == constant.RelayModeEmbeddings {
 		err, usage = openai.OpenaiHandler(c, resp, info)
 	}

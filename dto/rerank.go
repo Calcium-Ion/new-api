@@ -10,13 +10,17 @@ type RerankRequest struct {
 	OverLapTokens   int    `json:"overlap_tokens,omitempty"`
 }
 
-type RerankResponseDocument struct {
+type RerankResponseResult struct {
 	Document       any     `json:"document,omitempty"`
 	Index          int     `json:"index"`
 	RelevanceScore float64 `json:"relevance_score"`
 }
 
+type RerankDocument struct {
+	Text any `json:"text"`
+}
+
 type RerankResponse struct {
-	Results []RerankResponseDocument `json:"results"`
-	Usage   Usage                    `json:"usage"`
+	Results []RerankResponseResult `json:"results"`
+	Usage   Usage                  `json:"usage"`
 }

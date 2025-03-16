@@ -262,7 +262,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	case constant.RelayModeImagesGenerations:
 		err, usage = OpenaiTTSHandler(c, resp, info)
 	case constant.RelayModeRerank:
-		err, usage = common_handler.RerankHandler(c, resp)
+		err, usage = common_handler.RerankHandler(c, info, resp)
 	default:
 		if info.IsStream {
 			err, usage = OaiStreamHandler(c, resp, info)

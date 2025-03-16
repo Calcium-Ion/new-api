@@ -40,8 +40,8 @@ type CohereRerankRequest struct {
 }
 
 type CohereRerankResponseResult struct {
-	Results []dto.RerankResponseDocument `json:"results"`
-	Meta    CohereMeta                   `json:"meta"`
+	Results []dto.RerankResponseResult `json:"results"`
+	Meta    CohereMeta                 `json:"meta"`
 }
 
 type CohereMeta struct {
