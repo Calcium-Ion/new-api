@@ -93,7 +93,7 @@ New API提供了丰富的功能，详细特性请参考[维基百科-特性说�
 4. [Suno API](https://github.com/Suno-API/Suno-API)接口，[接口文档](https://docs.newapi.pro/api/suno-music)
 5. Rerank模型（[Cohere](https://cohere.ai/)和[Jina](https://jina.ai/)），[接口文档](https://docs.newapi.pro/api/jinaai-rerank)
 6. Claude Messages 格式，[接口文档](https://docs.newapi.pro/api/anthropic-chat)
-7. Dify
+7. Dify，当前仅支持chatflow
 
 ## 环境变量配置
 
