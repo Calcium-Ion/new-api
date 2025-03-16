@@ -1,21 +1,17 @@
 package aws
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"io"
 	"net/http"
 	"one-api/common"
 	"one-api/dto"
 	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
-	"one-api/relay/helper"
 	"one-api/service"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -143,7 +139,6 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	stream := awsResp.GetStream()
 	defer stream.Close()
 
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	claudeInfo := &claude.ClaudeResponseInfo{
 		ResponseId:   fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
 		Created:      common.GetTimestamp(),
@@ -151,63 +146,23 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		ResponseText: strings.Builder{},
 		Usage:        &dto.Usage{},
 	}
-	isFirst := true
-	c.Stream(func(w io.Writer) bool {
-		event, ok := <-stream.Events()
-		if !ok {
-			return false
-		}
 
+	for event := range stream.Events() {
 		switch v := event.(type) {
 		case *types.ResponseStreamMemberChunk:
-			if isFirst {
-				isFirst = false
-				info.FirstResponseTime = time.Now()
-			}
-			claudeResponse := new(dto.ClaudeResponse)
-			err := json.NewDecoder(bytes.NewReader(v.Value.Bytes)).Decode(claudeResponse)
-			if err != nil {
-				common.SysError("error unmarshalling stream response: " + err.Error())
-				return false
-			}
-
-			response := claude.StreamResponseClaude2OpenAI(requestMode, claudeResponse)
-
-			if !claude.FormatClaudeResponseInfo(RequestModeMessage, claudeResponse, response, claudeInfo) {
-				return true
-			}
-
-			jsonStr, err := json.Marshal(response)
-			if err != nil {
-				common.SysError("error marshalling stream response: " + err.Error())
-				return true
-			}
-			c.Render(-1, common.CustomEvent{Data: "data: " + string(jsonStr)})
-			return true
+			info.SetFirstResponseTime()
+			claude.HandleResponseData(c, info, claudeInfo, string(v.Value.Bytes), RequestModeMessage)
 		case *types.UnknownUnionMember:
 			fmt.Println("unknown tag:", v.Tag)
-			return false
+			return wrapErr(errors.New("unknown response type")), nil
 		default:
 			fmt.Println("union is nil or unknown type")
-			return false
-		}
-	})
-
-	if claudeInfo.Usage.PromptTokens == 0 {
-		//上游出错
-	}
-	if claudeInfo.Usage.CompletionTokens == 0 {
-		claudeInfo.Usage, _ = service.ResponseText2Usage(claudeInfo.ResponseText.String(), info.UpstreamModelName, claudeInfo.Usage.PromptTokens)
-	}
-
-	if info.ShouldIncludeUsage {
-		response := helper.GenerateFinalUsageResponse(claudeInfo.ResponseId, claudeInfo.Created, info.UpstreamModelName, *claudeInfo.Usage)
-		err := helper.ObjectData(c, response)
-		if err != nil {
-			common.SysError("send final response failed: " + err.Error())
+			return wrapErr(errors.New("nil or unknown response type")), nil
 		}
 	}
-	helper.Done(c)
+
+	claude.HandleFinalResponse(c, info, claudeInfo, RequestModeMessage)
+
 	if resp != nil {
 		err = resp.Body.Close()
 		if err != nil {
