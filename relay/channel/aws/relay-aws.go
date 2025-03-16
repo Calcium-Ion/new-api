@@ -84,22 +84,16 @@ func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*
 		return wrapErr(errors.Wrap(err, "InvokeModel")), nil
 	}
 
-	claudeResponse := new(dto.ClaudeResponse)
-	err = json.Unmarshal(awsResp.Body, claudeResponse)
-	if err != nil {
-		return wrapErr(errors.Wrap(err, "unmarshal response")), nil
+	claudeInfo := &claude.ClaudeResponseInfo{
+		ResponseId:   fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
+		Created:      common.GetTimestamp(),
+		Model:        info.UpstreamModelName,
+		ResponseText: strings.Builder{},
+		Usage:        &dto.Usage{},
 	}
 
-	openaiResp := claude.ResponseClaude2OpenAI(requestMode, claudeResponse)
-	usage := dto.Usage{
-		PromptTokens:     claudeResponse.Usage.InputTokens,
-		CompletionTokens: claudeResponse.Usage.OutputTokens,
-		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens,
-	}
-	openaiResp.Usage = usage
-
-	c.JSON(http.StatusOK, openaiResp)
-	return nil, &usage
+	claude.HandleClaudeResponseData(c, info, claudeInfo, awsResp.Body, RequestModeMessage)
+	return nil, claudeInfo.Usage
 }
 
 func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, requestMode int) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
@@ -150,9 +144,9 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		switch v := event.(type) {
 		case *types.ResponseStreamMemberChunk:
 			info.SetFirstResponseTime()
-			err = claude.HandleResponseData(c, info, claudeInfo, string(v.Value.Bytes), RequestModeMessage)
-			if err != nil {
-				return wrapErr(err), nil
+			respErr := claude.HandleStreamResponseData(c, info, claudeInfo, string(v.Value.Bytes), RequestModeMessage)
+			if respErr != nil {
+				return respErr, nil
 			}
 		case *types.UnknownUnionMember:
 			fmt.Println("unknown tag:", v.Tag)
@@ -163,10 +157,6 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		}
 	}
 
-	claude.HandleFinalResponse(c, info, claudeInfo, RequestModeMessage)
-
-	if resp != nil {
-		resp.Body.Close()
-	}
+	claude.HandleStreamFinalResponse(c, info, claudeInfo, RequestModeMessage)
 	return nil, claudeInfo.Usage
 }

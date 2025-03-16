@@ -478,12 +478,22 @@ func FormatClaudeResponseInfo(requestMode int, claudeResponse *dto.ClaudeRespons
 	return true
 }
 
-func HandleResponseData(c *gin.Context, info *relaycommon.RelayInfo, claudeInfo *ClaudeResponseInfo, data string, requestMode int) error {
+func HandleStreamResponseData(c *gin.Context, info *relaycommon.RelayInfo, claudeInfo *ClaudeResponseInfo, data string, requestMode int) *dto.OpenAIErrorWithStatusCode {
 	var claudeResponse dto.ClaudeResponse
 	err := common.DecodeJsonStr(data, &claudeResponse)
 	if err != nil {
 		common.SysError("error unmarshalling stream response: " + err.Error())
-		return fmt.Errorf("error unmarshalling stream aws response: %w", err)
+		return service.OpenAIErrorWrapper(err, "stream_response_error", http.StatusInternalServerError)
+	}
+	if claudeResponse.Error.Type != "" {
+		return &dto.OpenAIErrorWithStatusCode{
+			Error: dto.OpenAIError{
+				Code:    "stream_response_error",
+				Type:    claudeResponse.Error.Type,
+				Message: claudeResponse.Error.Message,
+			},
+			StatusCode: http.StatusInternalServerError,
+		}
 	}
 	if info.RelayFormat == relaycommon.RelayFormatClaude {
 		if requestMode == RequestModeCompletion {
@@ -523,7 +533,7 @@ func HandleResponseData(c *gin.Context, info *relaycommon.RelayInfo, claudeInfo 
 	return nil
 }
 
-func HandleFinalResponse(c *gin.Context, info *relaycommon.RelayInfo, claudeInfo *ClaudeResponseInfo, requestMode int) {
+func HandleStreamFinalResponse(c *gin.Context, info *relaycommon.RelayInfo, claudeInfo *ClaudeResponseInfo, requestMode int) {
 	if info.RelayFormat == relaycommon.RelayFormatClaude {
 		if requestMode == RequestModeCompletion {
 			claudeInfo.Usage, _ = service.ResponseText2Usage(claudeInfo.ResponseText.String(), info.UpstreamModelName, info.PromptTokens)
@@ -566,81 +576,90 @@ func ClaudeStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.
 		ResponseText: strings.Builder{},
 		Usage:        &dto.Usage{},
 	}
-	var err error
+	var err *dto.OpenAIErrorWithStatusCode
 	helper.StreamScannerHandler(c, resp, info, func(data string) bool {
-		err = HandleResponseData(c, info, claudeInfo, data, requestMode)
+		err = HandleStreamResponseData(c, info, claudeInfo, data, requestMode)
 		if err != nil {
 			return false
 		}
 		return true
 	})
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "stream_response_error", http.StatusInternalServerError), nil
+		return err, nil
 	}
 
-	HandleFinalResponse(c, info, claudeInfo, requestMode)
-
+	HandleStreamFinalResponse(c, info, claudeInfo, requestMode)
 	return nil, claudeInfo.Usage
 }
 
-func ClaudeHandler(c *gin.Context, resp *http.Response, requestMode int, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
-	responseBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
-	}
-	err = resp.Body.Close()
-	if err != nil {
-		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
-	}
-	if common.DebugEnabled {
-		println("responseBody: ", string(responseBody))
-	}
+func HandleClaudeResponseData(c *gin.Context, info *relaycommon.RelayInfo, claudeInfo *ClaudeResponseInfo, data []byte, requestMode int) *dto.OpenAIErrorWithStatusCode {
 	var claudeResponse dto.ClaudeResponse
-	err = json.Unmarshal(responseBody, &claudeResponse)
+	err := common.DecodeJson(data, &claudeResponse)
 	if err != nil {
-		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
+		return service.OpenAIErrorWrapper(err, "unmarshal_claude_response_failed", http.StatusInternalServerError)
 	}
 	if claudeResponse.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
 			Error: dto.OpenAIError{
 				Message: claudeResponse.Error.Message,
 				Type:    claudeResponse.Error.Type,
-				Param:   "",
 				Code:    claudeResponse.Error.Type,
 			},
-			StatusCode: resp.StatusCode,
-		}, nil
+			StatusCode: http.StatusInternalServerError,
+		}
 	}
-	usage := dto.Usage{}
 	if requestMode == RequestModeCompletion {
 		completionTokens, err := service.CountTextToken(claudeResponse.Completion, info.OriginModelName)
 		if err != nil {
-			return service.OpenAIErrorWrapper(err, "count_token_text_failed", http.StatusInternalServerError), nil
+			return service.OpenAIErrorWrapper(err, "count_token_text_failed", http.StatusInternalServerError)
 		}
-		usage.PromptTokens = info.PromptTokens
-		usage.CompletionTokens = completionTokens
-		usage.TotalTokens = info.PromptTokens + completionTokens
+		claudeInfo.Usage.PromptTokens = info.PromptTokens
+		claudeInfo.Usage.CompletionTokens = completionTokens
+		claudeInfo.Usage.TotalTokens = info.PromptTokens + completionTokens
 	} else {
-		usage.PromptTokens = claudeResponse.Usage.InputTokens
-		usage.CompletionTokens = claudeResponse.Usage.OutputTokens
-		usage.TotalTokens = claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens
-		usage.PromptTokensDetails.CachedTokens = claudeResponse.Usage.CacheReadInputTokens
-		usage.PromptTokensDetails.CachedCreationTokens = claudeResponse.Usage.CacheCreationInputTokens
+		claudeInfo.Usage.PromptTokens = claudeResponse.Usage.InputTokens
+		claudeInfo.Usage.CompletionTokens = claudeResponse.Usage.OutputTokens
+		claudeInfo.Usage.TotalTokens = claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens
+		claudeInfo.Usage.PromptTokensDetails.CachedTokens = claudeResponse.Usage.CacheReadInputTokens
+		claudeInfo.Usage.PromptTokensDetails.CachedCreationTokens = claudeResponse.Usage.CacheCreationInputTokens
 	}
 	var responseData []byte
 	switch info.RelayFormat {
 	case relaycommon.RelayFormatOpenAI:
 		openaiResponse := ResponseClaude2OpenAI(requestMode, &claudeResponse)
-		openaiResponse.Usage = usage
+		openaiResponse.Usage = *claudeInfo.Usage
 		responseData, err = json.Marshal(openaiResponse)
 		if err != nil {
-			return service.OpenAIErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil
+			return service.OpenAIErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError)
 		}
 	case relaycommon.RelayFormatClaude:
-		responseData = responseBody
+		responseData = data
 	}
 	c.Writer.Header().Set("Content-Type", "application/json")
-	c.Writer.WriteHeader(resp.StatusCode)
+	c.Writer.WriteHeader(http.StatusOK)
 	_, err = c.Writer.Write(responseData)
-	return nil, &usage
+	return nil
+}
+
+func ClaudeHandler(c *gin.Context, resp *http.Response, requestMode int, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+	claudeInfo := &ClaudeResponseInfo{
+		ResponseId:   fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
+		Created:      common.GetTimestamp(),
+		Model:        info.UpstreamModelName,
+		ResponseText: strings.Builder{},
+		Usage:        &dto.Usage{},
+	}
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+	}
+	resp.Body.Close()
+	if common.DebugEnabled {
+		println("responseBody: ", string(responseBody))
+	}
+	handleErr := HandleClaudeResponseData(c, info, claudeInfo, responseBody, requestMode)
+	if handleErr != nil {
+		return handleErr, nil
+	}
+	return nil, claudeInfo.Usage
 }

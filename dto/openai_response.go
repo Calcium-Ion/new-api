@@ -26,7 +26,7 @@ type OpenAITextResponse struct {
 	Object  string                     `json:"object"`
 	Created int64                      `json:"created"`
 	Choices []OpenAITextResponseChoice `json:"choices"`
-	Error   *OpenAIError               `json:"error"`
+	Error   *OpenAIError               `json:"error,omitempty"`
 	Usage   `json:"usage"`
 }
 
