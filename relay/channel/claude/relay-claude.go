@@ -485,7 +485,7 @@ func HandleStreamResponseData(c *gin.Context, info *relaycommon.RelayInfo, claud
 		common.SysError("error unmarshalling stream response: " + err.Error())
 		return service.OpenAIErrorWrapper(err, "stream_response_error", http.StatusInternalServerError)
 	}
-	if claudeResponse.Error.Type != "" {
+	if claudeResponse.Error != nil && claudeResponse.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
 			Error: dto.OpenAIError{
 				Code:    "stream_response_error",
@@ -598,7 +598,7 @@ func HandleClaudeResponseData(c *gin.Context, info *relaycommon.RelayInfo, claud
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "unmarshal_claude_response_failed", http.StatusInternalServerError)
 	}
-	if claudeResponse.Error.Type != "" {
+	if claudeResponse.Error != nil && claudeResponse.Error.Type != "" {
 		return &dto.OpenAIErrorWithStatusCode{
 			Error: dto.OpenAIError{
 				Message: claudeResponse.Error.Message,
