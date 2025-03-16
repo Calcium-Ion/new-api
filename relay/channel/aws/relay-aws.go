@@ -10,7 +10,6 @@ import (
 	"one-api/dto"
 	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
-	"one-api/service"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -151,7 +150,10 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		switch v := event.(type) {
 		case *types.ResponseStreamMemberChunk:
 			info.SetFirstResponseTime()
-			claude.HandleResponseData(c, info, claudeInfo, string(v.Value.Bytes), RequestModeMessage)
+			err = claude.HandleResponseData(c, info, claudeInfo, string(v.Value.Bytes), RequestModeMessage)
+			if err != nil {
+				return wrapErr(err), nil
+			}
 		case *types.UnknownUnionMember:
 			fmt.Println("unknown tag:", v.Tag)
 			return wrapErr(errors.New("unknown response type")), nil
@@ -164,10 +166,7 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	claude.HandleFinalResponse(c, info, claudeInfo, RequestModeMessage)
 
 	if resp != nil {
-		err = resp.Body.Close()
-		if err != nil {
-			return service.OpenAIErrorWrapperLocal(err, "close_response_body_failed", http.StatusInternalServerError), nil
-		}
+		resp.Body.Close()
 	}
 	return nil, claudeInfo.Usage
 }
