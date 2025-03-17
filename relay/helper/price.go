@@ -20,6 +20,10 @@ type PriceData struct {
 	ShouldPreConsumedQuota int
 }
 
+func (p PriceData) ToSetting() string {
+	return fmt.Sprintf("ModelPrice: %f, ModelRatio: %f, CompletionRatio: %f, CacheRatio: %f, GroupRatio: %f, UsePrice: %t, CacheCreationRatio: %f, ShouldPreConsumedQuota: %d", p.ModelPrice, p.ModelRatio, p.CompletionRatio, p.CacheRatio, p.GroupRatio, p.UsePrice, p.CacheCreationRatio, p.ShouldPreConsumedQuota)
+}
+
 func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens int, maxTokens int) (PriceData, error) {
 	modelPrice, usePrice := operation_setting.GetModelPrice(info.OriginModelName, false)
 	groupRatio := setting.GetGroupRatio(info.Group)
@@ -50,7 +54,8 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 	} else {
 		preConsumedQuota = int(modelPrice * common.QuotaPerUnit * groupRatio)
 	}
-	return PriceData{
+
+	priceData := PriceData{
 		ModelPrice:             modelPrice,
 		ModelRatio:             modelRatio,
 		CompletionRatio:        completionRatio,
@@ -59,5 +64,11 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		CacheRatio:             cacheRatio,
 		CacheCreationRatio:     cacheCreationRatio,
 		ShouldPreConsumedQuota: preConsumedQuota,
-	}, nil
+	}
+
+	if common.DebugEnabled {
+		println(fmt.Sprintf("model_price_helper result: %s", priceData.ToSetting()))
+	}
+
+	return priceData, nil
 }
