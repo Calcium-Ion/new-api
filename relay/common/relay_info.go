@@ -34,7 +34,8 @@ const (
 )
 
 type RerankerInfo struct {
-	Documents []any
+	Documents       []any
+	ReturnDocuments bool
 }
 
 type RelayInfo struct {
@@ -116,11 +117,12 @@ func GenRelayInfoClaude(c *gin.Context) *RelayInfo {
 	return info
 }
 
-func GenRelayInfoRerank(c *gin.Context, documents []any) *RelayInfo {
+func GenRelayInfoRerank(c *gin.Context, req *dto.RerankRequest) *RelayInfo {
 	info := GenRelayInfo(c)
 	info.RelayMode = relayconstant.RelayModeRerank
 	info.RerankerInfo = &RerankerInfo{
-		Documents: documents,
+		Documents:       req.Documents,
+		ReturnDocuments: req.GetReturnDocuments(),
 	}
 	return info
 }
