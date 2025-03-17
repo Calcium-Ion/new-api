@@ -13,4 +13,41 @@ var awsModelIDMap = map[string]string{
 	"claude-3-7-sonnet-20250219": "anthropic.claude-3-7-sonnet-20250219-v1:0",
 }
 
+var awsModelCanCrossRegionMap = map[string]map[string]bool{
+	"anthropic.claude-3-sonnet-20240229-v1:0": {
+		"us": true,
+		"eu": true,
+		"ap": true,
+	},
+	"anthropic.claude-3-opus-20240229-v1:0": {
+		"us": true,
+	},
+	"anthropic.claude-3-haiku-20240307-v1:0": {
+		"us": true,
+		"eu": true,
+		"ap": true,
+	},
+	"anthropic.claude-3-5-sonnet-20240620-v1:0": {
+		"us": true,
+		"eu": true,
+		"ap": true,
+	},
+	"anthropic.claude-3-5-sonnet-20241022-v2:0": {
+		"us": true,
+		"ap": true,
+	},
+	"anthropic.claude-3-5-haiku-20241022-v1:0": {
+		"us": true,
+	},
+	"anthropic.claude-3-7-sonnet-20250219-v1:0": {
+		"us": true,
+	},
+}
+
+var awsRegionCrossModelPrefixMap = map[string]string{
+	"us": "us",
+	"eu": "eu",
+	"ap": "apac",
+}
+
 var ChannelName = "aws"
