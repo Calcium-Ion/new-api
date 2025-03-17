@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"io"
 	"net/http"
+	common2 "one-api/common"
 	"one-api/relay/common"
 	"one-api/relay/constant"
 	"one-api/service"
@@ -30,6 +31,9 @@ func DoApiRequest(a Adaptor, c *gin.Context, info *common.RelayInfo, requestBody
 	fullRequestURL, err := a.GetRequestURL(info)
 	if err != nil {
 		return nil, fmt.Errorf("get request url failed: %w", err)
+	}
+	if common2.DebugEnabled {
+		println("fullRequestURL:", fullRequestURL)
 	}
 	req, err := http.NewRequest(c.Request.Method, fullRequestURL, requestBody)
 	if err != nil {

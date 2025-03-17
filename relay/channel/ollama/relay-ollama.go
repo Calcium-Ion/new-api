@@ -19,7 +19,7 @@ func requestOpenAI2Ollama(request dto.GeneralOpenAIRequest) (*OllamaRequest, err
 			mediaMessages := message.ParseContent()
 			for j, mediaMessage := range mediaMessages {
 				if mediaMessage.Type == dto.ContentTypeImageURL {
-					imageUrl := mediaMessage.ImageUrl.(dto.MessageImageUrl)
+					imageUrl := mediaMessage.GetImageMedia()
 					// check if not base64
 					if strings.HasPrefix(imageUrl.Url, "http") {
 						fileData, err := service.GetFileBase64FromUrl(imageUrl.Url)

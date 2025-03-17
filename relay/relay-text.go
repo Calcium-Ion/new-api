@@ -160,13 +160,16 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		}
 		requestBody = bytes.NewBuffer(body)
 	} else {
-		convertedRequest, err := adaptor.ConvertRequest(c, relayInfo, textRequest)
+		convertedRequest, err := adaptor.ConvertOpenAIRequest(c, relayInfo, textRequest)
 		if err != nil {
 			return service.OpenAIErrorWrapperLocal(err, "convert_request_failed", http.StatusInternalServerError)
 		}
 		jsonData, err := json.Marshal(convertedRequest)
 		if err != nil {
 			return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
+		}
+		if common.DebugEnabled {
+			println("requestBody: ", string(jsonData))
 		}
 		requestBody = bytes.NewBuffer(jsonData)
 	}

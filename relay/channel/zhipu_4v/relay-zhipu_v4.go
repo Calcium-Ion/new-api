@@ -79,7 +79,7 @@ func requestOpenAI2Zhipu(request dto.GeneralOpenAIRequest) *dto.GeneralOpenAIReq
 			mediaMessages := message.ParseContent()
 			for j, mediaMessage := range mediaMessages {
 				if mediaMessage.Type == dto.ContentTypeImageURL {
-					imageUrl := mediaMessage.ImageUrl.(dto.MessageImageUrl)
+					imageUrl := mediaMessage.GetImageMedia()
 					// check if base64
 					if strings.HasPrefix(imageUrl.Url, "data:image/") {
 						// 去除base64数据的URL前缀（如果有）

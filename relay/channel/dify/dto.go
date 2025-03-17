@@ -8,6 +8,14 @@ type DifyChatRequest struct {
 	ResponseMode     string                 `json:"response_mode"`
 	User             string                 `json:"user"`
 	AutoGenerateName bool                   `json:"auto_generate_name"`
+	Files            []DifyFile             `json:"files"`
+}
+
+type DifyFile struct {
+	Type         string `json:"type"`
+	TransferMode string `json:"transfer_mode"`
+	URL          string `json:"url,omitempty"`
+	UploadFileId string `json:"upload_file_id,omitempty"`
 }
 
 type DifyMetaData struct {
@@ -17,6 +25,8 @@ type DifyMetaData struct {
 type DifyData struct {
 	WorkflowId string `json:"workflow_id"`
 	NodeId     string `json:"node_id"`
+	NodeType   string `json:"node_type"`
+	Status     string `json:"status"`
 }
 
 type DifyChatCompletionResponse struct {

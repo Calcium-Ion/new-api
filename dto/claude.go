@@ -13,7 +13,7 @@ type ClaudeMediaMessage struct {
 	Source      *ClaudeMessageSource `json:"source,omitempty"`
 	Usage       *ClaudeUsage         `json:"usage,omitempty"`
 	StopReason  *string              `json:"stop_reason,omitempty"`
-	PartialJson string               `json:"partial_json,omitempty"`
+	PartialJson *string              `json:"partial_json,omitempty"`
 	Role        string               `json:"role,omitempty"`
 	Thinking    string               `json:"thinking,omitempty"`
 	Signature   string               `json:"signature,omitempty"`
@@ -35,6 +35,32 @@ func (c *ClaudeMediaMessage) GetText() string {
 		return ""
 	}
 	return *c.Text
+}
+
+func (c *ClaudeMediaMessage) IsStringContent() bool {
+	var content string
+	return json.Unmarshal(c.Content, &content) == nil
+}
+
+func (c *ClaudeMediaMessage) GetStringContent() string {
+	var content string
+	if err := json.Unmarshal(c.Content, &content); err == nil {
+		return content
+	}
+	return ""
+}
+
+func (c *ClaudeMediaMessage) SetContent(content any) {
+	jsonContent, _ := json.Marshal(content)
+	c.Content = jsonContent
+}
+
+func (c *ClaudeMediaMessage) ParseMediaContent() []ClaudeMediaMessage {
+	var mediaContent []ClaudeMediaMessage
+	if err := json.Unmarshal(c.Content, &mediaContent); err == nil {
+		return mediaContent
+	}
+	return make([]ClaudeMediaMessage, 0)
 }
 
 type ClaudeMessageSource struct {
@@ -139,8 +165,8 @@ func (c *ClaudeRequest) ParseSystem() []ClaudeMediaMessage {
 }
 
 type ClaudeError struct {
-	Type    string `json:"type"`
-	Message string `json:"message"`
+	Type    string `json:"type,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 type ClaudeErrorWithStatusCode struct {

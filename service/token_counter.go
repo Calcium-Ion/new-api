@@ -86,6 +86,9 @@ func getTokenNum(tokenEncoder *tiktoken.Tiktoken, text string) int {
 }
 
 func getImageToken(info *relaycommon.RelayInfo, imageUrl *dto.MessageImageUrl, model string, stream bool) (int, error) {
+	if imageUrl == nil {
+		return 0, fmt.Errorf("image_url_is_nil")
+	}
 	baseTokens := 85
 	if model == "glm-4v" {
 		return 1047, nil
@@ -93,10 +96,10 @@ func getImageToken(info *relaycommon.RelayInfo, imageUrl *dto.MessageImageUrl, m
 	if imageUrl.Detail == "low" {
 		return baseTokens, nil
 	}
-	// TODO: 非流模式下不计算图片token数量
 	if !constant.GetMediaTokenNotStream && !stream {
-		return 256, nil
+		return 3 * baseTokens, nil
 	}
+
 	// 同步One API的图片计费逻辑
 	if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
 		imageUrl.Detail = "high"
@@ -126,18 +129,11 @@ func getImageToken(info *relaycommon.RelayInfo, imageUrl *dto.MessageImageUrl, m
 	if err != nil {
 		return 0, err
 	}
+	imageUrl.MimeType = format
 
 	if config.Width == 0 || config.Height == 0 {
 		return 0, errors.New(fmt.Sprintf("fail to decode image config: %s", imageUrl.Url))
 	}
-	//// TODO: 适配官方auto计费
-	//if config.Width < 512 && config.Height < 512 {
-	//	if imageUrl.Detail == "auto" || imageUrl.Detail == "" {
-	//		// 如果图片尺寸小于512，强制使用low
-	//		imageUrl.Detail = "low"
-	//		return 85, nil
-	//	}
-	//}
 
 	shortSide := config.Width
 	otherSide := config.Height
@@ -392,8 +388,8 @@ func CountTokenMessages(info *relaycommon.RelayInfo, messages []dto.Message, mod
 			arrayContent := message.ParseContent()
 			for _, m := range arrayContent {
 				if m.Type == dto.ContentTypeImageURL {
-					imageUrl := m.ImageUrl.(dto.MessageImageUrl)
-					imageTokenNum, err := getImageToken(info, &imageUrl, model, stream)
+					imageUrl := m.GetImageMedia()
+					imageTokenNum, err := getImageToken(info, imageUrl, model, stream)
 					if err != nil {
 						return 0, err
 					}

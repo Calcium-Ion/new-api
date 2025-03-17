@@ -10,7 +10,7 @@ func requestOpenAI2Mistral(request *dto.GeneralOpenAIRequest) *dto.GeneralOpenAI
 		mediaMessages := message.ParseContent()
 		for j, mediaMessage := range mediaMessages {
 			if mediaMessage.Type == dto.ContentTypeImageURL {
-				imageUrl := mediaMessage.ImageUrl.(dto.MessageImageUrl)
+				imageUrl := mediaMessage.GetImageMedia()
 				mediaMessage.ImageUrl = imageUrl.Url
 				mediaMessages[j] = mediaMessage
 			}

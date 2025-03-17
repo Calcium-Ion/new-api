@@ -1,21 +1,16 @@
 package aws
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"io"
 	"net/http"
 	"one-api/common"
 	"one-api/dto"
 	"one-api/relay/channel/claude"
 	relaycommon "one-api/relay/common"
-	"one-api/relay/helper"
-	"one-api/service"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -89,22 +84,16 @@ func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*
 		return wrapErr(errors.Wrap(err, "InvokeModel")), nil
 	}
 
-	claudeResponse := new(dto.ClaudeResponse)
-	err = json.Unmarshal(awsResp.Body, claudeResponse)
-	if err != nil {
-		return wrapErr(errors.Wrap(err, "unmarshal response")), nil
+	claudeInfo := &claude.ClaudeResponseInfo{
+		ResponseId:   fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
+		Created:      common.GetTimestamp(),
+		Model:        info.UpstreamModelName,
+		ResponseText: strings.Builder{},
+		Usage:        &dto.Usage{},
 	}
 
-	openaiResp := claude.ResponseClaude2OpenAI(requestMode, claudeResponse)
-	usage := dto.Usage{
-		PromptTokens:     claudeResponse.Usage.InputTokens,
-		CompletionTokens: claudeResponse.Usage.OutputTokens,
-		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens,
-	}
-	openaiResp.Usage = usage
-
-	c.JSON(http.StatusOK, openaiResp)
-	return nil, &usage
+	claude.HandleClaudeResponseData(c, info, claudeInfo, awsResp.Body, RequestModeMessage)
+	return nil, claudeInfo.Usage
 }
 
 func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, requestMode int) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
@@ -143,7 +132,6 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	stream := awsResp.GetStream()
 	defer stream.Close()
 
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	claudeInfo := &claude.ClaudeResponseInfo{
 		ResponseId:   fmt.Sprintf("chatcmpl-%s", common.GetUUID()),
 		Created:      common.GetTimestamp(),
@@ -151,68 +139,24 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		ResponseText: strings.Builder{},
 		Usage:        &dto.Usage{},
 	}
-	isFirst := true
-	c.Stream(func(w io.Writer) bool {
-		event, ok := <-stream.Events()
-		if !ok {
-			return false
-		}
 
+	for event := range stream.Events() {
 		switch v := event.(type) {
 		case *types.ResponseStreamMemberChunk:
-			if isFirst {
-				isFirst = false
-				info.FirstResponseTime = time.Now()
+			info.SetFirstResponseTime()
+			respErr := claude.HandleStreamResponseData(c, info, claudeInfo, string(v.Value.Bytes), RequestModeMessage)
+			if respErr != nil {
+				return respErr, nil
 			}
-			claudeResponse := new(dto.ClaudeResponse)
-			err := json.NewDecoder(bytes.NewReader(v.Value.Bytes)).Decode(claudeResponse)
-			if err != nil {
-				common.SysError("error unmarshalling stream response: " + err.Error())
-				return false
-			}
-
-			response := claude.StreamResponseClaude2OpenAI(requestMode, claudeResponse)
-
-			if !claude.FormatClaudeResponseInfo(RequestModeMessage, claudeResponse, response, claudeInfo) {
-				return true
-			}
-
-			jsonStr, err := json.Marshal(response)
-			if err != nil {
-				common.SysError("error marshalling stream response: " + err.Error())
-				return true
-			}
-			c.Render(-1, common.CustomEvent{Data: "data: " + string(jsonStr)})
-			return true
 		case *types.UnknownUnionMember:
 			fmt.Println("unknown tag:", v.Tag)
-			return false
+			return wrapErr(errors.New("unknown response type")), nil
 		default:
 			fmt.Println("union is nil or unknown type")
-			return false
+			return wrapErr(errors.New("nil or unknown response type")), nil
 		}
-	})
-
-	if claudeInfo.Usage.PromptTokens == 0 {
-		//上游出错
-	}
-	if claudeInfo.Usage.CompletionTokens == 0 {
-		claudeInfo.Usage, _ = service.ResponseText2Usage(claudeInfo.ResponseText.String(), info.UpstreamModelName, claudeInfo.Usage.PromptTokens)
 	}
 
-	if info.ShouldIncludeUsage {
-		response := helper.GenerateFinalUsageResponse(claudeInfo.ResponseId, claudeInfo.Created, info.UpstreamModelName, *claudeInfo.Usage)
-		err := helper.ObjectData(c, response)
-		if err != nil {
-			common.SysError("send final response failed: " + err.Error())
-		}
-	}
-	helper.Done(c)
-	if resp != nil {
-		err = resp.Body.Close()
-		if err != nil {
-			return service.OpenAIErrorWrapperLocal(err, "close_response_body_failed", http.StatusInternalServerError), nil
-		}
-	}
+	claude.HandleStreamFinalResponse(c, info, claudeInfo, RequestModeMessage)
 	return nil, claudeInfo.Usage
 }

@@ -113,9 +113,21 @@ type MediaContent struct {
 	InputAudio any    `json:"input_audio,omitempty"`
 }
 
+func (m *MediaContent) GetImageMedia() *MessageImageUrl {
+	if m.ImageUrl != nil {
+		return m.ImageUrl.(*MessageImageUrl)
+	}
+	return nil
+}
+
 type MessageImageUrl struct {
-	Url    string `json:"url"`
-	Detail string `json:"detail"`
+	Url      string `json:"url"`
+	Detail   string `json:"detail"`
+	MimeType string
+}
+
+func (m *MessageImageUrl) IsRemoteImage() bool {
+	return strings.HasPrefix(m.Url, "http")
 }
 
 type MessageInputAudio struct {
@@ -244,43 +256,39 @@ func (m *Message) ParseContent() []MediaContent {
 
 			case ContentTypeImageURL:
 				imageUrl := contentItem["image_url"]
+				temp := &MessageImageUrl{
+					Detail: "high",
+				}
 				switch v := imageUrl.(type) {
 				case string:
-					contentList = append(contentList, MediaContent{
-						Type: ContentTypeImageURL,
-						ImageUrl: MessageImageUrl{
-							Url:    v,
-							Detail: "high",
-						},
-					})
+					temp.Url = v
 				case map[string]interface{}:
 					url, ok1 := v["url"].(string)
 					detail, ok2 := v["detail"].(string)
-					if !ok2 {
-						detail = "high"
+					if ok2 {
+						temp.Detail = detail
 					}
 					if ok1 {
-						contentList = append(contentList, MediaContent{
-							Type: ContentTypeImageURL,
-							ImageUrl: MessageImageUrl{
-								Url:    url,
-								Detail: detail,
-							},
-						})
+						temp.Url = url
 					}
 				}
+				contentList = append(contentList, MediaContent{
+					Type:     ContentTypeImageURL,
+					ImageUrl: temp,
+				})
 
 			case ContentTypeInputAudio:
 				if audioData, ok := contentItem["input_audio"].(map[string]interface{}); ok {
 					data, ok1 := audioData["data"].(string)
 					format, ok2 := audioData["format"].(string)
 					if ok1 && ok2 {
+						temp := &MessageInputAudio{
+							Data:   data,
+							Format: format,
+						}
 						contentList = append(contentList, MediaContent{
-							Type: ContentTypeInputAudio,
-							InputAudio: MessageInputAudio{
-								Data:   data,
-								Format: format,
-							},
+							Type:       ContentTypeInputAudio,
+							InputAudio: temp,
 						})
 					}
 				}

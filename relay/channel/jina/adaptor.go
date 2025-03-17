@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"one-api/dto"
 	"one-api/relay/channel"
+	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
+	"one-api/relay/common_handler"
 	"one-api/relay/constant"
 )
 
@@ -49,7 +51,7 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *rel
 	return nil
 }
 
-func (a *Adaptor) ConvertRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.GeneralOpenAIRequest) (any, error) {
+func (a *Adaptor) ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.GeneralOpenAIRequest) (any, error) {
 	return request, nil
 }
 
@@ -67,9 +69,9 @@ func (a *Adaptor) ConvertEmbeddingRequest(c *gin.Context, info *relaycommon.Rela
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
 	if info.RelayMode == constant.RelayModeRerank {
-		err, usage = JinaRerankHandler(c, resp)
+		err, usage = common_handler.RerankHandler(c, info, resp)
 	} else if info.RelayMode == constant.RelayModeEmbeddings {
-		err, usage = jinaEmbeddingHandler(c, resp)
+		err, usage = openai.OpenaiHandler(c, resp, info)
 	}
 	return
 }

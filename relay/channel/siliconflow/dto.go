@@ -12,6 +12,6 @@ type SFMeta struct {
 }
 
 type SFRerankResponse struct {
-	Results []dto.RerankResponseDocument `json:"results"`
-	Meta    SFMeta                       `json:"meta"`
+	Results []dto.RerankResponseResult `json:"results"`
+	Meta    SFMeta                     `json:"meta"`
 }
