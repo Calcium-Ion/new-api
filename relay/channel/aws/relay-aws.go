@@ -135,6 +135,12 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		return wrapErr(errors.Wrap(err, "awsModelID")), nil
 	}
 
+	awsRegionPrefix := awsRegionPrefix(awsCli.Options().Region)
+	canCrossRegion := awsModelCanCrossRegion(awsModelId, awsRegionPrefix)
+	if canCrossRegion {
+		awsModelId = awsModelCrossRegion(awsModelId, awsRegionPrefix)
+	}
+
 	awsReq := &bedrockruntime.InvokeModelWithResponseStreamInput{
 		ModelId:     aws.String(awsModelId),
 		Accept:      aws.String("application/json"),
