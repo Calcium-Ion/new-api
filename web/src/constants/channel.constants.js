@@ -115,4 +115,5 @@ export const CHANNEL_OPTIONS = [
     color: 'blue',
     label: '字节火山方舟、豆包、DeepSeek通用'
   },
+  { value: 48, color: 'teal', label: 'Maxkb' },
 ];

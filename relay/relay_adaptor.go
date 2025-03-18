@@ -12,6 +12,7 @@ import (
 	"one-api/relay/channel/cohere"
 	"one-api/relay/channel/deepseek"
 	"one-api/relay/channel/dify"
+	"one-api/relay/channel/maxkb"
 	"one-api/relay/channel/gemini"
 	"one-api/relay/channel/jina"
 	"one-api/relay/channel/mistral"
@@ -63,6 +64,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &cohere.Adaptor{}
 	case constant.APITypeDify:
 		return &dify.Adaptor{}
+	case constant.APITypeMaxkb:
+		return &maxkb.Adaptor{}
 	case constant.APITypeJina:
 		return &jina.Adaptor{}
 	case constant.APITypeCloudflare:

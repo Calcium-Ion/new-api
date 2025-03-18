@@ -21,6 +21,7 @@ const (
 	APITypeAws
 	APITypeCohere
 	APITypeDify
+	APITypeMaxkb
 	APITypeJina
 	APITypeCloudflare
 	APITypeSiliconFlow
@@ -70,6 +71,8 @@ func ChannelType2APIType(channelType int) (int, bool) {
 		apiType = APITypeCohere
 	case common.ChannelTypeDify:
 		apiType = APITypeDify
+	case common.ChannelTypeMaxkb:
+		apiType = APITypeMaxkb
 	case common.ChannelTypeJina:
 		apiType = APITypeJina
 	case common.ChannelCloudflare:
