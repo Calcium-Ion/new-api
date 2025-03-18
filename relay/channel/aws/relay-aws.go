@@ -26,10 +26,31 @@ func newAwsClient(c *gin.Context, info *relaycommon.RelayInfo) (*bedrockruntime.
 	ak := awsSecret[0]
 	sk := awsSecret[1]
 	region := awsSecret[2]
-	client := bedrockruntime.New(bedrockruntime.Options{
-		Region:      region,
-		Credentials: aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(ak, sk, "")),
-	})
+
+	
+	if info.BaseUrl != "" {
+		proxyURL, err := url.Parse(info.BaseUrl)
+		if err != nil {
+			return nil, errors.New("failed to parse aws proxy")
+		}
+		httpClient.Transport = &http.Transport{
+			Proxy: http.ProxyURL(proxyURL),
+		}
+	}
+
+	cred := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
+		ak,
+		sk,
+		"",
+	))
+	sdkConfig, err := config.LoadDefaultConfig(ctx,
+			config.WithRegion(awsConfig.Region),
+			config.WithCredentialsProvider(cred),
+			config.WithHTTPClient(httpClient),
+		)
+
+	
+	client := bedrockruntime.NewFromConfig(sdkConfig)
 
 	return client, nil
 }
