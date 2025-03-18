@@ -1,11 +1,13 @@
 package aws
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
+	"net/url"
 	"one-api/common"
 	"one-api/dto"
 	"one-api/relay/channel/claude"
@@ -13,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
@@ -27,7 +30,8 @@ func newAwsClient(c *gin.Context, info *relaycommon.RelayInfo) (*bedrockruntime.
 	sk := awsSecret[1]
 	region := awsSecret[2]
 
-	
+	ctx := context.Background()
+	httpClient := &http.Client{}
 	if info.BaseUrl != "" {
 		proxyURL, err := url.Parse(info.BaseUrl)
 		if err != nil {
@@ -44,12 +48,15 @@ func newAwsClient(c *gin.Context, info *relaycommon.RelayInfo) (*bedrockruntime.
 		"",
 	))
 	sdkConfig, err := config.LoadDefaultConfig(ctx,
-			config.WithRegion(awsConfig.Region),
-			config.WithCredentialsProvider(cred),
-			config.WithHTTPClient(httpClient),
-		)
+		config.WithRegion(region),
+		config.WithCredentialsProvider(cred),
+		config.WithHTTPClient(httpClient),
+	)
 
-	
+	if err != nil {
+		return nil, errors.New("aws load config fail " + err.Error())
+	}
+
 	client := bedrockruntime.NewFromConfig(sdkConfig)
 
 	return client, nil
