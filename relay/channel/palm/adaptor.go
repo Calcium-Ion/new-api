@@ -30,6 +30,10 @@ func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInf
 	//TODO implement me
 	return nil, errors.New("not implemented")
 }
+func (a *Adaptor) ConvertVideoRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.VideoRequest) (any, error) {
+	//TODO implement me
+	return nil, errors.New("not implemented")
+}
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
 }

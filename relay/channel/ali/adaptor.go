@@ -87,6 +87,8 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	switch info.RelayMode {
 	case constant.RelayModeImagesGenerations:
 		err, usage = aliImageHandler(c, resp, info)
+	case constant.RelayModeChatCompletions:
+		err, usage = aliVideoHandler(c, resp, info)
 	case constant.RelayModeEmbeddings:
 		err, usage = aliEmbeddingHandler(c, resp)
 	default:
