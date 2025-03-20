@@ -36,6 +36,7 @@ const EditToken = (props) => {
     model_limits_enabled: false,
     model_limits: [],
     allow_ips: '',
+    key: '',
     group: '',
   };
   const [inputs, setInputs] = useState(originInputs);
@@ -47,6 +48,7 @@ const EditToken = (props) => {
     model_limits_enabled,
     model_limits,
     allow_ips,
+    key,
     group
   } = inputs;
   // const [visible, setVisible] = useState(false);
@@ -280,6 +282,16 @@ const EditToken = (props) => {
             placeholder={t('请输入名称')}
             onChange={(value) => handleInputChange('name', value)}
             value={name}
+            autoComplete='new-password'
+            required={!isEdit}
+          />
+          <Input
+            style={{ marginTop: 20 }}
+            label={t('key')}
+            name='key'
+            placeholder={t('请输入令牌')}
+            onChange={(value) => handleInputChange('key', value)}
+            value={key}
             autoComplete='new-password'
             required={!isEdit}
           />
