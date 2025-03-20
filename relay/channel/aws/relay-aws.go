@@ -1,11 +1,13 @@
 package aws
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
+	"net/url"
 	"one-api/common"
 	"one-api/dto"
 	"one-api/relay/channel/claude"
@@ -13,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
@@ -26,10 +29,35 @@ func newAwsClient(c *gin.Context, info *relaycommon.RelayInfo) (*bedrockruntime.
 	ak := awsSecret[0]
 	sk := awsSecret[1]
 	region := awsSecret[2]
-	client := bedrockruntime.New(bedrockruntime.Options{
-		Region:      region,
-		Credentials: aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(ak, sk, "")),
-	})
+
+	ctx := context.Background()
+	httpClient := &http.Client{}
+	if info.BaseUrl != "" {
+		proxyURL, err := url.Parse(info.BaseUrl)
+		if err != nil {
+			return nil, errors.New("failed to parse aws proxy")
+		}
+		httpClient.Transport = &http.Transport{
+			Proxy: http.ProxyURL(proxyURL),
+		}
+	}
+
+	cred := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
+		ak,
+		sk,
+		"",
+	))
+	sdkConfig, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(cred),
+		config.WithHTTPClient(httpClient),
+	)
+
+	if err != nil {
+		return nil, errors.New("aws load config fail " + err.Error())
+	}
+
+	client := bedrockruntime.NewFromConfig(sdkConfig)
 
 	return client, nil
 }
