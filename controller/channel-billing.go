@@ -26,6 +26,13 @@ type OpenAISubscriptionResponse struct {
 	AccessUntil        int64   `json:"access_until"`
 }
 
+type OpenRouterResponse struct {
+	Data struct {
+		TotalCredits float64 `json:"total_credits"`
+		TotalUsage   float64 `json:"total_usage"`
+	} `json:"data"`
+}
+
 type OpenAIUsageDailyCost struct {
 	Timestamp float64 `json:"timestamp"`
 	LineItems []struct {
@@ -155,6 +162,22 @@ func updateChannelCloseAIBalance(channel *model.Channel) (float64, error) {
 	}
 	channel.UpdateBalance(response.TotalAvailable)
 	return response.TotalAvailable, nil
+}
+
+func updateChannelOpenRouterBalance(channel *model.Channel) (float64, error) {
+	url := "https://openrouter.ai/api/v1/credits"
+	body, err := GetResponseBody("GET", url, channel, GetAuthHeader(channel.Key))
+	if err != nil {
+		return 0, err
+	}
+	response := OpenRouterResponse{}
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return 0, err
+	}
+	balance := response.Data.TotalCredits - response.Data.TotalUsage
+	channel.UpdateBalance(balance)
+	return balance, nil
 }
 
 func updateChannelOpenAISBBalance(channel *model.Channel) (float64, error) {
@@ -307,6 +330,8 @@ func updateChannelBalance(channel *model.Channel) (float64, error) {
 		return updateChannelSiliconFlowBalance(channel)
 	case common.ChannelTypeDeepSeek:
 		return updateChannelDeepSeekBalance(channel)
+	case common.ChannelTypeOpenRouter:
+		return updateChannelOpenRouterBalance(channel)
 	default:
 		return 0, errors.New("尚未实现")
 	}
