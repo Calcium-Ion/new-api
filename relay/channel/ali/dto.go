@@ -97,3 +97,17 @@ type AliImageRequest struct {
 	} `json:"parameters,omitempty"`
 	ResponseFormat string `json:"response_format,omitempty"`
 }
+
+type AliVideoRequest struct {
+	Model string `json:"model"`
+	Input struct {
+		Prompt string `json:"prompt"`
+		ImgUrl string `json:"img_url,omitempty"`
+	} `json:"input"`
+	Parameters struct {
+		Duration     int64  `json:"parameters,omitempty"`
+		PromptExtend bool   `json:"prompt_extend,omitempty"`
+		Seed         int64  `json:"seed,omitempty"`
+		Size         string `json:"size,omitempty"`
+	} `json:"parameters,omitempty"`
+}

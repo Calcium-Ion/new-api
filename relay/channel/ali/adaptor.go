@@ -32,6 +32,8 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		fullRequestURL = fmt.Sprintf("%s/api/v1/services/embeddings/text-embedding/text-embedding", info.BaseUrl)
 	case constant.RelayModeImagesGenerations:
 		fullRequestURL = fmt.Sprintf("%s/api/v1/services/aigc/text2image/image-synthesis", info.BaseUrl)
+	case constant.RelayModeVideoGenerations:
+		fullRequestURL = fmt.Sprintf("%s/api/v1/services/aigc/video-generation/video-synthesis", info.BaseUrl)
 	default:
 		fullRequestURL = fmt.Sprintf("%s/compatible-mode/v1/chat/completions", info.BaseUrl)
 	}
@@ -66,6 +68,10 @@ func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInf
 	return aliRequest, nil
 }
 
+func (a *Adaptor) ConvertVideoRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.VideoRequest) (any, error) {
+	aliRequest := oaiVideo2Ali(request)
+	return aliRequest, nil
+}
 func (a *Adaptor) ConvertRerankRequest(c *gin.Context, relayMode int, request dto.RerankRequest) (any, error) {
 	return nil, errors.New("not implemented")
 }
@@ -87,7 +93,7 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 	switch info.RelayMode {
 	case constant.RelayModeImagesGenerations:
 		err, usage = aliImageHandler(c, resp, info)
-	case constant.RelayModeChatCompletions:
+	case constant.RelayModeVideoGenerations:
 		err, usage = aliVideoHandler(c, resp, info)
 	case constant.RelayModeEmbeddings:
 		err, usage = aliEmbeddingHandler(c, resp)
