@@ -13,6 +13,7 @@ const (
 	RelayModeModerations
 	RelayModeImagesGenerations
 	RelayModeVideoGenerations
+	RelayModeVideoTask
 	RelayModeEdits
 
 	RelayModeMidjourneyImagine

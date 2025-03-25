@@ -48,6 +48,7 @@ func SetRelayRouter(router *gin.Engine) {
 		httpRouter.POST("/audio/translations", controller.Relay)
 		httpRouter.POST("/audio/speech", controller.Relay)
 		httpRouter.POST("/video/generations", controller.Relay)
+		httpRouter.GET("/video/:id", controller.RelayTask)
 		httpRouter.GET("/files", controller.RelayNotImplemented)
 		httpRouter.POST("/files", controller.RelayNotImplemented)
 		httpRouter.DELETE("/files/:id", controller.RelayNotImplemented)

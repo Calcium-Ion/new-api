@@ -200,6 +200,13 @@ func getModelRequest(c *gin.Context) (*ModelRequest, bool, error) {
 		}
 		c.Set("relay_mode", relayMode)
 	}
+
+	if c.FullPath() == "/v1/video/:id" {
+		//task
+		shouldSelectChannel = false
+		c.Set("relay_mode", relayconstant.RelayModeVideoTask)
+	}
+
 	return &modelRequest, shouldSelectChannel, nil
 }
 

@@ -152,6 +152,7 @@ func RelayTaskSubmit(c *gin.Context, relayMode int) (taskErr *dto.TaskError) {
 var fetchRespBuilders = map[int]func(c *gin.Context) (respBody []byte, taskResp *dto.TaskError){
 	relayconstant.RelayModeSunoFetchByID: sunoFetchByIDRespBodyBuilder,
 	relayconstant.RelayModeSunoFetch:     sunoFetchRespBodyBuilder,
+	relayconstant.RelayModeVideoTask:     videoTaskRespBodyBuilder,
 }
 
 func RelayTaskFetch(c *gin.Context, relayMode int) (taskResp *dto.TaskError) {
@@ -201,6 +202,28 @@ func sunoFetchRespBodyBuilder(c *gin.Context) (respBody []byte, taskResp *dto.Ta
 	respBody, err = json.Marshal(dto.TaskResponse[[]any]{
 		Code: "success",
 		Data: tasks,
+	})
+	return
+}
+
+func videoTaskRespBodyBuilder(c *gin.Context) (respBody []byte, taskResp *dto.TaskError) {
+	taskId := c.Param("id")
+	userId := c.GetInt("id")
+
+	originTask, exist, err := model.GetByTaskId(userId, taskId)
+	if err != nil {
+		taskResp = service.TaskErrorWrapper(err, "get_task_failed", http.StatusInternalServerError)
+		return
+	}
+	if !exist {
+		taskResp = service.TaskErrorWrapperLocal(errors.New("task_not_exist"), "task_not_exist", http.StatusBadRequest)
+		return
+	}
+
+	respBody, err = json.Marshal(dto.TaskResponse[any]{
+		Code:    "success",
+		Message: originTask.FailReason,
+		Data:    TaskModel2Dto(originTask),
 	})
 	return
 }
