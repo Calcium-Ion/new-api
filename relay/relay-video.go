@@ -75,6 +75,8 @@ func VideoHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	VideoRequest.Model = relayInfo.UpstreamModelName
 
+	//TODO The amount is not realized first
+
 	adaptor := GetAdaptor(relayInfo.ApiType)
 	if adaptor == nil {
 		return service.OpenAIErrorWrapperLocal(fmt.Errorf("invalid api type: %d", relayInfo.ApiType), "invalid_api_type", http.StatusBadRequest)

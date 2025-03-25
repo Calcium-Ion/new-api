@@ -197,6 +197,15 @@ func GetTimeString() string {
 	return fmt.Sprintf("%s%d", now.Format("20060102150405"), now.UnixNano()%1e9)
 }
 
+func StrConvertTime0(timeStr string) (*time.Time, error) {
+	return convertTime("2006-01-02 15:04:05.000", timeStr)
+}
+
+func convertTime(layout, timeStr string) (*time.Time, error) {
+	t, err := time.Parse(layout, timeStr)
+	return &t, err
+}
+
 func Max(a int, b int) int {
 	if a >= b {
 		return a

@@ -95,6 +95,9 @@ func GetTaskAdaptor(platform commonconstant.TaskPlatform) channel.TaskAdaptor {
 	//	return &aiproxy.Adaptor{}
 	case commonconstant.TaskPlatformSuno:
 		return &suno.TaskAdaptor{}
+	case commonconstant.TaskPlatformAli:
+		return &ali.TaskAdaptor{}
 	}
+
 	return nil
 }

@@ -55,9 +55,12 @@ type AliError struct {
 }
 
 type AliUsage struct {
-	InputTokens  int `json:"input_tokens"`
-	OutputTokens int `json:"output_tokens"`
-	TotalTokens  int `json:"total_tokens"`
+	InputTokens   int    `json:"input_tokens"`
+	OutputTokens  int    `json:"output_tokens"`
+	TotalTokens   int    `json:"total_tokens"`
+	VideoDuration int    `json:"video_duration,omitempty"`
+	VideoRatio    string `json:"video_ratio,omitempty"`
+	VideoCount    int    `json:"video_count,omitempty"`
 }
 
 type TaskResult struct {
@@ -68,13 +71,17 @@ type TaskResult struct {
 }
 
 type AliOutput struct {
-	TaskId       string       `json:"task_id,omitempty"`
-	TaskStatus   string       `json:"task_status,omitempty"`
-	Text         string       `json:"text"`
-	FinishReason string       `json:"finish_reason"`
-	Message      string       `json:"message,omitempty"`
-	Code         string       `json:"code,omitempty"`
-	Results      []TaskResult `json:"results,omitempty"`
+	TaskId        string       `json:"task_id,omitempty"`
+	TaskStatus    string       `json:"task_status,omitempty"`
+	Text          string       `json:"text"`
+	FinishReason  string       `json:"finish_reason"`
+	Message       string       `json:"message,omitempty"`
+	Code          string       `json:"code,omitempty"`
+	SubmitTime    string       `json:"submit_time,omitempty"`
+	ScheduledTime string       `json:"scheduled_time,omitempty"`
+	EndTime       string       `json:"end_time,omitempty"`
+	VideoURL      string       `json:"video_url,omitempty"`
+	Results       []TaskResult `json:"results,omitempty"`
 }
 
 type AliResponse struct {

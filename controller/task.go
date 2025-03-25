@@ -14,8 +14,11 @@ import (
 	"one-api/dto"
 	"one-api/model"
 	"one-api/relay"
+	"one-api/relay/channel/ali"
 	"sort"
 	"strconv"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -74,6 +77,8 @@ func UpdateTaskByPlatform(platform constant.TaskPlatform, taskChannelM map[int][
 		//_ = UpdateMidjourneyTaskAll(context.Background(), tasks)
 	case constant.TaskPlatformSuno:
 		_ = UpdateSunoTaskAll(context.Background(), taskChannelM, taskM)
+	case constant.TaskPlatformAli:
+		_ = UpdateAliTaskAll(context.Background(), taskChannelM, taskM)
 	default:
 		common.SysLog("未知平台")
 	}
@@ -178,6 +183,79 @@ func updateSunoTaskAll(ctx context.Context, channelId int, taskIds []string, tas
 			common.SysError("UpdateMidjourneyTask task error: " + err.Error())
 		}
 	}
+	return nil
+}
+
+func UpdateAliTaskAll(ctx context.Context, taskChannelM map[int][]string, taskM map[string]*model.Task) error {
+	for channelId, taskIds := range taskChannelM {
+		err := updateAliTaskAll(ctx, channelId, taskIds, taskM)
+		if err != nil {
+			common.LogError(ctx, fmt.Sprintf("渠道 #%d 更新异步任务失败: %d", channelId, err.Error()))
+		}
+	}
+	return nil
+}
+
+func updateAliTaskAll(ctx context.Context, channelId int, taskIds []string, taskM map[string]*model.Task) error {
+	common.LogInfo(ctx, fmt.Sprintf("渠道 #%d 未完成的任务有: %d", channelId, len(taskIds)))
+	if len(taskIds) == 0 {
+		return nil
+	}
+	channel, err := model.CacheGetChannel(channelId)
+	if err != nil {
+		common.SysLog(fmt.Sprintf("CacheGetChannel: %v", err))
+		err = model.TaskBulkUpdate(taskIds, map[string]any{
+			"fail_reason": fmt.Sprintf("获取渠道信息失败，请联系管理员，渠道ID：%d", channelId),
+			"status":      "FAILURE",
+			"progress":    "100%",
+		})
+		if err != nil {
+			common.SysError(fmt.Sprintf("UpdateMidjourneyTask error2: %v", err))
+		}
+		return err
+	}
+
+	adaptor := relay.GetTaskAdaptor(constant.TaskPlatformAli)
+	if adaptor == nil {
+		return errors.New("adaptor not found")
+	}
+
+	//不支持批量更新，所以我这里开了并发
+	const taskWgCount = 1 << 2
+	taskCount := int64(len(taskIds))
+	completeTaskCount := int64(0)
+	wgCount := len(taskIds)
+	var wg sync.WaitGroup
+
+	if len(taskIds) > taskWgCount {
+		wgCount = taskWgCount
+	}
+	wg.Add(wgCount)
+
+	for i := 0; i < wgCount; i++ {
+		go func(i int) {
+			for {
+				currentTaskId := atomic.AddInt64(&completeTaskCount, 1)
+				if currentTaskId > taskCount {
+					break
+				}
+				aliResponse, err := ali.HandleGetTask(*channel.BaseURL, channel.Key, taskIds[currentTaskId-1], adaptor)
+				if err != nil {
+					common.SysError(fmt.Sprintf("Get Task Do req error: %v", err))
+					continue
+				}
+
+				err = ali.HandleUpdateTask(ctx, taskM[aliResponse.Output.TaskId], aliResponse)
+				if err != nil {
+					common.SysError(fmt.Sprintf("UpdateMidjourneyTask task error: %v", err))
+				}
+			}
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
+
 	return nil
 }
 
