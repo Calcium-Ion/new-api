@@ -70,7 +70,9 @@ func RequestOpenAI2ClaudeMessage(textRequest dto.GeneralOpenAIRequest) (*dto.Cla
 				Description: tool.Function.Description,
 			}
 			claudeTool.InputSchema = make(map[string]interface{})
-			claudeTool.InputSchema["type"] = params["type"].(string)
+			if params["type"] != nil {
+				claudeTool.InputSchema["type"] = params["type"].(string)
+			}
 			claudeTool.InputSchema["properties"] = params["properties"]
 			claudeTool.InputSchema["required"] = params["required"]
 			for s, a := range params {
