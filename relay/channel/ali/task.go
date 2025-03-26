@@ -12,8 +12,8 @@ import (
 	"one-api/relay/channel"
 )
 
-func HandleGetTask(baseUrl, key, taskId string, a channel.TaskAdaptor) (aliResp *AliResponse, err error) {
-	resp, err := a.SingleTask(baseUrl, key, map[string]any{
+func HandleGetTask(baseUrl, key, taskId string, adaptor channel.TaskAdaptor) (aliResp *AliResponse, err error) {
+	resp, err := adaptor.SingleTask(baseUrl, key, map[string]any{
 		"task_id": taskId,
 	})
 

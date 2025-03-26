@@ -1,7 +1,6 @@
 package ali
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -10,7 +9,6 @@ import (
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
 	"one-api/service"
-	"time"
 )
 
 type TaskAdaptor struct {
@@ -65,14 +63,8 @@ func (a *TaskAdaptor) SingleTask(baseUrl, key string, body map[string]any) (*htt
 		return nil, err
 	}
 
-	// 设置超时时间
-	timeout := time.Second * 5
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-	// 使用带有超时的 context 创建新的请求
-	req = req.WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer "+key)
-	resp, err := service.GetHttpClient().Do(req)
+	resp, err := service.GETTransportHTTPClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
