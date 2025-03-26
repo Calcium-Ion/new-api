@@ -19,6 +19,8 @@ import (
 	"strings"
 	"time"
 
+	"compress/gzip"
+
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -627,10 +629,11 @@ func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.O
 	// 设置请求头
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
+	req.Header.Set("Accept-Encoding", "gzip") // 明确请求gzip压缩
 
 	// 保留其他相关请求头
 	for k, v := range c.Request.Header {
-		if k != "Authorization" && k != "Content-Type" {
+		if k != "Authorization" && k != "Content-Type" && k != "Accept-Encoding" {
 			req.Header.Set(k, v[0])
 		}
 	}
@@ -649,7 +652,9 @@ func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.O
 
 	// 设置响应头
 	for k, v := range resp.Header {
-		c.Writer.Header().Set(k, v[0])
+		if k != "Content-Encoding" { // 不转发Content-Encoding头
+			c.Writer.Header().Set(k, v[0])
+		}
 	}
 
 	// 如果响应状态不是成功，记录错误信息
@@ -657,6 +662,19 @@ func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.O
 		responseBody, _ := io.ReadAll(resp.Body)
 		common.LogError(c, fmt.Sprintf("响应状态: %d, 响应内容: %s", resp.StatusCode, string(responseBody)))
 		resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+	}
+
+	// 检查响应是否被压缩
+	contentEncoding := resp.Header.Get("Content-Encoding")
+	var reader io.Reader = resp.Body
+	if contentEncoding == "gzip" {
+		gzReader, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			common.LogError(c, fmt.Sprintf("创建gzip reader失败: %s", err.Error()))
+			return service.OpenAIErrorWrapper(err, "decompress_failed", http.StatusInternalServerError), nil
+		}
+		defer gzReader.Close()
+		reader = gzReader
 	}
 
 	// 特殊处理流式响应
@@ -667,7 +685,7 @@ func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.O
 		c.Writer.WriteHeader(resp.StatusCode)
 
 		// 处理流式响应
-		scanner := bufio.NewScanner(resp.Body)
+		scanner := bufio.NewScanner(reader)
 		scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 			if atEOF && len(data) == 0 {
 				return 0, nil, nil
@@ -698,31 +716,25 @@ func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.O
 			c.Writer.Flush()
 
 			// 尝试解析 usage 信息
-			if strings.Contains(line, "event: response.completed") || strings.Contains(line, "data: {\"type\":\"response.completed\"") {
-				dataStart := strings.Index(line, "data: ")
-				if dataStart != -1 {
-					dataJson := line[dataStart+6:]
-					var completedData map[string]interface{}
-					if err := json.Unmarshal([]byte(dataJson), &completedData); err == nil {
-						if response, ok := completedData["response"].(map[string]interface{}); ok {
-							if usage, ok := response["usage"].(map[string]interface{}); ok {
-								if inputTokens, ok := usage["input_tokens"].(float64); ok {
-									totalInputTokens = int(inputTokens)
-								}
-								if outputTokens, ok := usage["output_tokens"].(float64); ok {
-									totalOutputTokens = int(outputTokens)
-								}
-							}
-						}
+			if strings.HasPrefix(line, "data: ") {
+				line = strings.TrimPrefix(line, "data: ")
+				if line == "[DONE]" {
+					continue
+				}
+				var streamResponse dto.OpenAIResponsesResponse
+				if err := json.Unmarshal([]byte(line), &streamResponse); err == nil {
+					if streamResponse.Usage.InputTokens > 0 {
+						totalInputTokens = streamResponse.Usage.InputTokens
+					}
+					if streamResponse.Usage.OutputTokens > 0 {
+						totalOutputTokens = streamResponse.Usage.OutputTokens
 					}
 				}
 			}
 		}
 
-		common.LogInfo(c, fmt.Sprintf("流式响应处理完成, 输入 tokens: %d, 输出 tokens: %d, 总计 tokens: %d",
-			totalInputTokens, totalOutputTokens, totalInputTokens+totalOutputTokens))
-
-		// 将input_tokens映射到PromptTokens, output_tokens映射到CompletionTokens
+		// 更新使用量
+		info.SetPromptTokens(totalInputTokens)
 		return nil, &dto.Usage{
 			PromptTokens:     totalInputTokens,
 			CompletionTokens: totalOutputTokens,
@@ -730,27 +742,23 @@ func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.O
 		}
 	}
 
-	c.Writer.WriteHeader(resp.StatusCode)
-
-	// 直接复制响应
-	responseBody, err := io.ReadAll(resp.Body)
+	// 读取响应体
+	responseBody, err := io.ReadAll(reader)
 	if err != nil {
-		common.LogError(c, fmt.Sprintf("读取响应失败: %s", err.Error()))
-		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
+		common.LogError(c, fmt.Sprintf("读取响应体失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "read_response_failed", http.StatusInternalServerError), nil
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		// 处理错误
-		var errResp struct {
-			Error *dto.OpenAIError `json:"error"`
-		}
-		if err := json.Unmarshal(responseBody, &errResp); err == nil && errResp.Error != nil {
-			common.LogError(c, fmt.Sprintf("错误: %s", errResp.Error.Message))
-			return &dto.OpenAIErrorWithStatusCode{
-				Error:      *errResp.Error,
-				StatusCode: resp.StatusCode,
-			}, nil
-		}
+	// 尝试解析响应
+	var response dto.OpenAIResponsesResponse
+	if err := json.Unmarshal(responseBody, &response); err != nil {
+		common.LogError(c, fmt.Sprintf("解析响应失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "parse_response_failed", http.StatusInternalServerError), nil
+	}
+
+	// 更新使用量
+	if response.Usage.InputTokens > 0 {
+		info.SetPromptTokens(response.Usage.InputTokens)
 	}
 
 	// 写入响应
@@ -760,25 +768,9 @@ func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.O
 		return service.OpenAIErrorWrapper(err, "write_response_failed", http.StatusInternalServerError), nil
 	}
 
-	// 解析响应，提取token使用信息
-	var response dto.OpenAIResponsesResponse
-	if err := json.Unmarshal(responseBody, &response); err == nil && response.Usage.InputTokens > 0 {
-		common.LogInfo(c, fmt.Sprintf("非流式响应 token 用量: 输入=%d, 输出=%d, 总计=%d",
-			response.Usage.InputTokens, response.Usage.OutputTokens, response.Usage.TotalTokens))
-
-		// 将input_tokens映射到PromptTokens, output_tokens映射到CompletionTokens
-		return nil, &dto.Usage{
-			PromptTokens:     response.Usage.InputTokens,
-			CompletionTokens: response.Usage.OutputTokens,
-			TotalTokens:      response.Usage.TotalTokens,
-		}
-	}
-
-	// 如果无法解析或没有token信息，使用预计算的promptTokens
-	common.LogWarn(c, "无法从响应中提取token用量，将使用预计算的值")
 	return nil, &dto.Usage{
-		PromptTokens:     info.PromptTokens,
-		CompletionTokens: 0,
-		TotalTokens:      info.PromptTokens,
+		PromptTokens:     response.Usage.InputTokens,
+		CompletionTokens: response.Usage.OutputTokens,
+		TotalTokens:      response.Usage.TotalTokens,
 	}
 }
