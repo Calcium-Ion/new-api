@@ -400,10 +400,11 @@ func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 			}
 			return 4, true
 		}
-		if strings.HasPrefix(name, "gpt-4.5") && strings.HasSuffix(name, "preview") {
+		// gpt-4.5-preview匹配
+		if strings.HasPrefix(name, "gpt-4.5-preview") {
 			return 2, true
 		}
-		if strings.HasPrefix(name, "gpt-4-turbo") || (strings.HasPrefix(name, "gpt-4-") && strings.HasSuffix(name, "preview")) {
+		if strings.HasPrefix(name, "gpt-4-turbo") || strings.HasSuffix(name, "gpt-4-1106") || strings.HasSuffix(name, "gpt-4-1105") {
 			return 3, true
 		}
 		// 没有特殊标记的 gpt-4 模型默认倍率为 2
