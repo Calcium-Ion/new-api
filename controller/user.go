@@ -18,11 +18,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// LoginRequest 登录请求参数
 type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" example:"admin" binding:"required"`    // 用户名
+	Password string `json:"password" example:"password" binding:"required"` // 密码
 }
 
+// @Summary 用户登录
+// @Description 用户通过用户名和密码登录
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Param request body LoginRequest true "登录信息"
+// @Success 200 {object} common.Response{data=model.User} "成功登录返回用户信息"
+// @Failure 200 {object} common.Response "登录失败，返回错误信息"
+// @Router /user/login [post]
 func Login(c *gin.Context) {
 	if !common.PasswordLoginEnabled {
 		c.JSON(http.StatusOK, gin.H{
@@ -95,6 +105,14 @@ func setupLogin(user *model.User, c *gin.Context) {
 	})
 }
 
+// @Summary 登出系统
+// @Description 用户登出，清除会话
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Success 200 {object} common.Response "成功登出"
+// @Failure 200 {object} common.Response "登出失败，返回错误信息"
+// @Router /user/logout [get]
 func Logout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Clear()
@@ -112,6 +130,15 @@ func Logout(c *gin.Context) {
 	})
 }
 
+// @Summary 用户注册
+// @Description 新用户注册系统
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Param request body model.User true "注册信息"
+// @Success 200 {object} common.Response "注册成功"
+// @Failure 200 {object} common.Response "注册失败，返回错误信息"
+// @Router /user/register [post]
 func Register(c *gin.Context) {
 	if !common.RegisterEnabled {
 		c.JSON(http.StatusOK, gin.H{
@@ -242,6 +269,16 @@ func Register(c *gin.Context) {
 	return
 }
 
+// @Summary 获取所有用户
+// @Description 管理员获取所有用户信息（分页）
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Param page query int false "页码，默认为1"
+// @Param page_size query int false "每页数量，默认为10"
+// @Success 200 {object} common.Response{data=[]model.User} "成功返回用户列表"
+// @Failure 200 {object} common.Response "获取失败，返回错误信息"
+// @Router /user [get]
 func GetAllUsers(c *gin.Context) {
 	p, _ := strconv.Atoi(c.Query("p"))
 	pageSize, _ := strconv.Atoi(c.Query("page_size"))
@@ -305,6 +342,15 @@ func SearchUsers(c *gin.Context) {
 	return
 }
 
+// @Summary 获取用户信息
+// @Description 获取指定用户的信息
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Param id path int true "用户ID"
+// @Success 200 {object} common.Response{data=model.User} "成功返回用户信息"
+// @Failure 200 {object} common.Response "获取失败，返回错误信息"
+// @Router /user/{id} [get]
 func GetUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -338,6 +384,14 @@ func GetUser(c *gin.Context) {
 	return
 }
 
+// @Summary 生成访问令牌
+// @Description 为当前用户生成API访问令牌
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Success 200 {object} common.Response{data=string} "成功返回访问令牌"
+// @Failure 200 {object} common.Response "生成失败，返回错误信息"
+// @Router /user/token [get]
 func GenerateAccessToken(c *gin.Context) {
 	id := c.GetInt("id")
 	user, err := model.GetUserById(id, true)
@@ -449,6 +503,14 @@ func GetAffCode(c *gin.Context) {
 	return
 }
 
+// @Summary 获取个人信息
+// @Description 获取当前登录用户的信息
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Success 200 {object} common.Response{data=model.User} "成功返回用户信息"
+// @Failure 200 {object} common.Response "获取失败，返回错误信息"
+// @Router /user/self [get]
 func GetSelf(c *gin.Context) {
 	id := c.GetInt("id")
 	user, err := model.GetUserById(id, false)

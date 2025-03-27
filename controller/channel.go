@@ -40,6 +40,16 @@ type OpenAIModelsResponse struct {
 	Success bool          `json:"success"`
 }
 
+// @Summary 获取所有渠道
+// @Description 获取系统中所有的渠道信息（分页）
+// @Tags 渠道管理
+// @Accept json
+// @Produce json
+// @Param page query int false "页码，默认为1"
+// @Param page_size query int false "每页数量，默认为10"
+// @Success 200 {object} common.Response{data=[]model.Channel} "成功返回渠道列表"
+// @Failure 200 {object} common.Response "获取失败，返回错误信息"
+// @Router /channel [get]
 func GetAllChannels(c *gin.Context) {
 	p, _ := strconv.Atoi(c.Query("p"))
 	pageSize, _ := strconv.Atoi(c.Query("page_size"))
@@ -165,6 +175,17 @@ func FixChannelsAbilities(c *gin.Context) {
 	})
 }
 
+// @Summary 搜索渠道
+// @Description 根据条件搜索渠道
+// @Tags 渠道管理
+// @Accept json
+// @Produce json
+// @Param key query string false "搜索关键词"
+// @Param page query int false "页码，默认为1"
+// @Param page_size query int false "每页数量，默认为10"
+// @Success 200 {object} common.Response{data=[]model.Channel} "成功返回渠道列表"
+// @Failure 200 {object} common.Response "搜索失败，返回错误信息"
+// @Router /channel/search [get]
 func SearchChannels(c *gin.Context) {
 	keyword := c.Query("keyword")
 	group := c.Query("group")
@@ -208,6 +229,15 @@ func SearchChannels(c *gin.Context) {
 	return
 }
 
+// @Summary 获取渠道信息
+// @Description 获取指定渠道的详细信息
+// @Tags 渠道管理
+// @Accept json
+// @Produce json
+// @Param id path int true "渠道ID"
+// @Success 200 {object} common.Response{data=model.Channel} "成功返回渠道信息"
+// @Failure 200 {object} common.Response "获取失败，返回错误信息"
+// @Router /channel/{id} [get]
 func GetChannel(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -233,6 +263,15 @@ func GetChannel(c *gin.Context) {
 	return
 }
 
+// @Summary 添加渠道
+// @Description 添加新的渠道
+// @Tags 渠道管理
+// @Accept json
+// @Produce json
+// @Param request body model.Channel true "渠道信息"
+// @Success 200 {object} common.Response "添加成功"
+// @Failure 200 {object} common.Response "添加失败，返回错误信息"
+// @Router /channel [post]
 func AddChannel(c *gin.Context) {
 	channel := model.Channel{}
 	err := c.ShouldBindJSON(&channel)
@@ -302,6 +341,15 @@ func AddChannel(c *gin.Context) {
 	return
 }
 
+// @Summary 删除渠道
+// @Description 删除指定的渠道
+// @Tags 渠道管理
+// @Accept json
+// @Produce json
+// @Param id path int true "渠道ID"
+// @Success 200 {object} common.Response "删除成功"
+// @Failure 200 {object} common.Response "删除失败，返回错误信息"
+// @Router /channel/{id} [delete]
 func DeleteChannel(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	channel := model.Channel{Id: id}
@@ -460,6 +508,15 @@ func DeleteChannelBatch(c *gin.Context) {
 	return
 }
 
+// @Summary 更新渠道
+// @Description 更新已有渠道的信息
+// @Tags 渠道管理
+// @Accept json
+// @Produce json
+// @Param request body model.Channel true "渠道信息"
+// @Success 200 {object} common.Response "更新成功"
+// @Failure 200 {object} common.Response "更新失败，返回错误信息"
+// @Router /channel [put]
 func UpdateChannel(c *gin.Context) {
 	channel := model.Channel{}
 	err := c.ShouldBindJSON(&channel)
@@ -613,3 +670,18 @@ func BatchSetChannelTag(c *gin.Context) {
 	})
 	return
 }
+
+/* 已存在TestChannel函数，此处注释
+// @Summary 测试渠道
+// @Description 测试指定渠道是否可用
+// @Tags 渠道管理
+// @Accept json
+// @Produce json
+// @Param id path int true "渠道ID"
+// @Success 200 {object} common.Response "测试成功"
+// @Failure 200 {object} common.Response "测试失败，返回错误信息"
+// @Router /channel/test/{id} [get]
+func TestChannel(c *gin.Context) {
+	// ... existing code ...
+}
+*/

@@ -1,3 +1,21 @@
+// @title        One API服务
+// @version      1.0
+// @description  One API是一个统一的API网关，支持多个LLM模型和服务集成
+// @contact.name API Support
+// @contact.url  https://github.com/Calcium-Ion/new-api
+// @license.name MIT
+// @license.url  https://github.com/Calcium-Ion/new-api/blob/main/LICENSE
+// @host         localhost:3000
+// @BasePath     /api
+// @schemes      http https
+// @securityDefinitions.apikey BearerAuth
+// @in                         header
+// @name                       Authorization
+// @description                需要在请求头中提供JWT令牌，格式为: Bearer {token}
+// @securityDefinitions.apikey SessionAuth
+// @in                         cookie
+// @name                       session
+// @description                通过会话Cookie进行认证
 package main
 
 import (
@@ -5,9 +23,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"one-api/common"
 	"one-api/constant"
 	"one-api/controller"
+	_ "one-api/docs" // swagger docs
 	"one-api/middleware"
 	"one-api/model"
 	"one-api/router"
@@ -20,8 +40,8 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-
-	_ "net/http/pprof"
+	_ "github.com/swaggo/gin-swagger" // gin-swagger middleware
+	_ "github.com/swaggo/swag"        // swagger embed files
 )
 
 //go:embed web/dist
