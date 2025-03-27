@@ -198,6 +198,12 @@ func streamResponseDify2OpenAI(difyResponse DifyChunkChatCompletionResponse) *dt
 			choice.Delta.SetReasoningContent(text + "\n")
 		}
 	} else if difyResponse.Event == "message" || difyResponse.Event == "agent_message" {
+		if difyResponse.Answer == "<details style=\"color:gray;background-color: #f8f8f8;padding: 8px;border-radius: 4px;\" open> <summary> Thinking... </summary>\n" {
+			difyResponse.Answer = "<think>"
+		} else if difyResponse.Answer == "</details>" {
+			difyResponse.Answer = "</think>"
+		}
+
 		choice.Delta.SetContentString(difyResponse.Answer)
 	}
 	response.Choices = append(response.Choices, choice)
