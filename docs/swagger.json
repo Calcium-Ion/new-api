@@ -1,0 +1,701 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "One API是一个统一的API网关，支持多个LLM模型和服务集成",
+    "title": "One API服务",
+    "contact": {
+      "name": "API Support",
+      "url": "https://github.com/Calcium-Ion/new-api"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/Calcium-Ion/new-api/blob/main/LICENSE"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "本地开发服务器"
+    }
+  ],
+  "paths": {
+    "/user/login": {
+      "post": {
+        "description": "用户通过用户名和密码登录",
+        "tags": [
+          "用户管理"
+        ],
+        "summary": "用户登录",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功登录返回用户信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/logout": {
+      "get": {
+        "description": "用户登出，清除会话",
+        "tags": [
+          "用户管理"
+        ],
+        "summary": "登出系统",
+        "responses": {
+          "200": {
+            "description": "成功登出",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/register": {
+      "post": {
+        "description": "新用户注册系统",
+        "tags": [
+          "用户管理"
+        ],
+        "summary": "用户注册",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "注册成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "description": "管理员获取所有用户信息（分页）",
+        "tags": [
+          "用户管理"
+        ],
+        "summary": "获取所有用户",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码，默认为1",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "每页数量，默认为10",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回用户列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/User"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "description": "获取指定用户的信息",
+        "tags": [
+          "用户管理"
+        ],
+        "summary": "获取用户信息",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "用户ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回用户信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/token": {
+      "get": {
+        "description": "为当前用户生成API访问令牌",
+        "tags": [
+          "用户管理"
+        ],
+        "summary": "生成访问令牌",
+        "responses": {
+          "200": {
+            "description": "成功返回访问令牌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/self": {
+      "get": {
+        "description": "获取当前登录用户的信息",
+        "tags": [
+          "用户管理"
+        ],
+        "summary": "获取个人信息",
+        "responses": {
+          "200": {
+            "description": "成功返回用户信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channel": {
+      "get": {
+        "description": "获取系统中所有的渠道信息（分页）",
+        "tags": [
+          "渠道管理"
+        ],
+        "summary": "获取所有渠道",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码，默认为1",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "每页数量，默认为10",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回渠道列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Channel"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "添加新的渠道",
+        "tags": [
+          "渠道管理"
+        ],
+        "summary": "添加渠道",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Channel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "添加成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "更新已有渠道的信息",
+        "tags": [
+          "渠道管理"
+        ],
+        "summary": "更新渠道",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Channel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channel/{id}": {
+      "get": {
+        "description": "获取指定渠道的详细信息",
+        "tags": [
+          "渠道管理"
+        ],
+        "summary": "获取渠道信息",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "渠道ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回渠道信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Channel"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "删除指定的渠道",
+        "tags": [
+          "渠道管理"
+        ],
+        "summary": "删除渠道",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "渠道ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channel/search": {
+      "get": {
+        "description": "根据条件搜索渠道",
+        "tags": [
+          "渠道管理"
+        ],
+        "summary": "搜索渠道",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "description": "搜索关键词",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码，默认为1",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "每页数量，默认为10",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功返回渠道列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Response"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Channel"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Response": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true,
+            "description": "是否成功"
+          },
+          "message": {
+            "type": "string",
+            "example": "操作成功",
+            "description": "响应消息"
+          },
+          "data": {
+            "type": "object",
+            "description": "响应数据"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "admin",
+            "description": "用户名"
+          },
+          "password": {
+            "type": "string",
+            "example": "password",
+            "description": "密码"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "用户ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名称"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱"
+          },
+          "role": {
+            "type": "integer",
+            "description": "角色"
+          },
+          "status": {
+            "type": "integer",
+            "description": "状态"
+          },
+          "quota": {
+            "type": "number",
+            "description": "配额"
+          },
+          "group": {
+            "type": "integer",
+            "description": "用户组"
+          },
+          "affCode": {
+            "type": "string",
+            "description": "邀请码"
+          },
+          "inviterId": {
+            "type": "integer",
+            "description": "邀请人ID"
+          },
+          "verificationCode": {
+            "type": "string",
+            "description": "验证码"
+          }
+        }
+      },
+      "Channel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "渠道ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "渠道名称"
+          },
+          "type": {
+            "type": "integer",
+            "description": "渠道类型"
+          },
+          "key": {
+            "type": "string",
+            "description": "渠道密钥"
+          },
+          "baseURL": {
+            "type": "string",
+            "description": "基础URL"
+          },
+          "models": {
+            "type": "string",
+            "description": "支持的模型"
+          },
+          "group": {
+            "type": "string",
+            "description": "渠道组"
+          },
+          "weight": {
+            "type": "integer",
+            "description": "权重"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "优先级"
+          },
+          "balance": {
+            "type": "number",
+            "description": "余额"
+          },
+          "tag": {
+            "type": "string",
+            "description": "标签"
+          },
+          "disabled": {
+            "type": "boolean",
+            "description": "是否禁用"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "在请求头中添加 'Authorization: Bearer {token}' 进行认证"
+      },
+      "SessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "通过会话Cookie进行认证"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    },
+    {
+      "SessionAuth": []
+    }
+  ]
+} 
