@@ -2,29 +2,22 @@ package router
 
 import (
 	"embed"
-	"fmt"
+	"one-api/middleware"
+
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"one-api/common"
-	"os"
-	"strings"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func SetRouter(router *gin.Engine, buildFS embed.FS, indexPage []byte) {
+	router.Use(middleware.CORS())
+
+	// Swagger文档路由
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// 其他路由设置
+	SetWebRouter(router, buildFS, indexPage)
 	SetApiRouter(router)
-	SetDashboardRouter(router)
 	SetRelayRouter(router)
-	frontendBaseUrl := os.Getenv("FRONTEND_BASE_URL")
-	if common.IsMasterNode && frontendBaseUrl != "" {
-		frontendBaseUrl = ""
-		common.SysLog("FRONTEND_BASE_URL is ignored on master node")
-	}
-	if frontendBaseUrl == "" {
-		SetWebRouter(router, buildFS, indexPage)
-	} else {
-		frontendBaseUrl = strings.TrimSuffix(frontendBaseUrl, "/")
-		router.NoRoute(func(c *gin.Context) {
-			c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%s%s", frontendBaseUrl, c.Request.RequestURI))
-		})
-	}
+	SetDashboardRouter(router)
 }
