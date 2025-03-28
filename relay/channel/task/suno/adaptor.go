@@ -154,6 +154,10 @@ func (a *TaskAdaptor) FetchTask(baseUrl, key string, body map[string]any) (*http
 	return resp, nil
 }
 
+func (a *TaskAdaptor) SingleTask(baseUrl, key string, body map[string]any) (*http.Response, error) {
+	return nil, nil
+}
+
 func actionValidate(c *gin.Context, sunoRequest *dto.SunoSubmitReq, action string) (err error) {
 	switch action {
 	case constant.SunoActionMusic:

@@ -26,6 +26,8 @@ func relayHandler(c *gin.Context, relayMode int) *dto.OpenAIErrorWithStatusCode 
 	switch relayMode {
 	case relayconstant.RelayModeImagesGenerations:
 		err = relay.ImageHelper(c)
+	case relayconstant.RelayModeVideoGenerations:
+		err = relay.VideoHelper(c)
 	case relayconstant.RelayModeAudioSpeech:
 		fallthrough
 	case relayconstant.RelayModeAudioTranslation:
@@ -394,7 +396,7 @@ func RelayTask(c *gin.Context) {
 func taskRelayHandler(c *gin.Context, relayMode int) *dto.TaskError {
 	var err *dto.TaskError
 	switch relayMode {
-	case relayconstant.RelayModeSunoFetch, relayconstant.RelayModeSunoFetchByID:
+	case relayconstant.RelayModeSunoFetch, relayconstant.RelayModeSunoFetchByID, relayconstant.RelayModeVideoTask:
 		err = relay.RelayTaskFetch(c, relayMode)
 	default:
 		err = relay.RelayTaskSubmit(c, relayMode)

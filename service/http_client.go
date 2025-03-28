@@ -13,6 +13,7 @@ import (
 
 var httpClient *http.Client
 var impatientHTTPClient *http.Client
+var transportHTTPClient *http.Client
 
 func init() {
 	if common.RelayTimeout == 0 {
@@ -26,6 +27,16 @@ func init() {
 	impatientHTTPClient = &http.Client{
 		Timeout: 5 * time.Second,
 	}
+
+	transportHTTPClient = &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 20,
+			IdleConnTimeout:     90 * time.Second,
+		},
+		Timeout: 5 * time.Second,
+	}
+
 }
 
 func GetHttpClient() *http.Client {
@@ -34,6 +45,10 @@ func GetHttpClient() *http.Client {
 
 func GetImpatientHttpClient() *http.Client {
 	return impatientHTTPClient
+}
+
+func GETTransportHTTPClient() *http.Client {
+	return transportHTTPClient
 }
 
 // NewProxyHttpClient 创建支持代理的 HTTP 客户端
