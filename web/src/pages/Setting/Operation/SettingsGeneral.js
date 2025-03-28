@@ -27,9 +27,10 @@ export default function GeneralSettings(props) {
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
 
-  function onChange(value, e) {
-    const name = e.target.id;
-    setInputs((inputs) => ({ ...inputs, [name]: value }));
+  function handleFieldChange(fieldName) {
+    return (value) => {
+      setInputs((inputs) => ({ ...inputs, [fieldName]: value }));
+    };
   }
 
   function onSubmit() {
@@ -98,7 +99,7 @@ export default function GeneralSettings(props) {
                   label={t('充值链接')}
                   initValue={''}
                   placeholder={t('例如发卡网站的购买链接')}
-                  onChange={onChange}
+                  onChange={handleFieldChange('TopUpLink')}
                   showClear
                 />
               </Col>
@@ -108,7 +109,7 @@ export default function GeneralSettings(props) {
                   label={t('文档地址')}
                   initValue={''}
                   placeholder={t('例如 https://docs.newapi.pro')}
-                  onChange={onChange}
+                  onChange={handleFieldChange('general_setting.docs_link')}
                   showClear
                 />
               </Col>
@@ -118,7 +119,7 @@ export default function GeneralSettings(props) {
                   label={t('单位美元额度')}
                   initValue={''}
                   placeholder={t('一单位货币能兑换的额度')}
-                  onChange={onChange}
+                  onChange={handleFieldChange('QuotaPerUnit')}
                   showClear
                   onClick={() => setShowQuotaWarning(true)}
                 />
@@ -129,7 +130,7 @@ export default function GeneralSettings(props) {
                   label={t('失败重试次数')}
                   initValue={''}
                   placeholder={t('失败重试次数')}
-                  onChange={onChange}
+                  onChange={handleFieldChange('RetryTimes')}
                   showClear
                 />
               </Col>
