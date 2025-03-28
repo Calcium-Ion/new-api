@@ -143,12 +143,7 @@ export default function GeneralSettings(props) {
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
-                  onChange={(value) => {
-                    setInputs({
-                      ...inputs,
-                      DisplayInCurrencyEnabled: value,
-                    });
-                  }}
+                  onChange={handleFieldChange('DisplayInCurrencyEnabled')}
                 />
               </Col>
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
@@ -158,12 +153,7 @@ export default function GeneralSettings(props) {
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      DisplayTokenStatEnabled: value,
-                    })
-                  }
+                  onChange={handleFieldChange('DisplayTokenStatEnabled')}
                 />
               </Col>
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
@@ -173,12 +163,7 @@ export default function GeneralSettings(props) {
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      DefaultCollapseSidebar: value,
-                    })
-                  }
+                  onChange={handleFieldChange('DefaultCollapseSidebar')}
                 />
               </Col>
             </Row>
@@ -190,12 +175,7 @@ export default function GeneralSettings(props) {
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      DemoSiteEnabled: value
-                    })
-                  }
+                  onChange={handleFieldChange('DemoSiteEnabled')}
                 />
               </Col>
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
@@ -206,12 +186,7 @@ export default function GeneralSettings(props) {
                   size='default'
                   checkedText='｜'
                   uncheckedText='〇'
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      SelfUseModeEnabled: value
-                    })
-                  }
+                  onChange={handleFieldChange('SelfUseModeEnabled')}
                 />
               </Col>
             </Row>
