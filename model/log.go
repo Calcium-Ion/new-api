@@ -243,6 +243,11 @@ type Stat struct {
 	Tpm   int `json:"tpm"`
 }
 
+type TokenStat struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+}
+
 func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int, group string) (stat Stat) {
 	tx := LOG_DB.Table("logs").Select("sum(quota) quota")
 
@@ -289,8 +294,9 @@ func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	return stat
 }
 
-func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string) (token int) {
-	tx := LOG_DB.Table("logs").Select("ifnull(sum(prompt_tokens),0) + ifnull(sum(completion_tokens),0)")
+func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int, group string) (total int, stat TokenStat) {
+	// 创建查询来同时获取两个字段
+	tx := LOG_DB.Table("logs").Select("ifnull(sum(prompt_tokens),0) as prompt_tokens, ifnull(sum(completion_tokens),0) as completion_tokens")
 	if username != "" {
 		tx = tx.Where("username = ?", username)
 	}
@@ -306,8 +312,17 @@ func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	if modelName != "" {
 		tx = tx.Where("model_name = ?", modelName)
 	}
-	tx.Where("type = ?", LogTypeConsume).Scan(&token)
-	return token
+	if channel != 0 {
+		tx = tx.Where("channel_id = ?", channel)
+	}
+	if group != "" {
+		tx = tx.Where(groupCol+" = ?", group)
+	}
+	tx.Where("type = ?", LogTypeConsume).Scan(&stat)
+
+	// 计算总和
+	total = stat.PromptTokens + stat.CompletionTokens
+	return total, stat
 }
 
 func DeleteOldLog(targetTimestamp int64) (int64, error) {
