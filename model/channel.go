@@ -36,6 +36,7 @@ type Channel struct {
 	OtherInfo         string  `json:"other_info"`
 	Tag               *string `json:"tag" gorm:"index"`
 	Setting           *string `json:"setting" gorm:"type:text"`
+	ParamOverride     *string `json:"param_override" gorm:"type:text"`
 }
 
 func (channel *Channel) GetModels() []string {
@@ -509,6 +510,17 @@ func (channel *Channel) SetSetting(setting map[string]interface{}) {
 		return
 	}
 	channel.Setting = common.GetPointer[string](string(settingBytes))
+}
+
+func (channel *Channel) GetParamOverride() map[string]interface{} {
+	paramOverride := make(map[string]interface{})
+	if channel.ParamOverride != nil && *channel.ParamOverride != "" {
+		err := json.Unmarshal([]byte(*channel.ParamOverride), &paramOverride)
+		if err != nil {
+			common.SysError("failed to unmarshal param override: " + err.Error())
+		}
+	}
+	return paramOverride
 }
 
 func GetChannelsByIds(ids []int) ([]*Channel, error) {

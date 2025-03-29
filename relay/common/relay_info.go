@@ -76,6 +76,7 @@ type RelayInfo struct {
 	AudioUsage           bool
 	ReasoningEffort      string
 	ChannelSetting       map[string]interface{}
+	ParamOverride        map[string]interface{}
 	UserSetting          map[string]interface{}
 	UserEmail            string
 	UserQuota            int
@@ -131,6 +132,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 	channelType := c.GetInt("channel_type")
 	channelId := c.GetInt("channel_id")
 	channelSetting := c.GetStringMap("channel_setting")
+	paramOverride := c.GetStringMap("param_override")
 
 	tokenId := c.GetInt("token_id")
 	tokenKey := c.GetString("token_key")
@@ -168,6 +170,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		ApiKey:         strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
 		Organization:   c.GetString("channel_organization"),
 		ChannelSetting: channelSetting,
+		ParamOverride:  paramOverride,
 		RelayFormat:    RelayFormatOpenAI,
 		ThinkingContentInfo: ThinkingContentInfo{
 			IsFirstThinkingContent:  true,
