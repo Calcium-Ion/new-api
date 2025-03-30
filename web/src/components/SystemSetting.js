@@ -1,16 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Button,
-  Divider,
   Form,
-  Grid,
-  Header,
-  Message,
+  Row,
+  Col,
+  Typography,
   Modal,
-} from 'semantic-ui-react';
-import { API, removeTrailingSlash, showError, showSuccess, verifyJSON } from '../helpers';
-
-import { useTheme } from '../context/Theme';
+  Banner,
+  TagInput,
+  Spin,
+} from '@douyinfe/semi-ui';
+const { Text } = Typography;
+import {
+  removeTrailingSlash,
+  showError,
+  showSuccess,
+  verifyJSON,
+} from '../helpers/utils';
+import { API } from '../helpers/api';
 
 const SystemSetting = () => {
   let [inputs, setInputs] = useState({
@@ -64,144 +71,138 @@ const SystemSetting = () => {
     LinuxDOClientId: '',
     LinuxDOClientSecret: '',
   });
-  const [originInputs, setOriginInputs] = useState({});
-  let [loading, setLoading] = useState(false);
-  const [EmailDomainWhitelist, setEmailDomainWhitelist] = useState([]);
-  const [restrictedDomainInput, setRestrictedDomainInput] = useState('');
-  const [showPasswordWarningModal, setShowPasswordWarningModal] =
-    useState(false);
 
-  const theme = useTheme();
-  const isDark = theme === 'dark';
+  const [originInputs, setOriginInputs] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const formApiRef = useRef(null);
+  const [emailDomainWhitelist, setEmailDomainWhitelist] = useState([]);
+  const [showPasswordLoginConfirmModal, setShowPasswordLoginConfirmModal] = useState(false);
+  const [linuxDOOAuthEnabled, setLinuxDOOAuthEnabled] = useState(false);
 
   const getOptions = async () => {
+    setLoading(true);
     const res = await API.get('/api/option/');
     const { success, message, data } = res.data;
     if (success) {
       let newInputs = {};
       data.forEach((item) => {
-        if (item.key === 'TopupGroupRatio') {
-          item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+        switch (item.key) {
+          case 'TopupGroupRatio':
+            item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+            break;
+          case 'EmailDomainWhitelist':
+            setEmailDomainWhitelist(item.value ? item.value.split(',') : []);
+            break;
+          case 'PasswordLoginEnabled':
+          case 'PasswordRegisterEnabled':
+          case 'EmailVerificationEnabled':
+          case 'GitHubOAuthEnabled':
+          case 'WeChatAuthEnabled':
+          case 'TelegramOAuthEnabled':
+          case 'RegisterEnabled':
+          case 'TurnstileCheckEnabled':
+          case 'EmailDomainRestrictionEnabled':
+          case 'EmailAliasRestrictionEnabled':
+          case 'SMTPSSLEnabled':
+          case 'LinuxDOOAuthEnabled':
+          case 'oidc.enabled':
+            item.value = item.value === 'true';
+            break;
+          case 'Price':
+          case 'MinTopUp':
+            item.value = parseFloat(item.value);
+            break;
+          default:
+            break;
         }
         newInputs[item.key] = item.value;
       });
-      setInputs({
-        ...newInputs,
-        EmailDomainWhitelist: newInputs.EmailDomainWhitelist.split(','),
-      });
+      setInputs(newInputs);
       setOriginInputs(newInputs);
-
-      setEmailDomainWhitelist(
-        newInputs.EmailDomainWhitelist.split(',').map((item) => {
-          return { key: item, text: item, value: item };
-        }),
-      );
-    } else {
-      showError(message);
-    }
-  };
-
-  useEffect(() => {
-    getOptions().then();
-  }, []);
-  useEffect(() => {}, [inputs.EmailDomainWhitelist]);
-
-  const updateOption = async (key, value) => {
-    setLoading(true);
-    switch (key) {
-      case 'PasswordLoginEnabled':
-      case 'PasswordRegisterEnabled':
-      case 'EmailVerificationEnabled':
-      case 'GitHubOAuthEnabled':
-      case 'oidc.enabled':
-      case 'LinuxDOOAuthEnabled':
-      case 'WeChatAuthEnabled':
-      case 'TelegramOAuthEnabled':
-      case 'TurnstileCheckEnabled':
-      case 'EmailDomainRestrictionEnabled':
-      case 'EmailAliasRestrictionEnabled':
-      case 'SMTPSSLEnabled':
-      case 'RegisterEnabled':
-        value = inputs[key] === 'true' ? 'false' : 'true';
-        break;
-      default:
-        break;
-    }
-    const res = await API.put('/api/option/', {
-      key,
-      value,
-    });
-    const { success, message } = res.data;
-    if (success) {
-      if (key === 'EmailDomainWhitelist') {
-        value = value.split(',');
+      if (formApiRef.current) {
+        formApiRef.current.setValues(newInputs);
       }
-      if (key === 'Price') {
-        value = parseFloat(value);
-      }
-      setInputs((inputs) => ({
-        ...inputs,
-        [key]: value,
-      }));
+      setIsLoaded(true);
     } else {
       showError(message);
     }
     setLoading(false);
   };
 
-  const handleInputChange = async (e, { name, value }) => {
-    if (name === 'PasswordLoginEnabled' && inputs[name] === 'true') {
-      // block disabling password login
-      setShowPasswordWarningModal(true);
-      return;
+  useEffect(() => {
+    getOptions();
+  }, []);
+
+  const updateOptions = async (options) => {
+    setLoading(true);
+    try {
+      // 分离 checkbox 类型的选项和其他选项
+      const checkboxOptions = options.filter(opt => 
+        opt.key.toLowerCase().endsWith('enabled')
+      );
+      const otherOptions = options.filter(opt => 
+        !opt.key.toLowerCase().endsWith('enabled')
+      );
+
+      // 处理 checkbox 类型的选项
+      for (const opt of checkboxOptions) {
+        const res = await API.put('/api/option/', {
+          key: opt.key,
+          value: opt.value.toString()
+        });
+        if (!res.data.success) {
+          showError(res.data.message);
+          return;
+        }
+      }
+
+      // 处理其他选项
+      if (otherOptions.length > 0) {
+        const requestQueue = otherOptions.map(opt => 
+          API.put('/api/option/', {
+            key: opt.key,
+            value: typeof opt.value === 'boolean' ? opt.value.toString() : opt.value
+          })
+        );
+
+        const results = await Promise.all(requestQueue);
+        
+        // 检查所有请求是否成功
+        const errorResults = results.filter(res => !res.data.success);
+        errorResults.forEach(res => {
+          showError(res.data.message);
+        });
+      }
+
+      showSuccess('更新成功');
+      // 更新本地状态
+      const newInputs = { ...inputs };
+      options.forEach(opt => {
+        newInputs[opt.key] = opt.value;
+      });
+      setInputs(newInputs);
+    } catch (error) {
+      showError('更新失败');
     }
-    if (
-      name === 'Notice' ||
-      (name.startsWith('SMTP') && name !== 'SMTPSSLEnabled') ||
-      name === 'ServerAddress' ||
-      name === 'WorkerUrl' ||
-      name === 'WorkerValidKey' ||
-      name === 'EpayId' ||
-      name === 'EpayKey' ||
-      name === 'Price' ||
-      name === 'PayAddress' ||
-      name === 'GitHubClientId' ||
-      name === 'GitHubClientSecret' ||
-      name === 'oidc.well_known' ||
-      name === 'oidc.client_id' ||
-      name === 'oidc.client_secret' ||
-      name === 'oidc.authorization_endpoint' ||
-      name === 'oidc.token_endpoint' ||
-      name === 'oidc.user_info_endpoint' ||
-      name === 'WeChatServerAddress' ||
-      name === 'WeChatServerToken' ||
-      name === 'WeChatAccountQRCodeImageURL' ||
-      name === 'TurnstileSiteKey' ||
-      name === 'TurnstileSecretKey' ||
-      name === 'EmailDomainWhitelist' ||
-      name === 'TopupGroupRatio' ||
-      name === 'TelegramBotToken' ||
-      name === 'TelegramBotName' ||
-      name === 'LinuxDOClientId' ||
-      name === 'LinuxDOClientSecret'
-    ) {
-      setInputs((inputs) => ({ ...inputs, [name]: value }));
-    } else {
-      await updateOption(name, value);
-    }
+    setLoading(false);
+  };
+
+  const handleFormChange = (values) => {
+    setInputs(values);
   };
 
   const submitServerAddress = async () => {
     let ServerAddress = removeTrailingSlash(inputs.ServerAddress);
-    await updateOption('ServerAddress', ServerAddress);
+    await updateOptions([{ key: 'ServerAddress', value: ServerAddress }]);
   };
 
   const submitWorker = async () => {
     let WorkerUrl = removeTrailingSlash(inputs.WorkerUrl);
-    await updateOption('WorkerUrl', WorkerUrl);
-    if (inputs.WorkerValidKey !== '') {
-      await updateOption('WorkerValidKey', inputs.WorkerValidKey);
-    }
+    await updateOptions([
+      { key: 'WorkerUrl', value: WorkerUrl },
+      { key: 'WorkerValidKey', value: inputs.WorkerValidKey }
+    ]);
   };
 
   const submitPayAddress = async () => {
@@ -214,89 +215,105 @@ const SystemSetting = () => {
         showError('充值分组倍率不是合法的 JSON 字符串');
         return;
       }
-      await updateOption('TopupGroupRatio', inputs.TopupGroupRatio);
     }
-    let PayAddress = removeTrailingSlash(inputs.PayAddress);
-    await updateOption('PayAddress', PayAddress);
+    
+    const options = [
+      { key: 'PayAddress', value: removeTrailingSlash(inputs.PayAddress) }
+    ];
+    
     if (inputs.EpayId !== '') {
-      await updateOption('EpayId', inputs.EpayId);
+      options.push({ key: 'EpayId', value: inputs.EpayId });
     }
     if (inputs.EpayKey !== undefined && inputs.EpayKey !== '') {
-      await updateOption('EpayKey', inputs.EpayKey);
+      options.push({ key: 'EpayKey', value: inputs.EpayKey });
     }
-    await updateOption('Price', '' + inputs.Price);
+    if (inputs.Price !== '') {
+      options.push({ key: 'Price', value: inputs.Price.toString() });
+    }
+    if (inputs.MinTopUp !== '') {
+      options.push({ key: 'MinTopUp', value: inputs.MinTopUp.toString() });
+    }
+    if (inputs.CustomCallbackAddress !== '') {
+      options.push({ key: 'CustomCallbackAddress', value: inputs.CustomCallbackAddress });
+    }
+    if (originInputs['TopupGroupRatio'] !== inputs.TopupGroupRatio) {
+      options.push({ key: 'TopupGroupRatio', value: inputs.TopupGroupRatio });
+    }
+    
+    await updateOptions(options);
   };
 
   const submitSMTP = async () => {
+    const options = [];
+    
     if (originInputs['SMTPServer'] !== inputs.SMTPServer) {
-      await updateOption('SMTPServer', inputs.SMTPServer);
+      options.push({ key: 'SMTPServer', value: inputs.SMTPServer });
     }
     if (originInputs['SMTPAccount'] !== inputs.SMTPAccount) {
-      await updateOption('SMTPAccount', inputs.SMTPAccount);
+      options.push({ key: 'SMTPAccount', value: inputs.SMTPAccount });
     }
     if (originInputs['SMTPFrom'] !== inputs.SMTPFrom) {
-      await updateOption('SMTPFrom', inputs.SMTPFrom);
+      options.push({ key: 'SMTPFrom', value: inputs.SMTPFrom });
     }
-    if (
-      originInputs['SMTPPort'] !== inputs.SMTPPort &&
-      inputs.SMTPPort !== ''
-    ) {
-      await updateOption('SMTPPort', inputs.SMTPPort);
+    if (originInputs['SMTPPort'] !== inputs.SMTPPort && inputs.SMTPPort !== '') {
+      options.push({ key: 'SMTPPort', value: inputs.SMTPPort });
     }
-    if (
-      originInputs['SMTPToken'] !== inputs.SMTPToken &&
-      inputs.SMTPToken !== ''
-    ) {
-      await updateOption('SMTPToken', inputs.SMTPToken);
+    if (originInputs['SMTPToken'] !== inputs.SMTPToken && inputs.SMTPToken !== '') {
+      options.push({ key: 'SMTPToken', value: inputs.SMTPToken });
+    }
+    
+    if (options.length > 0) {
+      await updateOptions(options);
     }
   };
 
   const submitEmailDomainWhitelist = async () => {
-    if (
-      originInputs['EmailDomainWhitelist'] !==
-        inputs.EmailDomainWhitelist.join(',') &&
-      inputs.SMTPToken !== ''
-    ) {
-      await updateOption(
-        'EmailDomainWhitelist',
-        inputs.EmailDomainWhitelist.join(','),
-      );
+    if (Array.isArray(emailDomainWhitelist)) {
+      await updateOptions([{ 
+        key: 'EmailDomainWhitelist', 
+        value: emailDomainWhitelist.join(',') 
+      }]);
+    } else {
+      showError('邮箱域名白名单格式不正确');
     }
   };
 
   const submitWeChat = async () => {
+    const options = [];
+    
     if (originInputs['WeChatServerAddress'] !== inputs.WeChatServerAddress) {
-      await updateOption(
-        'WeChatServerAddress',
-        removeTrailingSlash(inputs.WeChatServerAddress),
-      );
+      options.push({ 
+        key: 'WeChatServerAddress', 
+        value: removeTrailingSlash(inputs.WeChatServerAddress) 
+      });
     }
-    if (
-      originInputs['WeChatAccountQRCodeImageURL'] !==
-      inputs.WeChatAccountQRCodeImageURL
-    ) {
-      await updateOption(
-        'WeChatAccountQRCodeImageURL',
-        inputs.WeChatAccountQRCodeImageURL,
-      );
+    if (originInputs['WeChatAccountQRCodeImageURL'] !== inputs.WeChatAccountQRCodeImageURL) {
+      options.push({ 
+        key: 'WeChatAccountQRCodeImageURL', 
+        value: inputs.WeChatAccountQRCodeImageURL 
+      });
     }
-    if (
-      originInputs['WeChatServerToken'] !== inputs.WeChatServerToken &&
-      inputs.WeChatServerToken !== ''
-    ) {
-      await updateOption('WeChatServerToken', inputs.WeChatServerToken);
+    if (originInputs['WeChatServerToken'] !== inputs.WeChatServerToken && inputs.WeChatServerToken !== '') {
+      options.push({ key: 'WeChatServerToken', value: inputs.WeChatServerToken });
+    }
+    
+    if (options.length > 0) {
+      await updateOptions(options);
     }
   };
 
   const submitGitHubOAuth = async () => {
+    const options = [];
+    
     if (originInputs['GitHubClientId'] !== inputs.GitHubClientId) {
-      await updateOption('GitHubClientId', inputs.GitHubClientId);
+      options.push({ key: 'GitHubClientId', value: inputs.GitHubClientId });
     }
-    if (
-      originInputs['GitHubClientSecret'] !== inputs.GitHubClientSecret &&
-      inputs.GitHubClientSecret !== ''
-    ) {
-      await updateOption('GitHubClientSecret', inputs.GitHubClientSecret);
+    if (originInputs['GitHubClientSecret'] !== inputs.GitHubClientSecret && inputs.GitHubClientSecret !== '') {
+      options.push({ key: 'GitHubClientSecret', value: inputs.GitHubClientSecret });
+    }
+    
+    if (options.length > 0) {
+      await updateOptions(options);
     }
   };
 
@@ -315,678 +332,598 @@ const SystemSetting = () => {
       } catch (err) {
         console.error(err);
         showError("获取 OIDC 配置失败，请检查网络状况和 Well-Known URL 是否正确");
+        return;
       }
     }
 
+    const options = [];
+    
     if (originInputs['oidc.well_known'] !== inputs['oidc.well_known']) {
-      await updateOption('oidc.well_known', inputs['oidc.well_known']);
+      options.push({ key: 'oidc.well_known', value: inputs['oidc.well_known'] });
     }
     if (originInputs['oidc.client_id'] !== inputs['oidc.client_id']) {
-      await updateOption('oidc.client_id', inputs['oidc.client_id']);
+      options.push({ key: 'oidc.client_id', value: inputs['oidc.client_id'] });
     }
     if (originInputs['oidc.client_secret'] !== inputs['oidc.client_secret'] && inputs['oidc.client_secret'] !== '') {
-      await updateOption('oidc.client_secret', inputs['oidc.client_secret']);
+      options.push({ key: 'oidc.client_secret', value: inputs['oidc.client_secret'] });
     }
     if (originInputs['oidc.authorization_endpoint'] !== inputs['oidc.authorization_endpoint']) {
-      await updateOption('oidc.authorization_endpoint', inputs['oidc.authorization_endpoint']);
+      options.push({ key: 'oidc.authorization_endpoint', value: inputs['oidc.authorization_endpoint'] });
     }
     if (originInputs['oidc.token_endpoint'] !== inputs['oidc.token_endpoint']) {
-      await updateOption('oidc.token_endpoint', inputs['oidc.token_endpoint']);
+      options.push({ key: 'oidc.token_endpoint', value: inputs['oidc.token_endpoint'] });
     }
     if (originInputs['oidc.user_info_endpoint'] !== inputs['oidc.user_info_endpoint']) {
-      await updateOption('oidc.user_info_endpoint', inputs['oidc.user_info_endpoint']);
+      options.push({ key: 'oidc.user_info_endpoint', value: inputs['oidc.user_info_endpoint'] });
     }
-  }
+    
+    if (options.length > 0) {
+      await updateOptions(options);
+    }
+  };
 
   const submitTelegramSettings = async () => {
-    // await updateOption('TelegramOAuthEnabled', inputs.TelegramOAuthEnabled);
-    await updateOption('TelegramBotToken', inputs.TelegramBotToken);
-    await updateOption('TelegramBotName', inputs.TelegramBotName);
+    const options = [
+      { key: 'TelegramBotToken', value: inputs.TelegramBotToken },
+      { key: 'TelegramBotName', value: inputs.TelegramBotName }
+    ];
+    await updateOptions(options);
   };
 
   const submitTurnstile = async () => {
+    const options = [];
+    
     if (originInputs['TurnstileSiteKey'] !== inputs.TurnstileSiteKey) {
-      await updateOption('TurnstileSiteKey', inputs.TurnstileSiteKey);
+      options.push({ key: 'TurnstileSiteKey', value: inputs.TurnstileSiteKey });
     }
-    if (
-      originInputs['TurnstileSecretKey'] !== inputs.TurnstileSecretKey &&
-      inputs.TurnstileSecretKey !== ''
-    ) {
-      await updateOption('TurnstileSecretKey', inputs.TurnstileSecretKey);
+    if (originInputs['TurnstileSecretKey'] !== inputs.TurnstileSecretKey && inputs.TurnstileSecretKey !== '') {
+      options.push({ key: 'TurnstileSecretKey', value: inputs.TurnstileSecretKey });
     }
-  };
-
-  const submitNewRestrictedDomain = () => {
-    const localDomainList = inputs.EmailDomainWhitelist;
-    if (
-      restrictedDomainInput !== '' &&
-      !localDomainList.includes(restrictedDomainInput)
-    ) {
-      setRestrictedDomainInput('');
-      setInputs({
-        ...inputs,
-        EmailDomainWhitelist: [...localDomainList, restrictedDomainInput],
-      });
-      setEmailDomainWhitelist([
-        ...EmailDomainWhitelist,
-        {
-          key: restrictedDomainInput,
-          text: restrictedDomainInput,
-          value: restrictedDomainInput,
-        },
-      ]);
+    
+    if (options.length > 0) {
+      await updateOptions(options);
     }
   };
 
   const submitLinuxDOOAuth = async () => {
+    const options = [];
+    
     if (originInputs['LinuxDOClientId'] !== inputs.LinuxDOClientId) {
-      await updateOption('LinuxDOClientId', inputs.LinuxDOClientId);
+      options.push({ key: 'LinuxDOClientId', value: inputs.LinuxDOClientId });
     }
-    if (
-      originInputs['LinuxDOClientSecret'] !== inputs.LinuxDOClientSecret &&
-      inputs.LinuxDOClientSecret !== ''
-    ) {
-      await updateOption('LinuxDOClientSecret', inputs.LinuxDOClientSecret);
+    if (originInputs['LinuxDOClientSecret'] !== inputs.LinuxDOClientSecret && inputs.LinuxDOClientSecret !== '') {
+      options.push({ key: 'LinuxDOClientSecret', value: inputs.LinuxDOClientSecret });
+    }
+    
+    if (options.length > 0) {
+      await updateOptions(options);
     }
   };
 
+  const handleCheckboxChange = async (optionKey, event) => {
+    const value = event.target.checked;
+    
+    if (optionKey === 'PasswordLoginEnabled' && !value) {
+      setShowPasswordLoginConfirmModal(true);
+    } else {
+      await updateOptions([{ key: optionKey, value }]);
+    }
+    if (optionKey === 'LinuxDOOAuthEnabled') {
+      setLinuxDOOAuthEnabled(value);
+    }
+  };
+
+  const handlePasswordLoginConfirm = async () => {
+    await updateOptions([{ key: 'PasswordLoginEnabled', value: false }]);
+    setShowPasswordLoginConfirmModal(false);
+  };
+
   return (
-    <Grid columns={1}>
-      <Grid.Column>
-        <Form loading={loading} inverted={isDark}>
-          <Header as='h3' inverted={isDark}>
-            通用设置
-          </Header>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='服务器地址'
-              placeholder='例如：https://yourdomain.com'
-              value={inputs.ServerAddress}
-              name='ServerAddress'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitServerAddress}>
-            更新服务器地址
-          </Form.Button>
-          <Header as='h3' inverted={isDark}>
-            代理设置（支持{' '}
-            <a
-              href='https://github.com/Calcium-Ion/new-api-worker'
-              target='_blank'
-              rel='noreferrer'
-            >
-              new-api-worker
-            </a>
-            ）
-          </Header>
-          <Message info>
-            注意：代理功能仅对图片请求和 Webhook 请求生效，不会影响其他 API 请求。如需配置 API 请求代理，请参考
-            <a
-              href='https://github.com/Calcium-Ion/new-api/blob/main/docs/channel/other_setting.md'
-              target='_blank'
-              rel='noreferrer'
-            >
-              {' '}API 代理设置文档
-            </a>
-            。
-          </Message>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='Worker地址，不填写则不启用代理'
-              placeholder='例如：https://workername.yourdomain.workers.dev'
-              value={inputs.WorkerUrl}
-              name='WorkerUrl'
-              onChange={handleInputChange}
-            />
-            <Form.Input
-              label='Worker密钥，根据你部署的 Worker 填写'
-              placeholder='例如：your_secret_key'
-              value={inputs.WorkerValidKey}
-              name='WorkerValidKey'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitWorker}>更新Worker设置</Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            支付设置（当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）
-          </Header>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='支付地址，不填写则不启用在线支付'
-              placeholder='例如：https://yourdomain.com'
-              value={inputs.PayAddress}
-              name='PayAddress'
-              onChange={handleInputChange}
-            />
-            <Form.Input
-              label='易支付商户ID'
-              placeholder='例如：0001'
-              value={inputs.EpayId}
-              name='EpayId'
-              onChange={handleInputChange}
-            />
-            <Form.Input
-              label='易支付商户密钥'
-              placeholder='敏感信息不会发送到前端显示'
-              value={inputs.EpayKey}
-              name='EpayKey'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group widths='equal'>
-            <Form.Input
-              label='回调地址，不填写则使用上方服务器地址作为回调地址'
-              placeholder='例如：https://yourdomain.com'
-              value={inputs.CustomCallbackAddress}
-              name='CustomCallbackAddress'
-              onChange={handleInputChange}
-            />
-            <Form.Input
-              label='充值价格（x元/美金）'
-              placeholder='例如：7，就是7元/美金'
-              value={inputs.Price}
-              name='Price'
-              min={0}
-              onChange={handleInputChange}
-            />
-            <Form.Input
-              label='最低充值美元数量（以美金为单位，如果使用额度请自行换算！）'
-              placeholder='例如：2，就是最低充值2$'
-              value={inputs.MinTopUp}
-              name='MinTopUp'
-              min={1}
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group widths='equal'>
-            <Form.TextArea
-              label='充值分组倍率'
-              name='TopupGroupRatio'
-              onChange={handleInputChange}
-              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
-              autoComplete='new-password'
-              value={inputs.TopupGroupRatio}
-              placeholder='为一个 JSON 文本，键为组名称，值为倍率'
-            />
-          </Form.Group>
-          <Form.Button onClick={submitPayAddress}>更新支付设置</Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置登录注册
-          </Header>
-          <Form.Group inline>
-            <Form.Checkbox
-              checked={inputs.PasswordLoginEnabled === 'true'}
-              label='允许通过密码进行登录'
-              name='PasswordLoginEnabled'
-              onChange={handleInputChange}
-            />
-            {showPasswordWarningModal && (
-              <Modal
-                open={showPasswordWarningModal}
-                onClose={() => setShowPasswordWarningModal(false)}
-                size={'tiny'}
-                style={{ maxWidth: '450px' }}
-              >
-                <Modal.Header>警告</Modal.Header>
-                <Modal.Content>
-                  <p>
-                    取消密码登录将导致所有未绑定其他登录方式的用户（包括管理员）无法通过密码登录，确认取消？
-                  </p>
-                </Modal.Content>
-                <Modal.Actions>
-                  <Button onClick={() => setShowPasswordWarningModal(false)}>
-                    取消
-                  </Button>
-                  <Button
-                    color='yellow'
-                    onClick={async () => {
-                      setShowPasswordWarningModal(false);
-                      await updateOption('PasswordLoginEnabled', 'false');
-                    }}
+    <div style={{ padding: '20px' }}>
+      {isLoaded ? (
+        <Form
+          initValues={inputs}
+          onValueChange={handleFormChange}
+          getFormApi={(api) => (formApiRef.current = api)}
+        >
+          {({ formState, values, formApi }) => (
+            <>
+              <Form.Section text='通用设置'>
+                <Form.Input
+                  field='ServerAddress'
+                  label='服务器地址'
+                  placeholder='例如：https://yourdomain.com'
+                  style={{ width: '100%' }}
+                />
+                <Button onClick={submitServerAddress}>更新服务器地址</Button>
+              </Form.Section>
+
+              <Form.Section text='代理设置'>
+                <Text>
+                  （支持{' '}
+                  <a
+                    href='https://github.com/Calcium-Ion/new-api-worker'
+                    target='_blank'
+                    rel='noreferrer'
                   >
-                    确定
-                  </Button>
-                </Modal.Actions>
-              </Modal>
-            )}
-            <Form.Checkbox
-              checked={inputs.PasswordRegisterEnabled === 'true'}
-              label='允许通过密码进行注册'
-              name='PasswordRegisterEnabled'
-              onChange={handleInputChange}
-            />
-            <Form.Checkbox
-              checked={inputs.EmailVerificationEnabled === 'true'}
-              label='通过密码注册时需要进行邮箱验证'
-              name='EmailVerificationEnabled'
-              onChange={handleInputChange}
-            />
-            <Form.Checkbox
-              checked={inputs.GitHubOAuthEnabled === 'true'}
-              label='允许通过 GitHub 账户登录 & 注册'
-              name='GitHubOAuthEnabled'
-              onChange={handleInputChange}
-            />
-            <Form.Checkbox
-                checked={inputs['oidc.enabled'] === 'true'}
-                label='允许通过 OIDC 登录 & 注册'
-                name='oidc.enabled'
-                onChange={handleInputChange}
-            />
-            <Form.Checkbox
-              checked={inputs.LinuxDOOAuthEnabled === 'true'}
-              label='允许通过 LinuxDO 账户登录 & 注册'
-              name='LinuxDOOAuthEnabled'
-              onChange={handleInputChange}
-            />
-            <Form.Checkbox
-              checked={inputs.WeChatAuthEnabled === 'true'}
-              label='允许通过微信登录 & 注册'
-              name='WeChatAuthEnabled'
-              onChange={handleInputChange}
-            />
-            <Form.Checkbox
-              checked={inputs.TelegramOAuthEnabled === 'true'}
-              label='允许通过 Telegram 进行登录'
-              name='TelegramOAuthEnabled'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group inline>
-            <Form.Checkbox
-              checked={inputs.RegisterEnabled === 'true'}
-              label='允许新用户注册（此项为否时，新用户将无法以任何方式进行注册）'
-              name='RegisterEnabled'
-              onChange={handleInputChange}
-            />
-            <Form.Checkbox
-              checked={inputs.TurnstileCheckEnabled === 'true'}
-              label='启用 Turnstile 用户校验'
-              name='TurnstileCheckEnabled'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置邮箱域名白名单
-            <Header.Subheader>
-              用以防止恶意用户利用临时邮箱批量注册
-            </Header.Subheader>
-          </Header>
-          <Form.Group widths={3}>
-            <Form.Checkbox
-              label='启用邮箱域名白名单'
-              name='EmailDomainRestrictionEnabled'
-              onChange={handleInputChange}
-              checked={inputs.EmailDomainRestrictionEnabled === 'true'}
-            />
-          </Form.Group>
-          <Form.Group widths={3}>
-            <Form.Checkbox
-              label='启用邮箱别名限制（例如：ab.cd@gmail.com）'
-              name='EmailAliasRestrictionEnabled'
-              onChange={handleInputChange}
-              checked={inputs.EmailAliasRestrictionEnabled === 'true'}
-            />
-          </Form.Group>
-          <Form.Group widths={2}>
-            <Form.Dropdown
-              label='允许的邮箱域名'
-              placeholder='允许的邮箱域名'
-              name='EmailDomainWhitelist'
-              required
-              fluid
-              multiple
-              selection
-              onChange={handleInputChange}
-              value={inputs.EmailDomainWhitelist}
-              autoComplete='new-password'
-              options={EmailDomainWhitelist}
-            />
-            <Form.Input
-              label='添加新的允许的邮箱域名'
-              action={
-                <Button
-                  type='button'
-                  onClick={() => {
-                    submitNewRestrictedDomain();
-                  }}
+                    new-api-worker
+                  </a>
+                  ）
+                </Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='WorkerUrl'
+                      label='Worker地址'
+                      placeholder='例如：https://workername.yourdomain.workers.dev'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='WorkerValidKey'
+                      label='Worker密钥'
+                      placeholder='敏感信息不会发送到前端显示'
+                      type='password'
+                    />
+                  </Col>
+                </Row>
+                <Button onClick={submitWorker}>更新Worker设置</Button>
+              </Form.Section>
+
+              <Form.Section text='支付设置'>
+                <Text>
+                  （当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）
+                </Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='PayAddress'
+                      label='支付地址'
+                      placeholder='例如：https://yourdomain.com'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='EpayId'
+                      label='易支付商户ID'
+                      placeholder='例如：0001'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='EpayKey'
+                      label='易支付商户密钥'
+                      placeholder='敏感信息不会发送到前端显示'
+                      type='password'
+                    />
+                  </Col>
+                </Row>
+                <Row
+                  gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                  style={{ marginTop: 16 }}
                 >
-                  填入
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='CustomCallbackAddress'
+                      label='回调地址'
+                      placeholder='例如：https://yourdomain.com'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.InputNumber
+                      field='Price'
+                      precision={2}
+                      label='充值价格（x元/美金）'
+                      placeholder='例如：7，就是7元/美金'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.InputNumber
+                      field='MinTopUp'
+                      label='最低充值美元数量'
+                      placeholder='例如：2，就是最低充值2$'
+                    />
+                  </Col>
+                </Row>
+                <Form.TextArea
+                  field='TopupGroupRatio'
+                  label='充值分组倍率'
+                  placeholder='为一个 JSON 文本，键为组名称，值为倍率'
+                  autosize
+                />
+                <Button onClick={submitPayAddress}>更新支付设置</Button>
+              </Form.Section>
+
+              <Form.Section text='配置登录注册'>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Checkbox
+                      field='PasswordLoginEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('PasswordLoginEnabled', e)
+                      }
+                    >
+                      允许通过密码进行登录
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='PasswordRegisterEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('PasswordRegisterEnabled', e)
+                      }
+                    >
+                      允许通过密码进行注册
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='EmailVerificationEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('EmailVerificationEnabled', e)
+                      }
+                    >
+                      通过密码注册时需要进行邮箱验证
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='RegisterEnabled'
+                      noLabel
+                      onChange={(e) => handleCheckboxChange('RegisterEnabled', e)}
+                    >
+                      允许新用户注册
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='TurnstileCheckEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('TurnstileCheckEnabled', e)
+                      }
+                    >
+                      启用 Turnstile 用户校验
+                    </Form.Checkbox>
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Checkbox
+                      field='GitHubOAuthEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('GitHubOAuthEnabled', e)
+                      }
+                    >
+                      允许通过 GitHub 账户登录 & 注册
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='LinuxDOOAuthEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('LinuxDOOAuthEnabled', e)
+                      }
+                    >
+                      允许通过 Linux DO 账户登录 & 注册
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='WeChatAuthEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('WeChatAuthEnabled', e)
+                      }
+                    >
+                      允许通过微信登录 & 注册
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='TelegramOAuthEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('TelegramOAuthEnabled', e)
+                      }
+                    >
+                      允许通过 Telegram 进行登录
+                    </Form.Checkbox>
+                    <Form.Checkbox
+                      field='oidc.enabled'
+                      noLabel
+                      onChange={(e) => handleCheckboxChange('oidc.enabled', e)}
+                    >
+                      允许通过 OIDC 进行登录
+                    </Form.Checkbox>
+                  </Col>
+                </Row>
+              </Form.Section>
+
+              <Form.Section text='配置邮箱域名白名单'>
+                <Text>用以防止恶意用户利用临时邮箱批量注册</Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Checkbox
+                      field='EmailDomainRestrictionEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('EmailDomainRestrictionEnabled', e)
+                      }
+                    >
+                      启用邮箱域名白名单
+                    </Form.Checkbox>
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Checkbox
+                      field='EmailAliasRestrictionEnabled'
+                      noLabel
+                      onChange={(e) =>
+                        handleCheckboxChange('EmailAliasRestrictionEnabled', e)
+                      }
+                    >
+                      启用邮箱别名限制
+                    </Form.Checkbox>
+                  </Col>
+                </Row>
+                <TagInput
+                  value={emailDomainWhitelist}
+                  onChange={setEmailDomainWhitelist}
+                  placeholder='输入域名后回车'
+                  style={{ width: '100%', marginTop: 16 }}
+                />
+                <Button
+                  onClick={submitEmailDomainWhitelist}
+                  style={{ marginTop: 10 }}
+                >
+                  保存邮箱域名白名单设置
                 </Button>
-              }
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  submitNewRestrictedDomain();
-                }
-              }}
-              autoComplete='new-password'
-              placeholder='输入新的允许的邮箱域名'
-              value={restrictedDomainInput}
-              onChange={(e, { value }) => {
-                setRestrictedDomainInput(value);
-              }}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitEmailDomainWhitelist}>
-            保存邮箱域名白名单设置
-          </Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置 SMTP
-            <Header.Subheader>用以支持系统的邮件发送</Header.Subheader>
-          </Header>
-          <Form.Group widths={3}>
-            <Form.Input
-              label='SMTP 服务器地址'
-              name='SMTPServer'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.SMTPServer}
-              placeholder='例如：smtp.qq.com'
-            />
-            <Form.Input
-              label='SMTP 端口'
-              name='SMTPPort'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.SMTPPort}
-              placeholder='默认: 587'
-            />
-            <Form.Input
-              label='SMTP 账户'
-              name='SMTPAccount'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.SMTPAccount}
-              placeholder='通常是邮箱地址'
-            />
-          </Form.Group>
-          <Form.Group widths={3}>
-            <Form.Input
-              label='SMTP 发送者邮箱'
-              name='SMTPFrom'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.SMTPFrom}
-              placeholder='通常和邮箱地址保持一致'
-            />
-            <Form.Input
-              label='SMTP 访问凭证'
-              name='SMTPToken'
-              onChange={handleInputChange}
-              type='password'
-              autoComplete='new-password'
-              checked={inputs.RegisterEnabled === 'true'}
-              placeholder='敏感信息不会发送到前端显示'
-            />
-          </Form.Group>
-          <Form.Group widths={3}>
-            <Form.Checkbox
-              label='启用SMTP SSL（465端口强制开启）'
-              name='SMTPSSLEnabled'
-              onChange={handleInputChange}
-              checked={inputs.SMTPSSLEnabled === 'true'}
-            />
-          </Form.Group>
-          <Form.Button onClick={submitSMTP}>保存 SMTP 设置</Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置 GitHub OAuth App
-            <Header.Subheader>
-              用以支持通过 GitHub 进行登录注册，
-              <a
-                href='https://github.com/settings/developers'
-                target='_blank'
-                rel='noreferrer'
+              </Form.Section>
+
+              <Form.Section text='配置 SMTP'>
+                <Text>用以支持系统的邮件发送</Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input field='SMTPServer' label='SMTP 服务器地址' />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input field='SMTPPort' label='SMTP 端口' />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input field='SMTPAccount' label='SMTP 账户' />
+                  </Col>
+                </Row>
+                <Row
+                  gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                  style={{ marginTop: 16 }}
+                >
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input field='SMTPFrom' label='SMTP 发送者邮箱' />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='SMTPToken'
+                      label='SMTP 访问凭证'
+                      type='password'
+                      placeholder='敏感信息不会发送到前端显示'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Checkbox
+                      field='SMTPSSLEnabled'
+                      noLabel
+                      onChange={(e) => handleCheckboxChange('SMTPSSLEnabled', e)}
+                    >
+                      启用SMTP SSL
+                    </Form.Checkbox>
+                  </Col>
+                </Row>
+                <Button onClick={submitSMTP}>保存 SMTP 设置</Button>
+              </Form.Section>
+
+              <Form.Section text='配置 OIDC'>
+                <Text>用以支持通过 OIDC 登录，例如 Okta、Auth0 等兼容 OIDC 协议的 IdP</Text>
+                <Banner
+                  type='info'
+                  description={`主页链接填 ${inputs.ServerAddress ? inputs.ServerAddress : '网站地址'}，重定向 URL 填 ${inputs.ServerAddress ? inputs.ServerAddress : '网站地址'}/oauth/oidc`}
+                  style={{ marginBottom: 20, marginTop: 16 }}
+                />
+                <Text>若你的 OIDC Provider 支持 Discovery Endpoint，你可以仅填写 OIDC Well-Known URL，系统会自动获取 OIDC 配置</Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='oidc.well_known'
+                      label='Well-Known URL'
+                      placeholder='请输入 OIDC 的 Well-Known URL'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='oidc.client_id'
+                      label='Client ID'
+                      placeholder='输入 OIDC 的 Client ID'
+                    />
+                  </Col>
+                </Row>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='oidc.client_secret'
+                      label='Client Secret'
+                      type='password'
+                      placeholder='敏感信息不会发送到前端显示'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='oidc.authorization_endpoint'
+                      label='Authorization Endpoint'
+                      placeholder='输入 OIDC 的 Authorization Endpoint'
+                    />
+                  </Col>
+                </Row>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='oidc.token_endpoint'
+                      label='Token Endpoint'
+                      placeholder='输入 OIDC 的 Token Endpoint'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='oidc.user_info_endpoint'
+                      label='User Info Endpoint'
+                      placeholder='输入 OIDC 的 Userinfo Endpoint'
+                    />
+                  </Col>
+                </Row>
+                <Button onClick={submitOIDCSettings}>保存 OIDC 设置</Button>
+              </Form.Section>
+
+              <Form.Section text='配置 GitHub OAuth App'>
+                <Text>用以支持通过 GitHub 进行登录注册</Text>
+                <Banner
+                  type='info'
+                  description={`Homepage URL 填 ${inputs.ServerAddress ? inputs.ServerAddress : '网站地址'}，Authorization callback URL 填 ${inputs.ServerAddress ? inputs.ServerAddress : '网站地址'}/oauth/github`}
+                  style={{ marginBottom: 20, marginTop: 16 }}
+                />
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input field='GitHubClientId' label='GitHub Client ID' />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='GitHubClientSecret'
+                      label='GitHub Client Secret'
+                      type='password'
+                      placeholder='敏感信息不会发送到前端显示'
+                    />
+                  </Col>
+                </Row>
+                <Button onClick={submitGitHubOAuth}>
+                  保存 GitHub OAuth 设置
+                </Button>
+              </Form.Section>
+              <Form.Section text='配置 Linux DO OAuth'>
+                <Text>
+                  用以支持通过 Linux DO 进行登录注册
+                  <a
+                    href='https://connect.linux.do/'
+                    target='_blank'
+                    rel='noreferrer'
+                    style={{ display: 'inline-block', marginLeft: 4, marginRight: 4 }}
+                  >
+                    点击此处
+                  </a>
+                  管理你的 LinuxDO OAuth App
+                </Text>
+                <Banner
+                  type='info'
+                  description={`回调 URL 填 ${inputs.ServerAddress ? inputs.ServerAddress : '网站地址'}/oauth/linuxdo`}
+                  style={{ marginBottom: 20, marginTop: 16 }}
+                />
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input 
+                      field='LinuxDOClientId' 
+                      label='Linux DO Client ID'
+                      placeholder='输入你注册的 LinuxDO OAuth APP 的 ID'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='LinuxDOClientSecret'
+                      label='Linux DO Client Secret'
+                      type='password'
+                      placeholder='敏感信息不会发送到前端显示'
+                    />
+                  </Col>
+                </Row>
+                <Button onClick={submitLinuxDOOAuth}>
+                  保存 Linux DO OAuth 设置
+                </Button>
+              </Form.Section>
+              <Form.Section text='配置 WeChat Server'>
+                <Text>用以支持通过微信进行登录注册</Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='WeChatServerAddress'
+                      label='WeChat Server 服务器地址'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='WeChatServerToken'
+                      label='WeChat Server 访问凭证'
+                      type='password'
+                      placeholder='敏感信息不会发送到前端显示'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                      field='WeChatAccountQRCodeImageURL'
+                      label='微信公众号二维码图片链接'
+                    />
+                  </Col>
+                </Row>
+                <Button onClick={submitWeChat}>保存 WeChat Server 设置</Button>
+              </Form.Section>
+              <Form.Section text='配置 Telegram 登录'>
+                <Text>用以支持通过 Telegram 进行登录注册</Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='TelegramBotToken'
+                      label='Telegram Bot Token'
+                      placeholder='敏感信息不会发送到前端显示'
+                      type='password'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='TelegramBotName'
+                      label='Telegram Bot 名称'
+                    />
+                  </Col>
+                </Row>
+                <Button onClick={submitTelegramSettings}>
+                  保存 Telegram 登录设置
+                </Button>
+              </Form.Section>
+              <Form.Section text='配置 Turnstile'>
+                <Text>用以支持用户校验</Text>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='TurnstileSiteKey'
+                      label='Turnstile Site Key'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                      field='TurnstileSecretKey'
+                      label='Turnstile Secret Key'
+                      type='password'
+                      placeholder='敏感信息不会发送到前端显示'
+                    />
+                  </Col>
+                </Row>
+                <Button onClick={submitTurnstile}>保存 Turnstile 设置</Button>
+              </Form.Section>
+            
+              <Modal
+                title="确认取消密码登录"
+                visible={showPasswordLoginConfirmModal}
+                onOk={handlePasswordLoginConfirm}
+                onCancel={() => {
+                  setShowPasswordLoginConfirmModal(false);
+                  formApiRef.current.setValue('PasswordLoginEnabled', true);
+                }}
+                okText="确认"
+                cancelText="取消"
               >
-                点击此处
-              </a>
-              管理你的 GitHub OAuth App
-            </Header.Subheader>
-          </Header>
-          <Message>
-            Homepage URL 填 <code>{inputs.ServerAddress}</code>
-            ，Authorization callback URL 填{' '}
-            <code>{`${inputs.ServerAddress}/oauth/github`}</code>
-          </Message>
-          <Form.Group widths={3}>
-            <Form.Input
-              label='GitHub Client ID'
-              name='GitHubClientId'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.GitHubClientId}
-              placeholder='输入你注册的 GitHub OAuth APP 的 ID'
-            />
-            <Form.Input
-              label='GitHub Client Secret'
-              name='GitHubClientSecret'
-              onChange={handleInputChange}
-              type='password'
-              autoComplete='new-password'
-              value={inputs.GitHubClientSecret}
-              placeholder='敏感信息不会发送到前端显示'
-            />
-          </Form.Group>
-          <Form.Button onClick={submitGitHubOAuth}>
-            保存 GitHub OAuth 设置
-          </Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置 WeChat Server
-            <Header.Subheader>
-              用以支持通过微信进行登录注册，
-              <a
-                href='https://github.com/songquanpeng/wechat-server'
-                target='_blank'
-                rel='noreferrer'
-              >
-                点击此处
-              </a>
-              了解 WeChat Server
-            </Header.Subheader>
-          </Header>
-          <Form.Group widths={3}>
-            <Form.Input
-              label='WeChat Server 服务器地址'
-              name='WeChatServerAddress'
-              placeholder='例如：https://yourdomain.com'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.WeChatServerAddress}
-            />
-            <Form.Input
-              label='WeChat Server 访问凭证'
-              name='WeChatServerToken'
-              type='password'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.WeChatServerToken}
-              placeholder='敏感信息不会发送到前端显示'
-            />
-            <Form.Input
-              label='微信公众号二维码图片链接'
-              name='WeChatAccountQRCodeImageURL'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.WeChatAccountQRCodeImageURL}
-              placeholder='输入一个图片链接'
-            />
-          </Form.Group>
-          <Form.Button onClick={submitWeChat}>
-            保存 WeChat Server 设置
-          </Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置 Telegram 登录
-          </Header>
-          <Form.Group inline>
-            <Form.Input
-              label='Telegram Bot Token'
-              name='TelegramBotToken'
-              onChange={handleInputChange}
-              value={inputs.TelegramBotToken}
-              placeholder='输入你的 Telegram Bot Token'
-            />
-            <Form.Input
-              label='Telegram Bot 名称'
-              name='TelegramBotName'
-              onChange={handleInputChange}
-              value={inputs.TelegramBotName}
-              placeholder='输入你的 Telegram Bot 名称'
-            />
-          </Form.Group>
-          <Form.Button onClick={submitTelegramSettings}>
-            保存 Telegram 登录设置
-          </Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置 Turnstile
-            <Header.Subheader>
-              用以支持用户校验，
-              <a
-                href='https://dash.cloudflare.com/'
-                target='_blank'
-                rel='noreferrer'
-              >
-                点击此处
-              </a>
-              管理你的 Turnstile Sites，推荐选择 Invisible Widget Type
-            </Header.Subheader>
-          </Header>
-          <Form.Group widths={3}>
-            <Form.Input
-              label='Turnstile Site Key'
-              name='TurnstileSiteKey'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.TurnstileSiteKey}
-              placeholder='输入你注册的 Turnstile Site Key'
-            />
-            <Form.Input
-              label='Turnstile Secret Key'
-              name='TurnstileSecretKey'
-              onChange={handleInputChange}
-              type='password'
-              autoComplete='new-password'
-              value={inputs.TurnstileSecretKey}
-              placeholder='敏感信息不会发送到前端显示'
-            />
-          </Form.Group>
-          <Form.Button onClick={submitTurnstile}>
-            保存 Turnstile 设置
-          </Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置 LinuxDO OAuth App
-            <Header.Subheader>
-              用以支持通过 LinuxDO 进行登录注册，
-              <a
-                href='https://connect.linux.do/'
-                target='_blank'
-                rel='noreferrer'
-              >
-                点击此处
-              </a>
-              管理你的 LinuxDO OAuth App
-            </Header.Subheader>
-          </Header>
-          <Message>
-            Homepage URL 填 <code>{inputs.ServerAddress}</code>
-            ，Authorization callback URL 填{' '}
-            <code>{`${inputs.ServerAddress}/oauth/linuxdo`}</code>
-          </Message>
-          <Form.Group widths={3}>
-            <Form.Input
-              label='LinuxDO Client ID'
-              name='LinuxDOClientId'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.LinuxDOClientId}
-              placeholder='输入你注册的 LinuxDO OAuth APP 的 ID'
-            />
-            <Form.Input
-              label='LinuxDO Client Secret'
-              name='LinuxDOClientSecret'
-              onChange={handleInputChange}
-              type='password'
-              autoComplete='new-password'
-              value={inputs.LinuxDOClientSecret}
-              placeholder='敏感信息不会发送到前端显示'
-            />
-          </Form.Group>
-          <Form.Button onClick={submitLinuxDOOAuth}>
-            保存 LinuxDO OAuth 设置
-          </Form.Button>
-          <Divider />
-          <Header as='h3' inverted={isDark}>
-            配置 OIDC
-            <Header.Subheader>
-              用以支持通过 OIDC 登录，例如 Okta、Auth0 等兼容 OIDC 协议的 IdP
-            </Header.Subheader>
-          </Header>
-          <Message>
-            主页链接填 <code>{ inputs.ServerAddress }</code>，
-            重定向 URL 填 <code>{ `${ inputs.ServerAddress }/oauth/oidc` }</code>
-          </Message>
-          <Message>
-            若你的 OIDC Provider 支持 Discovery Endpoint，你可以仅填写 OIDC Well-Known URL，系统会自动获取 OIDC 配置
-          </Message>
-          <Form.Group widths={3}>
-            <Form.Input
-                label='Client ID'
-                name='oidc.client_id'
-                onChange={handleInputChange}
-                value={inputs['oidc.client_id']}
-                placeholder='输入 OIDC 的 Client ID'
-            />
-            <Form.Input
-                label='Client Secret'
-                name='oidc.client_secret'
-                onChange={handleInputChange}
-                type='password'
-                value={inputs['oidc.client_secret']}
-                placeholder='敏感信息不会发送到前端显示'
-            />
-            <Form.Input
-                label='Well-Known URL'
-                name='oidc.well_known'
-                onChange={handleInputChange}
-                value={inputs['oidc.well_known']}
-                placeholder='请输入 OIDC 的 Well-Known URL'
-            />
-            <Form.Input
-                label='Authorization Endpoint'
-                name='oidc.authorization_endpoint'
-                onChange={handleInputChange}
-                value={inputs['oidc.authorization_endpoint']}
-                placeholder='输入 OIDC 的 Authorization Endpoint'
-            />
-            <Form.Input
-                label='Token Endpoint'
-                name='oidc.token_endpoint'
-                onChange={handleInputChange}
-                value={inputs['oidc.token_endpoint']}
-                placeholder='输入 OIDC 的 Token Endpoint'
-            />
-            <Form.Input
-                label='Userinfo Endpoint'
-                name='oidc.user_info_endpoint'
-                onChange={handleInputChange}
-                value={inputs['oidc.user_info_endpoint']}
-                placeholder='输入 OIDC 的 Userinfo Endpoint'
-            />
-          </Form.Group>
-          <Form.Button onClick={submitOIDCSettings}>
-            保存 OIDC 设置
-          </Form.Button>
+                <p>您确定要取消密码登录功能吗？这可能会影响用户的登录方式。</p>
+              </Modal>
+            </>
+          )}
         </Form>
-      </Grid.Column>
-    </Grid>
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <Spin size="large" />
+        </div>
+      )}
+    </div>
   );
 };
 
