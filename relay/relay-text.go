@@ -168,6 +168,23 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 		if err != nil {
 			return service.OpenAIErrorWrapperLocal(err, "json_marshal_failed", http.StatusInternalServerError)
 		}
+
+		// apply param override
+		if len(relayInfo.ParamOverride) > 0 {
+			reqMap := make(map[string]interface{})
+			err = json.Unmarshal(jsonData, &reqMap)
+			if err != nil {
+				return service.OpenAIErrorWrapperLocal(err, "param_override_unmarshal_failed", http.StatusInternalServerError)
+			}
+			for key, value := range relayInfo.ParamOverride {
+				reqMap[key] = value
+			}
+			jsonData, err = json.Marshal(reqMap)
+			if err != nil {
+				return service.OpenAIErrorWrapperLocal(err, "param_override_marshal_failed", http.StatusInternalServerError)
+			}
+		}
+
 		if common.DebugEnabled {
 			println("requestBody: ", string(jsonData))
 		}

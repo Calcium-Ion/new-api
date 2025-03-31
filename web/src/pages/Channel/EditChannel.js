@@ -983,6 +983,23 @@ const EditChannel = (props) => {
               </Typography.Text>
             </Space>
           </>
+          <>
+            <div style={{ marginTop: 10 }}>
+              <Typography.Text strong>
+                {t('参数覆盖')}：
+              </Typography.Text>
+            </div>
+            <TextArea
+              placeholder={t('此项可选，用于覆盖请求参数。不支持覆盖 stream 参数。为一个 JSON 字符串，例如：') + '\n{\n  "temperature": 0\n}'}
+              name="setting"
+              onChange={(value) => {
+                handleInputChange('param_override', value);
+              }}
+              autosize
+              value={inputs.param_override}
+              autoComplete="new-password"
+            />
+          </>
           {inputs.type === 1 && (
             <>
               <div style={{ marginTop: 10 }}>
