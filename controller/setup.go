@@ -134,7 +134,7 @@ func PostSetup(c *gin.Context) {
 		return
 	}
 
-	err = model.UpdateOption("SelfUseModeEnabled", boolToString(req.DemoSiteEnabled))
+	err = model.UpdateOption("DemoSiteEnabled", boolToString(req.DemoSiteEnabled))
 	if err != nil {
 		c.JSON(500, gin.H{
 			"success": false,
