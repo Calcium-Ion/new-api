@@ -237,7 +237,8 @@ const Setup = () => {
         </div>
         <div style={{ padding: '8px 0' }}>
           <Title heading={6}>{t('自用模式')}</Title>
-          <p>{t('适用于个人使用的场景。不需要设置模型价格，您可专注于使用模型。')}</p>
+          <p>{t('适用于个人使用的场景。')}</p>
+          <p>{t('不需要设置模型价格，系统将弱化用量计算，您可专注于使用模型。')}</p>
         </div>
         <div style={{ padding: '8px 0' }}>
           <Title heading={6}>{t('演示站点模式')}</Title>
