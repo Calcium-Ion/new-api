@@ -105,6 +105,11 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 	request := buildTestRequest(testModel)
 	common.SysLog(fmt.Sprintf("testing channel %d with model %s , info %v ", channel.Id, testModel, info))
 
+	priceData, err := helper.ModelPriceHelper(c, info, 0, int(request.MaxTokens))
+	if err != nil {
+		return err, nil
+	}
+
 	adaptor.Init(info)
 
 	convertedRequest, err := adaptor.ConvertOpenAIRequest(c, info, request)
@@ -143,10 +148,7 @@ func testChannel(channel *model.Channel, testModel string) (err error, openAIErr
 		return err, nil
 	}
 	info.PromptTokens = usage.PromptTokens
-	priceData, err := helper.ModelPriceHelper(c, info, usage.PromptTokens, int(request.MaxTokens))
-	if err != nil {
-		return err, nil
-	}
+
 	quota := 0
 	if !priceData.UsePrice {
 		quota = usage.PromptTokens + int(math.Round(float64(usage.CompletionTokens)*priceData.CompletionRatio))

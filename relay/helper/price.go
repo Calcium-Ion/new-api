@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"one-api/common"
+	constant2 "one-api/constant"
 	relaycommon "one-api/relay/common"
 	"one-api/setting"
 	"one-api/setting/operation_setting"
@@ -40,10 +41,19 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		var success bool
 		modelRatio, success = operation_setting.GetModelRatio(info.OriginModelName)
 		if !success {
-			if info.UserId == 1 {
-				return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置，请设置或开始自用模式；Model %s ratio or price not set, please set or start self-use mode", info.OriginModelName, info.OriginModelName)
-			} else {
-				return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置, 请联系管理员设置；Model %s ratio or price not set, please contact administrator to set", info.OriginModelName, info.OriginModelName)
+			acceptUnsetRatio := false
+			if accept, ok := info.UserSetting[constant2.UserAcceptUnsetRatioModel]; ok {
+				b, ok := accept.(bool)
+				if ok {
+					acceptUnsetRatio = b
+				}
+			}
+			if !acceptUnsetRatio {
+				if info.UserId == 1 {
+					return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置，请设置或开始自用模式；Model %s ratio or price not set, please set or start self-use mode", info.OriginModelName, info.OriginModelName)
+				} else {
+					return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置, 请联系管理员设置；Model %s ratio or price not set, please contact administrator to set", info.OriginModelName, info.OriginModelName)
+				}
 			}
 		}
 		completionRatio = operation_setting.GetCompletionRatio(info.OriginModelName)
