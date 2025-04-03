@@ -25,6 +25,7 @@ import Task from "./pages/Task/index.js";
 import Playground from './pages/Playground/Playground.js';
 import OAuth2Callback from "./components/OAuth2Callback.js";
 import PersonalSetting from './components/PersonalSetting.js';
+import Setup from './pages/Setup/index.js';
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
@@ -41,6 +42,14 @@ function App() {
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <Home />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/setup'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <Setup />
             </Suspense>
           }
         />

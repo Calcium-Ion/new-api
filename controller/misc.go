@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/model"
 	"one-api/setting"
 	"one-api/setting/operation_setting"
@@ -72,6 +73,7 @@ func GetStatus(c *gin.Context) {
 			"oidc_enabled":                system_setting.GetOIDCSettings().Enabled,
 			"oidc_client_id":              system_setting.GetOIDCSettings().ClientId,
 			"oidc_authorization_endpoint": system_setting.GetOIDCSettings().AuthorizationEndpoint,
+			"setup":                       constant.Setup,
 		},
 	})
 	return

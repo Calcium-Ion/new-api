@@ -808,3 +808,12 @@ func (user *User) FillUserByLinuxDOId() error {
 	err := DB.Where("linux_do_id = ?", user.LinuxDOId).First(user).Error
 	return err
 }
+
+func RootUserExists() bool {
+	var user User
+	err := DB.Where("role = ?", common.RoleRootUser).First(&user).Error
+	if err != nil {
+		return false
+	}
+	return true
+}

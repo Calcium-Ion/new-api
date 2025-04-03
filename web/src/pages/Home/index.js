@@ -66,6 +66,10 @@ const Home = () => {
   };
 
   useEffect(() => {
+    if (statusState.status?.setup === false) {
+      window.location.href = '/setup';
+      return;
+    }
     displayNotice().then();
     displayHomePageContent().then();
   });
