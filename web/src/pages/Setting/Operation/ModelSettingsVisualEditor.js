@@ -1,10 +1,12 @@
 // ModelSettingsVisualEditor.js
-import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, Modal, Form, Space } from '@douyinfe/semi-ui';
-import { IconDelete, IconPlus, IconSearch, IconSave } from '@douyinfe/semi-icons';
+import React, { useContext, useEffect, useState, useRef } from 'react';
+import { Table, Button, Input, Modal, Form, Space, RadioGroup, Radio, Tabs, TabPane } from '@douyinfe/semi-ui';
+import { IconDelete, IconPlus, IconSearch, IconSave, IconEdit } from '@douyinfe/semi-icons';
 import { showError, showSuccess } from '../../../helpers';
 import { API } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import { StatusContext } from '../../../context/Status/index.js';
+import { getQuotaPerUnit } from '../../../helpers/render.js';
 
 export default function ModelSettingsVisualEditor(props) {
   const { t } = useTranslation();
@@ -14,7 +16,11 @@ export default function ModelSettingsVisualEditor(props) {
   const [searchText, setSearchText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [pricingMode, setPricingMode] = useState('per-token'); // 'per-token' or 'per-request'
+  const [pricingSubMode, setPricingSubMode] = useState('ratio'); // 'ratio' or 'token-price'
+  const formRef = useRef(null);
   const pageSize = 10;
+  const quotaPerUnit = getQuotaPerUnit()
 
   useEffect(() => {
     try {
@@ -171,11 +177,19 @@ export default function ModelSettingsVisualEditor(props) {
       title: t('操作'),
       key: 'action',
       render: (_, record) => (
-        <Button
-          icon={<IconDelete />}
-          type="danger"
-          onClick={() => deleteModel(record.name)}
-        />
+        <Space>
+          <Button
+            type="primary"
+            icon={<IconEdit />}
+            onClick={() => editModel(record)}
+          >
+          </Button>
+          <Button
+            icon={<IconDelete />}
+            type="danger"
+            onClick={() => deleteModel(record.name)}
+          />
+        </Space>
       )
     }
   ];
@@ -197,28 +211,171 @@ export default function ModelSettingsVisualEditor(props) {
   const deleteModel = (name) => {
     setModels(prev => prev.filter(model => model.name !== name));
   };
-  const addModel = (values) => {
-    // 检查模型名称是否存在, 如果存在则拒绝添加
-    if (models.some(model => model.name === values.name)) {
-      showError('模型名称已存在');
-      return;
+  
+  const calculateRatioFromTokenPrice = (tokenPrice) => {
+    return tokenPrice / 2;
+  };
+  
+  const calculateCompletionRatioFromPrices = (modelTokenPrice, completionTokenPrice) => {
+    if (!modelTokenPrice || modelTokenPrice === '0') {
+      showError('模型价格不能为0');
+      return '';
     }
-    setModels(prev => [{
-      name: values.name,
-      price: values.price || '',
-      ratio: values.ratio || '',
-      completionRatio: values.completionRatio || ''
-    }, ...prev]);
-    setVisible(false);
-    showSuccess('添加成功');
+    return completionTokenPrice / modelTokenPrice;
+  };
+  
+  const handleTokenPriceChange = (value) => {
+
+    // Use a temporary variable to hold the new state
+    let newState = {
+      ...(currentModel || {}),
+      tokenPrice: value,
+      ratio: 0
+    };
+    
+    if (!isNaN(value) && value !== '') {
+      const tokenPrice = parseFloat(value);
+      const ratio = calculateRatioFromTokenPrice(tokenPrice);
+      newState.ratio = ratio;
+    }
+    
+    // Set the state with the complete updated object
+    setCurrentModel(newState);
+  };
+  
+  const handleCompletionTokenPriceChange = (value) => {
+
+    // Use a temporary variable to hold the new state
+    let newState = {
+      ...(currentModel || {}),
+      completionTokenPrice: value,
+      completionRatio: 0
+    };
+    
+    if (!isNaN(value) && value !== '' && currentModel?.tokenPrice) {
+      const completionTokenPrice = parseFloat(value);
+      const modelTokenPrice = parseFloat(currentModel.tokenPrice);
+      
+      if (modelTokenPrice > 0) {
+        const completionRatio = calculateCompletionRatioFromPrices(modelTokenPrice, completionTokenPrice);
+        newState.completionRatio = completionRatio;
+      }
+    }
+    
+    // Set the state with the complete updated object
+    setCurrentModel(newState);
   };
 
+  const addOrUpdateModel = (values) => {
+    // Check if we're editing an existing model or adding a new one
+    const existingModelIndex = models.findIndex(model => model.name === values.name);
+    
+    if (existingModelIndex >= 0) {
+      // Update existing model
+      setModels(prev => prev.map((model, index) => 
+        index === existingModelIndex ? {
+          name: values.name,
+          price: values.price || '',
+          ratio: values.ratio || '',
+          completionRatio: values.completionRatio || ''
+        } : model
+      ));
+      setVisible(false);
+      showSuccess(t('更新成功'));
+    } else {
+      // Add new model
+      // Check if model name already exists
+      if (models.some(model => model.name === values.name)) {
+        showError(t('模型名称已存在'));
+        return;
+      }
+      
+      setModels(prev => [{
+        name: values.name,
+        price: values.price || '',
+        ratio: values.ratio || '',
+        completionRatio: values.completionRatio || ''
+      }, ...prev]);
+      setVisible(false);
+      showSuccess(t('添加成功'));
+    }
+  };
+
+  const calculateTokenPriceFromRatio = (ratio) => {
+    return ratio * 2;
+  };
+  
+  const resetModalState = () => {
+    setCurrentModel(null);
+    setPricingMode('per-token');
+    setPricingSubMode('ratio');
+  };
+
+  const editModel = (record) => {
+
+    // Determine which pricing mode to use based on the model's current configuration
+    let initialPricingMode = 'per-token';
+    let initialPricingSubMode = 'ratio';
+    
+    if (record.price !== '') {
+      initialPricingMode = 'per-request';
+    } else {
+      initialPricingMode = 'per-token';
+      // We default to ratio mode, but could set to token-price if needed
+    }
+    
+    // Set the pricing modes for the form
+    setPricingMode(initialPricingMode);
+    setPricingSubMode(initialPricingSubMode);
+    
+    // Create a copy of the model data to avoid modifying the original
+    const modelCopy = { ...record };
+    
+    // If the model has ratio data and we want to populate token price fields
+    if (record.ratio) {
+      modelCopy.tokenPrice = calculateTokenPriceFromRatio(parseFloat(record.ratio)).toString();
+      
+      if (record.completionRatio) {
+        modelCopy.completionTokenPrice = (parseFloat(modelCopy.tokenPrice) * parseFloat(record.completionRatio)).toString();
+      }
+    }
+    
+    // Set the current model
+    setCurrentModel(modelCopy);
+    
+    // Open the modal
+    setVisible(true);
+    
+    // Use setTimeout to ensure the form is rendered before setting values
+    setTimeout(() => {
+      if (formRef.current) {
+        // Update the form fields based on pricing mode
+        const formValues = {
+          name: modelCopy.name,
+        };
+        
+        if (initialPricingMode === 'per-request') {
+          formValues.priceInput = modelCopy.price;
+        } else if (initialPricingMode === 'per-token') {
+          formValues.ratioInput = modelCopy.ratio;
+          formValues.completionRatioInput = modelCopy.completionRatio;
+          formValues.modelTokenPrice = modelCopy.tokenPrice;
+          formValues.completionTokenPrice = modelCopy.completionTokenPrice;
+        }
+        
+        formRef.current.setValues(formValues);
+      }
+    }, 0);
+  };
 
   return (
     <>
       <Space vertical align="start" style={{ width: '100%' }}>
         <Space>
-          <Button icon={<IconPlus />} onClick={() => setVisible(true)}>
+          <Button icon={<IconPlus />} onClick={() => {
+            resetModalState();
+            setVisible(true);
+          }}>
             {t('添加模型')}
           </Button>
           <Button type="primary" icon={<IconSave />} onClick={SubmitData}>
@@ -256,56 +413,205 @@ export default function ModelSettingsVisualEditor(props) {
       </Space>
 
       <Modal
-        title={t('添加模型')}
+        title={currentModel && currentModel.name && models.some(model => model.name === currentModel.name) ? t('编辑模型') : t('添加模型')}
         visible={visible}
-        onCancel={() => setVisible(false)}
+        onCancel={() => {
+          resetModalState();
+          setVisible(false);
+        }}
         onOk={() => {
-          currentModel && addModel(currentModel);
+          if (currentModel) {
+            // If we're in token price mode, make sure ratio values are properly set
+            const valuesToSave = { ...currentModel };
+            
+            if (pricingMode === 'per-token' && pricingSubMode === 'token-price' && currentModel.tokenPrice) {
+              // Calculate and set ratio from token price
+              const tokenPrice = parseFloat(currentModel.tokenPrice);
+              valuesToSave.ratio = (tokenPrice / 2).toString();
+              
+              // Calculate and set completion ratio if both token prices are available
+              if (currentModel.completionTokenPrice && currentModel.tokenPrice) {
+                const completionPrice = parseFloat(currentModel.completionTokenPrice);
+                const modelPrice = parseFloat(currentModel.tokenPrice);
+                if (modelPrice > 0) {
+                  valuesToSave.completionRatio = (completionPrice / modelPrice).toString();
+                }
+              }
+            }
+            
+            // Clear price if we're in per-token mode
+            if (pricingMode === 'per-token') {
+              valuesToSave.price = '';
+            } else {
+              // Clear ratios if we're in per-request mode
+              valuesToSave.ratio = '';
+              valuesToSave.completionRatio = '';
+            }
+            
+            addOrUpdateModel(valuesToSave);
+          }
         }}
       >
-        <Form>
+        <Form getFormApi={api => formRef.current = api}>
           <Form.Input
             field="name"
             label={t('模型名称')}
             placeholder="strawberry"
             required
+            disabled={currentModel && currentModel.name && models.some(model => model.name === currentModel.name)}
             onChange={value => setCurrentModel(prev => ({ ...prev, name: value }))}
           />
-          <Form.Switch
-            field="priceMode"
-            label={<>{t('定价模式')}：{currentModel?.priceMode ? t("固定价格") : t("倍率模式")}</>}
-            onChange={checked => {
-              setCurrentModel(prev => ({
-                ...prev,
-                price: '',
-                ratio: '',
-                completionRatio: '',
-                priceMode: checked
-              }));
-            }}
-          />
-          {currentModel?.priceMode ? (
+          
+          <Form.Section text={t('定价模式')}>
+            <div style={{ marginBottom: '16px' }}>
+              <RadioGroup type="button" value={pricingMode} onChange={(e) => {
+                const newMode = e.target.value;
+                const oldMode = pricingMode;
+                setPricingMode(newMode);
+                
+                // Instead of resetting all values, convert between modes
+                if (currentModel) {
+                  const updatedModel = { ...currentModel };
+                  
+                  // Update formRef with converted values
+                  if (formRef.current) {
+                    const formValues = {
+                      name: updatedModel.name
+                    };
+                    
+                    if (newMode === 'per-request') {
+                      formValues.priceInput = updatedModel.price || '';
+                    } else if (newMode === 'per-token') {
+                      formValues.ratioInput = updatedModel.ratio || '';
+                      formValues.completionRatioInput = updatedModel.completionRatio || '';
+                      formValues.modelTokenPrice = updatedModel.tokenPrice || '';
+                      formValues.completionTokenPrice = updatedModel.completionTokenPrice || '';
+                    }
+                    
+                    formRef.current.setValues(formValues);
+                  }
+                  
+                  // Update the model state
+                  setCurrentModel(updatedModel);
+                }
+              }}>
+                <Radio value="per-token">{t('按量计费')}</Radio>
+                <Radio value="per-request">{t('按次计费')}</Radio>
+              </RadioGroup>
+            </div>
+          </Form.Section>
+          
+          {pricingMode === 'per-token' && (
+            <>
+              <Form.Section text={t('价格设置方式')}>
+                <div style={{ marginBottom: '16px' }}>
+                  <RadioGroup type="button" value={pricingSubMode} onChange={(e) => {
+                    const newSubMode = e.target.value;
+                    const oldSubMode = pricingSubMode;
+                    setPricingSubMode(newSubMode);
+                    
+                    // Handle conversion between submodes
+                    if (currentModel) {
+                      const updatedModel = { ...currentModel };
+                      
+                      // Convert between ratio and token price
+                      if (oldSubMode === 'ratio' && newSubMode === 'token-price') {
+                        if (updatedModel.ratio) {
+                          updatedModel.tokenPrice = calculateTokenPriceFromRatio(parseFloat(updatedModel.ratio)).toString();
+                          
+                          if (updatedModel.completionRatio) {
+                            updatedModel.completionTokenPrice = (parseFloat(updatedModel.tokenPrice) * parseFloat(updatedModel.completionRatio)).toString();
+                          }
+                        }
+                      } else if (oldSubMode === 'token-price' && newSubMode === 'ratio') {
+                        // Ratio values should already be calculated by the handlers
+                      }
+                      
+                      // Update the form values
+                      if (formRef.current) {
+                        const formValues = {};
+                        
+                        if (newSubMode === 'ratio') {
+                          formValues.ratioInput = updatedModel.ratio || '';
+                          formValues.completionRatioInput = updatedModel.completionRatio || '';
+                        } else if (newSubMode === 'token-price') {
+                          formValues.modelTokenPrice = updatedModel.tokenPrice || '';
+                          formValues.completionTokenPrice = updatedModel.completionTokenPrice || '';
+                        }
+                        
+                        formRef.current.setValues(formValues);
+                      }
+                      
+                      setCurrentModel(updatedModel);
+                    }
+                  }}>
+                    <Radio value="ratio">{t('按倍率设置')}</Radio>
+                    <Radio value="token-price">{t('按价格设置')}</Radio>
+                  </RadioGroup>
+                </div>
+              </Form.Section>
+              
+              {pricingSubMode === 'ratio' && (
+                <>
+                  <Form.Input
+                    field="ratioInput"
+                    label={t('模型倍率')}
+                    placeholder={t('输入模型倍率')}
+                    onChange={value => setCurrentModel(prev => ({ 
+                      ...prev || {}, 
+                      ratio: value 
+                    }))}
+                    initValue={currentModel?.ratio || ''}
+                  />
+                  <Form.Input
+                    field="completionRatioInput"
+                    label={t('补全倍率')}
+                    placeholder={t('输入补全倍率')}
+                    onChange={value => setCurrentModel(prev => ({ 
+                      ...prev || {}, 
+                      completionRatio: value 
+                    }))}
+                    initValue={currentModel?.completionRatio || ''}
+                  />
+                </>
+              )}
+              
+              {pricingSubMode === 'token-price' && (
+                <>
+                  <Form.Input
+                    field="modelTokenPrice"
+                    label={t('输入价格')}
+                    onChange={(value) => {
+                      handleTokenPriceChange(value);
+                    }}
+                    initValue={currentModel?.tokenPrice || ''}
+                    suffix={t('$/1M tokens')}
+                  />
+                  <Form.Input
+                    field="completionTokenPrice"
+                    label={t('输出价格')}
+                    onChange={(value) => {
+                      handleCompletionTokenPriceChange(value);
+                    }}
+                    initValue={currentModel?.completionTokenPrice || ''}
+                    suffix={t('$/1M tokens')}
+                  />
+                </>
+              )}
+            </>
+          )}
+          
+          {pricingMode === 'per-request' && (
             <Form.Input
-              field="price"
+              field="priceInput"
               label={t('固定价格(每次)')}
               placeholder={t('输入每次价格')}
-              onChange={value => setCurrentModel(prev => ({ ...prev, price: value }))}
+              onChange={value => setCurrentModel(prev => ({ 
+                ...prev || {}, 
+                price: value 
+              }))}
+              initValue={currentModel?.price || ''}
             />
-          ) : (
-            <>
-              <Form.Input
-                field="ratio"
-                label={t('模型倍率')}
-                placeholder={t('输入模型倍率')}
-                onChange={value => setCurrentModel(prev => ({ ...prev, ratio: value }))}
-              />
-              <Form.Input
-                field="completionRatio"
-                label={t('补全倍率')}
-                placeholder={t('输入补全价格')}
-                onChange={value => setCurrentModel(prev => ({ ...prev, completionRatio: value }))}
-              />
-            </>
           )}
         </Form>
       </Modal>
