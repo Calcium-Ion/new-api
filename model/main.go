@@ -3,6 +3,7 @@ package model
 import (
 	"log"
 	"one-api/common"
+	"one-api/constant"
 	"os"
 	"strings"
 	"sync"
@@ -53,6 +54,26 @@ func createRootAccountIfNeed() error {
 		DB.Create(&rootUser)
 	}
 	return nil
+}
+
+func checkSetup() {
+	if GetSetup() == nil {
+		if RootUserExists() {
+			common.SysLog("system is not initialized, but root user exists")
+			// Create setup record
+			setup := Setup{
+				Version:       common.Version,
+				InitializedAt: time.Now().Unix(),
+			}
+			err := DB.Create(&setup).Error
+			if err != nil {
+				common.SysLog("failed to create setup record: " + err.Error())
+			}
+			constant.Setup = true
+		} else {
+			constant.Setup = false
+		}
+	}
 }
 
 func chooseDB(envName string) (*gorm.DB, error) {
@@ -214,8 +235,10 @@ func migrateDB() error {
 	if err != nil {
 		return err
 	}
+	err = DB.AutoMigrate(&Setup{})
 	common.SysLog("database migrated")
-	err = createRootAccountIfNeed()
+	checkSetup()
+	//err = createRootAccountIfNeed()
 	return err
 }
 
