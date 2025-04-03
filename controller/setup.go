@@ -6,6 +6,7 @@ import (
 	"one-api/constant"
 	"one-api/model"
 	"one-api/setting/operation_setting"
+	"time"
 )
 
 type Setup struct {
@@ -144,11 +145,16 @@ func PostSetup(c *gin.Context) {
 
 	// Update setup status
 	constant.Setup = true
-	err = model.UpdateOption("setup", "true")
+
+	setup := model.Setup{
+		Version:       common.Version,
+		InitializedAt: time.Now().Unix(),
+	}
+	err = model.DB.Create(&setup).Error
 	if err != nil {
 		c.JSON(500, gin.H{
 			"success": false,
-			"message": "设置初始化状态失败: " + err.Error(),
+			"message": "系统初始化失败: " + err.Error(),
 		})
 		return
 	}
