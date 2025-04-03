@@ -124,7 +124,7 @@ func PostSetup(c *gin.Context) {
 	operation_setting.DemoSiteEnabled = req.DemoSiteEnabled
 
 	// Save operation modes to database for persistence
-	err = model.UpdateOption("self_use_mode", boolToString(req.SelfUseModeEnabled))
+	err = model.UpdateOption("SelfUseModeEnabled", boolToString(req.SelfUseModeEnabled))
 	if err != nil {
 		c.JSON(500, gin.H{
 			"success": false,
@@ -133,7 +133,7 @@ func PostSetup(c *gin.Context) {
 		return
 	}
 
-	err = model.UpdateOption("demo_site_mode", boolToString(req.DemoSiteEnabled))
+	err = model.UpdateOption("SelfUseModeEnabled", boolToString(req.DemoSiteEnabled))
 	if err != nil {
 		c.JSON(500, gin.H{
 			"success": false,
