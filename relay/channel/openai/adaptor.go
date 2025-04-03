@@ -239,6 +239,11 @@ func (a *Adaptor) ConvertImageRequest(c *gin.Context, info *relaycommon.RelayInf
 	return request, nil
 }
 
+func (a *Adaptor) ConvertVideoRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.VideoRequest) (any, error) {
+	//TODO implement me
+	return nil, errors.New("not implemented")
+}
+
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
 	if info.RelayMode == constant.RelayModeAudioTranscription || info.RelayMode == constant.RelayModeAudioTranslation {
 		return channel.DoFormRequest(a, c, info, requestBody)
