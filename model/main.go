@@ -57,22 +57,29 @@ func createRootAccountIfNeed() error {
 }
 
 func checkSetup() {
-	if GetSetup() == nil {
+	setup := GetSetup()
+	if setup == nil {
+		// No setup record exists, check if we have a root user
 		if RootUserExists() {
 			common.SysLog("system is not initialized, but root user exists")
 			// Create setup record
-			setup := Setup{
+			newSetup := Setup{
 				Version:       common.Version,
 				InitializedAt: time.Now().Unix(),
 			}
-			err := DB.Create(&setup).Error
+			err := DB.Create(&newSetup).Error
 			if err != nil {
 				common.SysLog("failed to create setup record: " + err.Error())
 			}
 			constant.Setup = true
 		} else {
+			common.SysLog("system is not initialized and no root user exists")
 			constant.Setup = false
 		}
+	} else {
+		// Setup record exists, system is initialized
+		common.SysLog("system is already initialized at: " + time.Unix(setup.InitializedAt, 0).String())
+		constant.Setup = true
 	}
 }
 
