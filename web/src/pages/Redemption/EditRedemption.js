@@ -8,7 +8,11 @@ import {
   showError,
   showSuccess,
 } from '../../helpers';
-import { getQuotaPerUnit, renderQuota, renderQuotaWithPrompt } from '../../helpers/render';
+import {
+  getQuotaPerUnit,
+  renderQuota,
+  renderQuotaWithPrompt,
+} from '../../helpers/render';
 import {
   AutoComplete,
   Button,
@@ -171,7 +175,9 @@ const EditRedemption = (props) => {
           />
           <Divider />
           <div style={{ marginTop: 20 }}>
-            <Typography.Text>{t('额度') + renderQuotaWithPrompt(quota)}</Typography.Text>
+            <Typography.Text>
+              {t('额度') + renderQuotaWithPrompt(quota)}
+            </Typography.Text>
           </div>
           <AutoComplete
             style={{ marginTop: 8 }}

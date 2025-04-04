@@ -8,14 +8,16 @@ import {
 } from '../helpers';
 
 import { ITEMS_PER_PAGE } from '../constants';
-import {renderGroup, renderQuota} from '../helpers/render';
+import { renderGroup, renderQuota } from '../helpers/render';
 import {
-  Button, Divider,
+  Button,
+  Divider,
   Dropdown,
   Form,
   Modal,
   Popconfirm,
-  Popover, Space,
+  Popover,
+  Space,
   SplitButtonGroup,
   Table,
   Tag,
@@ -30,7 +32,6 @@ function renderTimestamp(timestamp) {
 }
 
 const TokensTable = () => {
-
   const { t } = useTranslation();
 
   const renderStatus = (status, model_limits_enabled = false) => {
@@ -86,12 +87,14 @@ const TokensTable = () => {
       dataIndex: 'status',
       key: 'status',
       render: (text, record, index) => {
-        return <div>
-          <Space>
-            {renderStatus(text, record.model_limits_enabled)}
-            {renderGroup(record.group)}
-          </Space>
-        </div>;
+        return (
+          <div>
+            <Space>
+              {renderStatus(text, record.model_limits_enabled)}
+              {renderGroup(record.group)}
+            </Space>
+          </div>
+        );
       },
     },
     {
@@ -143,7 +146,7 @@ const TokensTable = () => {
       dataIndex: 'operate',
       render: (text, record, index) => {
         let chats = localStorage.getItem('chats');
-        let chatsArray = []
+        let chatsArray = [];
         let shouldUseCustom = true;
 
         if (shouldUseCustom) {
@@ -153,7 +156,7 @@ const TokensTable = () => {
             // check chats is array
             if (Array.isArray(chats)) {
               for (let i = 0; i < chats.length; i++) {
-                let chat = {}
+                let chat = {};
                 chat.node = 'item';
                 // c is a map
                 // chat.key = chats[i].name;
@@ -164,13 +167,12 @@ const TokensTable = () => {
                     chat.name = key;
                     chat.onClick = () => {
                       onOpenLink(key, chats[i][key], record);
-                    }
+                    };
                   }
                 }
                 chatsArray.push(chat);
               }
             }
-
           } catch (e) {
             console.log(e);
             showError(t('聊天链接配置错误，请联系管理员'));
@@ -208,7 +210,11 @@ const TokensTable = () => {
                   if (chatsArray.length === 0) {
                     showError(t('请联系管理员配置聊天链接'));
                   } else {
-                    onOpenLink('default', chats[0][Object.keys(chats[0])[0]], record);
+                    onOpenLink(
+                      'default',
+                      chats[0][Object.keys(chats[0])[0]],
+                      record,
+                    );
                   }
                 }}
               >
@@ -539,36 +545,36 @@ const TokensTable = () => {
           {t('查询')}
         </Button>
       </Form>
-      <Divider style={{margin:'15px 0'}}/>
+      <Divider style={{ margin: '15px 0' }} />
       <div>
         <Button
-            theme='light'
-            type='primary'
-            style={{ marginRight: 8 }}
-            onClick={() => {
-              setEditingToken({
-                id: undefined,
-              });
-              setShowEdit(true);
-            }}
+          theme='light'
+          type='primary'
+          style={{ marginRight: 8 }}
+          onClick={() => {
+            setEditingToken({
+              id: undefined,
+            });
+            setShowEdit(true);
+          }}
         >
-            {t('添加令牌')}
+          {t('添加令牌')}
         </Button>
         <Button
-            label={t('复制所选令牌')}
-            type='warning'
-            onClick={async () => {
-              if (selectedKeys.length === 0) {
-                showError(t('请至少选择一个令牌！'));
-                return;
-              }
-              let keys = '';
-              for (let i = 0; i < selectedKeys.length; i++) {
-                keys +=
-                    selectedKeys[i].name + '    sk-' + selectedKeys[i].key + '\n';
-              }
-              await copyText(keys);
-            }}
+          label={t('复制所选令牌')}
+          type='warning'
+          onClick={async () => {
+            if (selectedKeys.length === 0) {
+              showError(t('请至少选择一个令牌！'));
+              return;
+            }
+            let keys = '';
+            for (let i = 0; i < selectedKeys.length; i++) {
+              keys +=
+                selectedKeys[i].name + '    sk-' + selectedKeys[i].key + '\n';
+            }
+            await copyText(keys);
+          }}
         >
           {t('复制所选令牌到剪贴板')}
         </Button>
@@ -588,7 +594,7 @@ const TokensTable = () => {
             t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
               start: page.currentStart,
               end: page.currentEnd,
-              total: tokens.length
+              total: tokens.length,
             }),
           onPageSizeChange: (size) => {
             setPageSize(size);

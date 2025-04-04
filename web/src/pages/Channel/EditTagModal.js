@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { API, showError, showInfo, showSuccess, showWarning, verifyJSON } from '../../helpers';
-import { SideSheet, Space, Button, Input, Typography, Spin, Modal, Select, Banner, TextArea } from '@douyinfe/semi-ui';
+import {
+  API,
+  showError,
+  showInfo,
+  showSuccess,
+  showWarning,
+  verifyJSON,
+} from '../../helpers';
+import {
+  SideSheet,
+  Space,
+  Button,
+  Input,
+  Typography,
+  Spin,
+  Modal,
+  Select,
+  Banner,
+  TextArea,
+} from '@douyinfe/semi-ui';
 import TextInput from '../../components/custom/TextInput.js';
 import { getChannelModels } from '../../components/utils.js';
 
 const MODEL_MAPPING_EXAMPLE = {
-  'gpt-3.5-turbo': 'gpt-3.5-turbo-0125'
+  'gpt-3.5-turbo': 'gpt-3.5-turbo-0125',
 };
 
 const EditTagModal = (props) => {
@@ -23,7 +41,7 @@ const EditTagModal = (props) => {
     model_mapping: null,
     groups: [],
     models: [],
-  }
+  };
   const [inputs, setInputs] = useState(originInputs);
 
   const handleInputChange = (name, value) => {
@@ -39,7 +57,7 @@ const EditTagModal = (props) => {
             'mj_blend',
             'mj_upscale',
             'mj_describe',
-            'mj_uploads'
+            'mj_uploads',
           ];
           break;
         case 5:
@@ -59,14 +77,11 @@ const EditTagModal = (props) => {
             'mj_high_variation',
             'mj_low_variation',
             'mj_pan',
-            'mj_uploads'
+            'mj_uploads',
           ];
           break;
         case 36:
-          localModels = [
-            'suno_music',
-            'suno_lyrics'
-          ];
+          localModels = ['suno_music', 'suno_lyrics'];
           break;
         default:
           localModels = getChannelModels(value);
@@ -84,7 +99,7 @@ const EditTagModal = (props) => {
       let res = await API.get(`/api/channel/models`);
       let localModelOptions = res.data.data.map((model) => ({
         label: model.id,
-        value: model.id
+        value: model.id,
       }));
       setOriginModelOptions(localModelOptions);
       setFullModels(res.data.data.map((model) => model.id));
@@ -93,7 +108,7 @@ const EditTagModal = (props) => {
           .filter((model) => {
             return model.id.startsWith('gpt-') || model.id.startsWith('text-');
           })
-          .map((model) => model.id)
+          .map((model) => model.id),
       );
     } catch (error) {
       showError(error.message);
@@ -109,27 +124,26 @@ const EditTagModal = (props) => {
       setGroupOptions(
         res.data.data.map((group) => ({
           label: group,
-          value: group
-        }))
+          value: group,
+        })),
       );
     } catch (error) {
       showError(error.message);
     }
   };
 
-
   const handleSave = async () => {
     setLoading(true);
     let data = {
       tag: tag,
-    }
+    };
     if (inputs.model_mapping !== null && inputs.model_mapping !== '') {
       if (inputs.model_mapping !== '' && !verifyJSON(inputs.model_mapping)) {
         showInfo('模型映射必须是合法的 JSON 格式！');
         setLoading(false);
         return;
       }
-      data.model_mapping = inputs.model_mapping
+      data.model_mapping = inputs.model_mapping;
     }
     if (inputs.groups.length > 0) {
       data.groups = inputs.groups.join(',');
@@ -139,7 +153,12 @@ const EditTagModal = (props) => {
     }
     data.new_tag = inputs.new_tag;
     // check have any change
-    if (data.model_mapping === undefined && data.groups === undefined && data.models === undefined && data.new_tag === undefined) {
+    if (
+      data.model_mapping === undefined &&
+      data.groups === undefined &&
+      data.models === undefined &&
+      data.new_tag === undefined
+    ) {
       showWarning('没有任何修改！');
       setLoading(false);
       return;
@@ -159,7 +178,7 @@ const EditTagModal = (props) => {
     } catch (error) {
       showError(error);
     }
-  }
+  };
 
   useEffect(() => {
     let localModelOptions = [...originModelOptions];
@@ -167,7 +186,7 @@ const EditTagModal = (props) => {
       if (!localModelOptions.find((option) => option.label === model)) {
         localModelOptions.push({
           label: model,
-          value: model
+          value: model,
         });
       }
     });
@@ -179,7 +198,7 @@ const EditTagModal = (props) => {
       ...originInputs,
       tag: tag,
       new_tag: tag,
-    })
+    });
     fetchModels().then();
     fetchGroups().then();
   }, [visible]);
@@ -201,7 +220,7 @@ const EditTagModal = (props) => {
           // 添加到下拉选项
           key: model,
           text: model,
-          value: model
+          value: model,
         });
       } else if (model) {
         showError('某些模型已存在！');
@@ -217,17 +236,18 @@ const EditTagModal = (props) => {
     handleInputChange('models', localModels);
   };
 
-
   return (
     <SideSheet
-      title="编辑标签"
+      title='编辑标签'
       visible={visible}
       onCancel={handleClose}
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Space>
             <Button onClick={handleClose}>取消</Button>
-            <Button type="primary" onClick={handleSave} loading={loading}>保存</Button>
+            <Button type='primary' onClick={handleSave} loading={loading}>
+              保存
+            </Button>
           </Space>
         </div>
       }
@@ -235,27 +255,23 @@ const EditTagModal = (props) => {
       <div style={{ marginTop: 10 }}>
         <Banner
           type={'warning'}
-          description={
-            <>
-              所有编辑均为覆盖操作，留空则不更改
-            </>
-          }
+          description={<>所有编辑均为覆盖操作，留空则不更改</>}
         ></Banner>
       </div>
       <Spin spinning={loading}>
         <TextInput
-          label="标签名，留空则解散标签"
-          name="newTag"
+          label='标签名，留空则解散标签'
+          name='newTag'
           value={inputs.new_tag}
           onChange={(value) => setInputs({ ...inputs, new_tag: value })}
-          placeholder="请输入新标签"
+          placeholder='请输入新标签'
         />
         <div style={{ marginTop: 10 }}>
           <Typography.Text strong>模型，留空则不更改：</Typography.Text>
         </div>
         <Select
           placeholder={'请选择该渠道所支持的模型，留空则不更改'}
-          name="models"
+          name='models'
           required
           multiple
           selection
@@ -265,16 +281,16 @@ const EditTagModal = (props) => {
             handleInputChange('models', value);
           }}
           value={inputs.models}
-          autoComplete="new-password"
+          autoComplete='new-password'
           optionList={modelOptions}
         />
         <Input
           addonAfter={
-            <Button type="primary" onClick={addCustomModels}>
+            <Button type='primary' onClick={addCustomModels}>
               填入
             </Button>
           }
-          placeholder="输入自定义模型名称"
+          placeholder='输入自定义模型名称'
           value={customModel}
           onChange={(value) => {
             setCustomModel(value.trim());
@@ -285,7 +301,7 @@ const EditTagModal = (props) => {
         </div>
         <Select
           placeholder={'请选择可以使用该渠道的分组，留空则不更改'}
-          name="groups"
+          name='groups'
           required
           multiple
           selection
@@ -295,7 +311,7 @@ const EditTagModal = (props) => {
             handleInputChange('groups', value);
           }}
           value={inputs.groups}
-          autoComplete="new-password"
+          autoComplete='new-password'
           optionList={groupOptions}
         />
         <div style={{ marginTop: 10 }}>
@@ -303,25 +319,25 @@ const EditTagModal = (props) => {
         </div>
         <TextArea
           placeholder={`此项可选，用于修改请求体中的模型名称，为一个 JSON 字符串，键为请求中模型名称，值为要替换的模型名称，留空则不更改`}
-          name="model_mapping"
+          name='model_mapping'
           onChange={(value) => {
             handleInputChange('model_mapping', value);
           }}
           autosize
           value={inputs.model_mapping}
-          autoComplete="new-password"
+          autoComplete='new-password'
         />
         <Space>
           <Typography.Text
             style={{
               color: 'rgba(var(--semi-blue-5), 1)',
               userSelect: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
             onClick={() => {
               handleInputChange(
                 'model_mapping',
-                JSON.stringify(MODEL_MAPPING_EXAMPLE, null, 2)
+                JSON.stringify(MODEL_MAPPING_EXAMPLE, null, 2),
               );
             }}
           >
@@ -331,13 +347,10 @@ const EditTagModal = (props) => {
             style={{
               color: 'rgba(var(--semi-blue-5), 1)',
               userSelect: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
             onClick={() => {
-              handleInputChange(
-                'model_mapping',
-                JSON.stringify({}, null, 2)
-              );
+              handleInputChange('model_mapping', JSON.stringify({}, null, 2));
             }}
           >
             清空重定向
@@ -346,13 +359,10 @@ const EditTagModal = (props) => {
             style={{
               color: 'rgba(var(--semi-blue-5), 1)',
               userSelect: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
             onClick={() => {
-              handleInputChange(
-                'model_mapping',
-                ""
-              );
+              handleInputChange('model_mapping', '');
             }}
           >
             不更改

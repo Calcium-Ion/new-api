@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Banner, Button, Col, Form, Popconfirm, Row, Space, Spin } from '@douyinfe/semi-ui';
+import {
+  Banner,
+  Button,
+  Col,
+  Form,
+  Popconfirm,
+  Row,
+  Space,
+  Spin,
+} from '@douyinfe/semi-ui';
 import {
   compareObjects,
   API,
@@ -7,7 +16,7 @@ import {
   showSuccess,
   showWarning,
   verifyJSON,
-  verifyJSONPromise
+  verifyJSONPromise,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +24,7 @@ export default function SettingsChats(props) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
-    Chats: "[]",
+    Chats: '[]',
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -23,44 +32,48 @@ export default function SettingsChats(props) {
   async function onSubmit() {
     try {
       console.log('Starting validation...');
-      await refForm.current.validate().then(() => {
-        console.log('Validation passed');
-        const updateArray = compareObjects(inputs, inputsRow);
-        if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
-        const requestQueue = updateArray.map((item) => {
-          let value = '';
-          if (typeof inputs[item.key] === 'boolean') {
-            value = String(inputs[item.key]);
-          } else {
-            value = inputs[item.key];
-          }
-          return API.put('/api/option/', {
-            key: item.key,
-            value
-          });
-        });
-        setLoading(true);
-        Promise.all(requestQueue)
-          .then((res) => {
-            if (requestQueue.length === 1) {
-              if (res.includes(undefined)) return;
-            } else if (requestQueue.length > 1) {
-              if (res.includes(undefined))
-                return showError(t('部分保存失败，请重试'));
+      await refForm.current
+        .validate()
+        .then(() => {
+          console.log('Validation passed');
+          const updateArray = compareObjects(inputs, inputsRow);
+          if (!updateArray.length)
+            return showWarning(t('你似乎并没有修改什么'));
+          const requestQueue = updateArray.map((item) => {
+            let value = '';
+            if (typeof inputs[item.key] === 'boolean') {
+              value = String(inputs[item.key]);
+            } else {
+              value = inputs[item.key];
             }
-            showSuccess(t('保存成功'));
-            props.refresh();
-          })
-          .catch(() => {
-            showError(t('保存失败，请重试'));
-          })
-          .finally(() => {
-            setLoading(false);
+            return API.put('/api/option/', {
+              key: item.key,
+              value,
+            });
           });
-      }).catch((error) => {
-        console.error('Validation failed:', error);
-        showError(t('请检查输入'));
-      });
+          setLoading(true);
+          Promise.all(requestQueue)
+            .then((res) => {
+              if (requestQueue.length === 1) {
+                if (res.includes(undefined)) return;
+              } else if (requestQueue.length > 1) {
+                if (res.includes(undefined))
+                  return showError(t('部分保存失败，请重试'));
+              }
+              showSuccess(t('保存成功'));
+              props.refresh();
+            })
+            .catch(() => {
+              showError(t('保存失败，请重试'));
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+        })
+        .catch((error) => {
+          console.error('Validation failed:', error);
+          showError(t('请检查输入'));
+        });
     } catch (error) {
       showError(t('请检查输入'));
       console.error(error);
@@ -109,11 +122,15 @@ export default function SettingsChats(props) {
         <Form.Section text={t('令牌聊天设置')}>
           <Banner
             type='warning'
-            description={t('必须将上方聊天链接全部设置为空，才能使用下方聊天设置功能')}
+            description={t(
+              '必须将上方聊天链接全部设置为空，才能使用下方聊天设置功能',
+            )}
           />
           <Banner
             type='info'
-            description={t('链接中的{key}将自动替换为sk-xxxx，{address}将自动替换为系统设置的服务器地址，末尾不带/和/v1')}
+            description={t(
+              '链接中的{key}将自动替换为sk-xxxx，{address}将自动替换为系统设置的服务器地址，末尾不带/和/v1',
+            )}
           />
           <Form.TextArea
             label={t('聊天配置')}
@@ -128,22 +145,20 @@ export default function SettingsChats(props) {
                 validator: (rule, value) => {
                   return verifyJSON(value);
                 },
-                message: t('不是合法的 JSON 字符串')
-              }
+                message: t('不是合法的 JSON 字符串'),
+              },
             ]}
             onChange={(value) =>
               setInputs({
                 ...inputs,
-                Chats: value
+                Chats: value,
               })
             }
           />
         </Form.Section>
       </Form>
       <Space>
-        <Button onClick={onSubmit}>
-          {t('保存聊天设置')}
-        </Button>
+        <Button onClick={onSubmit}>{t('保存聊天设置')}</Button>
       </Space>
     </Spin>
   );

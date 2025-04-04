@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Spin, Tabs } from '@douyinfe/semi-ui';
 
-
 import { API, showError, showSuccess } from '../helpers';
 import { useTranslation } from 'react-i18next';
 import SettingGeminiModel from '../pages/Setting/Model/SettingGeminiModel.js';
@@ -31,14 +30,12 @@ const ModelSetting = () => {
         if (
           item.key === 'gemini.safety_settings' ||
           item.key === 'gemini.version_settings' ||
-          item.key === 'claude.model_headers_settings'||
+          item.key === 'claude.model_headers_settings' ||
           item.key === 'claude.default_max_tokens'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
-        if (
-          item.key.endsWith('Enabled') || item.key.endsWith('enabled')
-        ) {
+        if (item.key.endsWith('Enabled') || item.key.endsWith('enabled')) {
           newInputs[item.key] = item.value === 'true' ? true : false;
         } else {
           newInputs[item.key] = item.value;

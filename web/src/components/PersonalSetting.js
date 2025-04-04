@@ -6,11 +6,15 @@ import {
   isRoot,
   showError,
   showInfo,
-  showSuccess
+  showSuccess,
 } from '../helpers';
 import Turnstile from 'react-turnstile';
 import { UserContext } from '../context/User';
-import { onGitHubOAuthClicked, onOIDCClicked, onLinuxDOOAuthClicked } from './utils';
+import {
+  onGitHubOAuthClicked,
+  onOIDCClicked,
+  onLinuxDOOAuthClicked,
+} from './utils';
 import {
   Avatar,
   Banner,
@@ -32,13 +36,13 @@ import {
   AutoComplete,
   Checkbox,
   Tabs,
-  TabPane
+  TabPane,
 } from '@douyinfe/semi-ui';
 import {
   getQuotaPerUnit,
   renderQuota,
   renderQuotaWithPrompt,
-  stringToColor
+  stringToColor,
 } from '../helpers/render';
 import TelegramLoginButton from 'react-telegram-login';
 import { useTranslation } from 'react-i18next';
@@ -54,7 +58,7 @@ const PersonalSetting = () => {
     email: '',
     self_account_deletion_confirmation: '',
     set_new_password: '',
-    set_new_password_confirmation: ''
+    set_new_password_confirmation: '',
   });
   const [status, setStatus] = useState({});
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -77,14 +81,14 @@ const PersonalSetting = () => {
     const savedState = localStorage.getItem('modelsExpanded');
     return savedState ? JSON.parse(savedState) : false;
   });
-  const MODELS_DISPLAY_COUNT = 10;  // 默认显示的模型数量
+  const MODELS_DISPLAY_COUNT = 10; // 默认显示的模型数量
   const [notificationSettings, setNotificationSettings] = useState({
     warningType: 'email',
     warningThreshold: 100000,
     webhookUrl: '',
     webhookSecret: '',
     notificationEmail: '',
-    acceptUnsetModelRatioModel: false
+    acceptUnsetModelRatioModel: false,
   });
   const [showWebhookDocs, setShowWebhookDocs] = useState(false);
 
@@ -128,7 +132,8 @@ const PersonalSetting = () => {
         webhookUrl: settings.webhook_url || '',
         webhookSecret: settings.webhook_secret || '',
         notificationEmail: settings.notification_email || '',
-        acceptUnsetModelRatioModel: settings.accept_unset_model_ratio_model || false
+        acceptUnsetModelRatioModel:
+          settings.accept_unset_model_ratio_model || false,
       });
     }
   }, [userState?.user?.setting]);
@@ -222,7 +227,7 @@ const PersonalSetting = () => {
   const bindWeChat = async () => {
     if (inputs.wechat_verification_code === '') return;
     const res = await API.get(
-      `/api/oauth/wechat/bind?code=${inputs.wechat_verification_code}`
+      `/api/oauth/wechat/bind?code=${inputs.wechat_verification_code}`,
     );
     const { success, message } = res.data;
     if (success) {
@@ -239,7 +244,7 @@ const PersonalSetting = () => {
       return;
     }
     const res = await API.put(`/api/user/self`, {
-      password: inputs.set_new_password
+      password: inputs.set_new_password,
     });
     const { success, message } = res.data;
     if (success) {
@@ -257,7 +262,7 @@ const PersonalSetting = () => {
       return;
     }
     const res = await API.post(`/api/user/aff_transfer`, {
-      quota: transferAmount
+      quota: transferAmount,
     });
     const { success, message } = res.data;
     if (success) {
@@ -281,7 +286,7 @@ const PersonalSetting = () => {
     }
     setLoading(true);
     const res = await API.get(
-      `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`
+      `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`,
     );
     const { success, message } = res.data;
     if (success) {
@@ -299,7 +304,7 @@ const PersonalSetting = () => {
     }
     setLoading(true);
     const res = await API.get(
-      `/api/oauth/email/bind?email=${inputs.email}&code=${inputs.email_verification_code}`
+      `/api/oauth/email/bind?email=${inputs.email}&code=${inputs.email_verification_code}`,
     );
     const { success, message } = res.data;
     if (success) {
@@ -334,9 +339,9 @@ const PersonalSetting = () => {
   };
 
   const handleNotificationSettingChange = (type, value) => {
-    setNotificationSettings(prev => ({
+    setNotificationSettings((prev) => ({
       ...prev,
-      [type]: value.target ? value.target.value : value  // 处理 Radio 事件对象
+      [type]: value.target ? value.target.value : value, // 处理 Radio 事件对象
     }));
   };
 
@@ -344,11 +349,14 @@ const PersonalSetting = () => {
     try {
       const res = await API.put('/api/user/setting', {
         notify_type: notificationSettings.warningType,
-        quota_warning_threshold: parseFloat(notificationSettings.warningThreshold),
+        quota_warning_threshold: parseFloat(
+          notificationSettings.warningThreshold,
+        ),
         webhook_url: notificationSettings.webhookUrl,
         webhook_secret: notificationSettings.webhookSecret,
         notification_email: notificationSettings.notificationEmail,
-        accept_unset_model_ratio_model: notificationSettings.acceptUnsetModelRatioModel
+        accept_unset_model_ratio_model:
+          notificationSettings.acceptUnsetModelRatioModel,
       });
 
       if (res.data.success) {
@@ -363,7 +371,6 @@ const PersonalSetting = () => {
   };
 
   return (
-
     <div>
       <Layout>
         <Layout.Content>
@@ -377,7 +384,10 @@ const PersonalSetting = () => {
             centered={true}
           >
             <div style={{ marginTop: 20 }}>
-              <Typography.Text>{t('可用额度')}{renderQuotaWithPrompt(userState?.user?.aff_quota)}</Typography.Text>
+              <Typography.Text>
+                {t('可用额度')}
+                {renderQuotaWithPrompt(userState?.user?.aff_quota)}
+              </Typography.Text>
               <Input
                 style={{ marginTop: 5 }}
                 value={userState?.user?.aff_quota}
@@ -386,7 +396,9 @@ const PersonalSetting = () => {
             </div>
             <div style={{ marginTop: 20 }}>
               <Typography.Text>
-                {t('划转额度')}{renderQuotaWithPrompt(transferAmount)} {t('最低') + renderQuota(getQuotaPerUnit())}
+                {t('划转额度')}
+                {renderQuotaWithPrompt(transferAmount)}{' '}
+                {t('最低') + renderQuota(getQuotaPerUnit())}
               </Typography.Text>
               <div>
                 <InputNumber
@@ -405,7 +417,7 @@ const PersonalSetting = () => {
                 <Card.Meta
                   avatar={
                     <Avatar
-                      size="default"
+                      size='default'
                       color={stringToColor(getUsername())}
                       style={{ marginRight: 4 }}
                     >
@@ -416,25 +428,29 @@ const PersonalSetting = () => {
                   title={<Typography.Text>{getUsername()}</Typography.Text>}
                   description={
                     isRoot() ? (
-                      <Tag color="red">{t('管理员')}</Tag>
+                      <Tag color='red'>{t('管理员')}</Tag>
                     ) : (
-                      <Tag color="blue">{t('普通用户')}</Tag>
+                      <Tag color='blue'>{t('普通用户')}</Tag>
                     )
                   }
                 ></Card.Meta>
               }
               headerExtraContent={
                 <>
-                  <Space vertical align="start">
-                    <Tag color="green">{'ID: ' + userState?.user?.id}</Tag>
-                    <Tag color="blue">{userState?.user?.group}</Tag>
+                  <Space vertical align='start'>
+                    <Tag color='green'>{'ID: ' + userState?.user?.id}</Tag>
+                    <Tag color='blue'>{userState?.user?.group}</Tag>
                   </Space>
                 </>
               }
               footer={
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Typography.Title heading={6}>{t('可用模型')}</Typography.Title>
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                  >
+                    <Typography.Title heading={6}>
+                      {t('可用模型')}
+                    </Typography.Title>
                   </div>
                   <div style={{ marginTop: 10 }}>
                     {models.length <= MODELS_DISPLAY_COUNT ? (
@@ -442,7 +458,7 @@ const PersonalSetting = () => {
                         {models.map((model) => (
                           <Tag
                             key={model}
-                            color="cyan"
+                            color='cyan'
                             onClick={() => {
                               copyText(model);
                             }}
@@ -458,7 +474,7 @@ const PersonalSetting = () => {
                             {models.map((model) => (
                               <Tag
                                 key={model}
-                                color="cyan"
+                                color='cyan'
                                 onClick={() => {
                                   copyText(model);
                                 }}
@@ -467,8 +483,8 @@ const PersonalSetting = () => {
                               </Tag>
                             ))}
                             <Tag
-                              color="blue"
-                              type="light"
+                              color='blue'
+                              type='light'
                               style={{ cursor: 'pointer' }}
                               onClick={() => setIsModelsExpanded(false)}
                             >
@@ -478,24 +494,27 @@ const PersonalSetting = () => {
                         </Collapsible>
                         {!isModelsExpanded && (
                           <Space wrap>
-                            {models.slice(0, MODELS_DISPLAY_COUNT).map((model) => (
-                              <Tag
-                                key={model}
-                                color="cyan"
-                                onClick={() => {
-                                  copyText(model);
-                                }}
-                              >
-                                {model}
-                              </Tag>
-                            ))}
+                            {models
+                              .slice(0, MODELS_DISPLAY_COUNT)
+                              .map((model) => (
+                                <Tag
+                                  key={model}
+                                  color='cyan'
+                                  onClick={() => {
+                                    copyText(model);
+                                  }}
+                                >
+                                  {model}
+                                </Tag>
+                              ))}
                             <Tag
-                              color="blue"
-                              type="light"
+                              color='blue'
+                              type='light'
                               style={{ cursor: 'pointer' }}
                               onClick={() => setIsModelsExpanded(true)}
                             >
-                              {t('更多')} {models.length - MODELS_DISPLAY_COUNT} {t('个模型')}
+                              {t('更多')} {models.length - MODELS_DISPLAY_COUNT}{' '}
+                              {t('个模型')}
                             </Tag>
                           </Space>
                         )}
@@ -503,7 +522,6 @@ const PersonalSetting = () => {
                     )}
                   </div>
                 </>
-
               }
             >
               <Descriptions row>
@@ -536,9 +554,9 @@ const PersonalSetting = () => {
               <div style={{ marginTop: 10 }}>
                 <Descriptions row>
                   <Descriptions.Item itemKey={t('待使用收益')}>
-                                        <span style={{ color: 'rgba(var(--semi-red-5), 1)' }}>
-                                            {renderQuota(userState?.user?.aff_quota)}
-                                        </span>
+                    <span style={{ color: 'rgba(var(--semi-red-5), 1)' }}>
+                      {renderQuota(userState?.user?.aff_quota)}
+                    </span>
                     <Button
                       type={'secondary'}
                       onClick={() => setOpenTransfer(true)}
@@ -589,7 +607,9 @@ const PersonalSetting = () => {
               </div>
               <div style={{ marginTop: 10 }}>
                 <Typography.Text strong>{t('微信')}</Typography.Text>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
                   <div>
                     <Input
                       value={
@@ -664,7 +684,10 @@ const PersonalSetting = () => {
                   <div>
                     <Button
                       onClick={() => {
-                        onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id);
+                        onOIDCClicked(
+                          status.oidc_authorization_endpoint,
+                          status.oidc_client_id,
+                        );
                       }}
                       disabled={
                         (userState.user && userState.user.oidc_id !== '') ||
@@ -697,7 +720,7 @@ const PersonalSetting = () => {
                         <Button disabled={true}>{t('已绑定')}</Button>
                       ) : (
                         <TelegramLoginButton
-                          dataAuthUrl="/api/oauth/telegram/bind"
+                          dataAuthUrl='/api/oauth/telegram/bind'
                           botName={status.telegram_bot_name}
                         />
                       )
@@ -779,75 +802,113 @@ const PersonalSetting = () => {
                     </p>
                   </div>
                   <Input
-                    placeholder="验证码"
-                    name="wechat_verification_code"
+                    placeholder='验证码'
+                    name='wechat_verification_code'
                     value={inputs.wechat_verification_code}
                     onChange={(v) =>
                       handleInputChange('wechat_verification_code', v)
                     }
                   />
-                  <Button color="" fluid size="large" onClick={bindWeChat}>
+                  <Button color='' fluid size='large' onClick={bindWeChat}>
                     {t('绑定')}
                   </Button>
                 </Modal>
               </div>
             </Card>
             <Card style={{ marginTop: 10 }}>
-              <Tabs type="line" defaultActiveKey="price">
-                <TabPane tab={t('价格设置')} itemKey="price">
+              <Tabs type='line' defaultActiveKey='price'>
+                <TabPane tab={t('价格设置')} itemKey='price'>
                   <div style={{ marginTop: 20 }}>
-                    <Typography.Text strong>{t('接受未设置价格模型')}</Typography.Text>
+                    <Typography.Text strong>
+                      {t('接受未设置价格模型')}
+                    </Typography.Text>
                     <div style={{ marginTop: 10 }}>
                       <Checkbox
-                        checked={notificationSettings.acceptUnsetModelRatioModel}
-                        onChange={e => handleNotificationSettingChange('acceptUnsetModelRatioModel', e.target.checked)}
+                        checked={
+                          notificationSettings.acceptUnsetModelRatioModel
+                        }
+                        onChange={(e) =>
+                          handleNotificationSettingChange(
+                            'acceptUnsetModelRatioModel',
+                            e.target.checked,
+                          )
+                        }
                       >
                         {t('接受未设置价格模型')}
                       </Checkbox>
-                      <Typography.Text type="secondary" style={{ marginTop: 8, display: 'block' }}>
-                        {t('当模型没有设置价格时仍接受调用，仅当您信任该网站时使用，可能会产生高额费用')}
+                      <Typography.Text
+                        type='secondary'
+                        style={{ marginTop: 8, display: 'block' }}
+                      >
+                        {t(
+                          '当模型没有设置价格时仍接受调用，仅当您信任该网站时使用，可能会产生高额费用',
+                        )}
                       </Typography.Text>
                     </div>
                   </div>
                 </TabPane>
-                <TabPane tab={t('通知设置')} itemKey="notification">
+                <TabPane tab={t('通知设置')} itemKey='notification'>
                   <div style={{ marginTop: 20 }}>
                     <Typography.Text strong>{t('通知方式')}</Typography.Text>
                     <div style={{ marginTop: 10 }}>
                       <RadioGroup
                         value={notificationSettings.warningType}
-                        onChange={value => handleNotificationSettingChange('warningType', value)}
+                        onChange={(value) =>
+                          handleNotificationSettingChange('warningType', value)
+                        }
                       >
-                        <Radio value="email">{t('邮件通知')}</Radio>
-                        <Radio value="webhook">{t('Webhook通知')}</Radio>
+                        <Radio value='email'>{t('邮件通知')}</Radio>
+                        <Radio value='webhook'>{t('Webhook通知')}</Radio>
                       </RadioGroup>
                     </div>
                   </div>
                   {notificationSettings.warningType === 'webhook' && (
                     <>
                       <div style={{ marginTop: 20 }}>
-                        <Typography.Text strong>{t('Webhook地址')}</Typography.Text>
+                        <Typography.Text strong>
+                          {t('Webhook地址')}
+                        </Typography.Text>
                         <div style={{ marginTop: 10 }}>
                           <Input
                             value={notificationSettings.webhookUrl}
-                            onChange={val => handleNotificationSettingChange('webhookUrl', val)}
-                            placeholder={t('请输入Webhook地址，例如: https://example.com/webhook')}
+                            onChange={(val) =>
+                              handleNotificationSettingChange('webhookUrl', val)
+                            }
+                            placeholder={t(
+                              '请输入Webhook地址，例如: https://example.com/webhook',
+                            )}
                           />
-                          <Typography.Text type="secondary" style={{ marginTop: 8, display: 'block' }}>
-                            {t('只支持https，系统将以 POST 方式发送通知，请确保地址可以接收 POST 请求')}
+                          <Typography.Text
+                            type='secondary'
+                            style={{ marginTop: 8, display: 'block' }}
+                          >
+                            {t(
+                              '只支持https，系统将以 POST 方式发送通知，请确保地址可以接收 POST 请求',
+                            )}
                           </Typography.Text>
-                          <Typography.Text type="secondary" style={{ marginTop: 8, display: 'block' }}>
-                            <div style={{ cursor: 'pointer' }} onClick={() => setShowWebhookDocs(!showWebhookDocs)}>
-                              {t('Webhook请求结构')} {showWebhookDocs ? '▼' : '▶'}
+                          <Typography.Text
+                            type='secondary'
+                            style={{ marginTop: 8, display: 'block' }}
+                          >
+                            <div
+                              style={{ cursor: 'pointer' }}
+                              onClick={() =>
+                                setShowWebhookDocs(!showWebhookDocs)
+                              }
+                            >
+                              {t('Webhook请求结构')}{' '}
+                              {showWebhookDocs ? '▼' : '▶'}
                             </div>
                             <Collapsible isOpen={showWebhookDocs}>
-                            <pre style={{
-                              marginTop: 4,
-                              background: 'var(--semi-color-fill-0)',
-                              padding: 8,
-                              borderRadius: 4
-                            }}>
-{`{
+                              <pre
+                                style={{
+                                  marginTop: 4,
+                                  background: 'var(--semi-color-fill-0)',
+                                  padding: 8,
+                                  borderRadius: 4,
+                                }}
+                              >
+                                {`{
     "type": "quota_exceed",      // 通知类型
     "title": "标题",             // 通知标题
     "content": "通知内容",       // 通知内容，支持 {{value}} 变量占位符
@@ -863,23 +924,38 @@ const PersonalSetting = () => {
     "values": ["$0.99"],
     "timestamp": 1739950503
 }`}
-                            </pre>
+                              </pre>
                             </Collapsible>
                           </Typography.Text>
                         </div>
                       </div>
                       <div style={{ marginTop: 20 }}>
-                        <Typography.Text strong>{t('接口凭证（可选）')}</Typography.Text>
+                        <Typography.Text strong>
+                          {t('接口凭证（可选）')}
+                        </Typography.Text>
                         <div style={{ marginTop: 10 }}>
                           <Input
                             value={notificationSettings.webhookSecret}
-                            onChange={val => handleNotificationSettingChange('webhookSecret', val)}
+                            onChange={(val) =>
+                              handleNotificationSettingChange(
+                                'webhookSecret',
+                                val,
+                              )
+                            }
                             placeholder={t('请输入密钥')}
                           />
-                          <Typography.Text type="secondary" style={{ marginTop: 8, display: 'block' }}>
-                            {t('密钥将以 Bearer 方式添加到请求头中，用于验证webhook请求的合法性')}
+                          <Typography.Text
+                            type='secondary'
+                            style={{ marginTop: 8, display: 'block' }}
+                          >
+                            {t(
+                              '密钥将以 Bearer 方式添加到请求头中，用于验证webhook请求的合法性',
+                            )}
                           </Typography.Text>
-                          <Typography.Text type="secondary" style={{ marginTop: 4, display: 'block' }}>
+                          <Typography.Text
+                            type='secondary'
+                            style={{ marginTop: 4, display: 'block' }}
+                          >
                             {t('Authorization: Bearer your-secret-key')}
                           </Typography.Text>
                         </div>
@@ -892,40 +968,64 @@ const PersonalSetting = () => {
                       <div style={{ marginTop: 10 }}>
                         <Input
                           value={notificationSettings.notificationEmail}
-                          onChange={val => handleNotificationSettingChange('notificationEmail', val)}
+                          onChange={(val) =>
+                            handleNotificationSettingChange(
+                              'notificationEmail',
+                              val,
+                            )
+                          }
                           placeholder={t('留空则使用账号绑定的邮箱')}
                         />
-                        <Typography.Text type="secondary" style={{ marginTop: 8, display: 'block' }}>
-                          {t('设置用于接收额度预警的邮箱地址，不填则使用账号绑定的邮箱')}
+                        <Typography.Text
+                          type='secondary'
+                          style={{ marginTop: 8, display: 'block' }}
+                        >
+                          {t(
+                            '设置用于接收额度预警的邮箱地址，不填则使用账号绑定的邮箱',
+                          )}
                         </Typography.Text>
                       </div>
                     </div>
                   )}
                   <div style={{ marginTop: 20 }}>
-                    <Typography.Text
-                      strong>{t('额度预警阈值')} {renderQuotaWithPrompt(notificationSettings.warningThreshold)}</Typography.Text>
+                    <Typography.Text strong>
+                      {t('额度预警阈值')}{' '}
+                      {renderQuotaWithPrompt(
+                        notificationSettings.warningThreshold,
+                      )}
+                    </Typography.Text>
                     <div style={{ marginTop: 10 }}>
                       <AutoComplete
                         value={notificationSettings.warningThreshold}
-                        onChange={val => handleNotificationSettingChange('warningThreshold', val)}
+                        onChange={(val) =>
+                          handleNotificationSettingChange(
+                            'warningThreshold',
+                            val,
+                          )
+                        }
                         style={{ width: 200 }}
                         placeholder={t('请输入预警额度')}
                         data={[
                           { value: 100000, label: '0.2$' },
                           { value: 500000, label: '1$' },
                           { value: 1000000, label: '5$' },
-                          { value: 5000000, label: '10$' }
+                          { value: 5000000, label: '10$' },
                         ]}
                       />
                     </div>
-                    <Typography.Text type="secondary" style={{ marginTop: 10, display: 'block' }}>
-                      {t('当剩余额度低于此数值时，系统将通过选择的方式发送通知')}
+                    <Typography.Text
+                      type='secondary'
+                      style={{ marginTop: 10, display: 'block' }}
+                    >
+                      {t(
+                        '当剩余额度低于此数值时，系统将通过选择的方式发送通知',
+                      )}
                     </Typography.Text>
                   </div>
                 </TabPane>
               </Tabs>
               <div style={{ marginTop: 20 }}>
-                <Button type="primary" onClick={saveNotificationSettings}>
+                <Button type='primary' onClick={saveNotificationSettings}>
                   {t('保存设置')}
                 </Button>
               </div>
@@ -938,20 +1038,22 @@ const PersonalSetting = () => {
               centered={true}
               maskClosable={false}
             >
-              <Typography.Title heading={6}>{t('绑定邮箱地址')}</Typography.Title>
+              <Typography.Title heading={6}>
+                {t('绑定邮箱地址')}
+              </Typography.Title>
               <div
                 style={{
                   marginTop: 20,
                   display: 'flex',
-                  justifyContent: 'space-between'
+                  justifyContent: 'space-between',
                 }}
               >
                 <Input
                   fluid
-                  placeholder="输入邮箱地址"
+                  placeholder='输入邮箱地址'
                   onChange={(value) => handleInputChange('email', value)}
-                  name="email"
-                  type="email"
+                  name='email'
+                  type='email'
                 />
                 <Button
                   onClick={sendVerificationCode}
@@ -963,8 +1065,8 @@ const PersonalSetting = () => {
               <div style={{ marginTop: 10 }}>
                 <Input
                   fluid
-                  placeholder="验证码"
-                  name="email_verification_code"
+                  placeholder='验证码'
+                  name='email_verification_code'
                   value={inputs.email_verification_code}
                   onChange={(value) =>
                     handleInputChange('email_verification_code', value)
@@ -991,20 +1093,20 @@ const PersonalSetting = () => {
             >
               <div style={{ marginTop: 20 }}>
                 <Banner
-                  type="danger"
-                  description="您正在删除自己的帐户，将清空所有数据且不可恢复"
+                  type='danger'
+                  description='您正在删除自己的帐户，将清空所有数据且不可恢复'
                   closeIcon={null}
                 />
               </div>
               <div style={{ marginTop: 20 }}>
                 <Input
                   placeholder={`输入你的账户名 ${userState?.user?.username} 以确认删除`}
-                  name="self_account_deletion_confirmation"
+                  name='self_account_deletion_confirmation'
                   value={inputs.self_account_deletion_confirmation}
                   onChange={(value) =>
                     handleInputChange(
                       'self_account_deletion_confirmation',
-                      value
+                      value,
                     )
                   }
                 />
@@ -1029,7 +1131,7 @@ const PersonalSetting = () => {
             >
               <div style={{ marginTop: 20 }}>
                 <Input
-                  name="set_new_password"
+                  name='set_new_password'
                   placeholder={t('新密码')}
                   value={inputs.set_new_password}
                   onChange={(value) =>
@@ -1038,7 +1140,7 @@ const PersonalSetting = () => {
                 />
                 <Input
                   style={{ marginTop: 20 }}
-                  name="set_new_password_confirmation"
+                  name='set_new_password_confirmation'
                   placeholder={t('确认新密码')}
                   value={inputs.set_new_password_confirmation}
                   onChange={(value) =>

@@ -28,7 +28,7 @@ root.render(
         <BrowserRouter>
           <ThemeProvider>
             <StyleProvider>
-              <PageLayout/>
+              <PageLayout />
             </StyleProvider>
           </ThemeProvider>
         </BrowserRouter>

@@ -9,14 +9,14 @@ const Redemption = () => {
     <>
       <Layout>
         <Layout.Header>
-        <h3>{t('管理兑换码')}</h3>
-      </Layout.Header>
-      <Layout.Content>
-        <RedemptionsTable />
-      </Layout.Content>
-    </Layout>
-  </>
-);
-}
+          <h3>{t('管理兑换码')}</h3>
+        </Layout.Header>
+        <Layout.Content>
+          <RedemptionsTable />
+        </Layout.Content>
+      </Layout>
+    </>
+  );
+};
 
 export default Redemption;

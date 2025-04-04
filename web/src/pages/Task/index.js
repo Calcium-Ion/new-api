@@ -1,5 +1,5 @@
 import React from 'react';
-import TaskLogsTable from "../../components/TaskLogsTable.js";
+import TaskLogsTable from '../../components/TaskLogsTable.js';
 
 const Task = () => (
   <>

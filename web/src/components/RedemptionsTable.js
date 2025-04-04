@@ -10,7 +10,8 @@ import {
 import { ITEMS_PER_PAGE } from '../constants';
 import { renderQuota } from '../helpers/render';
 import {
-  Button, Divider,
+  Button,
+  Divider,
   Form,
   Modal,
   Popconfirm,
@@ -193,15 +194,17 @@ const RedemptionsTable = () => {
   };
 
   const loadRedemptions = async (startIdx, pageSize) => {
-    const res = await API.get(`/api/redemption/?p=${startIdx}&page_size=${pageSize}`);
+    const res = await API.get(
+      `/api/redemption/?p=${startIdx}&page_size=${pageSize}`,
+    );
     const { success, message, data } = res.data;
     if (success) {
-        const newPageData = data.items;
-        setActivePage(data.page);
-        setTokenCount(data.total);
-        setRedemptionFormat(newPageData);
+      const newPageData = data.items;
+      setActivePage(data.page);
+      setTokenCount(data.total);
+      setRedemptionFormat(newPageData);
     } else {
-        showError(message);
+      showError(message);
     }
     setLoading(false);
   };
@@ -282,19 +285,21 @@ const RedemptionsTable = () => {
 
   const searchRedemptions = async (keyword, page, pageSize) => {
     if (searchKeyword === '') {
-        await loadRedemptions(page, pageSize);
-        return;
+      await loadRedemptions(page, pageSize);
+      return;
     }
     setSearching(true);
-    const res = await API.get(`/api/redemption/search?keyword=${keyword}&p=${page}&page_size=${pageSize}`);
+    const res = await API.get(
+      `/api/redemption/search?keyword=${keyword}&p=${page}&page_size=${pageSize}`,
+    );
     const { success, message, data } = res.data;
     if (success) {
-        const newPageData = data.items;
-        setActivePage(data.page);
-        setTokenCount(data.total);
-        setRedemptionFormat(newPageData);
+      const newPageData = data.items;
+      setActivePage(data.page);
+      setTokenCount(data.total);
+      setRedemptionFormat(newPageData);
     } else {
-        showError(message);
+      showError(message);
     }
     setSearching(false);
   };
@@ -355,9 +360,11 @@ const RedemptionsTable = () => {
         visiable={showEdit}
         handleClose={closeEdit}
       ></EditRedemption>
-      <Form onSubmit={()=> {
-        searchRedemptions(searchKeyword, activePage, pageSize).then();
-      }}>
+      <Form
+        onSubmit={() => {
+          searchRedemptions(searchKeyword, activePage, pageSize).then();
+        }}
+      >
         <Form.Input
           label={t('搜索关键字')}
           field='keyword'
@@ -369,35 +376,36 @@ const RedemptionsTable = () => {
           onChange={handleKeywordChange}
         />
       </Form>
-      <Divider style={{margin:'5px 0 15px 0'}}/>
+      <Divider style={{ margin: '5px 0 15px 0' }} />
       <div>
         <Button
-            theme='light'
-            type='primary'
-            style={{ marginRight: 8 }}
-            onClick={() => {
-              setEditingRedemption({
-                id: undefined,
-              });
-              setShowEdit(true);
-            }}
+          theme='light'
+          type='primary'
+          style={{ marginRight: 8 }}
+          onClick={() => {
+            setEditingRedemption({
+              id: undefined,
+            });
+            setShowEdit(true);
+          }}
         >
           {t('添加兑换码')}
         </Button>
         <Button
-            label={t('复制所选兑换码')}
-            type='warning'
-            onClick={async () => {
-              if (selectedKeys.length === 0) {
-                showError(t('请至少选择一个兑换码！'));
-                return;
-              }
-              let keys = '';
-              for (let i = 0; i < selectedKeys.length; i++) {
-                keys += selectedKeys[i].name + '    ' + selectedKeys[i].key + '\n';
-              }
-              await copyText(keys);
-            }}
+          label={t('复制所选兑换码')}
+          type='warning'
+          onClick={async () => {
+            if (selectedKeys.length === 0) {
+              showError(t('请至少选择一个兑换码！'));
+              return;
+            }
+            let keys = '';
+            for (let i = 0; i < selectedKeys.length; i++) {
+              keys +=
+                selectedKeys[i].name + '    ' + selectedKeys[i].key + '\n';
+            }
+            await copyText(keys);
+          }}
         >
           {t('复制所选兑换码到剪贴板')}
         </Button>
@@ -417,7 +425,7 @@ const RedemptionsTable = () => {
             t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
               start: page.currentStart,
               end: page.currentEnd,
-              total: tokenCount
+              total: tokenCount,
             }),
           onPageSizeChange: (size) => {
             setPageSize(size);

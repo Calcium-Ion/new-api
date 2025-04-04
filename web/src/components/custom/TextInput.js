@@ -1,7 +1,14 @@
 import { Input, Typography } from '@douyinfe/semi-ui';
 import React from 'react';
 
-const TextInput = ({ label, name, value, onChange, placeholder, type = 'text' }) => {
+const TextInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+}) => {
   return (
     <>
       <div style={{ marginTop: 10 }}>
@@ -12,10 +19,10 @@ const TextInput = ({ label, name, value, onChange, placeholder, type = 'text' })
         placeholder={placeholder}
         onChange={(value) => onChange(value)}
         value={value}
-        autoComplete="new-password"
+        autoComplete='new-password'
       />
     </>
   );
-}
+};
 
 export default TextInput;

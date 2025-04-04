@@ -201,7 +201,9 @@ const EditUser = (props) => {
                 search
                 selection
                 allowAdditions
-                additionLabel={t('请在系统设置页面编辑分组倍率以添加新的分组：')}
+                additionLabel={t(
+                  '请在系统设置页面编辑分组倍率以添加新的分组：',
+                )}
                 onChange={(value) => handleInputChange('group', value)}
                 value={inputs.group}
                 autoComplete='new-password'
@@ -231,17 +233,21 @@ const EditUser = (props) => {
             name='github_id'
             value={github_id}
             autoComplete='new-password'
-            placeholder={t('此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改')}
+            placeholder={t(
+              '此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改',
+            )}
             readonly
           />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>{t('`已绑定的 OIDC 账户')}</Typography.Text>
           </div>
           <Input
-              name='oidc_id'
-              value={oidc_id}
-              placeholder={t('此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改')}
-              readonly
+            name='oidc_id'
+            value={oidc_id}
+            placeholder={t(
+              '此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改',
+            )}
+            readonly
           />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>{t('已绑定的微信账户')}</Typography.Text>
@@ -250,7 +256,9 @@ const EditUser = (props) => {
             name='wechat_id'
             value={wechat_id}
             autoComplete='new-password'
-            placeholder={t('此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改')}
+            placeholder={t(
+              '此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改',
+            )}
             readonly
           />
           <div style={{ marginTop: 20 }}>
@@ -260,7 +268,9 @@ const EditUser = (props) => {
             name='email'
             value={email}
             autoComplete='new-password'
-            placeholder={t('此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改')}
+            placeholder={t(
+              '此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改',
+            )}
             readonly
           />
           <div style={{ marginTop: 20 }}>
@@ -270,7 +280,9 @@ const EditUser = (props) => {
             name='telegram_id'
             value={telegram_id}
             autoComplete='new-password'
-            placeholder={t('此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改')}
+            placeholder={t(
+              '此项只读，需要用户通过个人设置页面的相关绑定按钮进行绑定，不可直接修改',
+            )}
             readonly
           />
         </Spin>

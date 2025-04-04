@@ -13,18 +13,28 @@ import {
   IconClose,
   IconHelpCircle,
   IconHome,
-  IconHomeStroked, IconIndentLeft,
+  IconHomeStroked,
+  IconIndentLeft,
   IconComment,
-  IconKey, IconMenu,
+  IconKey,
+  IconMenu,
   IconNoteMoneyStroked,
   IconPriceTag,
   IconUser,
   IconLanguage,
   IconInfoCircle,
   IconCreditCard,
-  IconTerminal
+  IconTerminal,
 } from '@douyinfe/semi-icons';
-import { Avatar, Button, Dropdown, Layout, Nav, Switch, Tag } from '@douyinfe/semi-ui';
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  Layout,
+  Nav,
+  Switch,
+  Tag,
+} from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import { StyleContext } from '../context/Style/index.js';
@@ -36,20 +46,20 @@ const headerStyle = {
   borderBottom: '1px solid var(--semi-color-border)',
   background: 'var(--semi-color-bg-0)',
   transition: 'all 0.3s ease',
-  width: '100%'
+  width: '100%',
 };
 
 // 自定义顶部栏按钮样式
 const headerItemStyle = {
   borderRadius: '4px',
   margin: '0 4px',
-  transition: 'all 0.3s ease'
+  transition: 'all 0.3s ease',
 };
 
 // 自定义顶部栏按钮悬停样式
 const headerItemHoverStyle = {
   backgroundColor: 'var(--semi-color-primary-light-default)',
-  color: 'var(--semi-color-primary)'
+  color: 'var(--semi-color-primary)',
 };
 
 // 自定义顶部栏Logo样式
@@ -58,23 +68,24 @@ const logoStyle = {
   alignItems: 'center',
   gap: '10px',
   padding: '0 10px',
-  height: '100%'
+  height: '100%',
 };
 
 // 自定义顶部栏系统名称样式
 const systemNameStyle = {
   fontWeight: 'bold',
   fontSize: '18px',
-  background: 'linear-gradient(45deg, var(--semi-color-primary), var(--semi-color-secondary))',
+  background:
+    'linear-gradient(45deg, var(--semi-color-primary), var(--semi-color-secondary))',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  padding: '0 5px'
+  padding: '0 5px',
 };
 
 // 自定义顶部栏按钮图标样式
 const headerIconStyle = {
   fontSize: '18px',
-  transition: 'all 0.3s ease'
+  transition: 'all 0.3s ease',
 };
 
 // 自定义头像样式
@@ -82,19 +93,19 @@ const avatarStyle = {
   margin: '4px',
   cursor: 'pointer',
   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-  transition: 'all 0.3s ease'
+  transition: 'all 0.3s ease',
 };
 
 // 自定义下拉菜单样式
 const dropdownStyle = {
   borderRadius: '8px',
   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-  overflow: 'hidden'
+  overflow: 'hidden',
 };
 
 // 自定义主题切换开关样式
 const switchStyle = {
-  margin: '0 8px'
+  margin: '0 8px',
 };
 
 const HeaderBar = () => {
@@ -109,8 +120,7 @@ const HeaderBar = () => {
   const logo = getLogo();
   const currentDate = new Date();
   // enable fireworks on new year(1.1 and 2.9-2.24)
-  const isNewYear =
-    (currentDate.getMonth() === 0 && currentDate.getDate() === 1);
+  const isNewYear = currentDate.getMonth() === 0 && currentDate.getDate() === 1;
 
   // Check if self-use mode is enabled
   const isSelfUseMode = statusState?.status?.self_use_mode_enabled || false;
@@ -137,13 +147,17 @@ const HeaderBar = () => {
       icon: <IconPriceTag style={headerIconStyle} />,
     },
     // Only include the docs button if docsLink exists
-    ...(docsLink ? [{
-      text: t('文档'),
-      itemKey: 'docs',
-      isExternal: true,
-      externalLink: docsLink,
-      icon: <IconHelpCircle style={headerIconStyle} />,
-    }] : []),
+    ...(docsLink
+      ? [
+          {
+            text: t('文档'),
+            itemKey: 'docs',
+            isExternal: true,
+            externalLink: docsLink,
+            icon: <IconHelpCircle style={headerIconStyle} />,
+          },
+        ]
+      : []),
     {
       text: t('关于'),
       itemKey: 'about',
@@ -232,30 +246,38 @@ const HeaderBar = () => {
                 chat: '/chat',
               };
               return (
-                <div onClick={(e) => {
-                  if (props.itemKey === 'home') {
-                    styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
-                    styleDispatch({ type: 'SET_SIDER', payload: false });
-                  } else {
-                    styleDispatch({ type: 'SET_INNER_PADDING', payload: true });
-                    if (!styleState.isMobile) {
-                      styleDispatch({ type: 'SET_SIDER', payload: true });
+                <div
+                  onClick={(e) => {
+                    if (props.itemKey === 'home') {
+                      styleDispatch({
+                        type: 'SET_INNER_PADDING',
+                        payload: false,
+                      });
+                      styleDispatch({ type: 'SET_SIDER', payload: false });
+                    } else {
+                      styleDispatch({
+                        type: 'SET_INNER_PADDING',
+                        payload: true,
+                      });
+                      if (!styleState.isMobile) {
+                        styleDispatch({ type: 'SET_SIDER', payload: true });
+                      }
                     }
-                  }
-                }}>
+                  }}
+                >
                   {props.isExternal ? (
                     <a
-                      className="header-bar-text"
+                      className='header-bar-text'
                       style={{ textDecoration: 'none' }}
                       href={props.externalLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      target='_blank'
+                      rel='noopener noreferrer'
                     >
                       {itemElement}
                     </a>
                   ) : (
                     <Link
-                      className="header-bar-text"
+                      className='header-bar-text'
                       style={{ textDecoration: 'none' }}
                       to={routerMap[props.itemKey]}
                     >
@@ -268,67 +290,98 @@ const HeaderBar = () => {
             selectedKeys={[]}
             // items={headerButtons}
             onSelect={(key) => {}}
-            header={styleState.isMobile?{
-              logo: (
-                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-                  {
-                    !styleState.showSider ?
-                      <Button icon={<IconMenu />} theme="light" aria-label={t('展开侧边栏')} onClick={
-                        () => styleDispatch({ type: 'SET_SIDER', payload: true })
-                      } />:
-                      <Button icon={<IconIndentLeft />} theme="light" aria-label={t('闭侧边栏')} onClick={
-                        () => styleDispatch({ type: 'SET_SIDER', payload: false })
-                      } />
+            header={
+              styleState.isMobile
+                ? {
+                    logo: (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          position: 'relative',
+                        }}
+                      >
+                        {!styleState.showSider ? (
+                          <Button
+                            icon={<IconMenu />}
+                            theme='light'
+                            aria-label={t('展开侧边栏')}
+                            onClick={() =>
+                              styleDispatch({
+                                type: 'SET_SIDER',
+                                payload: true,
+                              })
+                            }
+                          />
+                        ) : (
+                          <Button
+                            icon={<IconIndentLeft />}
+                            theme='light'
+                            aria-label={t('闭侧边栏')}
+                            onClick={() =>
+                              styleDispatch({
+                                type: 'SET_SIDER',
+                                payload: false,
+                              })
+                            }
+                          />
+                        )}
+                        {(isSelfUseMode || isDemoSiteMode) && (
+                          <Tag
+                            color={isSelfUseMode ? 'purple' : 'blue'}
+                            style={{
+                              position: 'absolute',
+                              top: '-8px',
+                              right: '-15px',
+                              fontSize: '0.7rem',
+                              padding: '0 4px',
+                              height: 'auto',
+                              lineHeight: '1.2',
+                              zIndex: 1,
+                              pointerEvents: 'none',
+                            }}
+                          >
+                            {isSelfUseMode ? t('自用模式') : t('演示站点')}
+                          </Tag>
+                        )}
+                      </div>
+                    ),
                   }
-                  {(isSelfUseMode || isDemoSiteMode) && (
-                    <Tag 
-                      color={isSelfUseMode ? 'purple' : 'blue'}
-                      style={{ 
-                        position: 'absolute',
-                        top: '-8px',
-                        right: '-15px',
-                        fontSize: '0.7rem',
-                        padding: '0 4px',
-                        height: 'auto',
-                        lineHeight: '1.2',
-                        zIndex: 1,
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      {isSelfUseMode ? t('自用模式') : t('演示站点')}
-                    </Tag>
-                  )}
-                </div>
-              ),
-            }:{
-              logo: (
-                <div style={logoStyle}>
-                  <img src={logo} alt='logo' style={{ height: '28px' }} />
-                </div>
-              ),
-              text: (
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <span style={systemNameStyle}>{systemName}</span>
-                  {(isSelfUseMode || isDemoSiteMode) && (
-                    <Tag 
-                      color={isSelfUseMode ? 'purple' : 'blue'}
-                      style={{ 
-                        position: 'absolute', 
-                        top: '-10px', 
-                        right: '-25px', 
-                        fontSize: '0.7rem',
-                        padding: '0 4px',
-                        whiteSpace: 'nowrap',
-                        zIndex: 1,
-                        boxShadow: '0 0 3px rgba(255, 255, 255, 0.7)'
-                      }}
-                    >
-                      {isSelfUseMode ? t('自用模式') : t('演示站点')}
-                    </Tag>
-                  )}
-                </div>
-              ),
-            }}
+                : {
+                    logo: (
+                      <div style={logoStyle}>
+                        <img src={logo} alt='logo' style={{ height: '28px' }} />
+                      </div>
+                    ),
+                    text: (
+                      <div
+                        style={{
+                          position: 'relative',
+                          display: 'inline-block',
+                        }}
+                      >
+                        <span style={systemNameStyle}>{systemName}</span>
+                        {(isSelfUseMode || isDemoSiteMode) && (
+                          <Tag
+                            color={isSelfUseMode ? 'purple' : 'blue'}
+                            style={{
+                              position: 'absolute',
+                              top: '-10px',
+                              right: '-25px',
+                              fontSize: '0.7rem',
+                              padding: '0 4px',
+                              whiteSpace: 'nowrap',
+                              zIndex: 1,
+                              boxShadow: '0 0 3px rgba(255, 255, 255, 0.7)',
+                            }}
+                          >
+                            {isSelfUseMode ? t('自用模式') : t('演示站点')}
+                          </Tag>
+                        )}
+                      </div>
+                    ),
+                  }
+            }
             items={buttons}
             footer={
               <>
@@ -351,7 +404,7 @@ const HeaderBar = () => {
                 <>
                   <Switch
                     checkedText='🌞'
-                    size={styleState.isMobile?'default':'large'}
+                    size={styleState.isMobile ? 'default' : 'large'}
                     checked={theme === 'dark'}
                     uncheckedText='🌙'
                     style={switchStyle}
@@ -390,7 +443,9 @@ const HeaderBar = () => {
                       position='bottomRight'
                       render={
                         <Dropdown.Menu style={dropdownStyle}>
-                          <Dropdown.Item onClick={logout}>{t('退出')}</Dropdown.Item>
+                          <Dropdown.Item onClick={logout}>
+                            {t('退出')}
+                          </Dropdown.Item>
                         </Dropdown.Menu>
                       }
                     >
@@ -401,14 +456,18 @@ const HeaderBar = () => {
                       >
                         {userState.user.username[0]}
                       </Avatar>
-                      {styleState.isMobile?null:<Text style={{ marginLeft: '4px', fontWeight: '500' }}>{userState.user.username}</Text>}
+                      {styleState.isMobile ? null : (
+                        <Text style={{ marginLeft: '4px', fontWeight: '500' }}>
+                          {userState.user.username}
+                        </Text>
+                      )}
                     </Dropdown>
                   </>
                 ) : (
                   <>
                     <Nav.Item
                       itemKey={'login'}
-                      text={!styleState.isMobile?t('登录'):null}
+                      text={!styleState.isMobile ? t('登录') : null}
                       icon={<IconUser style={headerIconStyle} />}
                     />
                     {

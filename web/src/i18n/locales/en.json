@@ -1065,7 +1065,7 @@
   "价格：${{price}} * 分组：{{ratio}}": "Price: ${{price}} * Group: {{ratio}}",
   "模型: {{ratio}} * 分组: {{groupRatio}}": "Model: {{ratio}} * Group: {{groupRatio}}",
   "统计额度": "Statistical quota",
-  "统计Tokens": "Statistical Tokens", 
+  "统计Tokens": "Statistical Tokens",
   "统计次数": "Statistical count",
   "平均RPM": "Average RPM",
   "平均TPM": "Average TPM",

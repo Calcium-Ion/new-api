@@ -28,11 +28,7 @@ const FooterBar = () => {
         New API {import.meta.env.VITE_REACT_APP_VERSION}{' '}
       </a>
       {t('由')}{' '}
-      <a
-        href='https://github.com/Calcium-Ion'
-        target='_blank'
-        rel='noreferrer'
-      >
+      <a href='https://github.com/Calcium-Ion' target='_blank' rel='noreferrer'>
         Calcium-Ion
       </a>{' '}
       {t('开发，基于')}{' '}
@@ -59,10 +55,12 @@ const FooterBar = () => {
   }, []);
 
   return (
-    <div style={{
-      textAlign: 'center',
-      paddingBottom: '5px',
-    }}>
+    <div
+      style={{
+        textAlign: 'center',
+        paddingBottom: '5px',
+      }}
+    >
       {footer ? (
         <div
           className='custom-footer'

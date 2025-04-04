@@ -1,13 +1,32 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { API, getLogo, showError, showInfo, showSuccess, updateAPI } from '../helpers';
+import {
+  API,
+  getLogo,
+  showError,
+  showInfo,
+  showSuccess,
+  updateAPI,
+} from '../helpers';
 import Turnstile from 'react-turnstile';
-import { Button, Card, Divider, Form, Icon, Layout, Modal } from '@douyinfe/semi-ui';
+import {
+  Button,
+  Card,
+  Divider,
+  Form,
+  Icon,
+  Layout,
+  Modal,
+} from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import { IconGithubLogo } from '@douyinfe/semi-icons';
-import {onGitHubOAuthClicked, onLinuxDOOAuthClicked, onOIDCClicked} from './utils.js';
-import OIDCIcon from "./OIDCIcon.js";
+import {
+  onGitHubOAuthClicked,
+  onLinuxDOOAuthClicked,
+  onOIDCClicked,
+} from './utils.js';
+import OIDCIcon from './OIDCIcon.js';
 import LinuxDoIcon from './LinuxDoIcon.js';
 import WeChatIcon from './WeChatIcon.js';
 import TelegramLoginButton from 'react-telegram-login/src';
@@ -22,7 +41,7 @@ const RegisterForm = () => {
     password: '',
     password2: '',
     email: '',
-    verification_code: ''
+    verification_code: '',
   });
   const { username, password, password2 } = inputs;
   const [showEmailVerification, setShowEmailVerification] = useState(false);
@@ -53,7 +72,6 @@ const RegisterForm = () => {
       }
     }
   });
-
 
   const onWeChatLoginClicked = () => {
     setShowWeChatLoginModal(true);
@@ -106,7 +124,7 @@ const RegisterForm = () => {
       inputs.aff_code = affCode;
       const res = await API.post(
         `/api/user/register?turnstile=${turnstileToken}`,
-        inputs
+        inputs,
       );
       const { success, message } = res.data;
       if (success) {
@@ -127,7 +145,7 @@ const RegisterForm = () => {
     }
     setLoading(true);
     const res = await API.get(
-      `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`
+      `/api/verification?email=${inputs.email}&turnstile=${turnstileToken}`,
     );
     const { success, message } = res.data;
     if (success) {
@@ -169,7 +187,6 @@ const RegisterForm = () => {
     }
   };
 
-
   return (
     <div>
       <Layout>
@@ -179,7 +196,7 @@ const RegisterForm = () => {
             style={{
               justifyContent: 'center',
               display: 'flex',
-              marginTop: 120
+              marginTop: 120,
             }}
           >
             <div style={{ width: 500 }}>
@@ -187,28 +204,28 @@ const RegisterForm = () => {
                 <Title heading={2} style={{ textAlign: 'center' }}>
                   {t('新用户注册')}
                 </Title>
-                <Form size="large">
+                <Form size='large'>
                   <Form.Input
                     field={'username'}
                     label={t('用户名')}
                     placeholder={t('用户名')}
-                    name="username"
+                    name='username'
                     onChange={(value) => handleChange('username', value)}
                   />
                   <Form.Input
                     field={'password'}
                     label={t('密码')}
                     placeholder={t('输入密码，最短 8 位，最长 20 位')}
-                    name="password"
-                    type="password"
+                    name='password'
+                    type='password'
                     onChange={(value) => handleChange('password', value)}
                   />
                   <Form.Input
                     field={'password2'}
                     label={t('确认密码')}
                     placeholder={t('确认密码')}
-                    name="password2"
-                    type="password"
+                    name='password2'
+                    type='password'
                     onChange={(value) => handleChange('password2', value)}
                   />
                   {showEmailVerification ? (
@@ -218,10 +235,13 @@ const RegisterForm = () => {
                         label={t('邮箱')}
                         placeholder={t('输入邮箱地址')}
                         onChange={(value) => handleChange('email', value)}
-                        name="email"
-                        type="email"
+                        name='email'
+                        type='email'
                         suffix={
-                          <Button onClick={sendVerificationCode} disabled={loading}>
+                          <Button
+                            onClick={sendVerificationCode}
+                            disabled={loading}
+                          >
                             {t('获取验证码')}
                           </Button>
                         }
@@ -230,8 +250,10 @@ const RegisterForm = () => {
                         field={'verification_code'}
                         label={t('验证码')}
                         placeholder={t('输入验证码')}
-                        onChange={(value) => handleChange('verification_code', value)}
-                        name="verification_code"
+                        onChange={(value) =>
+                          handleChange('verification_code', value)
+                        }
+                        name='verification_code'
                       />
                     </>
                   ) : (
@@ -252,14 +274,12 @@ const RegisterForm = () => {
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    marginTop: 20
+                    marginTop: 20,
                   }}
                 >
                   <Text>
                     {t('已有账户？')}
-                    <Link to="/login">
-                      {t('点击登录')}
-                    </Link>
+                    <Link to='/login'>{t('点击登录')}</Link>
                   </Text>
                 </div>
                 {status.github_oauth ||
@@ -290,15 +310,18 @@ const RegisterForm = () => {
                         <></>
                       )}
                       {status.oidc_enabled ? (
-                          <Button
-                              type='primary'
-                              icon={<OIDCIcon />}
-                              onClick={() =>
-                                  onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id)
-                              }
-                          />
+                        <Button
+                          type='primary'
+                          icon={<OIDCIcon />}
+                          onClick={() =>
+                            onOIDCClicked(
+                              status.oidc_authorization_endpoint,
+                              status.oidc_client_id,
+                            )
+                          }
+                        />
                       ) : (
-                          <></>
+                        <></>
                       )}
                       {status.linuxdo_oauth ? (
                         <Button
@@ -365,7 +388,9 @@ const RegisterForm = () => {
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <p>
-                    {t('微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）')}
+                    {t(
+                      '微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）',
+                    )}
                   </p>
                 </div>
                 <Form size='large'>

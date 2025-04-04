@@ -46,7 +46,6 @@ const LogsTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
   function renderType(type) {
-    
     switch (type) {
       case 'IMAGINE':
         return (
@@ -98,9 +97,9 @@ const LogsTable = () => {
         );
       case 'UPLOAD':
         return (
-            <Tag color='blue' size='large'>
-              上传文件
-            </Tag>
+          <Tag color='blue' size='large'>
+            上传文件
+          </Tag>
         );
       case 'SHORTEN':
         return (
@@ -152,9 +151,8 @@ const LogsTable = () => {
         );
     }
   }
-  
+
   function renderCode(code) {
-    
     switch (code) {
       case 1:
         return (
@@ -188,9 +186,8 @@ const LogsTable = () => {
         );
     }
   }
-  
+
   function renderStatus(type) {
-    
     switch (type) {
       case 'SUCCESS':
         return (
@@ -236,22 +233,21 @@ const LogsTable = () => {
         );
     }
   }
-  
+
   const renderTimestamp = (timestampInSeconds) => {
     const date = new Date(timestampInSeconds * 1000); // 从秒转换为毫秒
-  
+
     const year = date.getFullYear(); // 获取年份
     const month = ('0' + (date.getMonth() + 1)).slice(-2); // 获取月份，从0开始需要+1，并保证两位数
     const day = ('0' + date.getDate()).slice(-2); // 获取日期，并保证两位数
     const hours = ('0' + date.getHours()).slice(-2); // 获取小时，并保证两位数
     const minutes = ('0' + date.getMinutes()).slice(-2); // 获取分钟，并保证两位数
     const seconds = ('0' + date.getSeconds()).slice(-2); // 获取秒钟，并保证两位数
-  
+
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`; // 格式化输出
   };
   // 修改renderDuration函数以包含颜色逻辑
   function renderDuration(submit_time, finishTime) {
-    
     if (!submit_time || !finishTime) return 'N/A';
 
     const start = new Date(submit_time);
@@ -261,7 +257,7 @@ const LogsTable = () => {
     const color = durationSec > 60 ? 'red' : 'green';
 
     return (
-      <Tag color={color} size="large">
+      <Tag color={color} size='large'>
         {durationSec} {t('秒')}
       </Tag>
     );
@@ -560,7 +556,9 @@ const LogsTable = () => {
         {isAdminUser && showBanner ? (
           <Banner
             type='info'
-            description={t('当前未开启Midjourney回调，部分项目可能无法获得绘图结果，可在运营设置中开启。')}
+            description={t(
+              '当前未开启Midjourney回调，部分项目可能无法获得绘图结果，可在运营设置中开启。',
+            )}
           />
         ) : (
           <></>
@@ -634,7 +632,7 @@ const LogsTable = () => {
               t('第 {{start}} - {{end}} 条，共 {{total}} 条', {
                 start: page.currentStart,
                 end: page.currentEnd,
-                total: logCount
+                total: logCount,
               }),
           }}
           loading={loading}
