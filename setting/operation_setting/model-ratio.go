@@ -434,7 +434,7 @@ func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 		return 3, true
 	}
 	if strings.HasPrefix(name, "gemini-") {
-		if strings.HasPrefix(name, "gemini-1.5-pro") {
+		if strings.HasPrefix(name, "gemini-1.5") {
 			return 4, true
 		} else if strings.HasPrefix(name, "gemini-2.0") {
 			return 4, true
