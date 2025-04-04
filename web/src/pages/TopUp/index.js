@@ -228,8 +228,12 @@ const TopUp = () => {
             size={'small'}
             centered={true}
           >
-            <p>{t('充值数量')}：{topUpCount}</p>
-            <p>{t('实付金额')}：{renderAmount()}</p>
+            <p>
+              {t('充值数量')}：{topUpCount}
+            </p>
+            <p>
+              {t('实付金额')}：{renderAmount()}
+            </p>
             <p>{t('是否确认充值？')}</p>
           </Modal>
           <div
@@ -280,7 +284,9 @@ const TopUp = () => {
                     disabled={!enableOnlineTopUp}
                     field={'redemptionCount'}
                     label={t('实付金额：') + ' ' + renderAmount()}
-                    placeholder={t('充值数量，最低 ') + renderQuotaWithAmount(minTopUp)}
+                    placeholder={
+                      t('充值数量，最低 ') + renderQuotaWithAmount(minTopUp)
+                    }
                     name='redemptionCount'
                     type={'number'}
                     value={topUpCount}

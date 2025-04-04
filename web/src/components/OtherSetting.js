@@ -1,5 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Banner, Button, Col, Form, Row, Modal, Space } from '@douyinfe/semi-ui';
+import {
+  Banner,
+  Button,
+  Col,
+  Form,
+  Row,
+  Modal,
+  Space,
+} from '@douyinfe/semi-ui';
 import { API, showError, showSuccess, timestamp2string } from '../helpers';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +54,7 @@ const OtherSetting = () => {
     HomePageContent: false,
     About: false,
     Footer: false,
-    CheckUpdate: false
+    CheckUpdate: false,
   });
   const handleInputChange = async (value, e) => {
     const name = e.target.id;
@@ -151,27 +159,30 @@ const OtherSetting = () => {
 
   const checkUpdate = async () => {
     try {
-      setLoadingInput((loadingInput) => ({ ...loadingInput, CheckUpdate: true }));
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        CheckUpdate: true,
+      }));
       // Use a CORS proxy to avoid direct cross-origin requests to GitHub API
       // Option 1: Use a public CORS proxy service
       // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
       // const res = await API.get(
       //   `${proxyUrl}https://api.github.com/repos/Calcium-Ion/new-api/releases/latest`,
       // );
-      
+
       // Option 2: Use the JSON proxy approach which often works better with GitHub API
       const res = await fetch(
         'https://api.github.com/repos/Calcium-Ion/new-api/releases/latest',
         {
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'Content-Type': 'application/json',
             // Adding User-Agent which is often required by GitHub API
-            'User-Agent': 'new-api-update-checker'
-          }
-        }
-      ).then(response => response.json());
-      
+            'User-Agent': 'new-api-update-checker',
+          },
+        },
+      ).then((response) => response.json());
+
       // Option 3: Use a local proxy endpoint
       // Create a cached version of the response to avoid frequent GitHub API calls
       // const res = await API.get('/api/status/github-latest-release');
@@ -190,7 +201,10 @@ const OtherSetting = () => {
       console.error('Failed to check for updates:', error);
       showError('检查更新失败，请稍后再试');
     } finally {
-      setLoadingInput((loadingInput) => ({ ...loadingInput, CheckUpdate: false }));
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        CheckUpdate: false,
+      }));
     }
   };
   const getOptions = async () => {
@@ -217,7 +231,10 @@ const OtherSetting = () => {
 
   // Function to open GitHub release page
   const openGitHubRelease = () => {
-    window.open(`https://github.com/Calcium-Ion/new-api/releases/tag/${updateData.tag_name}`, '_blank');
+    window.open(
+      `https://github.com/Calcium-Ion/new-api/releases/tag/${updateData.tag_name}`,
+      '_blank',
+    );
   };
 
   const getStartTimeString = () => {
@@ -237,7 +254,11 @@ const OtherSetting = () => {
                   <Text>
                     {t('当前版本')}：{statusState?.status?.version || t('未知')}
                   </Text>
-                  <Button type="primary" onClick={checkUpdate} loading={loadingInput['CheckUpdate']}>
+                  <Button
+                    type='primary'
+                    onClick={checkUpdate}
+                    loading={loadingInput['CheckUpdate']}
+                  >
                     {t('检查更新')}
                   </Button>
                 </Space>
@@ -245,7 +266,9 @@ const OtherSetting = () => {
             </Row>
             <Row>
               <Col span={16}>
-                <Text>{t('启动时间')}：{getStartTimeString()}</Text>
+                <Text>
+                  {t('启动时间')}：{getStartTimeString()}
+                </Text>
               </Col>
             </Row>
           </Form.Section>
@@ -300,7 +323,9 @@ const OtherSetting = () => {
             </Button>
             <Form.TextArea
               label={t('首页内容')}
-              placeholder={t('在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页')}
+              placeholder={t(
+                '在此输入首页内容，支持 Markdown & HTML 代码，设置后首页的状态信息将不再显示。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为首页',
+              )}
               field={'HomePageContent'}
               onChange={handleInputChange}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
@@ -314,7 +339,9 @@ const OtherSetting = () => {
             </Button>
             <Form.TextArea
               label={t('关于')}
-              placeholder={t('在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面')}
+              placeholder={t(
+                '在此输入新的关于内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为关于页面',
+              )}
               field={'About'}
               onChange={handleInputChange}
               style={{ fontFamily: 'JetBrains Mono, Consolas' }}
@@ -327,13 +354,17 @@ const OtherSetting = () => {
             <Banner
               fullMode={false}
               type='info'
-              description={t('移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目')}
+              description={t(
+                '移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目',
+              )}
               closeIcon={null}
               style={{ marginTop: 15 }}
             />
             <Form.Input
               label={t('页脚')}
-              placeholder={t('在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码')}
+              placeholder={t(
+                '在此输入新的页脚，留空则使用默认页脚，支持 HTML 代码',
+              )}
               field={'Footer'}
               onChange={handleInputChange}
             />
@@ -348,16 +379,16 @@ const OtherSetting = () => {
         visible={showUpdateModal}
         onCancel={() => setShowUpdateModal(false)}
         footer={[
-          <Button 
-            key="details" 
-            type="primary" 
+          <Button
+            key='details'
+            type='primary'
             onClick={() => {
               setShowUpdateModal(false);
               openGitHubRelease();
             }}
           >
             {t('详情')}
-          </Button>
+          </Button>,
         ]}
       >
         <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>

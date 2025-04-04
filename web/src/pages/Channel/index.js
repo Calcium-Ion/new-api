@@ -9,10 +9,10 @@ const File = () => {
     <>
       <Layout>
         <Layout.Header>
-        <h3>{t('管理渠道')}</h3>
-      </Layout.Header>
-      <Layout.Content>
-        <ChannelsTable />
+          <h3>{t('管理渠道')}</h3>
+        </Layout.Header>
+        <Layout.Content>
+          <ChannelsTable />
         </Layout.Content>
       </Layout>
     </>

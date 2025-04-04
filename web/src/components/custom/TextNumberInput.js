@@ -12,10 +12,10 @@ const TextNumberInput = ({ label, name, value, onChange, placeholder }) => {
         placeholder={placeholder}
         onChange={(value) => onChange(value)}
         value={value}
-        autoComplete="new-password"
+        autoComplete='new-password'
       />
     </>
   );
-}
+};
 
 export default TextNumberInput;

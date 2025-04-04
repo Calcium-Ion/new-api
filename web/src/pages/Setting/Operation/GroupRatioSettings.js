@@ -15,50 +15,59 @@ export default function GroupRatioSettings(props) {
   const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
     GroupRatio: '',
-    UserUsableGroups: ''
+    UserUsableGroups: '',
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
 
   async function onSubmit() {
     try {
-      await refForm.current.validate().then(() => {
-        const updateArray = compareObjects(inputs, inputsRow);
-        if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
-        
-        const requestQueue = updateArray.map((item) => {
-          const value = typeof inputs[item.key] === 'boolean' 
-            ? String(inputs[item.key]) 
-            : inputs[item.key];
-          return API.put('/api/option/', { key: item.key, value });
-        });
+      await refForm.current
+        .validate()
+        .then(() => {
+          const updateArray = compareObjects(inputs, inputsRow);
+          if (!updateArray.length)
+            return showWarning(t('你似乎并没有修改什么'));
 
-        setLoading(true);
-        Promise.all(requestQueue)
-          .then((res) => {
-            if (res.includes(undefined)) {
-              return showError(requestQueue.length > 1 ? t('部分保存失败，请重试') : t('保存失败'));
-            }
-            
-            for (let i = 0; i < res.length; i++) {
-              if (!res[i].data.success) {
-                return showError(res[i].data.message);
-              }
-            }
-            
-            showSuccess(t('保存成功'));
-            props.refresh();
-          })
-          .catch(error => {
-            console.error('Unexpected error:', error);
-            showError(t('保存失败，请重试'));
-          })
-          .finally(() => {
-            setLoading(false);
+          const requestQueue = updateArray.map((item) => {
+            const value =
+              typeof inputs[item.key] === 'boolean'
+                ? String(inputs[item.key])
+                : inputs[item.key];
+            return API.put('/api/option/', { key: item.key, value });
           });
-      }).catch(() => {
-        showError(t('请检查输入'));
-      });
+
+          setLoading(true);
+          Promise.all(requestQueue)
+            .then((res) => {
+              if (res.includes(undefined)) {
+                return showError(
+                  requestQueue.length > 1
+                    ? t('部分保存失败，请重试')
+                    : t('保存失败'),
+                );
+              }
+
+              for (let i = 0; i < res.length; i++) {
+                if (!res[i].data.success) {
+                  return showError(res[i].data.message);
+                }
+              }
+
+              showSuccess(t('保存成功'));
+              props.refresh();
+            })
+            .catch((error) => {
+              console.error('Unexpected error:', error);
+              showError(t('保存失败，请重试'));
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+        })
+        .catch(() => {
+          showError(t('请检查输入'));
+        });
     } catch (error) {
       showError(t('请检查输入'));
       console.error(error);
@@ -97,10 +106,12 @@ export default function GroupRatioSettings(props) {
                 rules={[
                   {
                     validator: (rule, value) => verifyJSON(value),
-                    message: t('不是合法的 JSON 字符串')
-                  }
+                    message: t('不是合法的 JSON 字符串'),
+                  },
                 ]}
-                onChange={(value) => setInputs({ ...inputs, GroupRatio: value })}
+                onChange={(value) =>
+                  setInputs({ ...inputs, GroupRatio: value })
+                }
               />
             </Col>
           </Row>
@@ -116,10 +127,12 @@ export default function GroupRatioSettings(props) {
                 rules={[
                   {
                     validator: (rule, value) => verifyJSON(value),
-                    message: t('不是合法的 JSON 字符串')
-                  }
+                    message: t('不是合法的 JSON 字符串'),
+                  },
                 ]}
-                onChange={(value) => setInputs({ ...inputs, UserUsableGroups: value })}
+                onChange={(value) =>
+                  setInputs({ ...inputs, UserUsableGroups: value })
+                }
               />
             </Col>
           </Row>
@@ -128,4 +141,4 @@ export default function GroupRatioSettings(props) {
       <Button onClick={onSubmit}>{t('保存分组倍率设置')}</Button>
     </Spin>
   );
-} 
+}

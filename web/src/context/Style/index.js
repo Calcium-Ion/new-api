@@ -19,25 +19,25 @@ export const StyleProvider = ({ children }) => {
     if ('type' in action) {
       switch (action.type) {
         case 'TOGGLE_SIDER':
-          setState(prev => ({ ...prev, showSider: !prev.showSider }));
+          setState((prev) => ({ ...prev, showSider: !prev.showSider }));
           break;
         case 'SET_SIDER':
-          setState(prev => ({ ...prev, showSider: action.payload }));
+          setState((prev) => ({ ...prev, showSider: action.payload }));
           break;
         case 'SET_MOBILE':
-          setState(prev => ({ ...prev, isMobile: action.payload }));
+          setState((prev) => ({ ...prev, isMobile: action.payload }));
           break;
         case 'SET_SIDER_COLLAPSED':
-          setState(prev => ({ ...prev, siderCollapsed: action.payload }));
-          break
+          setState((prev) => ({ ...prev, siderCollapsed: action.payload }));
+          break;
         case 'SET_INNER_PADDING':
-          setState(prev => ({ ...prev, shouldInnerPadding: action.payload }));
+          setState((prev) => ({ ...prev, shouldInnerPadding: action.payload }));
           break;
         default:
-          setState(prev => ({ ...prev, ...action }));
+          setState((prev) => ({ ...prev, ...action }));
       }
     } else {
-      setState(prev => ({ ...prev, ...action }));
+      setState((prev) => ({ ...prev, ...action }));
     }
   };
 
@@ -45,7 +45,7 @@ export const StyleProvider = ({ children }) => {
     const updateIsMobile = () => {
       const mobileDetected = isMobile();
       dispatch({ type: 'SET_MOBILE', payload: mobileDetected });
-      
+
       // If on mobile, we might want to auto-hide the sidebar
       if (mobileDetected && state.showSider) {
         dispatch({ type: 'SET_SIDER', payload: false });
@@ -57,7 +57,12 @@ export const StyleProvider = ({ children }) => {
     const updateShowSider = () => {
       // check pathname
       const pathname = window.location.pathname;
-      if (pathname === '' || pathname === '/' || pathname.includes('/home') || pathname.includes('/chat')) {
+      if (
+        pathname === '' ||
+        pathname === '/' ||
+        pathname.includes('/home') ||
+        pathname.includes('/chat')
+      ) {
         dispatch({ type: 'SET_SIDER', payload: false });
         dispatch({ type: 'SET_INNER_PADDING', payload: false });
       } else if (pathname === '/setup') {
@@ -73,7 +78,8 @@ export const StyleProvider = ({ children }) => {
     updateShowSider();
 
     const updateSiderCollapsed = () => {
-      const isCollapsed = localStorage.getItem('default_collapse_sidebar') === 'true';
+      const isCollapsed =
+        localStorage.getItem('default_collapse_sidebar') === 'true';
       dispatch({ type: 'SET_SIDER_COLLAPSED', payload: isCollapsed });
     };
 
@@ -83,7 +89,7 @@ export const StyleProvider = ({ children }) => {
     const handleResize = () => {
       updateIsMobile();
     };
-    
+
     window.addEventListener('resize', handleResize);
 
     // Cleanup event listener on component unmount

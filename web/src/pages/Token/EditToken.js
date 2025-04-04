@@ -18,8 +18,9 @@ import {
   Select,
   SideSheet,
   Space,
-  Spin, TextArea,
-  Typography
+  Spin,
+  TextArea,
+  Typography,
 } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import { Divider } from 'semantic-ui-react';
@@ -47,7 +48,7 @@ const EditToken = (props) => {
     model_limits_enabled,
     model_limits,
     allow_ips,
-    group
+    group,
   } = inputs;
   // const [visible, setVisible] = useState(false);
   const [models, setModels] = useState([]);
@@ -100,7 +101,7 @@ const EditToken = (props) => {
       let localGroupOptions = Object.entries(data).map(([group, info]) => ({
         label: info.desc,
         value: group,
-        ratio: info.ratio
+        ratio: info.ratio,
       }));
       setGroups(localGroupOptions);
     } else {
@@ -229,9 +230,7 @@ const EditToken = (props) => {
       }
 
       if (successCount > 0) {
-        showSuccess(
-          t('令牌创建成功，请在列表页面点击复制获取令牌！')
-        );
+        showSuccess(t('令牌创建成功，请在列表页面点击复制获取令牌！'));
         props.refresh();
         props.handleClose();
       }
@@ -246,7 +245,9 @@ const EditToken = (props) => {
       <SideSheet
         placement={isEdit ? 'right' : 'left'}
         title={
-          <Title level={3}>{isEdit ? t('更新令牌信息') : t('创建新的令牌')}</Title>
+          <Title level={3}>
+            {isEdit ? t('更新令牌信息') : t('创建新的令牌')}
+          </Title>
         }
         headerStyle={{ borderBottom: '1px solid var(--semi-color-border)' }}
         bodyStyle={{ borderBottom: '1px solid var(--semi-color-border)' }}
@@ -333,7 +334,9 @@ const EditToken = (props) => {
           <Divider />
           <Banner
             type={'warning'}
-            description={t('注意，令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制。')}
+            description={t(
+              '注意，令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制。',
+            )}
           ></Banner>
           <div style={{ marginTop: 20 }}>
             <Typography.Text>{`${t('额度')}${renderQuotaWithPrompt(remain_quota)}`}</Typography.Text>
@@ -396,7 +399,9 @@ const EditToken = (props) => {
           </div>
           <Divider />
           <div style={{ marginTop: 10 }}>
-            <Typography.Text>{t('IP白名单（请勿过度信任此功能）')}</Typography.Text>
+            <Typography.Text>
+              {t('IP白名单（请勿过度信任此功能）')}
+            </Typography.Text>
           </div>
           <TextArea
             label={t('IP白名单')}
@@ -440,7 +445,7 @@ const EditToken = (props) => {
           <div style={{ marginTop: 10 }}>
             <Typography.Text>{t('令牌分组，默认为用户的分组')}</Typography.Text>
           </div>
-          {groups.length > 0 ?
+          {groups.length > 0 ? (
             <Select
               style={{ marginTop: 8 }}
               placeholder={t('令牌分组，默认为用户的分组')}
@@ -455,14 +460,15 @@ const EditToken = (props) => {
               value={inputs.group}
               autoComplete='new-password'
               optionList={groups}
-            />:
+            />
+          ) : (
             <Select
               style={{ marginTop: 8 }}
               placeholder={t('管理员未设置用户可选分组')}
               name='gruop'
               disabled={true}
             />
-          }
+          )}
         </Spin>
       </SideSheet>
     </>
