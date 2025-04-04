@@ -134,6 +134,8 @@ var defaultModelRatio = map[string]float64{
 	"gemini-1.5-pro-latest":               1.25, // $3.5 / 1M tokens
 	"gemini-1.5-flash-latest":             0.075,
 	"gemini-2.0-flash":                    0.05,
+	"gemini-2.5-pro-exp-03-25":            1.25,
+	"gemini-2.5-pro-preview-03-25":        1.25,
 	"text-embedding-004":                  0.001,
 	"chatglm_turbo":                       0.3572,     // ￥0.005 / 1k tokens
 	"chatglm_pro":                         0.7143,     // ￥0.01 / 1k tokens
@@ -432,7 +434,14 @@ func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 		return 3, true
 	}
 	if strings.HasPrefix(name, "gemini-") {
-		return 4, true
+		if strings.HasPrefix(name, "gemini-1.5-pro") {
+			return 4, true
+		} else if strings.HasPrefix(name, "gemini-2.0") {
+			return 4, true
+		} else if strings.HasPrefix(name, "gemini-2.5-pro-preview") {
+			return 6, true
+		}
+		return 4, false
 	}
 	if strings.HasPrefix(name, "command") {
 		switch name {
@@ -445,7 +454,7 @@ func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 		case "command-r-plus-08-2024":
 			return 4, true
 		default:
-			return 4, true
+			return 4, false
 		}
 	}
 	// hint 只给官方上4倍率，由于开源模型供应商自行定价，不对其进行补全倍率进行强制对齐
