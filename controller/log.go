@@ -150,14 +150,17 @@ func GetLogsStat(c *gin.Context) {
 	channel, _ := strconv.Atoi(c.Query("channel"))
 	group := c.Query("group")
 	stat := model.SumUsedQuota(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel, group)
-	//tokenNum := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, "")
+	totalTokens, tokenStat := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel, group)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
 		"data": gin.H{
-			"quota": stat.Quota,
-			"rpm":   stat.Rpm,
-			"tpm":   stat.Tpm,
+			"quota":             stat.Quota,
+			"rpm":               stat.Rpm,
+			"tpm":               stat.Tpm,
+			"total_tokens":      totalTokens,
+			"prompt_tokens":     tokenStat.PromptTokens,
+			"completion_tokens": tokenStat.CompletionTokens,
 		},
 	})
 	return
@@ -173,15 +176,17 @@ func GetLogsSelfStat(c *gin.Context) {
 	channel, _ := strconv.Atoi(c.Query("channel"))
 	group := c.Query("group")
 	quotaNum := model.SumUsedQuota(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel, group)
-	//tokenNum := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName)
+	totalTokens, tokenStat := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel, group)
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": "",
 		"data": gin.H{
-			"quota": quotaNum.Quota,
-			"rpm":   quotaNum.Rpm,
-			"tpm":   quotaNum.Tpm,
-			//"token": tokenNum,
+			"quota":             quotaNum.Quota,
+			"rpm":               quotaNum.Rpm,
+			"tpm":               quotaNum.Tpm,
+			"total_tokens":      totalTokens,
+			"prompt_tokens":     tokenStat.PromptTokens,
+			"completion_tokens": tokenStat.CompletionTokens,
 		},
 	})
 	return
