@@ -21,6 +21,8 @@ type Adaptor struct {
 }
 
 func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayInfo, request *dto.ClaudeRequest) (any, error) {
+	c.Set("request_model", request.Model)
+	c.Set("converted_request", request)
 	return request, nil
 }
 

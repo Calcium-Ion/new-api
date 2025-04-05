@@ -33,7 +33,7 @@ func RerankHelper(c *gin.Context, relayMode int) (openaiErr *dto.OpenAIErrorWith
 		return service.OpenAIErrorWrapperLocal(err, "invalid_text_request", http.StatusBadRequest)
 	}
 
-	relayInfo := relaycommon.GenRelayInfoRerank(c, rerankRequest.Documents)
+	relayInfo := relaycommon.GenRelayInfoRerank(c, rerankRequest)
 
 	if rerankRequest.Query == "" {
 		return service.OpenAIErrorWrapperLocal(fmt.Errorf("query is empty"), "invalid_query", http.StatusBadRequest)

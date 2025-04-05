@@ -53,11 +53,12 @@ func UpdateOption(c *gin.Context) {
 			return
 		}
 	case "oidc.enabled":
-		if option.Value == "true" && system_setting.GetOIDCSettings().Enabled {
+		if option.Value == "true" && system_setting.GetOIDCSettings().ClientId == "" {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": "无法启用 OIDC 登录，请先填入 OIDC Client Id 以及 OIDC Client Secret！",
 			})
+			return
 		}
 	case "LinuxDOOAuthEnabled":
 		if option.Value == "true" && common.LinuxDOClientId == "" {
@@ -89,6 +90,15 @@ func UpdateOption(c *gin.Context) {
 				"success": false,
 				"message": "无法启用 Turnstile 校验，请先填入 Turnstile 校验相关配置信息！",
 			})
+
+			return
+		}
+	case "TelegramOAuthEnabled":
+		if option.Value == "true" && common.TelegramBotToken == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无法启用 Telegram OAuth，请先填入 Telegram Bot Token！",
+			})
 			return
 		}
 	case "GroupRatio":
@@ -100,6 +110,7 @@ func UpdateOption(c *gin.Context) {
 			})
 			return
 		}
+
 	}
 	err = model.UpdateOption(option.Key, option.Value)
 	if err != nil {

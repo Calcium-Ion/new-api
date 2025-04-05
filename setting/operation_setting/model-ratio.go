@@ -131,17 +131,12 @@ var defaultModelRatio = map[string]float64{
 	"bge-large-en":                        0.002 * RMB,
 	"tao-8k":                              0.002 * RMB,
 	"PaLM-2":                              1,
-	"gemini-pro":                          1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
-	"gemini-pro-vision":                   1, // $0.00025 / 1k characters -> $0.001 / 1k tokens
-	"gemini-1.0-pro-vision-001":           1,
-	"gemini-1.0-pro-001":                  1,
-	"gemini-1.5-pro-latest":               1.75, // $3.5 / 1M tokens
-	"gemini-1.5-pro-exp-0827":             1.75, // $3.5 / 1M tokens
-	"gemini-1.5-flash-latest":             1,
-	"gemini-1.5-flash-exp-0827":           1,
-	"gemini-1.0-pro-latest":               1,
-	"gemini-1.0-pro-vision-latest":        1,
-	"gemini-ultra":                        1,
+	"gemini-1.5-pro-latest":               1.25, // $3.5 / 1M tokens
+	"gemini-1.5-flash-latest":             0.075,
+	"gemini-2.0-flash":                    0.05,
+	"gemini-2.5-pro-exp-03-25":            1.25,
+	"gemini-2.5-pro-preview-03-25":        1.25,
+	"text-embedding-004":                  0.001,
 	"chatglm_turbo":                       0.3572,     // ￥0.005 / 1k tokens
 	"chatglm_pro":                         0.7143,     // ￥0.01 / 1k tokens
 	"chatglm_std":                         0.3572,     // ￥0.005 / 1k tokens
@@ -207,26 +202,27 @@ var defaultModelRatio = map[string]float64{
 }
 
 var defaultModelPrice = map[string]float64{
-	"suno_music":        0.1,
-	"suno_lyrics":       0.01,
-	"dall-e-3":          0.04,
-	"gpt-4-gizmo-*":     0.1,
-	"mj_imagine":        0.1,
-	"mj_variation":      0.1,
-	"mj_reroll":         0.1,
-	"mj_blend":          0.1,
-	"mj_modal":          0.1,
-	"mj_zoom":           0.1,
-	"mj_shorten":        0.1,
-	"mj_high_variation": 0.1,
-	"mj_low_variation":  0.1,
-	"mj_pan":            0.1,
-	"mj_inpaint":        0,
-	"mj_custom_zoom":    0,
-	"mj_describe":       0.05,
-	"mj_upscale":        0.05,
-	"swap_face":         0.05,
-	"mj_upload":         0.05,
+	"suno_music":              0.1,
+	"suno_lyrics":             0.01,
+	"dall-e-3":                0.04,
+	"imagen-3.0-generate-002": 0.03,
+	"gpt-4-gizmo-*":           0.1,
+	"mj_imagine":              0.1,
+	"mj_variation":            0.1,
+	"mj_reroll":               0.1,
+	"mj_blend":                0.1,
+	"mj_modal":                0.1,
+	"mj_zoom":                 0.1,
+	"mj_shorten":              0.1,
+	"mj_high_variation":       0.1,
+	"mj_low_variation":        0.1,
+	"mj_pan":                  0.1,
+	"mj_inpaint":              0,
+	"mj_custom_zoom":          0,
+	"mj_describe":             0.05,
+	"mj_upscale":              0.05,
+	"swap_face":               0.05,
+	"mj_upload":               0.05,
 }
 
 var (
@@ -375,6 +371,17 @@ func GetCompletionRatio(name string) float64 {
 			return ratio
 		}
 	}
+	hardCodedRatio, contain := getHardcodedCompletionModelRatio(name)
+	if contain {
+		return hardCodedRatio
+	}
+	if ratio, ok := CompletionRatio[name]; ok {
+		return ratio
+	}
+	return hardCodedRatio
+}
+
+func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 	lowercaseName := strings.ToLower(name)
 	if strings.HasPrefix(name, "gpt-4-gizmo") {
 		name = "gpt-4-gizmo-*"
@@ -385,87 +392,93 @@ func GetCompletionRatio(name string) float64 {
 	if strings.HasPrefix(name, "gpt-4") && !strings.HasSuffix(name, "-all") && !strings.HasSuffix(name, "-gizmo-*") {
 		if strings.HasPrefix(name, "gpt-4o") {
 			if name == "gpt-4o-2024-05-13" {
-				return 3
+				return 3, true
 			}
-			return 4
+			return 4, true
 		}
-		if strings.HasPrefix(name, "gpt-4.5") {
-			return 2
+		// gpt-4.5-preview匹配
+		if strings.HasPrefix(name, "gpt-4.5-preview") {
+			return 2, true
 		}
-		if strings.HasPrefix(name, "gpt-4-turbo") || strings.HasSuffix(name, "preview") {
-			return 3
+		if strings.HasPrefix(name, "gpt-4-turbo") || strings.HasSuffix(name, "gpt-4-1106") || strings.HasSuffix(name, "gpt-4-1105") {
+			return 3, true
 		}
-		return 2
+		// 没有特殊标记的 gpt-4 模型默认倍率为 2
+		return 2, false
 	}
 	if strings.HasPrefix(name, "o1") || strings.HasPrefix(name, "o3") {
-		return 4
+		return 4, true
 	}
 	if name == "chatgpt-4o-latest" {
-		return 3
+		return 3, true
 	}
 	if strings.Contains(name, "claude-instant-1") {
-		return 3
+		return 3, true
 	} else if strings.Contains(name, "claude-2") {
-		return 3
+		return 3, true
 	} else if strings.Contains(name, "claude-3") {
-		return 5
+		return 5, true
 	}
 	if strings.HasPrefix(name, "gpt-3.5") {
 		if name == "gpt-3.5-turbo" || strings.HasSuffix(name, "0125") {
 			// https://openai.com/blog/new-embedding-models-and-api-updates
 			// Updated GPT-3.5 Turbo model and lower pricing
-			return 3
+			return 3, true
 		}
 		if strings.HasSuffix(name, "1106") {
-			return 2
+			return 2, true
 		}
-		return 4.0 / 3.0
+		return 4.0 / 3.0, true
 	}
 	if strings.HasPrefix(name, "mistral-") {
-		return 3
+		return 3, true
 	}
 	if strings.HasPrefix(name, "gemini-") {
-		return 4
+		if strings.HasPrefix(name, "gemini-1.5") {
+			return 4, true
+		} else if strings.HasPrefix(name, "gemini-2.0") {
+			return 4, true
+		} else if strings.HasPrefix(name, "gemini-2.5-pro-preview") {
+			return 6, true
+		}
+		return 4, false
 	}
 	if strings.HasPrefix(name, "command") {
 		switch name {
 		case "command-r":
-			return 3
+			return 3, true
 		case "command-r-plus":
-			return 5
+			return 5, true
 		case "command-r-08-2024":
-			return 4
+			return 4, true
 		case "command-r-plus-08-2024":
-			return 4
+			return 4, true
 		default:
-			return 4
+			return 4, false
 		}
 	}
 	// hint 只给官方上4倍率，由于开源模型供应商自行定价，不对其进行补全倍率进行强制对齐
 	if lowercaseName == "deepseek-chat" || lowercaseName == "deepseek-reasoner" {
-		return 4
+		return 4, true
 	}
 	if strings.HasPrefix(name, "ERNIE-Speed-") {
-		return 2
+		return 2, true
 	} else if strings.HasPrefix(name, "ERNIE-Lite-") {
-		return 2
+		return 2, true
 	} else if strings.HasPrefix(name, "ERNIE-Character") {
-		return 2
+		return 2, true
 	} else if strings.HasPrefix(name, "ERNIE-Functions") {
-		return 2
+		return 2, true
 	}
 	switch name {
 	case "llama2-70b-4096":
-		return 0.8 / 0.64
+		return 0.8 / 0.64, true
 	case "llama3-8b-8192":
-		return 2
+		return 2, true
 	case "llama3-70b-8192":
-		return 0.79 / 0.59
+		return 0.79 / 0.59, true
 	}
-	if ratio, ok := CompletionRatio[name]; ok {
-		return ratio
-	}
-	return 1
+	return 1, false
 }
 
 func GetAudioRatio(name string) float64 {

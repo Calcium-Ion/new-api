@@ -117,7 +117,6 @@ New API提供了丰富的功能，详细特性请参考[特性说明](https://do
 
 > [!TIP]
 > 最新版Docker镜像：`calciumion/new-api:latest`  
-> 默认账号root 密码123456
 
 ### 多机部署注意事项
 - 必须设置环境变量 `SESSION_SECRET`，否则会导致多机部署时登录状态不一致

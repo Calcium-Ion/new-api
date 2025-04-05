@@ -913,11 +913,12 @@ func TopUp(c *gin.Context) {
 }
 
 type UpdateUserSettingRequest struct {
-	QuotaWarningType      string  `json:"notify_type"`
-	QuotaWarningThreshold float64 `json:"quota_warning_threshold"`
-	WebhookUrl            string  `json:"webhook_url,omitempty"`
-	WebhookSecret         string  `json:"webhook_secret,omitempty"`
-	NotificationEmail     string  `json:"notification_email,omitempty"`
+	QuotaWarningType           string  `json:"notify_type"`
+	QuotaWarningThreshold      float64 `json:"quota_warning_threshold"`
+	WebhookUrl                 string  `json:"webhook_url,omitempty"`
+	WebhookSecret              string  `json:"webhook_secret,omitempty"`
+	NotificationEmail          string  `json:"notification_email,omitempty"`
+	AcceptUnsetModelRatioModel bool    `json:"accept_unset_model_ratio_model"`
 }
 
 func UpdateUserSetting(c *gin.Context) {
@@ -993,6 +994,7 @@ func UpdateUserSetting(c *gin.Context) {
 	settings := map[string]interface{}{
 		constant.UserSettingNotifyType:            req.QuotaWarningType,
 		constant.UserSettingQuotaWarningThreshold: req.QuotaWarningThreshold,
+		"accept_unset_model_ratio_model":          req.AcceptUnsetModelRatioModel,
 	}
 
 	// 如果是webhook类型,添加webhook相关设置

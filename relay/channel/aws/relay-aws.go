@@ -43,6 +43,28 @@ func wrapErr(err error) *dto.OpenAIErrorWithStatusCode {
 	}
 }
 
+func awsRegionPrefix(awsRegionId string) string {
+	parts := strings.Split(awsRegionId, "-")
+	regionPrefix := ""
+	if len(parts) > 0 {
+		regionPrefix = parts[0]
+	}
+	return regionPrefix
+}
+
+func awsModelCanCrossRegion(awsModelId, awsRegionPrefix string) bool {
+	regionSet, exists := awsModelCanCrossRegionMap[awsModelId]
+	return exists && regionSet[awsRegionPrefix]
+}
+
+func awsModelCrossRegion(awsModelId, awsRegionPrefix string) string {
+	modelPrefix, find := awsRegionCrossModelPrefixMap[awsRegionPrefix]
+	if !find {
+		return awsModelId
+	}
+	return modelPrefix + "." + awsModelId
+}
+
 func awsModelID(requestModel string) (string, error) {
 	if awsModelID, ok := awsModelIDMap[requestModel]; ok {
 		return awsModelID, nil
@@ -60,6 +82,12 @@ func awsHandler(c *gin.Context, info *relaycommon.RelayInfo, requestMode int) (*
 	awsModelId, err := awsModelID(c.GetString("request_model"))
 	if err != nil {
 		return wrapErr(errors.Wrap(err, "awsModelID")), nil
+	}
+
+	awsRegionPrefix := awsRegionPrefix(awsCli.Options().Region)
+	canCrossRegion := awsModelCanCrossRegion(awsModelId, awsRegionPrefix)
+	if canCrossRegion {
+		awsModelId = awsModelCrossRegion(awsModelId, awsRegionPrefix)
 	}
 
 	awsReq := &bedrockruntime.InvokeModelInput{
@@ -105,6 +133,12 @@ func awsStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	awsModelId, err := awsModelID(c.GetString("request_model"))
 	if err != nil {
 		return wrapErr(errors.Wrap(err, "awsModelID")), nil
+	}
+
+	awsRegionPrefix := awsRegionPrefix(awsCli.Options().Region)
+	canCrossRegion := awsModelCanCrossRegion(awsModelId, awsRegionPrefix)
+	if canCrossRegion {
+		awsModelId = awsModelCrossRegion(awsModelId, awsRegionPrefix)
 	}
 
 	awsReq := &bedrockruntime.InvokeModelWithResponseStreamInput{

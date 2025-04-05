@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"one-api/common"
+	constant2 "one-api/constant"
 	relaycommon "one-api/relay/common"
 	"one-api/setting"
 	"one-api/setting/operation_setting"
@@ -18,6 +19,10 @@ type PriceData struct {
 	UsePrice               bool
 	CacheCreationRatio     float64
 	ShouldPreConsumedQuota int
+}
+
+func (p PriceData) ToSetting() string {
+	return fmt.Sprintf("ModelPrice: %f, ModelRatio: %f, CompletionRatio: %f, CacheRatio: %f, GroupRatio: %f, UsePrice: %t, CacheCreationRatio: %f, ShouldPreConsumedQuota: %d", p.ModelPrice, p.ModelRatio, p.CompletionRatio, p.CacheRatio, p.GroupRatio, p.UsePrice, p.CacheCreationRatio, p.ShouldPreConsumedQuota)
 }
 
 func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens int, maxTokens int) (PriceData, error) {
@@ -36,10 +41,19 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		var success bool
 		modelRatio, success = operation_setting.GetModelRatio(info.OriginModelName)
 		if !success {
-			if info.UserId == 1 {
-				return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置，请设置或开始自用模式；Model %s ratio or price not set, please set or start self-use mode", info.OriginModelName, info.OriginModelName)
-			} else {
-				return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置, 请联系管理员设置；Model %s ratio or price not set, please contact administrator to set", info.OriginModelName, info.OriginModelName)
+			acceptUnsetRatio := false
+			if accept, ok := info.UserSetting[constant2.UserAcceptUnsetRatioModel]; ok {
+				b, ok := accept.(bool)
+				if ok {
+					acceptUnsetRatio = b
+				}
+			}
+			if !acceptUnsetRatio {
+				if info.UserId == 1 {
+					return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置，请设置或开始自用模式；Model %s ratio or price not set, please set or start self-use mode", info.OriginModelName, info.OriginModelName)
+				} else {
+					return PriceData{}, fmt.Errorf("模型 %s 倍率或价格未配置, 请联系管理员设置；Model %s ratio or price not set, please contact administrator to set", info.OriginModelName, info.OriginModelName)
+				}
 			}
 		}
 		completionRatio = operation_setting.GetCompletionRatio(info.OriginModelName)
@@ -50,7 +64,8 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 	} else {
 		preConsumedQuota = int(modelPrice * common.QuotaPerUnit * groupRatio)
 	}
-	return PriceData{
+
+	priceData := PriceData{
 		ModelPrice:             modelPrice,
 		ModelRatio:             modelRatio,
 		CompletionRatio:        completionRatio,
@@ -59,5 +74,11 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		CacheRatio:             cacheRatio,
 		CacheCreationRatio:     cacheCreationRatio,
 		ShouldPreConsumedQuota: preConsumedQuota,
-	}, nil
+	}
+
+	if common.DebugEnabled {
+		println(fmt.Sprintf("model_price_helper result: %s", priceData.ToSetting()))
+	}
+
+	return priceData, nil
 }

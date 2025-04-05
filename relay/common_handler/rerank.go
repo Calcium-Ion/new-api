@@ -32,19 +32,20 @@ func RerankHandler(c *gin.Context, info *relaycommon.RelayInfo, resp *http.Respo
 		}
 		jinaRespResults := make([]dto.RerankResponseResult, len(xinRerankResponse.Results))
 		for i, result := range xinRerankResponse.Results {
-			var document any
-			if result.Document == "" {
-				document = info.Documents[result.Index]
-			} else {
-				document = result.Document
-			}
-			jinaRespResults[i] = dto.RerankResponseResult{
+			respResult := dto.RerankResponseResult{
 				Index:          result.Index,
 				RelevanceScore: result.RelevanceScore,
-				Document: dto.RerankDocument{
-					Text: document,
-				},
 			}
+			if info.ReturnDocuments {
+				var document any
+				if result.Document == "" {
+					document = info.Documents[result.Index]
+				} else {
+					document = result.Document
+				}
+				respResult.Document = document
+			}
+			jinaRespResults[i] = respResult
 		}
 		jinaResp = dto.RerankResponse{
 			Results: jinaRespResults,

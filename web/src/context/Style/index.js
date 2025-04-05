@@ -60,6 +60,9 @@ export const StyleProvider = ({ children }) => {
       if (pathname === '' || pathname === '/' || pathname.includes('/home') || pathname.includes('/chat')) {
         dispatch({ type: 'SET_SIDER', payload: false });
         dispatch({ type: 'SET_INNER_PADDING', payload: false });
+      } else if (pathname === '/setup') {
+        dispatch({ type: 'SET_SIDER', payload: false });
+        dispatch({ type: 'SET_INNER_PADDING', payload: false });
       } else {
         // Only show sidebar on non-mobile devices by default
         dispatch({ type: 'SET_SIDER', payload: !isMobile() });

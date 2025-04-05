@@ -243,18 +243,16 @@ func PostClaudeConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 		common.LogError(ctx, fmt.Sprintf("total tokens is 0, cannot consume quota, userId %d, channelId %d, "+
 			"tokenId %d, model %s， pre-consumed quota %d", relayInfo.UserId, relayInfo.ChannelId, relayInfo.TokenId, modelName, preConsumedQuota))
 	} else {
-		//if sensitiveResp != nil {
-		//	logContent += fmt.Sprintf("，敏感词：%s", strings.Join(sensitiveResp.SensitiveWords, ", "))
-		//}
-		quotaDelta := quota - preConsumedQuota
-		if quotaDelta != 0 {
-			err := PostConsumeQuota(relayInfo, quotaDelta, preConsumedQuota, true)
-			if err != nil {
-				common.LogError(ctx, "error consuming token remain quota: "+err.Error())
-			}
-		}
 		model.UpdateUserUsedQuotaAndRequestCount(relayInfo.UserId, quota)
 		model.UpdateChannelUsedQuota(relayInfo.ChannelId, quota)
+	}
+
+	quotaDelta := quota - preConsumedQuota
+	if quotaDelta != 0 {
+		err := PostConsumeQuota(relayInfo, quotaDelta, preConsumedQuota, true)
+		if err != nil {
+			common.LogError(ctx, "error consuming token remain quota: "+err.Error())
+		}
 	}
 
 	other := GenerateClaudeOtherInfo(ctx, relayInfo, modelRatio, groupRatio, completionRatio,
@@ -318,15 +316,16 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 		common.LogError(ctx, fmt.Sprintf("total tokens is 0, cannot consume quota, userId %d, channelId %d, "+
 			"tokenId %d, model %s， pre-consumed quota %d", relayInfo.UserId, relayInfo.ChannelId, relayInfo.TokenId, relayInfo.OriginModelName, preConsumedQuota))
 	} else {
-		quotaDelta := quota - preConsumedQuota
-		if quotaDelta != 0 {
-			err := PostConsumeQuota(relayInfo, quotaDelta, preConsumedQuota, true)
-			if err != nil {
-				common.LogError(ctx, "error consuming token remain quota: "+err.Error())
-			}
-		}
 		model.UpdateUserUsedQuotaAndRequestCount(relayInfo.UserId, quota)
 		model.UpdateChannelUsedQuota(relayInfo.ChannelId, quota)
+	}
+
+	quotaDelta := quota - preConsumedQuota
+	if quotaDelta != 0 {
+		err := PostConsumeQuota(relayInfo, quotaDelta, preConsumedQuota, true)
+		if err != nil {
+			common.LogError(ctx, "error consuming token remain quota: "+err.Error())
+		}
 	}
 
 	logModel := relayInfo.OriginModelName
