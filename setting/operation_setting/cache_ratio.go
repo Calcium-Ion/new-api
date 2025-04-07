@@ -56,17 +56,15 @@ var cacheRatioMapMutex sync.RWMutex
 
 // GetCacheRatioMap returns the cache ratio map
 func GetCacheRatioMap() map[string]float64 {
-	cacheRatioMapMutex.Lock()
-	defer cacheRatioMapMutex.Unlock()
-	if cacheRatioMap == nil {
-		cacheRatioMap = defaultCacheRatio
-	}
+	cacheRatioMapMutex.RLock()
+	defer cacheRatioMapMutex.RUnlock()
 	return cacheRatioMap
 }
 
 // CacheRatio2JSONString converts the cache ratio map to a JSON string
 func CacheRatio2JSONString() string {
-	GetCacheRatioMap()
+	cacheRatioMapMutex.RLock()
+	defer cacheRatioMapMutex.RUnlock()
 	jsonBytes, err := json.Marshal(cacheRatioMap)
 	if err != nil {
 		common.SysError("error marshalling cache ratio: " + err.Error())
@@ -84,10 +82,11 @@ func UpdateCacheRatioByJSONString(jsonStr string) error {
 
 // GetCacheRatio returns the cache ratio for a model
 func GetCacheRatio(name string) (float64, bool) {
-	GetCacheRatioMap()
+	cacheRatioMapMutex.RLock()
+	defer cacheRatioMapMutex.RUnlock()
 	ratio, ok := cacheRatioMap[name]
 	if !ok {
-		return 1, false // Default to 0.5 if not found
+		return 1, false // Default to 1 if not found
 	}
 	return ratio, true
 }
