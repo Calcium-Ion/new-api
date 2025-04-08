@@ -193,7 +193,7 @@ func buildTestRequest(model string) *dto.GeneralOpenAIRequest {
 			testRequest.MaxTokens = 50
 		}
 	} else if strings.Contains(model, "gemini") {
-		testRequest.MaxTokens = 500
+		testRequest.MaxTokens = 50
 	} else {
 		testRequest.MaxTokens = 10
 	}
