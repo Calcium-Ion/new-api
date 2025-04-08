@@ -56,7 +56,7 @@ func createRootAccountIfNeed() error {
 	return nil
 }
 
-func checkSetup() {
+func CheckSetup() {
 	setup := GetSetup()
 	if setup == nil {
 		// No setup record exists, check if we have a root user
@@ -244,7 +244,6 @@ func migrateDB() error {
 	}
 	err = DB.AutoMigrate(&Setup{})
 	common.SysLog("database migrated")
-	checkSetup()
 	//err = createRootAccountIfNeed()
 	return err
 }
