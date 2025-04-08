@@ -8,13 +8,15 @@ const Token = () => {
     <>
       <Layout>
         <Layout.Header>
-        <Banner
-          type='warning'
-          description={t('令牌无法精确控制使用额度，只允许自用，请勿直接将令牌分发给他人。')}
-        />
-      </Layout.Header>
-      <Layout.Content>
-        <TokensTable />
+          <Banner
+            type='warning'
+            description={t(
+              '令牌无法精确控制使用额度，只允许自用，请勿直接将令牌分发给他人。',
+            )}
+          />
+        </Layout.Header>
+        <Layout.Content>
+          <TokensTable />
         </Layout.Content>
       </Layout>
     </>

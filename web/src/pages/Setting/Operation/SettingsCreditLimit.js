@@ -42,7 +42,8 @@ export default function SettingsCreditLimit(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError(t('部分保存失败，请重试'));
+          if (res.includes(undefined))
+            return showError(t('部分保存失败，请重试'));
         }
         showSuccess(t('保存成功'));
         props.refresh();

@@ -5,19 +5,19 @@ import {
   API,
   showError,
   showSuccess,
-  showWarning, verifyJSON
+  showWarning,
+  verifyJSON,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 
 const GEMINI_SETTING_EXAMPLE = {
-  'default': 'OFF',
-  'HARM_CATEGORY_CIVIC_INTEGRITY': 'BLOCK_NONE',
+  default: 'OFF',
+  HARM_CATEGORY_CIVIC_INTEGRITY: 'BLOCK_NONE',
 };
 
 const GEMINI_VERSION_EXAMPLE = {
-  'default': 'v1beta',
+  default: 'v1beta',
 };
-
 
 export default function SettingGeminiModel(props) {
   const { t } = useTranslation();
@@ -51,7 +51,8 @@ export default function SettingGeminiModel(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError(t('部分保存失败，请重试'));
+          if (res.includes(undefined))
+            return showError(t('部分保存失败，请重试'));
         }
         showSuccess(t('保存成功'));
         props.refresh();
@@ -89,19 +90,27 @@ export default function SettingGeminiModel(props) {
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.TextArea
                   label={t('Gemini安全设置')}
-                  placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(GEMINI_SETTING_EXAMPLE, null, 2)}
+                  placeholder={
+                    t('为一个 JSON 文本，例如：') +
+                    '\n' +
+                    JSON.stringify(GEMINI_SETTING_EXAMPLE, null, 2)
+                  }
                   field={'gemini.safety_settings'}
-                  extraText={t('default为默认设置，可单独设置每个分类的安全等级')}
+                  extraText={t(
+                    'default为默认设置，可单独设置每个分类的安全等级',
+                  )}
                   autosize={{ minRows: 6, maxRows: 12 }}
                   trigger='blur'
                   stopValidateWithError
                   rules={[
                     {
                       validator: (rule, value) => verifyJSON(value),
-                      message: t('不是合法的 JSON 字符串')
-                    }
+                      message: t('不是合法的 JSON 字符串'),
+                    },
                   ]}
-                  onChange={(value) => setInputs({ ...inputs, 'gemini.safety_settings': value })}
+                  onChange={(value) =>
+                    setInputs({ ...inputs, 'gemini.safety_settings': value })
+                  }
                 />
               </Col>
             </Row>
@@ -109,7 +118,11 @@ export default function SettingGeminiModel(props) {
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.TextArea
                   label={t('Gemini版本设置')}
-                  placeholder={t('为一个 JSON 文本，例如：') + '\n' + JSON.stringify(GEMINI_VERSION_EXAMPLE, null, 2)}
+                  placeholder={
+                    t('为一个 JSON 文本，例如：') +
+                    '\n' +
+                    JSON.stringify(GEMINI_VERSION_EXAMPLE, null, 2)
+                  }
                   field={'gemini.version_settings'}
                   extraText={t('default为默认设置，可单独设置每个模型的版本')}
                   autosize={{ minRows: 6, maxRows: 12 }}
@@ -118,10 +131,12 @@ export default function SettingGeminiModel(props) {
                   rules={[
                     {
                       validator: (rule, value) => verifyJSON(value),
-                      message: t('不是合法的 JSON 字符串')
-                    }
+                      message: t('不是合法的 JSON 字符串'),
+                    },
                   ]}
-                  onChange={(value) => setInputs({ ...inputs, 'gemini.version_settings': value })}
+                  onChange={(value) =>
+                    setInputs({ ...inputs, 'gemini.version_settings': value })
+                  }
                 />
               </Col>
             </Row>

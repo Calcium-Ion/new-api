@@ -5,7 +5,8 @@ import {
   API,
   showError,
   showSuccess,
-  showWarning, verifyJSON
+  showWarning,
+  verifyJSON,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 
@@ -40,7 +41,8 @@ export default function SettingGlobalModel(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError(t('部分保存失败，请重试'));
+          if (res.includes(undefined))
+            return showError(t('部分保存失败，请重试'));
         }
         showSuccess(t('保存成功'));
         props.refresh();
@@ -79,8 +81,15 @@ export default function SettingGlobalModel(props) {
                 <Form.Switch
                   label={t('启用请求透传')}
                   field={'global.pass_through_request_enabled'}
-                  onChange={(value) => setInputs({ ...inputs, 'global.pass_through_request_enabled': value })}
-                  extraText={'开启后，所有请求将直接透传给上游，不会进行任何处理（重定向和渠道适配也将失效）,请谨慎开启'}
+                  onChange={(value) =>
+                    setInputs({
+                      ...inputs,
+                      'global.pass_through_request_enabled': value,
+                    })
+                  }
+                  extraText={
+                    '开启后，所有请求将直接透传给上游，不会进行任何处理（重定向和渠道适配也将失效）,请谨慎开启'
+                  }
                 />
               </Col>
             </Row>

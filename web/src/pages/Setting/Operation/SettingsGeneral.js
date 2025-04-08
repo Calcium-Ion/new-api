@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Banner, Button, Col, Form, Row, Spin, Collapse, Modal } from '@douyinfe/semi-ui';
+import {
+  Banner,
+  Button,
+  Col,
+  Form,
+  Row,
+  Spin,
+  Collapse,
+  Modal,
+} from '@douyinfe/semi-ui';
 import {
   compareObjects,
   API,
@@ -54,7 +63,8 @@ export default function GeneralSettings(props) {
         if (requestQueue.length === 1) {
           if (res.includes(undefined)) return;
         } else if (requestQueue.length > 1) {
-          if (res.includes(undefined)) return showError(t('部分保存失败，请重试'));
+          if (res.includes(undefined))
+            return showError(t('部分保存失败，请重试'));
         }
         showSuccess(t('保存成功'));
         props.refresh();
@@ -198,7 +208,7 @@ export default function GeneralSettings(props) {
           </Form.Section>
         </Form>
       </Spin>
-      
+
       <Modal
         title={t('警告')}
         visible={showQuotaWarning}
@@ -209,7 +219,9 @@ export default function GeneralSettings(props) {
       >
         <Banner
           type='warning'
-          description={t('此设置用于系统内部计算，默认值500000是为了精确到6位小数点设计，不推荐修改。')}
+          description={t(
+            '此设置用于系统内部计算，默认值500000是为了精确到6位小数点设计，不推荐修改。',
+          )}
           bordered
           fullMode={false}
           closeIcon={null}

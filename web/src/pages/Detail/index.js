@@ -1,8 +1,18 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { initVChartSemiTheme } from '@visactor/vchart-semi-theme';
 
-import { Button, Card, Col, Descriptions, Form, Layout, Row, Spin, Tabs } from '@douyinfe/semi-ui';
-import { VChart } from "@visactor/react-vchart";
+import {
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  Form,
+  Layout,
+  Row,
+  Spin,
+  Tabs,
+} from '@douyinfe/semi-ui';
+import { VChart } from '@visactor/react-vchart';
 import {
   API,
   isAdmin,
@@ -59,10 +69,12 @@ const Detail = (props) => {
   const [lineData, setLineData] = useState([]);
   const [spec_pie, setSpecPie] = useState({
     type: 'pie',
-    data: [{
-      id: 'id0',
-      values: pieData
-    }],
+    data: [
+      {
+        id: 'id0',
+        values: pieData,
+      },
+    ],
     outerRadius: 0.8,
     innerRadius: 0.5,
     padAngle: 0.6,
@@ -113,10 +125,12 @@ const Detail = (props) => {
   });
   const [spec_line, setSpecLine] = useState({
     type: 'bar',
-    data: [{
-      id: 'barData',
-      values: lineData
-    }],
+    data: [
+      {
+        id: 'barData',
+        values: lineData,
+      },
+    ],
     xField: 'Time',
     yField: 'Usage',
     seriesField: 'Model',
@@ -158,7 +172,7 @@ const Detail = (props) => {
           array.sort((a, b) => b.value - a.value);
           let sum = 0;
           for (let i = 0; i < array.length; i++) {
-            if (array[i].key == "其他") {
+            if (array[i].key == '其他') {
               continue;
             }
             let value = parseFloat(array[i].value);
@@ -245,7 +259,7 @@ const Detail = (props) => {
     let totalTokens = 0;
 
     // 收集所有唯一的模型名称
-    data.forEach(item => {
+    data.forEach((item) => {
       uniqueModels.add(item.model_name);
       totalTokens += item.token_used;
       totalQuota += item.quota;
@@ -255,15 +269,16 @@ const Detail = (props) => {
     // 处理颜色映射
     const newModelColors = {};
     Array.from(uniqueModels).forEach((modelName) => {
-      newModelColors[modelName] = modelColorMap[modelName] || 
-        modelColors[modelName] || 
+      newModelColors[modelName] =
+        modelColorMap[modelName] ||
+        modelColors[modelName] ||
         modelToColor(modelName);
     });
     setModelColors(newModelColors);
 
     // 按时间和模型聚合数据
     let aggregatedData = new Map();
-    data.forEach(item => {
+    data.forEach((item) => {
       const timeKey = timestamp2string1(item.created_at, dataExportDefaultTime);
       const modelKey = item.model_name;
       const key = `${timeKey}-${modelKey}`;
@@ -273,10 +288,10 @@ const Detail = (props) => {
           time: timeKey,
           model: modelKey,
           quota: 0,
-          count: 0
+          count: 0,
         });
       }
-      
+
       const existing = aggregatedData.get(key);
       existing.quota += item.quota;
       existing.count += item.count;
@@ -293,48 +308,53 @@ const Detail = (props) => {
 
     newPieData = Array.from(modelTotals).map(([model, count]) => ({
       type: model,
-      value: count
+      value: count,
     }));
 
     // 生成时间点序列
-    let timePoints = Array.from(new Set([...aggregatedData.values()].map(d => d.time)));
+    let timePoints = Array.from(
+      new Set([...aggregatedData.values()].map((d) => d.time)),
+    );
     if (timePoints.length < 7) {
-      const lastTime = Math.max(...data.map(item => item.created_at));
-      const interval = dataExportDefaultTime === 'hour' ? 3600 
-                      : dataExportDefaultTime === 'day' ? 86400 
-                      : 604800;
-      
-      timePoints = Array.from({length: 7}, (_, i) => 
-        timestamp2string1(lastTime - (6-i) * interval, dataExportDefaultTime)
+      const lastTime = Math.max(...data.map((item) => item.created_at));
+      const interval =
+        dataExportDefaultTime === 'hour'
+          ? 3600
+          : dataExportDefaultTime === 'day'
+            ? 86400
+            : 604800;
+
+      timePoints = Array.from({ length: 7 }, (_, i) =>
+        timestamp2string1(lastTime - (6 - i) * interval, dataExportDefaultTime),
       );
     }
 
     // 生成柱状图数据
-    timePoints.forEach(time => {
+    timePoints.forEach((time) => {
       // 为每个时间点收集所有模型的数据
-      let timeData = Array.from(uniqueModels).map(model => {
+      let timeData = Array.from(uniqueModels).map((model) => {
         const key = `${time}-${model}`;
         const aggregated = aggregatedData.get(key);
         return {
           Time: time,
           Model: model,
           rawQuota: aggregated?.quota || 0,
-          Usage: aggregated?.quota ? getQuotaWithUnit(aggregated.quota, 4) : 0
+          Usage: aggregated?.quota ? getQuotaWithUnit(aggregated.quota, 4) : 0,
         };
       });
-      
+
       // 计算该时间点的总计
       const timeSum = timeData.reduce((sum, item) => sum + item.rawQuota, 0);
-      
+
       // 按照 rawQuota 从大到小排序
       timeData.sort((a, b) => b.rawQuota - a.rawQuota);
-      
+
       // 为每个数据点添加该时间的总计
-      timeData = timeData.map(item => ({
+      timeData = timeData.map((item) => ({
         ...item,
-        TimeSum: timeSum
+        TimeSum: timeSum,
       }));
-      
+
       // 将排序后的数据添加到 newLineData
       newLineData.push(...timeData);
     });
@@ -344,30 +364,30 @@ const Detail = (props) => {
     newLineData.sort((a, b) => a.Time.localeCompare(b.Time));
 
     // 更新图表配置和数据
-    setSpecPie(prev => ({
+    setSpecPie((prev) => ({
       ...prev,
       data: [{ id: 'id0', values: newPieData }],
       title: {
         ...prev.title,
-        subtext: `${t('总计')}：${renderNumber(totalTimes)}`
+        subtext: `${t('总计')}：${renderNumber(totalTimes)}`,
       },
       color: {
-        specified: newModelColors
-      }
+        specified: newModelColors,
+      },
     }));
 
-    setSpecLine(prev => ({
+    setSpecLine((prev) => ({
       ...prev,
       data: [{ id: 'barData', values: newLineData }],
       title: {
         ...prev.title,
-        subtext: `${t('总计')}：${renderQuota(totalQuota, 2)}`
+        subtext: `${t('总计')}：${renderQuota(totalQuota, 2)}`,
       },
       color: {
-        specified: newModelColors
-      }
+        specified: newModelColors,
+      },
     }));
-    
+
     setPieData(newPieData);
     setLineData(newLineData);
     setConsumeQuota(totalQuota);
@@ -377,16 +397,16 @@ const Detail = (props) => {
 
   const getUserData = async () => {
     let res = await API.get(`/api/user/self`);
-    const {success, message, data} = res.data;
+    const { success, message, data } = res.data;
     if (success) {
-      userDispatch({type: 'login', payload: data});
+      userDispatch({ type: 'login', payload: data });
     } else {
       showError(message);
     }
   };
 
   useEffect(() => {
-    getUserData()
+    getUserData();
     if (!initialized.current) {
       initVChartSemiTheme({
         isWatchingThemeSwitch: true,
@@ -468,15 +488,19 @@ const Detail = (props) => {
               >
                 {t('查询')}
               </Button>
-              <Form.Section>
-              </Form.Section>
+              <Form.Section></Form.Section>
             </>
           </Form>
           <Spin spinning={loading}>
-            <Row gutter={{ xs: 16, sm: 16, md: 16, lg: 24, xl: 24, xxl: 24 }} style={{marginTop: 20}} type="flex" justify="space-between">
-              <Col span={styleState.isMobile?24:8}>
+            <Row
+              gutter={{ xs: 16, sm: 16, md: 16, lg: 24, xl: 24, xxl: 24 }}
+              style={{ marginTop: 20 }}
+              type='flex'
+              justify='space-between'
+            >
+              <Col span={styleState.isMobile ? 24 : 8}>
                 <Card className='panel-desc-card'>
-                  <Descriptions row size="small">
+                  <Descriptions row size='small'>
                     <Descriptions.Item itemKey={t('当前余额')}>
                       {renderQuota(userState?.user?.quota)}
                     </Descriptions.Item>
@@ -489,9 +513,9 @@ const Detail = (props) => {
                   </Descriptions>
                 </Card>
               </Col>
-              <Col span={styleState.isMobile?24:8}>
+              <Col span={styleState.isMobile ? 24 : 8}>
                 <Card>
-                  <Descriptions row size="small">
+                  <Descriptions row size='small'>
                     <Descriptions.Item itemKey={t('统计额度')}>
                       {renderQuota(consumeQuota)}
                     </Descriptions.Item>
@@ -508,40 +532,43 @@ const Detail = (props) => {
                 <Card>
                   <Descriptions row size='small'>
                     <Descriptions.Item itemKey={t('平均RPM')}>
-                      {(times /
+                      {(
+                        times /
                         ((Date.parse(end_timestamp) -
                           Date.parse(start_timestamp)) /
-                          60000)).toFixed(3)}
+                          60000)
+                      ).toFixed(3)}
                     </Descriptions.Item>
                     <Descriptions.Item itemKey={t('平均TPM')}>
-                      {(consumeTokens /
+                      {(
+                        consumeTokens /
                         ((Date.parse(end_timestamp) -
                           Date.parse(start_timestamp)) /
-                          60000)).toFixed(3)}
+                          60000)
+                      ).toFixed(3)}
                     </Descriptions.Item>
                   </Descriptions>
                 </Card>
               </Col>
             </Row>
-            <Card style={{marginTop: 20}}>
-              <Tabs type="line" defaultActiveKey="1">
-                <Tabs.TabPane tab={t('消耗分布')} itemKey="1">
+            <Card style={{ marginTop: 20 }}>
+              <Tabs type='line' defaultActiveKey='1'>
+                <Tabs.TabPane tab={t('消耗分布')} itemKey='1'>
                   <div style={{ height: 500 }}>
                     <VChart
                       spec={spec_line}
-                      option={{ mode: "desktop-browser" }}
+                      option={{ mode: 'desktop-browser' }}
                     />
                   </div>
                 </Tabs.TabPane>
-                <Tabs.TabPane tab={t('调用次数分布')} itemKey="2">
+                <Tabs.TabPane tab={t('调用次数分布')} itemKey='2'>
                   <div style={{ height: 500 }}>
                     <VChart
                       spec={spec_pie}
-                      option={{ mode: "desktop-browser" }}
+                      option={{ mode: 'desktop-browser' }}
                     />
                   </div>
                 </Tabs.TabPane>
-
               </Tabs>
             </Card>
           </Spin>

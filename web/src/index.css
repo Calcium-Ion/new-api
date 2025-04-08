@@ -1,8 +1,8 @@
 body {
   margin: 0;
   padding-top: 0;
-  font-family: Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei',
-    sans-serif;
+  font-family:
+    Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scrollbar-width: none;
@@ -18,7 +18,20 @@ body {
   overflow: hidden;
 }
 
-#root > section > header > section > div > div > div > div.semi-navigation-header-list-outer > div.semi-navigation-list-wrapper > ul > div > a > li > span{
+#root
+  > section
+  > header
+  > section
+  > div
+  > div
+  > div
+  > div.semi-navigation-header-list-outer
+  > div.semi-navigation-list-wrapper
+  > ul
+  > div
+  > a
+  > li
+  > span {
   font-weight: 600 !important;
 }
 
@@ -33,24 +46,56 @@ body {
   .topnav {
     padding: 0 8px;
   }
-  
+
   .topnav .semi-navigation-item {
     margin: 0 1px;
     padding: 0 4px;
   }
-  
+
   .topnav .semi-navigation-list-wrapper {
     max-width: calc(55vw - 20px);
     overflow-x: auto;
     scrollbar-width: none;
   }
-  #root > section > header > section > div > div > div > div.semi-navigation-footer > div > a > li {
+  #root
+    > section
+    > header
+    > section
+    > div
+    > div
+    > div
+    > div.semi-navigation-footer
+    > div
+    > a
+    > li {
     padding: 0 0;
   }
-  #root > section > header > section > div > div > div > div.semi-navigation-header-list-outer > div.semi-navigation-list-wrapper > ul > div > a > li {
+  #root
+    > section
+    > header
+    > section
+    > div
+    > div
+    > div
+    > div.semi-navigation-header-list-outer
+    > div.semi-navigation-list-wrapper
+    > ul
+    > div
+    > a
+    > li {
     padding: 0 5px;
   }
-  #root > section > header > section > div > div > div > div.semi-navigation-footer > div:nth-child(1) > a > li {
+  #root
+    > section
+    > header
+    > section
+    > div
+    > div
+    > div
+    > div.semi-navigation-footer
+    > div:nth-child(1)
+    > a
+    > li {
     padding: 0 5px;
   }
   .semi-navigation-footer {
@@ -96,13 +141,13 @@ body {
     position: static !important;
     height: 100% !important;
   }
-  
+
   /* 确保内容区域在移动端可以正常滚动 */
   #root {
     overflow: visible !important;
     height: 100% !important;
   }
-  
+
   /* 隐藏在移动设备上 */
   .hide-on-mobile {
     display: none !important;
@@ -147,8 +192,8 @@ body::-webkit-scrollbar {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .semi-navigation-item {
