@@ -619,7 +619,7 @@ const SystemSetting = () => {
                       允许通过 Telegram 进行登录
                     </Form.Checkbox>
                     <Form.Checkbox
-                      field='oidc.enabled'
+                      field="['oidc.enabled']"
                       noLabel
                       onChange={(e) => handleCheckboxChange('oidc.enabled', e)}
                     >
@@ -721,14 +721,14 @@ const SystemSetting = () => {
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
                   <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                     <Form.Input
-                      field='oidc.well_known'
+                      field="['oidc.well_known']"
                       label='Well-Known URL'
                       placeholder='请输入 OIDC 的 Well-Known URL'
                     />
                   </Col>
                   <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                     <Form.Input
-                      field='oidc.client_id'
+                      field="['oidc.client_id']"
                       label='Client ID'
                       placeholder='输入 OIDC 的 Client ID'
                     />
@@ -737,7 +737,7 @@ const SystemSetting = () => {
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
                   <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                     <Form.Input
-                      field='oidc.client_secret'
+                      field="['oidc.client_secret']"
                       label='Client Secret'
                       type='password'
                       placeholder='敏感信息不会发送到前端显示'
@@ -745,7 +745,7 @@ const SystemSetting = () => {
                   </Col>
                   <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                     <Form.Input
-                      field='oidc.authorization_endpoint'
+                      field="['oidc.authorization_endpoint']"
                       label='Authorization Endpoint'
                       placeholder='输入 OIDC 的 Authorization Endpoint'
                     />
@@ -754,14 +754,14 @@ const SystemSetting = () => {
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
                   <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                     <Form.Input
-                      field='oidc.token_endpoint'
+                      field="['oidc.token_endpoint']"
                       label='Token Endpoint'
                       placeholder='输入 OIDC 的 Token Endpoint'
                     />
                   </Col>
                   <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                     <Form.Input
-                      field='oidc.user_info_endpoint'
+                      field="['oidc.user_info_endpoint']"
                       label='User Info Endpoint'
                       placeholder='输入 OIDC 的 Userinfo Endpoint'
                     />
