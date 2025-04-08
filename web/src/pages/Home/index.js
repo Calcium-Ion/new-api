@@ -66,13 +66,9 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (statusState.status?.setup === false) {
-      window.location.href = '/setup';
-      return;
-    }
     displayNotice().then();
     displayHomePageContent().then();
-  });
+  }, []);
 
   return (
     <>
@@ -116,6 +112,7 @@ const Home = () => {
                       https://github.com/Calcium-Ion/new-api
                     </a>
                   </p>
+                  
                   <p>
                     {t('协议')}：
                     <a
