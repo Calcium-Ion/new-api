@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"one-api/common"
@@ -16,6 +15,8 @@ import (
 	"one-api/service"
 	"one-api/setting"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.ImageRequest, error) {
@@ -38,6 +39,10 @@ func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.
 	}
 	if imageRequest.Model == "" {
 		imageRequest.Model = "dall-e-2"
+	}
+	// x.ai grok-2-image not support size, quality or style
+	if imageRequest.Size == "empty" {
+		imageRequest.Size = ""
 	}
 
 	// Not "256x256", "512x512", or "1024x1024"
