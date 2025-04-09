@@ -62,6 +62,10 @@ var EmailDomainWhitelist = []string{
 	"yahoo.com",
 	"foxmail.com",
 }
+var EmailLoginAuthServerList = []string{
+	"smtp.sendcloud.net",
+	"smtp.azurecomm.net",
+}
 
 var DebugEnabled = os.Getenv("DEBUG") == "true"
 var MemoryCacheEnabled = os.Getenv("MEMORY_CACHE_ENABLED") == "true"

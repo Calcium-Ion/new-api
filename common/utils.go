@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"html/template"
 	"io"
 	"log"
@@ -20,6 +19,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/google/uuid"
 )
@@ -258,4 +259,14 @@ func GetAudioDuration(ctx context.Context, filename string) (float64, error) {
 	}
 
 	return strconv.ParseFloat(string(bytes.TrimSpace(output)), 64)
+}
+
+// Contains checks if a slice contains a specific item.
+func Contains(slice []string, item string) bool {
+    for _, s := range slice {
+        if s == item {
+            return true
+        }
+    }
+    return false
 }
