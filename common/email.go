@@ -9,6 +9,22 @@ import (
 	"time"
 )
 
+var (
+	LoginAuthServerList = []string{
+		"smtp.sendcloud.net",
+		"smtp.azurecomm.net",
+	}
+)
+
+func contains(slice []string, item string) bool {
+    for _, s := range slice {
+        if s == item {
+            return true
+        }
+    }
+    return false
+}
+
 func generateMessageID() (string, error) {
 	split := strings.Split(SMTPFrom, "@")
 	if len(split) < 2 {
@@ -79,7 +95,7 @@ func SendEmail(subject string, receiver string, content string) error {
 		if err != nil {
 			return err
 		}
-	} else if isOutlookServer(SMTPAccount) || SMTPServer == "smtp.azurecomm.net" {
+	} else if isOutlookServer(SMTPAccount) || contains(LoginAuthServerList, SMTPServer) {
 		auth = LoginAuth(SMTPAccount, SMTPToken)
 		err = smtp.SendMail(addr, auth, SMTPFrom, to, mail)
 	} else {
