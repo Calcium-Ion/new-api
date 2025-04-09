@@ -101,6 +101,8 @@ You can add custom models gpt-4-gizmo-* in channels. These are third-party model
 - `AZURE_DEFAULT_API_VERSION`: Azure channel default API version, if not specified in channel settings, use this version, default `2024-12-01-preview`
 - `NOTIFICATION_LIMIT_DURATION_MINUTE`: Duration of notification limit in minutes, default `10`
 - `NOTIFY_LIMIT_COUNT`: Maximum number of user notifications in the specified duration, default `2`
+- `CRITICAL_RATE_LIMIT`: Critical rate limiting value, default is `10`.
+- `CRITICAL_RATE_LIMIT_DURATION`: Duration of critical rate limiting, default is `60` seconds.
 
 ## Deployment
 
