@@ -134,8 +134,8 @@ var defaultModelRatio = map[string]float64{
 	"gemini-1.5-pro-latest":               1.25, // $3.5 / 1M tokens
 	"gemini-1.5-flash-latest":             0.075,
 	"gemini-2.0-flash":                    0.05,
-	"gemini-2.5-pro-exp-03-25":            1.25,
-	"gemini-2.5-pro-preview-03-25":        1.25,
+	"gemini-2.5-pro-exp-03-25":            0.625,
+	"gemini-2.5-pro-preview-03-25":        0.625,
 	"text-embedding-004":                  0.001,
 	"chatglm_turbo":                       0.3572,     // ￥0.005 / 1k tokens
 	"chatglm_pro":                         0.7143,     // ￥0.01 / 1k tokens
@@ -449,7 +449,7 @@ func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 		} else if strings.HasPrefix(name, "gemini-2.0") {
 			return 4, true
 		} else if strings.HasPrefix(name, "gemini-2.5-pro-preview") {
-			return 6, true
+			return 8, true
 		}
 		return 4, false
 	}
