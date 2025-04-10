@@ -1,7 +1,6 @@
 package dify
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
@@ -213,12 +212,8 @@ func streamResponseDify2OpenAI(difyResponse DifyChunkChatCompletionResponse) *dt
 func difyStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	var responseText string
 	usage := &dto.Usage{}
-	scanner := bufio.NewScanner(resp.Body)
-	scanner.Split(bufio.ScanLines)
 	var nodeToken int
-
 	helper.SetEventStreamHeaders(c)
-
 	helper.StreamScannerHandler(c, resp, info, func(data string) bool {
 		var difyResponse DifyChunkChatCompletionResponse
 		err := json.Unmarshal([]byte(data), &difyResponse)
@@ -247,13 +242,10 @@ func difyStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Re
 		}
 		return true
 	})
-	if err := scanner.Err(); err != nil {
-		common.SysError("error reading stream: " + err.Error())
-	}
 	helper.Done(c)
 	err := resp.Body.Close()
 	if err != nil {
-		//return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
+		// return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 		common.SysError("close_response_body_failed: " + err.Error())
 	}
 	if usage.TotalTokens == 0 {
