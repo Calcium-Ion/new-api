@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"one-api/dto"
 	"one-api/relay/channel"
-	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
 	"strings"
 )
@@ -86,13 +85,13 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
 	if info.IsStream {
-		err, usage = openai.OaiStreamHandler(c, resp, info)
+		err, usage = xAIStreamHandler(c, resp, info)
 	} else {
-		err, usage = openai.OpenaiHandler(c, resp, info)
+		err, usage = xAIHandler(c, resp, info)
 	}
-	if _, ok := usage.(*dto.Usage); ok && usage != nil {
-		usage.(*dto.Usage).CompletionTokens = usage.(*dto.Usage).TotalTokens - usage.(*dto.Usage).PromptTokens
-	}
+	//if _, ok := usage.(*dto.Usage); ok && usage != nil {
+	//	usage.(*dto.Usage).CompletionTokens = usage.(*dto.Usage).TotalTokens - usage.(*dto.Usage).PromptTokens
+	//}
 
 	return
 }
