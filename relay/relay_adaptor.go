@@ -25,6 +25,7 @@ import (
 	"one-api/relay/channel/tencent"
 	"one-api/relay/channel/vertex"
 	"one-api/relay/channel/volcengine"
+	"one-api/relay/channel/xai"
 	"one-api/relay/channel/xunfei"
 	"one-api/relay/channel/zhipu"
 	"one-api/relay/channel/zhipu_4v"
@@ -85,6 +86,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &openai.Adaptor{}
 	case constant.APITypeXinference:
 		return &openai.Adaptor{}
+	case constant.APITypeXai:
+		return &xai.Adaptor{}
 	}
 	return nil
 }
