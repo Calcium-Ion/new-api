@@ -25,14 +25,14 @@ func oaiVideo2Ali(request dto.VideoRequest) *AliVideoRequest {
 	return &videoRequest
 }
 
-func responseAli2OpenAIVideo(c *gin.Context, response *AliResponse, info *relaycommon.RelayInfo) *dto.VideoResponse {
-	VideoResponse := dto.VideoResponse{
-		TaskID: response.Output.TaskId,
+func responseAli2OpenAIVideo(c *gin.Context, response *AliResponse, info *relaycommon.RelayInfo) *dto.Task {
+	task := dto.Task{
+		TaskId: response.Output.TaskId,
 	}
-	return &VideoResponse
+	return &task
 }
 
-func aliVideoHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.VideoResponse) {
+func aliAsyncHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Task) {
 	var aliResponse AliResponse
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -52,13 +52,13 @@ func aliVideoHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rela
 		return service.OpenAIErrorWrapper(errors.New(aliResponse.Message), "ali_async_task_failed", http.StatusInternalServerError), nil
 	}
 
-	fullVideoResponse := responseAli2OpenAIVideo(c, &aliResponse, info)
-	jsonResponse, err := json.Marshal(fullVideoResponse)
+	taskResponse := responseAli2OpenAIVideo(c, &aliResponse, info)
+	jsonResponse, err := json.Marshal(taskResponse)
 	if err != nil {
 		return service.OpenAIErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError), nil
 	}
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Writer.WriteHeader(resp.StatusCode)
 	_, err = c.Writer.Write(jsonResponse)
-	return nil, fullVideoResponse
+	return nil, taskResponse
 }

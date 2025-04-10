@@ -121,13 +121,13 @@ func VideoHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		return openaiErr
 	}
 
-	videoResponse := data.(*dto.VideoResponse)
+	videoResponse := data.(*dto.Task)
 
 	taskRelayInfo := relaycommon.GenTaskRelayInfo(c)
 	taskRelayInfo.ConsumeQuota = true
 	// insert task
 	task := model.InitTask(constant.TaskPlatformAli, taskRelayInfo)
-	task.TaskID = videoResponse.TaskID
+	task.TaskID = videoResponse.TaskId
 	//task.Quota =
 	var err1 error
 	for i := 0; i < 5; i++ {

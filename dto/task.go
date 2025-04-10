@@ -8,3 +8,7 @@ type TaskError struct {
 	LocalError bool   `json:"-"`
 	Error      error  `json:"-"`
 }
+
+type Task struct {
+	TaskId string `json:"task_id"`
+}
