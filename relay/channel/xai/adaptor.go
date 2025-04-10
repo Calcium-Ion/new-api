@@ -10,6 +10,7 @@ import (
 	"one-api/relay/channel"
 	"one-api/relay/channel/openai"
 	relaycommon "one-api/relay/common"
+	"strings"
 )
 
 type Adaptor struct {
@@ -49,6 +50,24 @@ func (a *Adaptor) ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayIn
 		return nil, errors.New("request is nil")
 	}
 	request.StreamOptions = nil
+	if strings.HasPrefix(request.Model, "grok-3-mini") {
+		if request.MaxCompletionTokens == 0 && request.MaxTokens != 0 {
+			request.MaxCompletionTokens = request.MaxTokens
+			request.MaxTokens = 0
+		}
+		if strings.HasSuffix(request.Model, "-high") {
+			request.ReasoningEffort = "high"
+			request.Model = strings.TrimSuffix(request.Model, "-high")
+		} else if strings.HasSuffix(request.Model, "-low") {
+			request.ReasoningEffort = "low"
+			request.Model = strings.TrimSuffix(request.Model, "-low")
+		} else if strings.HasSuffix(request.Model, "-medium") {
+			request.ReasoningEffort = "medium"
+			request.Model = strings.TrimSuffix(request.Model, "-medium")
+		}
+		info.ReasoningEffort = request.ReasoningEffort
+		info.UpstreamModelName = request.Model
+	}
 	return request, nil
 }
 
