@@ -14,6 +14,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	InitialScannerBufferSize = 1 << 20  // 1MB (1*1024*1024)
+	MaxScannerBufferSize     = 10 << 20 // 10MB (10*1024*1024)
+)
+
 func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, dataHandler func(data string) bool) {
 
 	if resp == nil {
@@ -38,7 +43,7 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 		ticker.Stop()
 		close(stopChan)
 	}()
-
+	scanner.Buffer(make([]byte, InitialScannerBufferSize), MaxScannerBufferSize)
 	scanner.Split(bufio.ScanLines)
 	SetEventStreamHeaders(c)
 
