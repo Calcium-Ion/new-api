@@ -235,6 +235,7 @@ const (
 	ChannelTypeVolcEngine     = 45
 	ChannelTypeBaiduV2        = 46
 	ChannelTypeXinference     = 47
+	ChannelTypeXai            = 48
 	ChannelTypeDummy          // this one is only for count, do not add any channel after this
 
 )
@@ -288,4 +289,5 @@ var ChannelBaseURLs = []string{
 	"https://ark.cn-beijing.volces.com",         //45
 	"https://qianfan.baidubce.com",              //46
 	"",                                          //47
+	"https://api.x.ai",                          //48
 }
