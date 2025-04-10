@@ -23,7 +23,7 @@
     "react-turnstile": "^1.0.5",
     "semantic-ui-offline": "^2.5.0",
     "semantic-ui-react": "^2.1.3",
-    "sse": "github:mpetazzoni/sse.js",
+    "sse": "https://github.com/mpetazzoni/sse.js",
     "i18next": "^23.16.8",
     "react-i18next": "^13.0.0",
     "i18next-browser-languagedetector": "^7.2.0"
