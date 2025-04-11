@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -16,6 +17,9 @@ import (
 	"one-api/service"
 	"os"
 	"strings"
+	"time"
+
+	"compress/gzip"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
@@ -595,4 +599,179 @@ func preConsumeUsage(ctx *gin.Context, info *relaycommon.RelayInfo, usage *dto.R
 	// clear usage
 	err := service.PreWssConsumeQuota(ctx, info, usage)
 	return err
+}
+
+func OpenaiResponsesHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
+	// 读取原始请求体
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		common.LogError(c, fmt.Sprintf("读取请求体失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "read_request_body_failed", http.StatusInternalServerError), nil
+	}
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	// 检查是否是流式请求
+	var streamValue bool
+	var requestData map[string]interface{}
+	if err := json.Unmarshal(bodyBytes, &requestData); err == nil {
+		if stream, ok := requestData["stream"].(bool); ok && stream {
+			streamValue = true
+			info.IsStream = true
+		}
+	}
+
+	// 直接透传原始请求体
+	req, err := http.NewRequest("POST", info.BaseUrl+"/v1/responses", bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		common.LogError(c, fmt.Sprintf("创建请求失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "create_request_failed", http.StatusInternalServerError), nil
+	}
+
+	// 设置请求头
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+info.ApiKey)
+	req.Header.Set("Accept-Encoding", "gzip") // 明确请求gzip压缩
+
+	// 保留其他相关请求头
+	for k, v := range c.Request.Header {
+		if k != "Authorization" && k != "Content-Type" && k != "Accept-Encoding" {
+			req.Header.Set(k, v[0])
+		}
+	}
+
+	// 发送请求
+	client := &http.Client{
+		Timeout: 600 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		common.LogError(c, fmt.Sprintf("发送请求失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "request_failed", http.StatusInternalServerError), nil
+	}
+	defer resp.Body.Close()
+
+	// 设置响应头
+	for k, v := range resp.Header {
+		if k != "Content-Encoding" { // 不转发Content-Encoding头
+			c.Writer.Header().Set(k, v[0])
+		}
+	}
+
+	// 如果响应状态不是成功，记录错误信息
+	if resp.StatusCode != http.StatusOK {
+		responseBody, _ := io.ReadAll(resp.Body)
+		common.LogError(c, fmt.Sprintf("响应状态: %d, 响应内容: %s", resp.StatusCode, string(responseBody)))
+		resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+	}
+
+	// 检查响应是否被压缩
+	contentEncoding := resp.Header.Get("Content-Encoding")
+	var reader io.Reader = resp.Body
+	if contentEncoding == "gzip" {
+		gzReader, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			common.LogError(c, fmt.Sprintf("创建gzip reader失败: %s", err.Error()))
+			return service.OpenAIErrorWrapper(err, "decompress_failed", http.StatusInternalServerError), nil
+		}
+		defer gzReader.Close()
+		reader = gzReader
+	}
+
+	// 特殊处理流式响应
+	if info.IsStream || streamValue {
+		c.Writer.Header().Set("Content-Type", "text/event-stream")
+		c.Writer.Header().Set("Cache-Control", "no-cache")
+		c.Writer.Header().Set("Connection", "keep-alive")
+		c.Writer.WriteHeader(resp.StatusCode)
+
+		// 处理流式响应
+		scanner := bufio.NewScanner(reader)
+		scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+			if atEOF && len(data) == 0 {
+				return 0, nil, nil
+			}
+			if i := bytes.Index(data, []byte("\n\n")); i >= 0 {
+				return i + 2, data[0:i], nil
+			}
+			if atEOF {
+				return len(data), data, nil
+			}
+			return 0, nil, nil
+		})
+
+		var totalInputTokens int
+		var totalOutputTokens int
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "" {
+				continue
+			}
+
+			_, err = c.Writer.Write([]byte(line + "\n\n"))
+			if err != nil {
+				common.LogError(c, fmt.Sprintf("写入响应失败: %s", err.Error()))
+				return service.OpenAIErrorWrapper(err, "write_response_failed", http.StatusInternalServerError), nil
+			}
+			c.Writer.Flush()
+
+			// 尝试解析 usage 信息
+			if strings.HasPrefix(line, "data: ") {
+				line = strings.TrimPrefix(line, "data: ")
+				if line == "[DONE]" {
+					continue
+				}
+				var streamResponse dto.OpenAIResponsesResponse
+				if err := json.Unmarshal([]byte(line), &streamResponse); err == nil {
+					if streamResponse.Usage.InputTokens > 0 {
+						totalInputTokens = streamResponse.Usage.InputTokens
+					}
+					if streamResponse.Usage.OutputTokens > 0 {
+						totalOutputTokens = streamResponse.Usage.OutputTokens
+					}
+				}
+			}
+		}
+
+		// 更新使用量
+		info.SetPromptTokens(totalInputTokens)
+		return nil, &dto.Usage{
+			PromptTokens:     totalInputTokens,
+			CompletionTokens: totalOutputTokens,
+			TotalTokens:      totalInputTokens + totalOutputTokens,
+		}
+	}
+
+	// 读取响应体
+	responseBody, err := io.ReadAll(reader)
+	if err != nil {
+		common.LogError(c, fmt.Sprintf("读取响应体失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "read_response_failed", http.StatusInternalServerError), nil
+	}
+
+	// 尝试解析响应
+	var response dto.OpenAIResponsesResponse
+	if err := json.Unmarshal(responseBody, &response); err != nil {
+		common.LogError(c, fmt.Sprintf("解析响应失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "parse_response_failed", http.StatusInternalServerError), nil
+	}
+
+	// 更新使用量
+	if response.Usage.InputTokens > 0 {
+		info.SetPromptTokens(response.Usage.InputTokens)
+	}
+
+	// 写入响应
+	_, err = c.Writer.Write(responseBody)
+	if err != nil {
+		common.LogError(c, fmt.Sprintf("写入响应失败: %s", err.Error()))
+		return service.OpenAIErrorWrapper(err, "write_response_failed", http.StatusInternalServerError), nil
+	}
+
+	return nil, &dto.Usage{
+		PromptTokens:     response.Usage.InputTokens,
+		CompletionTokens: response.Usage.OutputTokens,
+		TotalTokens:      response.Usage.TotalTokens,
+	}
 }

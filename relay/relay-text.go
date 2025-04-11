@@ -64,6 +64,12 @@ func getAndValidateTextRequest(c *gin.Context, relayInfo *relaycommon.RelayInfo)
 		if textRequest.Instruction == "" {
 			return nil, errors.New("field instruction is required")
 		}
+	case relayconstant.RelayModeResponses:
+		if textRequest.Input == nil || textRequest.Input == "" {
+			return nil, errors.New("field input is required")
+		}
+		// 为 responses 模式强制开启透传请求
+		c.Set("pass_through_request", true)
 	}
 	relayInfo.IsStream = textRequest.Stream
 	return textRequest, nil
@@ -153,7 +159,9 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	adaptor.Init(relayInfo)
 	var requestBody io.Reader
 
-	if model_setting.GetGlobalSettings().PassThroughRequestEnabled {
+	passThrough, exists := c.Get("pass_through_request")
+	passThroughEnabled := exists && passThrough.(bool)
+	if passThroughEnabled || model_setting.GetGlobalSettings().PassThroughRequestEnabled {
 		body, err := common.GetRequestBody(c)
 		if err != nil {
 			return service.OpenAIErrorWrapperLocal(err, "get_request_body_failed", http.StatusInternalServerError)
@@ -237,6 +245,8 @@ func getPromptTokens(textRequest *dto.GeneralOpenAIRequest, info *relaycommon.Re
 		promptTokens, err = service.CountTokenInput(textRequest.Input, textRequest.Model)
 	case relayconstant.RelayModeEmbeddings:
 		promptTokens, err = service.CountTokenInput(textRequest.Input, textRequest.Model)
+	case relayconstant.RelayModeResponses:
+		promptTokens, err = service.CountTokenInput(textRequest.Input, textRequest.Model)
 	default:
 		err = errors.New("unknown relay mode")
 		promptTokens = 0
@@ -256,6 +266,8 @@ func checkRequestSensitive(textRequest *dto.GeneralOpenAIRequest, info *relaycom
 	case relayconstant.RelayModeModerations:
 		words, err = service.CheckSensitiveInput(textRequest.Input)
 	case relayconstant.RelayModeEmbeddings:
+		words, err = service.CheckSensitiveInput(textRequest.Input)
+	case relayconstant.RelayModeResponses:
 		words, err = service.CheckSensitiveInput(textRequest.Input)
 	}
 	return words, err
