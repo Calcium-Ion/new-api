@@ -62,6 +62,10 @@ var EmailDomainWhitelist = []string{
 	"yahoo.com",
 	"foxmail.com",
 }
+var EmailLoginAuthServerList = []string{
+	"smtp.sendcloud.net",
+	"smtp.azurecomm.net",
+}
 
 var DebugEnabled bool
 var MemoryCacheEnabled bool
