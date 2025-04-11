@@ -214,6 +214,12 @@ func (m *Message) StringContent() string {
 	return stringContent
 }
 
+func (m *Message) SetNullContent() {
+	m.Content = nil
+	m.parsedStringContent = nil
+	m.parsedContent = nil
+}
+
 func (m *Message) SetStringContent(content string) {
 	jsonContent, _ := json.Marshal(content)
 	m.Content = jsonContent

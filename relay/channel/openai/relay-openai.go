@@ -170,8 +170,10 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 			}
 		}
 	}
+
 	if shouldSendLastResp {
 		sendStreamData(c, info, lastStreamData, forceFormat, thinkToContent)
+		//err = handleStreamFormat(c, info, lastStreamData, forceFormat, thinkToContent)
 	}
 
 	// 处理token计算

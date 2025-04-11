@@ -19,13 +19,18 @@ type ThinkingContentInfo struct {
 }
 
 const (
-	LastMessageTypeText  = "text"
-	LastMessageTypeTools = "tools"
+	LastMessageTypeNone     = "none"
+	LastMessageTypeText     = "text"
+	LastMessageTypeTools    = "tools"
+	LastMessageTypeThinking = "thinking"
 )
 
 type ClaudeConvertInfo struct {
 	LastMessagesType string
 	Index            int
+	Usage            *dto.Usage
+	FinishReason     string
+	Done             bool
 }
 
 const (
@@ -113,7 +118,7 @@ func GenRelayInfoClaude(c *gin.Context) *RelayInfo {
 	info.RelayFormat = RelayFormatClaude
 	info.ShouldIncludeUsage = false
 	info.ClaudeConvertInfo = ClaudeConvertInfo{
-		LastMessagesType: LastMessageTypeText,
+		LastMessagesType: LastMessageTypeNone,
 	}
 	return info
 }

@@ -7,7 +7,7 @@ type ClaudeMetadata struct {
 }
 
 type ClaudeMediaMessage struct {
-	Type        string               `json:"type"`
+	Type        string               `json:"type,omitempty"`
 	Text        *string              `json:"text,omitempty"`
 	Model       string               `json:"model,omitempty"`
 	Source      *ClaudeMessageSource `json:"source,omitempty"`
@@ -48,6 +48,11 @@ func (c *ClaudeMediaMessage) GetStringContent() string {
 		return content
 	}
 	return ""
+}
+
+func (c *ClaudeMediaMessage) GetJsonRowString() string {
+	jsonContent, _ := json.Marshal(c)
+	return string(jsonContent)
 }
 
 func (c *ClaudeMediaMessage) SetContent(content any) {
