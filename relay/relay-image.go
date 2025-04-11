@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"one-api/common"
+	"one-api/constant"
 	"one-api/dto"
 	"one-api/model"
 	relaycommon "one-api/relay/common"
@@ -16,6 +17,7 @@ import (
 	"one-api/service"
 	"one-api/setting"
 	"strings"
+	"time"
 )
 
 func getAndValidImageRequest(c *gin.Context, info *relaycommon.RelayInfo) (*dto.ImageRequest, error) {
@@ -162,12 +164,14 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 		}
 	}
 
-	_, openaiErr := adaptor.DoResponse(c, httpResp, relayInfo)
-	if openaiErr != nil {
+	data, openaiErr := adaptor.DoResponse(c, httpResp, relayInfo)
+	if openaiErr != nil && data != nil {
 		// reset status code 重置状态码
 		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 		return openaiErr
 	}
+
+	videoResponse := data.(*dto.Task)
 
 	usage := &dto.Usage{
 		PromptTokens: imageRequest.N,
@@ -181,5 +185,23 @@ func ImageHelper(c *gin.Context) *dto.OpenAIErrorWithStatusCode {
 
 	logContent := fmt.Sprintf("大小 %s, 品质 %s", imageRequest.Size, quality)
 	postConsumeQuota(c, relayInfo, usage, 0, userQuota, priceData, logContent)
+
+	taskRelayInfo := relaycommon.GenTaskRelayInfo(c)
+	taskRelayInfo.ConsumeQuota = true
+	// insert task
+	task := model.InitTask(constant.TaskPlatformAli, taskRelayInfo)
+	task.TaskID = videoResponse.TaskId
+	task.Quota = quota
+	var err1 error
+	for i := 0; i < 5; i++ {
+		if err1 = task.Insert(); err1 == nil {
+			break
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+
+	if err1 != nil {
+		return service.OpenAIErrorWrapperLocal(err, "sql_insert_failed", http.StatusInternalServerError)
+	}
 	return nil
 }

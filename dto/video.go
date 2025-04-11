@@ -10,15 +10,15 @@ type VideoRequest struct {
 	Size         string `json:"size"`
 }
 
-type VideoResponse struct {
-	RequestID     string `json:"request_id"`
-	TaskID        string `json:"task_id"`
-	TaskStatus    string `json:"task_status"`
-	SubmitTime    string `json:"submit_time"`
-	ScheduledTime string `json:"scheduled_time"`
-	EndTime       string `json:"end_time"`
-	VideoURL      string `json:"video_url"`
-	VideoDuration int    `json:"video_duration"`
-	VideoRatio    string `json:"video_ratio"`
-	VideoCount    int    `json:"video_count"`
-}
+//type VideoResponse struct {
+//	//RequestID     string `json:"request_id"`
+//	TaskID        string `json:"task_id"`
+//	TaskStatus    string `json:"task_status"`
+//	SubmitTime    string `json:"submit_time"`
+//	ScheduledTime string `json:"scheduled_time"`
+//	EndTime       string `json:"end_time"`
+//	VideoURL      string `json:"video_url"`
+//	VideoDuration int    `json:"video_duration"`
+//	VideoRatio    string `json:"video_ratio"`
+//	VideoCount    int    `json:"video_count"`
+//}

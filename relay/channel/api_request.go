@@ -18,10 +18,10 @@ func SetupApiRequestHeader(info *common.RelayInfo, c *gin.Context, req *http.Hea
 		// multipart/form-data
 	} else if info.RelayMode == constant.RelayModeRealtime {
 		// websocket
-	} else if info.RelayMode == constant.RelayModeImagesGenerations {
 		req.Set("X-DashScope-Async", "enable")
 		req.Set("Content-Type", "application/json")
 	} else if info.RelayMode == constant.RelayModeVideoGenerations {
+	} else if info.RelayMode == constant.RelayModeImagesGenerations {
 		req.Set("X-DashScope-Async", "enable")
 		req.Set("Content-Type", "application/json")
 	} else {
