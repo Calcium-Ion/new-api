@@ -117,6 +117,7 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	model := info.UpstreamModelName
 
 	var responseTextBuilder strings.Builder
+	var toolCount int
 	var usage = &dto.Usage{}
 	var streamItems []string // store stream items
 	var forceFormat bool
@@ -129,8 +130,6 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	if think2Content, ok := info.ChannelSetting[constant.ChannelSettingThinkingToContent].(bool); ok {
 		thinkToContent = think2Content
 	}
-
-	toolCount := 0
 
 	var (
 		lastStreamData string

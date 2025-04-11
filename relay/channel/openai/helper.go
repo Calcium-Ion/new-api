@@ -41,12 +41,7 @@ func handleClaudeFormat(c *gin.Context, data string, info *relaycommon.RelayInfo
 	return nil
 }
 
-func processStreamResponse(item string, responseTextBuilder *strings.Builder, toolCount *int) error {
-	var streamResponse dto.ChatCompletionsStreamResponse
-	if err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse); err != nil {
-		return err
-	}
-
+func ProcessStreamResponse(streamResponse dto.ChatCompletionsStreamResponse, responseTextBuilder *strings.Builder, toolCount *int) error {
 	for _, choice := range streamResponse.Choices {
 		responseTextBuilder.WriteString(choice.Delta.GetContentString())
 		responseTextBuilder.WriteString(choice.Delta.GetReasoningContent())
@@ -81,7 +76,11 @@ func processChatCompletions(streamResp string, streamItems []string, responseTex
 		// 一次性解析失败，逐个解析
 		common.SysError("error unmarshalling stream response: " + err.Error())
 		for _, item := range streamItems {
-			if err := processStreamResponse(item, responseTextBuilder, toolCount); err != nil {
+			var streamResponse dto.ChatCompletionsStreamResponse
+			if err := json.Unmarshal(common.StringToByteSlice(item), &streamResponse); err != nil {
+				return err
+			}
+			if err := ProcessStreamResponse(streamResponse, responseTextBuilder, toolCount); err != nil {
 				common.SysError("error processing stream response: " + err.Error())
 			}
 		}
