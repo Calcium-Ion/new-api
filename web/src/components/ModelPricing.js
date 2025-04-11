@@ -81,7 +81,7 @@ const ModelPricing = () => {
   }
   
   function renderAvailable(available) {
-    return (
+    return available ? (
       <Popover
         content={
           <div style={{ padding: 8 }}>{t('您的分组可以使用该模型')}</div>
@@ -98,7 +98,7 @@ const ModelPricing = () => {
       >
         <IconVerify style={{ color: 'green' }}  size="large" />
       </Popover>
-    )
+    ) : null;
   }
 
   const columns = [
@@ -109,7 +109,12 @@ const ModelPricing = () => {
          // if record.enable_groups contains selectedGroup, then available is true
         return renderAvailable(record.enable_groups.includes(selectedGroup));
       },
-      sorter: (a, b) => a.available - b.available,
+      sorter: (a, b) => {
+        const aAvailable = a.enable_groups.includes(selectedGroup);
+        const bAvailable = b.enable_groups.includes(selectedGroup);
+        return Number(aAvailable) - Number(bAvailable);
+      },
+      defaultSortOrder: 'descend',
     },
     {
       title: t('模型名称'),
