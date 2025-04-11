@@ -36,7 +36,7 @@ func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayIn
 	if !strings.Contains(request.Model, "claude") {
 		return nil, fmt.Errorf("you are using openai channel type with path /v1/messages, only claude model supported convert, but got %s", request.Model)
 	}
-	aiRequest, err := service.ClaudeToOpenAIRequest(*request)
+	aiRequest, err := service.ClaudeToOpenAIRequest(*request, info)
 	if err != nil {
 		return nil, err
 	}

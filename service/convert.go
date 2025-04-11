@@ -6,15 +6,23 @@ import (
 	"one-api/common"
 	"one-api/dto"
 	relaycommon "one-api/relay/common"
+	"strings"
 )
 
-func ClaudeToOpenAIRequest(claudeRequest dto.ClaudeRequest) (*dto.GeneralOpenAIRequest, error) {
+func ClaudeToOpenAIRequest(claudeRequest dto.ClaudeRequest, info *relaycommon.RelayInfo) (*dto.GeneralOpenAIRequest, error) {
 	openAIRequest := dto.GeneralOpenAIRequest{
 		Model:       claudeRequest.Model,
 		MaxTokens:   claudeRequest.MaxTokens,
 		Temperature: claudeRequest.Temperature,
 		TopP:        claudeRequest.TopP,
 		Stream:      claudeRequest.Stream,
+	}
+
+	if claudeRequest.Thinking != nil {
+		if strings.HasSuffix(info.OriginModelName, "-thinking") &&
+			!strings.HasSuffix(claudeRequest.Model, "-thinking") {
+			openAIRequest.Model = openAIRequest.Model + "-thinking"
+		}
 	}
 
 	// Convert stop sequences
@@ -300,8 +308,10 @@ func StreamResponseOpenAI2Claude(openAIResponse *dto.ChatCompletionsStreamRespon
 						}
 					} else {
 						if info.ClaudeConvertInfo.LastMessagesType != relaycommon.LastMessageTypeText {
-							claudeResponses = append(claudeResponses, generateStopBlock(info.ClaudeConvertInfo.Index))
-							info.ClaudeConvertInfo.Index++
+							if info.LastMessagesType == relaycommon.LastMessageTypeThinking || info.LastMessagesType == relaycommon.LastMessageTypeTools {
+								claudeResponses = append(claudeResponses, generateStopBlock(info.ClaudeConvertInfo.Index))
+								info.ClaudeConvertInfo.Index++
+							}
 							claudeResponses = append(claudeResponses, &dto.ClaudeResponse{
 								Index: &info.ClaudeConvertInfo.Index,
 								Type:  "content_block_start",
