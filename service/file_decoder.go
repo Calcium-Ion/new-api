@@ -8,9 +8,9 @@ import (
 	"one-api/dto"
 )
 
-var maxFileSize = constant.MaxFileDownloadMB * 1024 * 1024
-
 func GetFileBase64FromUrl(url string) (*dto.LocalFileData, error) {
+	var maxFileSize = constant.MaxFileDownloadMB * 1024 * 1024
+
 	resp, err := DoDownloadRequest(url)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,6 @@ func GetFileBase64FromUrl(url string) (*dto.LocalFileData, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	// Check actual size after reading
 	if len(fileBytes) > maxFileSize {
 		return nil, fmt.Errorf("file size exceeds maximum allowed size: %dMB", constant.MaxFileDownloadMB)
