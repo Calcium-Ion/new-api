@@ -1,5 +1,6 @@
 export const CHANNEL_OPTIONS = [
   { value: 1, color: 'green', label: 'OpenAI' },
+  { value: 20, color: 'purple', label: 'OpenRouter' },
   {
     value: 2,
     color: 'light-blue',
