@@ -111,11 +111,26 @@ type MediaContent struct {
 	Text       string `json:"text,omitempty"`
 	ImageUrl   any    `json:"image_url,omitempty"`
 	InputAudio any    `json:"input_audio,omitempty"`
+	File       any    `json:"file,omitempty"`
 }
 
 func (m *MediaContent) GetImageMedia() *MessageImageUrl {
 	if m.ImageUrl != nil {
 		return m.ImageUrl.(*MessageImageUrl)
+	}
+	return nil
+}
+
+func (m *MediaContent) GetInputAudio() *MessageInputAudio {
+	if m.InputAudio != nil {
+		return m.InputAudio.(*MessageInputAudio)
+	}
+	return nil
+}
+
+func (m *MediaContent) GetFile() *MessageFile {
+	if m.File != nil {
+		return m.File.(*MessageFile)
 	}
 	return nil
 }
@@ -135,10 +150,17 @@ type MessageInputAudio struct {
 	Format string `json:"format"`
 }
 
+type MessageFile struct {
+	FileName string `json:"filename,omitempty"`
+	FileData string `json:"file_data,omitempty"`
+	FileId   string `json:"file_id,omitempty"`
+}
+
 const (
 	ContentTypeText       = "text"
 	ContentTypeImageURL   = "image_url"
 	ContentTypeInputAudio = "input_audio"
+	ContentTypeFile       = "file"
 )
 
 func (m *Message) GetPrefix() bool {
@@ -290,6 +312,30 @@ func (m *Message) ParseContent() []MediaContent {
 							Type:       ContentTypeInputAudio,
 							InputAudio: temp,
 						})
+					}
+				}
+			case ContentTypeFile:
+				if fileData, ok := contentItem["file"].(map[string]interface{}); ok {
+					fileId, ok3 := fileData["file_id"].(string)
+					if ok3 {
+						contentList = append(contentList, MediaContent{
+							Type: ContentTypeFile,
+							File: &MessageFile{
+								FileId: fileId,
+							},
+						})
+					} else {
+						fileName, ok1 := fileData["filename"].(string)
+						fileDataStr, ok2 := fileData["file_data"].(string)
+						if ok1 && ok2 {
+							contentList = append(contentList, MediaContent{
+								Type: ContentTypeFile,
+								File: &MessageFile{
+									FileName: fileName,
+									FileData: fileDataStr,
+								},
+							})
+						}
 					}
 				}
 			}

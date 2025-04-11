@@ -34,7 +34,7 @@ var indexPage []byte
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		common.SysLog("Support for .env file is disabled")
+		common.SysLog("Support for .env file is disabled: " + err.Error())
 	}
 
 	common.LoadEnv()
