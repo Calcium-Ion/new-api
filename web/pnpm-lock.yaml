@@ -75,7 +75,7 @@ importers:
         specifier: ^2.1.3
         version: 2.1.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sse:
-        specifier: github:mpetazzoni/sse.js
+        specifier: https://github.com/mpetazzoni/sse.js
         version: sse.js@https://codeload.github.com/mpetazzoni/sse.js/tar.gz/39b9b82aae95fd58d9d08b487845fe230f4b14e6
     devDependencies:
       '@so1ve/prettier-config':

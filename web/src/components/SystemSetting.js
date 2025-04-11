@@ -50,6 +50,11 @@ const SystemSetting = () => {
     TopupGroupRatio: '',
     PayAddress: '',
     CustomCallbackAddress: '',
+    StripeApiSecret: '',
+    StripeWebhookSecret: '',
+    StripePriceId: '',
+    StripeUnitPrice: 8.0,
+    StripeMinTopUp: 1,
     Footer: '',
     WeChatAuthEnabled: '',
     WeChatServerAddress: '',
@@ -111,6 +116,8 @@ const SystemSetting = () => {
             break;
           case 'Price':
           case 'MinTopUp':
+          case 'StripeUnitPrice':
+          case 'StripeMinTopUp':
             item.value = parseFloat(item.value);
             break;
           default:
@@ -216,11 +223,15 @@ const SystemSetting = () => {
         return;
       }
     }
-    
-    const options = [
-      { key: 'PayAddress', value: removeTrailingSlash(inputs.PayAddress) }
-    ];
-    
+
+    const options = [];
+
+    if (inputs.PayAddress !== undefined && inputs.PayAddress !== '') {
+        options.push({key: 'PayAddress', value: removeTrailingSlash(inputs.PayAddress)})
+    } else {
+        options.push({key: 'PayAddress', value: inputs.PayAddress});
+    }
+
     if (inputs.EpayId !== '') {
       options.push({ key: 'EpayId', value: inputs.EpayId });
     }
@@ -236,6 +247,38 @@ const SystemSetting = () => {
     if (inputs.CustomCallbackAddress !== '') {
       options.push({ key: 'CustomCallbackAddress', value: inputs.CustomCallbackAddress });
     }
+
+    if (inputs.StripeApiSecret && inputs.StripeApiSecret !== '') {
+      let stripeApiSecret = removeTrailingSlash(inputs.StripeApiSecret);
+      if (stripeApiSecret && !stripeApiSecret.startsWith('sk_') && !stripeApiSecret.startsWith('rk_')) {
+        showError('输入了无效的Stripe API密钥');
+        return;
+      }
+      options.push({ key: 'StripeApiSecret', value: stripeApiSecret });
+    }
+    if (inputs.StripeWebhookSecret && inputs.StripeWebhookSecret !== '') {
+      let stripeWebhookSecret = removeTrailingSlash(inputs.StripeWebhookSecret);
+      if (stripeWebhookSecret && !stripeWebhookSecret.startsWith('whsec_')) {
+        showError('输入了无效的Stripe Webhook签名密钥');
+        return;
+      }
+      options.push({ key: 'StripeWebhookSecret', value: stripeWebhookSecret });
+    }
+    if (inputs.StripePriceId !== '') {
+      let stripePriceId = removeTrailingSlash(inputs.StripePriceId);
+      if (stripePriceId && !stripePriceId.startsWith('price_')) {
+        showError('输入了无效的Stripe 物品价格ID');
+        return;
+      }
+      options.push({ key: 'StripePriceId', value: stripePriceId });
+    }
+    if (inputs.StripeUnitPrice !== '') {
+      options.push({ key: 'StripeUnitPrice', value: inputs.StripeUnitPrice.toString() });
+    }
+    if (inputs.StripeMinTopUp !== '') {
+      options.push({ key: 'StripeMinTopUp', value: inputs.StripeMinTopUp.toString() });
+    }
+
     if (originInputs['TopupGroupRatio'] !== inputs.TopupGroupRatio) {
       options.push({ key: 'TopupGroupRatio', value: inputs.TopupGroupRatio });
     }
@@ -472,7 +515,7 @@ const SystemSetting = () => {
 
               <Form.Section text='支付设置'>
                 <Text>
-                  （当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）
+                  （当前仅支持易支付及 Stripe 接口，默认使用上方服务器地址作为回调地址！）
                 </Text>
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
                   <Col xs={24} sm={24} md={8} lg={8} xl={8}>
@@ -525,6 +568,87 @@ const SystemSetting = () => {
                     />
                   </Col>
                 </Row>
+                <text>
+                  Stripe 密钥、Webhook 等设置请
+                  <a
+                      href='https://dashboard.stripe.com/developers'
+                      target='_blank'
+                      rel='noreferrer'
+                  >
+                    点击此处
+                  </a>
+                  进行设置，最好先在
+                  <a
+                      href='https://dashboard.stripe.com/test/developers'
+                      target='_blank'
+                      rel='noreferrer'
+                  >
+                    测试环境
+                  </a>
+                  进行测试
+                </text>
+                <Banner
+                    type='info'
+                    description={`以下为 Stripe 设置。Webhook 填：${inputs.ServerAddress ? inputs.ServerAddress : '网站地址'}/api/stripe/webhook`}
+                    style={{ marginBottom: 20, marginTop: 16 }}
+                />
+                <Banner
+                    type='warning'
+                    description={`需要包含事件：checkout.session.completed 和 checkout.session.expired`}
+                    style={{ marginBottom: 20, marginTop: 16 }}
+                />
+                <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                    style={{ marginTop: 16 }}
+                >
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                        field='StripeApiSecret'
+                        label='API密钥'
+                        placeholder='sk_xxx 或 rk_xxx 的 Stripe 密钥，敏感信息不显示'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                    <Form.Input
+                        field='StripeWebhookSecret'
+                        label='Webhook签名密钥'
+                        placeholder='whsec_xxx 的 Webhook 签名密钥，敏感信息不显示'
+                    />
+                  </Col>
+                </Row>
+                <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                    style={{ marginTop: 16 }}
+                >
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.Input
+                        field='StripePriceId'
+                        label='商品价格ID'
+                        placeholder='price_xxx 的商品价格 ID，新建产品后可获得'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.InputNumber
+                        field='StripeUnitPrice'
+                        precision={2}
+                        label='商品单价（元）'
+                        placeholder='商品的人民币价格'
+                    />
+                  </Col>
+                  <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                    <Form.InputNumber
+                        field='StripeMinTopUp'
+                        min={1}
+                        label='最低充值数量'
+                        placeholder='例如：2，就是最低充值2件商品'
+                    />
+                  </Col>
+                </Row>
+                <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                    style={{ marginTop: 16 }}
+                >
+                </Row>
                 <Form.TextArea
                   field='TopupGroupRatio'
                   label='充值分组倍率'
@@ -532,6 +656,7 @@ const SystemSetting = () => {
                   autosize
                 />
                 <Button onClick={submitPayAddress}>更新支付设置</Button>
+
               </Form.Section>
 
               <Form.Section text='配置登录注册'>
