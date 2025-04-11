@@ -40,6 +40,7 @@ type User struct {
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
 	LinuxDOId        string         `json:"linux_do_id" gorm:"column:linux_do_id;index"`
 	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
+	StripeCustomer   string         `json:"stripe_customer" gorm:"column:stripe_customer;index"`
 }
 
 func (user *User) ToBaseUser() *UserBase {
