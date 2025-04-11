@@ -40,6 +40,7 @@ const (
 	LogTypeConsume
 	LogTypeManage
 	LogTypeSystem
+	LogTypeError
 )
 
 func formatUserLogs(logs []*Log) {
@@ -85,6 +86,35 @@ func RecordLog(userId int, logType int, content string) {
 	err := LOG_DB.Create(log).Error
 	if err != nil {
 		common.SysError("failed to record log: " + err.Error())
+	}
+}
+
+func RecordErrorLog(c *gin.Context, userId int, channelId int, modelName string, tokenName string, content string, tokenId int, useTimeSeconds int,
+	isStream bool, group string, other map[string]interface{}) {
+	common.LogInfo(c, fmt.Sprintf("record error log: userId=%d, channelId=%d, modelName=%s, tokenName=%s, content=%s", userId, channelId, modelName, tokenName, content))
+	username := c.GetString("username")
+	otherStr := common.MapToJsonStr(other)
+	log := &Log{
+		UserId:           userId,
+		Username:         username,
+		CreatedAt:        common.GetTimestamp(),
+		Type:             LogTypeError,
+		Content:          content,
+		PromptTokens:     0,
+		CompletionTokens: 0,
+		TokenName:        tokenName,
+		ModelName:        modelName,
+		Quota:            0,
+		ChannelId:        channelId,
+		TokenId:          tokenId,
+		UseTime:          useTimeSeconds,
+		IsStream:         isStream,
+		Group:            group,
+		Other:            otherStr,
+	}
+	err := LOG_DB.Create(log).Error
+	if err != nil {
+		common.LogError(c, "failed to record log: "+err.Error())
 	}
 }
 

@@ -85,8 +85,10 @@ const LogsTable = () => {
         return <Tag color='orange' size='large'>{t('管理')}</Tag>;
       case 4:
         return <Tag color='purple' size='large'>{t('系统')}</Tag>;
+      case 5:
+        return <Tag color='red' size='large'>{t('错误')}</Tag>;
       default:
-        return <Tag color='black' size='large'>{t('未知')}</Tag>;
+        return <Tag color='grey' size='large'>{t('未知')}</Tag>;
     }
   }
 
@@ -160,7 +162,7 @@ const LogsTable = () => {
         color={stringToColor(record.model_name)}
         size='large'
         onClick={(event) => {
-          copyText(event, record.model_name).then(r => {});
+          copyText(event, record.model_name).then(r => { });
         }}
       >
         {' '}{record.model_name}{' '}
@@ -170,13 +172,13 @@ const LogsTable = () => {
         <>
           <Space vertical align={'start'}>
             <Popover content={
-              <div style={{padding: 10}}> 
+              <div style={{ padding: 10 }}>
                 <Space vertical align={'start'}>
                   <Tag
                     color={stringToColor(record.model_name)}
                     size='large'
                     onClick={(event) => {
-                      copyText(event, record.model_name).then(r => {});
+                      copyText(event, record.model_name).then(r => { });
                     }}
                   >
                     {t('请求并计费模型')}{' '}{record.model_name}{' '}
@@ -185,7 +187,7 @@ const LogsTable = () => {
                     color={stringToColor(other.upstream_model_name)}
                     size='large'
                     onClick={(event) => {
-                      copyText(event, other.upstream_model_name).then(r => {});
+                      copyText(event, other.upstream_model_name).then(r => { });
                     }}
                   >
                     {t('实际模型')}{' '}{other.upstream_model_name}{' '}
@@ -197,9 +199,9 @@ const LogsTable = () => {
                 color={stringToColor(record.model_name)}
                 size='large'
                 onClick={(event) => {
-                  copyText(event, record.model_name).then(r => {});
+                  copyText(event, record.model_name).then(r => { });
                 }}
-                suffixIcon={<IconRefresh style={{width: '0.8em', height: '0.8em', opacity: 0.6}} />}
+                suffixIcon={<IconRefresh style={{ width: '0.8em', height: '0.8em', opacity: 0.6 }} />}
               >
                 {' '}{record.model_name}{' '}
               </Tag>
@@ -298,7 +300,7 @@ const LogsTable = () => {
   const handleSelectAll = (checked) => {
     const allKeys = Object.keys(COLUMN_KEYS).map(key => COLUMN_KEYS[key]);
     const updatedColumns = {};
-    
+
     allKeys.forEach(key => {
       // For admin-only columns, only enable them if user is admin
       if ((key === COLUMN_KEYS.CHANNEL || key === COLUMN_KEYS.USERNAME || key === COLUMN_KEYS.RETRY) && !isAdminUser) {
@@ -307,7 +309,7 @@ const LogsTable = () => {
         updatedColumns[key] = checked;
       }
     });
-    
+
     setVisibleColumns(updatedColumns);
   };
 
@@ -325,7 +327,7 @@ const LogsTable = () => {
       className: isAdmin() ? 'tableShow' : 'tableHiddle',
       render: (text, record, index) => {
         return isAdminUser ? (
-          record.type === 0 || record.type === 2 ? (
+          (record.type === 0 || record.type === 2 || record.type === 5) ? (
             <div>
               {
                 <Tooltip content={record.channel_name || '[未知]'}>
@@ -378,7 +380,7 @@ const LogsTable = () => {
       title: t('令牌'),
       dataIndex: 'token_name',
       render: (text, record, index) => {
-        return record.type === 0 || record.type === 2 ? (
+        return (record.type === 0 || record.type === 2 || record.type === 5) ? (
           <div>
             <Tag
               color='grey'
@@ -402,33 +404,33 @@ const LogsTable = () => {
       title: t('分组'),
       dataIndex: 'group',
       render: (text, record, index) => {
-        if (record.type === 0 || record.type === 2) {
-         if (record.group) {
+        if (record.type === 0 || record.type === 2 || record.type === 5) {
+          if (record.group) {
             return (
               <>
                 {renderGroup(record.group)}
               </>
             );
-         } else {
-           let other = null;
-           try {
-             other = JSON.parse(record.other);
-           } catch (e) {
-             console.error(`Failed to parse record.other: "${record.other}".`, e);
-           }
-           if (other === null) {
-             return <></>;
-           }
-           if (other.group !== undefined) {
-             return (
-               <>
-                 {renderGroup(other.group)}
-               </>
-             );
-           } else {
-             return <></>;
-           }
-         }
+          } else {
+            let other = null;
+            try {
+              other = JSON.parse(record.other);
+            } catch (e) {
+              console.error(`Failed to parse record.other: "${record.other}".`, e);
+            }
+            if (other === null) {
+              return <></>;
+            }
+            if (other.group !== undefined) {
+              return (
+                <>
+                  {renderGroup(other.group)}
+                </>
+              );
+            } else {
+              return <></>;
+            }
+          }
         } else {
           return <></>;
         }
@@ -447,7 +449,7 @@ const LogsTable = () => {
       title: t('模型'),
       dataIndex: 'model_name',
       render: (text, record, index) => {
-        return record.type === 0 || record.type === 2 ? (
+        return (record.type === 0 || record.type === 2 || record.type === 5) ? (
           <>{renderModelName(record)}</>
         ) : (
           <></>
@@ -487,7 +489,7 @@ const LogsTable = () => {
       title: t('提示'),
       dataIndex: 'prompt_tokens',
       render: (text, record, index) => {
-        return record.type === 0 || record.type === 2 ? (
+        return (record.type === 0 || record.type === 2 || record.type === 5) ? (
           <>{<span> {text} </span>}</>
         ) : (
           <></>
@@ -500,7 +502,7 @@ const LogsTable = () => {
       dataIndex: 'completion_tokens',
       render: (text, record, index) => {
         return parseInt(text) > 0 &&
-          (record.type === 0 || record.type === 2) ? (
+          (record.type === 0 || record.type === 2 || record.type === 5) ? (
           <>{<span> {text} </span>}</>
         ) : (
           <></>
@@ -512,7 +514,7 @@ const LogsTable = () => {
       title: t('花费'),
       dataIndex: 'quota',
       render: (text, record, index) => {
-        return record.type === 0 || record.type === 2 ? (
+        return (record.type === 0 || record.type === 2 || record.type === 5) ? (
           <>{renderQuota(text, 6)}</>
         ) : (
           <></>
@@ -588,14 +590,14 @@ const LogsTable = () => {
             other.cache_ratio || 1.0,
           );
         return (
-            <Paragraph
-                ellipsis={{
-                  rows: 2,
-                }}
-                style={{ maxWidth: 240 }}
-            >
-              {content}
-            </Paragraph>
+          <Paragraph
+            ellipsis={{
+              rows: 2,
+            }}
+            style={{ maxWidth: 240 }}
+          >
+            {content}
+          </Paragraph>
         );
       },
     },
@@ -638,8 +640,8 @@ const LogsTable = () => {
             {t('全选')}
           </Checkbox>
         </div>
-        <div style={{ 
-          display: 'flex', 
+        <div style={{
+          display: 'flex',
           flexWrap: 'wrap',
           maxHeight: '400px',
           overflowY: 'auto',
@@ -649,12 +651,12 @@ const LogsTable = () => {
         }}>
           {allColumns.map(column => {
             // Skip admin-only columns for non-admin users
-            if (!isAdminUser && (column.key === COLUMN_KEYS.CHANNEL || 
-                                column.key === COLUMN_KEYS.USERNAME || 
-                                column.key === COLUMN_KEYS.RETRY)) {
+            if (!isAdminUser && (column.key === COLUMN_KEYS.CHANNEL ||
+              column.key === COLUMN_KEYS.USERNAME ||
+              column.key === COLUMN_KEYS.RETRY)) {
               return null;
             }
-            
+
             return (
               <div key={column.key} style={{ width: '50%', marginBottom: 16, paddingRight: 8 }}>
                 <Checkbox
@@ -803,7 +805,7 @@ const LogsTable = () => {
         //   key: '渠道重试',
         //   value: content,
         // })
-      }      
+      }
       if (isAdminUser && (logs[i].type === 0 || logs[i].type === 2)) {
         expandDataLocal.push({
           key: t('渠道信息'),
@@ -962,7 +964,7 @@ const LogsTable = () => {
 
   const handlePageChange = (page) => {
     setActivePage(page);
-    loadLogs(page, pageSize, logType).then((r) => {});
+    loadLogs(page, pageSize, logType).then((r) => { });
   };
 
   const handlePageSizeChange = async (size) => {
@@ -1014,26 +1016,26 @@ const LogsTable = () => {
         <Header>
           <Spin spinning={loadingStat}>
             <Space>
-              <Tag color='blue' size='large' style={{ 
-                padding: 15, 
-                borderRadius: '8px', 
+              <Tag color='blue' size='large' style={{
+                padding: 15,
+                borderRadius: '8px',
                 fontWeight: 500,
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}>
                 {t('消耗额度')}: {renderQuota(stat.quota)}
               </Tag>
-              <Tag color='pink' size='large' style={{ 
-                padding: 15, 
-                borderRadius: '8px', 
+              <Tag color='pink' size='large' style={{
+                padding: 15,
+                borderRadius: '8px',
                 fontWeight: 500,
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}>
                 RPM: {stat.rpm}
               </Tag>
-              <Tag color='white' size='large' style={{ 
-                padding: 15, 
-                border: 'none', 
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', 
+              <Tag color='white' size='large' style={{
+                padding: 15,
+                border: 'none',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                 borderRadius: '8px',
                 fontWeight: 500,
               }}>
@@ -1046,7 +1048,7 @@ const LogsTable = () => {
           <>
             <Form.Section>
               <div style={{ marginBottom: 10 }}>
-              {
+                {
                   styleState.isMobile ? (
                     <div>
                       <Form.DatePicker
@@ -1146,20 +1148,21 @@ const LogsTable = () => {
             <Form.Section></Form.Section>
           </>
         </Form>
-        <div style={{marginTop:10}}>
+        <div style={{ marginTop: 10 }}>
           <Select
-              defaultValue='0'
-              style={{ width: 120 }}
-              onChange={(value) => {
-                setLogType(parseInt(value));
-                loadLogs(0, pageSize, parseInt(value));
-              }}
+            defaultValue='0'
+            style={{ width: 120 }}
+            onChange={(value) => {
+              setLogType(parseInt(value));
+              loadLogs(0, pageSize, parseInt(value));
+            }}
           >
             <Select.Option value='0'>{t('全部')}</Select.Option>
             <Select.Option value='1'>{t('充值')}</Select.Option>
             <Select.Option value='2'>{t('消费')}</Select.Option>
             <Select.Option value='3'>{t('管理')}</Select.Option>
             <Select.Option value='4'>{t('系统')}</Select.Option>
+            <Select.Option value='5'>{t('错误')}</Select.Option>
           </Select>
           <Button
             theme='light'
